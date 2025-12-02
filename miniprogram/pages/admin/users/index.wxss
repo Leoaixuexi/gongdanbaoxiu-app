@@ -1,0 +1,48 @@
+/**
+ * 正在开发中页面样式
+ */
+
+.developing-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.developing-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 40rpx;
+  padding: 80rpx 60rpx;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 40rpx;
+  box-shadow: 0 20rpx 60rpx rgba(0, 0, 0, 0.15);
+}
+
+.developing-icon {
+  font-size: 160rpx;
+  animation: bounce 2s infinite ease-in-out;
+}
+
+.developing-title {
+  font-size: 48rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+.developing-desc {
+  font-size: 28rpx;
+  color: #666;
+  text-align: center;
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-20rpx);
+  }
+}

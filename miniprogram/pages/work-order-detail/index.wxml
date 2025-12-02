@@ -1,0 +1,380 @@
+<!--工单详情页面 (基于 Taro 设计)-->
+<view class="order-detail-container">
+  <!-- Loading State -->
+  <view class="loading-state" wx:if="{{loading}}">
+    <view class="weui-loadmore">
+      <view class="weui-loading"></view>
+      <view class="weui-loadmore__tips">加载中...</view>
+    </view>
+  </view>
+
+  <!-- Work Order Content -->
+  <block wx:if="{{!loading && workOrder}}">
+    <!-- 顶部绿色渐变区域 -->
+    <view class="header">
+      <!-- 使用新的步骤条组件 -->
+      <work-order-stepper workOrderData="{{stepperData}}" />
+    </view>
+
+    <!-- Tab 切换 -->
+    <view class="tab-nav">
+      <view class="tab-item {{activeTab === 'info' ? 'tab-item-active' : ''}}" bindtap="switchTab" data-tab="info">
+        <text class="tab-text {{activeTab === 'info' ? 'tab-text-active' : ''}}">工单信息</text>
+        <view class="tab-indicator" wx:if="{{activeTab === 'info'}}"></view>
+      </view>
+      <view class="tab-item {{activeTab === 'service' ? 'tab-item-active' : ''}}" bindtap="switchTab" data-tab="service">
+        <text class="tab-text {{activeTab === 'service' ? 'tab-text-active' : ''}}">工单进度</text>
+        <view class="tab-indicator" wx:if="{{activeTab === 'service'}}"></view>
+      </view>
+    </view>
+
+    <!-- 工单信息 Tab -->
+    <view class="content-area" wx:if="{{activeTab === 'info'}}">
+      <view class="info-content">
+        <view class="info-card">
+          <!-- 基本信息区域 - 按照提报页面顺序 -->
+          <view class="info-row">
+            <text class="info-label">工单编号</text>
+            <text class="info-value">{{workOrder.order_number}}</text>
+          </view>
+          <view class="info-row">
+            <text class="info-label">楼层</text>
+            <text class="info-value">{{workOrder.floor}}</text>
+          </view>
+          <view class="info-row">
+            <text class="info-label">具体位置</text>
+            <text class="info-value">{{workOrder.location}}</text>
+          </view>
+          <view class="info-row">
+            <text class="info-label">工单类别</text>
+            <text class="info-value">{{workOrder.order_category || '未知'}}</text>
+          </view>
+          <view class="info-row">
+            <text class="info-label">责任方</text>
+            <text class="info-value">{{workOrder.responsible_party || '未知'}}</text>
+          </view>
+          <view class="info-row">
+            <text class="info-label">优先级</text>
+            <text class="info-value">{{priorityDisplay}}</text>
+          </view>
+          <view class="info-row">
+            <text class="info-label">报修时间</text>
+            <text class="info-value">{{reportTime}}</text>
+          </view>
+          <view class="info-row">
+            <text class="info-label">问题描述</text>
+            <text class="info-value">{{workOrder.description}}</text>
+          </view>
+          <view class="info-row" wx:if="{{workOrder.remark}}">
+            <text class="info-label">备注</text>
+            <text class="info-value">{{workOrder.remark}}</text>
+          </view>
+
+          <!-- 现场照片 -->
+          <view class="info-row info-row-photos" wx:if="{{workOrder.photos && workOrder.photos.length > 0}}">
+            <text class="info-label">现场照片</text>
+            <view class="info-value info-value-photos">
+              <view class="photo-grid-inline">
+                <image
+                  wx:for="{{workOrder.photos}}"
+                  wx:key="index"
+                  class="photo-item-inline"
+                  src="{{item}}"
+                  mode="aspectFill"
+                  bindtap="previewPhoto"
+                  data-index="{{index}}"
+                />
+              </view>
+            </view>
+          </view>
+
+          <!-- 系统信息区域 -->
+          <view class="info-row">
+            <text class="info-label">工单状态</text>
+            <text class="info-value status-value">{{workOrder.status_text || statusTextMap[workOrder.status] || workOrder.status}}</text>
+          </view>
+          <view class="info-row">
+            <text class="info-label">报修人</text>
+            <text class="info-value">{{workOrder.submitter.name || workOrder.submitter_name || '未知'}}</text>
+          </view>
+          <view class="info-row" wx:if="{{workOrder.assigned_technician}}">
+            <text class="info-label">维修人员</text>
+            <text class="info-value">{{workOrder.assigned_technician.name || '未分配'}}</text>
+          </view>
+          <view class="info-row" wx:if="{{assignedTime}}">
+            <text class="info-label">接单时间</text>
+            <text class="info-value">{{assignedTime}}</text>
+          </view>
+          <view class="info-row" wx:if="{{workOrder.completion_notes}}">
+            <text class="info-label">完成说明</text>
+            <text class="info-value">{{workOrder.completion_notes}}</text>
+          </view>
+          <view class="info-row" wx:if="{{workOrder.review_notes}}">
+            <text class="info-label">审核意见</text>
+            <text class="info-value">{{workOrder.review_notes}}</text>
+          </view>
+          <view class="info-row" wx:if="{{workOrder.rework_count > 0}}">
+            <text class="info-label">返工次数</text>
+            <text class="info-value">{{workOrder.rework_count}} 次</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 工单进度 Tab -->
+    <view class="content-area" wx:if="{{activeTab === 'service'}}">
+      <view class="service-content">
+        <view class="timeline-page">
+          <block wx:for="{{timelineData}}" wx:key="id" wx:for-item="item" wx:for-index="index">
+            <timeline-item event="{{item}}" is-last="{{index === timelineData.length - 1}}"></timeline-item>
+          </block>
+        </view>
+      </view>
+    </view>
+
+    <!-- 底部操作按钮 (仅在工单信息Tab显示) -->
+    <view class="bottom-actions" wx:if="{{activeTab === 'info'}}">
+      <!-- 更多操作按钮 -->
+      <button
+        wx:if="{{canEdit}}"
+        class="action-button action-button-more"
+        bindtap="handleMore"
+      >
+        <text class="more-icon">⋯</text>
+      </button>
+
+      <!-- 修改按钮 - 物业人员可以修改自己创建的工单 -->
+      <button
+        wx:if="{{canEdit}}"
+        class="action-button action-button-edit"
+        bindtap="handleEdit"
+      >
+        <text class="action-button-text">修改</text>
+      </button>
+
+      <!-- 开始维修 -->
+      <button
+        wx:if="{{canStart}}"
+        class="action-button action-button-primary"
+        bindtap="handleStart"
+      >
+        <text class="action-button-text">开始维修</text>
+      </button>
+
+      <!-- 完成维修 -->
+      <button
+        wx:if="{{canUpdate}}"
+        class="action-button action-button-success"
+        bindtap="handleUpdate"
+      >
+        <text class="action-button-text">完成维修</text>
+      </button>
+
+      <!-- 批准工单 -->
+      <button
+        wx:if="{{canReview}}"
+        class="action-button action-button-approve"
+        bindtap="handleApprove"
+      >
+        <text class="action-button-text">批准</text>
+      </button>
+
+      <!-- 拒绝工单 -->
+      <button
+        wx:if="{{canReview}}"
+        class="action-button action-button-reject"
+        bindtap="handleReject"
+      >
+        <text class="action-button-text">拒绝</text>
+      </button>
+    </view>
+  </block>
+
+  <!-- Error State -->
+  <view class="error-state" wx:if="{{!loading && !workOrder}}">
+    <text class="error-text">工单数据加载失败</text>
+    <button class="error-btn" bindtap="navigateBack">返回</button>
+  </view>
+
+  <!-- 维修完成表单弹窗 -->
+  <view class="modal-overlay" wx:if="{{showRepairForm}}" catchtap="cancelRepairForm">
+    <view class="modal-container" catchtap="stopPropagation">
+      <view class="modal-header">
+        <text class="modal-title">完成维修</text>
+        <view class="modal-close" bindtap="cancelRepairForm">×</view>
+      </view>
+
+      <view class="modal-body">
+        <!-- 维修结果选择器 -->
+        <view class="form-group">
+          <view class="form-label required">维修结果</view>
+          <picker
+            class="form-picker"
+            mode="selector"
+            range="{{['已维修', '需返工']}}"
+            value="{{repairStatus === 'Repaired' ? 0 : 1}}"
+            bindchange="onRepairStatusChange"
+          >
+            <view class="picker-value">
+              {{repairStatus === 'Repaired' ? '已维修' : '需返工'}}
+            </view>
+          </picker>
+        </view>
+
+        <!-- 完成说明 -->
+        <view class="form-group">
+          <view class="form-label {{repairStatus === 'Needs Rework' ? 'required' : ''}}">
+            完成说明
+          </view>
+          <textarea
+            class="form-textarea"
+            placeholder="{{repairStatus === 'Needs Rework' ? '请填写返工说明(必填)' : '请填写完成说明(选填)'}}"
+            value="{{completionNotes}}"
+            bindinput="onNotesInput"
+            maxlength="500"
+            auto-height
+          />
+          <view class="form-hint">{{completionNotes.length}}/500</view>
+        </view>
+
+        <!-- 维修照片上传 -->
+        <view class="form-group">
+          <view class="form-label">维修照片</view>
+          <view class="photo-uploader">
+            <!-- 已上传照片 -->
+            <block wx:for="{{repairPhotos}}" wx:key="index">
+              <view class="upload-photo-item">
+                <image class="upload-photo" src="{{item}}" mode="aspectFill" />
+                <view class="upload-photo-remove" bindtap="removeRepairPhoto" data-index="{{index}}">×</view>
+              </view>
+            </block>
+
+            <!-- 上传按钮 -->
+            <view
+              wx:if="{{repairPhotos.length < 9}}"
+              class="upload-btn {{uploadingPhotos ? 'uploading' : ''}}"
+              bindtap="chooseRepairPhotos"
+            >
+              <text class="upload-icon" wx:if="{{!uploadingPhotos}}">📷</text>
+              <view class="weui-loading" wx:if="{{uploadingPhotos}}"></view>
+              <text class="upload-text">{{uploadingPhotos ? '上传中' : '添加照片'}}</text>
+            </view>
+          </view>
+          <view class="form-hint">最多上传9张照片</view>
+        </view>
+      </view>
+
+      <view class="modal-footer">
+        <button class="modal-btn cancel" bindtap="cancelRepairForm">取消</button>
+        <button
+          class="modal-btn confirm"
+          bindtap="submitRepairCompletion"
+          disabled="{{submittingRepair || uploadingPhotos}}"
+        >
+          {{submittingRepair ? '提交中...' : '确认提交'}}
+        </button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 审核表单弹窗 -->
+  <view class="modal-overlay" wx:if="{{showReviewForm}}" catchtap="cancelReviewForm">
+    <view class="modal-container" catchtap="stopPropagation">
+      <view class="modal-header">
+        <text class="modal-title">{{reviewDecision === 'Completed' ? '批准工单' : '拒绝工单'}}</text>
+        <view class="modal-close" bindtap="cancelReviewForm">×</view>
+      </view>
+
+      <view class="modal-body">
+        <!-- 审核结果显示 -->
+        <view class="form-group">
+          <view class="form-label">审核结果</view>
+          <view class="review-decision {{reviewDecision === 'Completed' ? 'approved' : 'rejected'}}">
+            {{reviewDecision === 'Completed' ? '✓ 批准通过' : '✕ 需要返工'}}
+          </view>
+        </view>
+
+        <!-- 审核意见 -->
+        <view class="form-group">
+          <view class="form-label {{reviewDecision === 'Needs Rework' ? 'required' : ''}}">
+            审核意见
+          </view>
+          <textarea
+            class="form-textarea"
+            placeholder="{{reviewDecision === 'Needs Rework' ? '请填写拒绝原因(必填)' : '请填写审核意见(选填)'}}"
+            value="{{reviewNotes}}"
+            bindinput="onReviewNotesInput"
+            maxlength="500"
+            auto-height
+          />
+          <view class="form-hint">{{reviewNotes.length}}/500</view>
+        </view>
+
+        <!-- 拒绝警告 -->
+        <view class="review-warning" wx:if="{{reviewDecision === 'Needs Rework'}}">
+          <text class="warning-icon">⚠️</text>
+          <text class="warning-text">拒绝后工单将退回给维修人员返工</text>
+        </view>
+      </view>
+
+      <view class="modal-footer">
+        <button class="modal-btn cancel" bindtap="cancelReviewForm">取消</button>
+        <button
+          class="modal-btn {{reviewDecision === 'Completed' ? 'approve' : 'reject'}}"
+          bindtap="submitReview"
+          disabled="{{submittingReview}}"
+        >
+          {{submittingReview ? '提交中...' : (reviewDecision === 'Completed' ? '确认批准' : '确认拒绝')}}
+        </button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 更多操作弹窗 -->
+  <view class="more-actions-overlay" wx:if="{{showMoreActions}}" catchtap="closeMoreActions">
+    <view class="more-actions-content" catchtap="stopPropagation">
+      <view class="more-action-item" bindtap="handleDelete">
+        <view class="more-action-icon delete-icon">
+          <image class="delete-icon-img" src="/images/删除.png" mode="aspectFit" />
+        </view>
+        <text class="more-action-label">删除</text>
+      </view>
+      <view class="more-action-item" bindtap="handleToggleStatus">
+        <view class="more-action-icon toggle-icon">
+          <image class="toggle-icon-img" src="/images/开关.png" mode="aspectFit" />
+        </view>
+        <text class="more-action-label">切换状态</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 切换状态弹窗 -->
+  <view class="modal-overlay" wx:if="{{showStatusPicker}}" catchtap="closeStatusPicker">
+    <view class="modal-container status-picker-container" catchtap="stopPropagation">
+      <!-- 顶部横条 -->
+      <view class="modal-handle"></view>
+
+      <view class="modal-header">
+        <text class="modal-title">请选择工单状态</text>
+        <view class="modal-close" bindtap="closeStatusPicker">×</view>
+      </view>
+
+      <view class="modal-body">
+        <!-- 状态选择列表 -->
+        <view class="status-list">
+          <view
+            wx:for="{{availableStatuses}}"
+            wx:key="value"
+            class="status-option {{selectedStatus === item.value ? 'status-option-selected' : ''}}"
+            bindtap="selectStatus"
+            data-status="{{item.value}}"
+          >
+            <view class="status-color-dot" style="background-color: {{item.color}};"></view>
+            <text class="status-label">{{item.label}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+</view>

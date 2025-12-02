@@ -1,0 +1,25 @@
+<view class="timeline-item">
+  <view class="timeline-axis">
+    <view class="dot-wrapper">
+      <view class="outer-ring"></view>
+      <view class="inner-dot"></view>
+    </view>
+    <view wx:if="{{!isLast}}" class="axis-line"></view>
+  </view>
+
+  <view class="timeline-card">
+    <view class="card-header">
+      <text class="title">{{event.title}}</text>
+      <view wx:if="{{event.user}}" class="user">
+        <image class="avatar" src="{{event.user.avatar}}" mode="aspectFill"></image>
+        <text class="user-name">{{event.user.name}}</text>
+      </view>
+    </view>
+
+    <view wx:if="{{event.description && event.description !== '无'}}" class="description">
+      {{event.description}}
+    </view>
+
+    <text class="timestamp">{{event.timestamp}}</text>
+  </view>
+</view>

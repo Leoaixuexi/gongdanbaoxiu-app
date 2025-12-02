@@ -1,0 +1,66 @@
+<!--
+  图片上传组件
+  支持多图上传、预览、删除
+  显示上传进度和失败重试
+-->
+<view class="image-uploader">
+  <!-- 图片网格 -->
+  <view class="photo-grid">
+    <!-- 已上传的图片 -->
+    <block wx:for="{{photoList}}" wx:key="index">
+      <view class="photo-item">
+        <!-- 图片预览 -->
+        <image
+          class="photo-image"
+          src="{{item.url}}"
+          mode="aspectFill"
+          bindtap="handlePreview"
+          data-index="{{index}}"
+        />
+
+        <!-- 删除按钮 -->
+        <view
+          wx:if="{{!disabled}}"
+          class="delete-btn"
+          bindtap="handleDelete"
+          data-index="{{index}}"
+        >
+          <text class="delete-icon">×</text>
+        </view>
+
+        <!-- 上传进度 -->
+        <view wx:if="{{item.uploading}}" class="upload-progress">
+          <view class="progress-bar">
+            <view class="progress-fill" style="width: {{item.progress}}%"></view>
+          </view>
+          <text class="progress-text">{{item.progress}}%</text>
+        </view>
+
+        <!-- 上传失败 -->
+        <view wx:if="{{item.failed}}" class="upload-failed">
+          <text class="failed-icon">!</text>
+          <text class="failed-text">上传失败</text>
+          <view class="retry-btn" bindtap="handleRetry" data-index="{{index}}">
+            重试
+          </view>
+        </view>
+      </view>
+    </block>
+
+    <!-- 上传按钮 -->
+    <view
+      wx:if="{{!disabled && photoList.length < maxCount}}"
+      class="upload-btn"
+      bindtap="handleChooseImage"
+    >
+      <text class="upload-icon">+</text>
+      <text class="upload-text">添加图片</text>
+      <text class="upload-count">{{photoList.length}}/{{maxCount}}</text>
+    </view>
+  </view>
+
+  <!-- 提示信息 -->
+  <view class="uploader-tips">
+    <text class="tips-text">最多上传{{maxCount}}张图片，每张不超过5MB</text>
+  </view>
+</view>

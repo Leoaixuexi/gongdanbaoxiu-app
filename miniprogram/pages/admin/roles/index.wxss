@@ -1,0 +1,347 @@
+/* Admin Role Management - Apple Design Style */
+
+/* ==================== Container ==================== */
+.container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: var(--color-bg-secondary);
+  padding-bottom: constant(safe-area-inset-bottom);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* ==================== Loading State ==================== */
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+.loading-spinner {
+  width: 80rpx;
+  height: 80rpx;
+  border: 4rpx solid rgba(0, 122, 255, 0.2);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ==================== Scrollable Area ==================== */
+.roles-scroll {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.roles-container {
+  padding: var(--spacing-lg);
+}
+
+/* ==================== Page Header ==================== */
+.page-header {
+  background: linear-gradient(135deg, #007AFF 0%, #5AC8FA 100%);
+  padding: var(--spacing-2xl) var(--spacing-lg);
+  padding-top: calc(var(--spacing-2xl) + constant(safe-area-inset-top));
+  padding-top: calc(var(--spacing-2xl) + env(safe-area-inset-top));
+  margin-bottom: var(--spacing-lg);
+  box-shadow: var(--shadow-md);
+}
+
+.page-title {
+  display: block;
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-bold);
+  color: white;
+  margin-bottom: var(--spacing-sm);
+}
+
+.page-desc {
+  display: block;
+  font-size: var(--font-size-sm);
+  color: rgba(255, 255, 255, 0.85);
+  line-height: 1.6;
+  font-weight: var(--font-weight-medium);
+}
+
+/* ==================== Role Cards ==================== */
+.role-card {
+  background-color: var(--color-bg-elevated);
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-xl);
+  margin-bottom: var(--spacing-lg);
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-base);
+}
+
+.role-card:active {
+  transform: scale(0.995);
+  box-shadow: var(--shadow-md);
+}
+
+/* ==================== Role Header ==================== */
+.role-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-xl);
+  padding-bottom: var(--spacing-lg);
+  border-bottom: 1rpx solid var(--color-border);
+}
+
+.role-info {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.role-name {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.user-count-badge {
+  padding: var(--spacing-xs) var(--spacing-md);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-xs);
+  background: linear-gradient(135deg, rgba(0, 122, 255, 0.15) 0%, rgba(90, 200, 250, 0.15) 100%);
+  color: var(--color-primary);
+  font-weight: var(--font-weight-semibold);
+}
+
+.lock-icon {
+  display: flex;
+  align-items: center;
+  font-size: var(--font-size-xl);
+  color: var(--color-text-tertiary);
+}
+
+/* ==================== Permissions Section ==================== */
+.permissions-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+.section-title {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-sm);
+}
+
+.permission-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-lg);
+  background-color: var(--color-bg-primary);
+  border-radius: var(--radius-lg);
+  border: 1rpx solid var(--color-border);
+  transition: all var(--transition-base);
+}
+
+.permission-item:active {
+  background-color: var(--color-bg-secondary);
+  transform: scale(0.98);
+}
+
+.permission-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  margin-right: var(--spacing-lg);
+}
+
+.permission-name {
+  font-size: var(--font-size-base);
+  color: var(--color-text-primary);
+  font-weight: var(--font-weight-medium);
+}
+
+.permission-desc {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-tertiary);
+  line-height: 1.5;
+}
+
+/* ==================== Switch Component ==================== */
+switch {
+  transform: scale(0.9);
+}
+
+/* ==================== Warning Box ==================== */
+.warning-box {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-lg) var(--spacing-xl);
+  background-color: rgba(255, 149, 0, 0.1);
+  border-radius: var(--radius-lg);
+  margin-top: var(--spacing-lg);
+  border-left: 4rpx solid var(--color-warning);
+}
+
+.warning-icon {
+  font-size: var(--font-size-xl);
+  color: var(--color-warning);
+}
+
+.warning-box text {
+  flex: 1;
+  font-size: var(--font-size-sm);
+  color: var(--color-warning);
+  line-height: 1.6;
+  font-weight: var(--font-weight-medium);
+}
+
+/* ==================== Action Buttons ==================== */
+.action-buttons {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: var(--spacing-lg);
+  padding-bottom: calc(var(--spacing-lg) + constant(safe-area-inset-bottom));
+  padding-bottom: calc(var(--spacing-lg) + env(safe-area-inset-bottom));
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(40rpx);
+  border-top: 1rpx solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 -8rpx 24rpx rgba(0, 0, 0, 0.08);
+  z-index: 100;
+}
+
+.action-buttons button {
+  width: 100%;
+  height: 96rpx;
+  border-radius: var(--radius-full);
+  background: linear-gradient(135deg, #007AFF 0%, #5AC8FA 100%);
+  color: white;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  border: none;
+  box-shadow: 0 4rpx 12rpx rgba(0, 122, 255, 0.3);
+  transition: all var(--transition-base);
+  margin: 0;
+}
+
+.action-buttons button:active {
+  transform: scale(0.96);
+  box-shadow: 0 2rpx 8rpx rgba(0, 122, 255, 0.2);
+}
+
+.action-buttons button[disabled] {
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-tertiary);
+  box-shadow: none;
+}
+
+.action-buttons button::after {
+  border: none;
+}
+
+/* ==================== Modal Styles ==================== */
+.modal-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.confirm-modal {
+  width: 600rpx;
+  background-color: var(--color-bg-elevated);
+  border-radius: var(--radius-2xl);
+  overflow: hidden;
+  box-shadow: 0 24rpx 48rpx rgba(0, 0, 0, 0.2);
+  animation: scaleIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.confirm-title {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  padding: var(--spacing-2xl) var(--spacing-xl) var(--spacing-lg);
+  text-align: center;
+}
+
+.confirm-content {
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+  padding: 0 var(--spacing-xl) var(--spacing-2xl);
+  line-height: 1.6;
+  text-align: center;
+}
+
+.confirm-actions {
+  display: flex;
+  border-top: 1rpx solid var(--color-border);
+}
+
+.confirm-actions button {
+  flex: 1;
+  height: 96rpx;
+  margin: 0;
+  border-radius: 0;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  transition: all var(--transition-base);
+}
+
+.confirm-actions button::after {
+  border: none;
+}
+
+.confirm-actions button:first-child {
+  border-right: 1rpx solid var(--color-border);
+}
+
+.confirm-actions button:active {
+  background-color: var(--color-bg-secondary);
+}
+
+.cancel-btn {
+  background-color: var(--color-bg-elevated);
+  color: var(--color-text-secondary);
+}
+
+.confirm-btn {
+  background-color: var(--color-bg-elevated);
+  color: var(--color-primary);
+}
+
+.confirm-btn.danger {
+  color: var(--color-error);
+}

@@ -1,0 +1,177 @@
+<!--
+  Duplicate Work Orders Page (T160a-T160b)
+  Find and manage duplicate work orders
+-->
+<view class="container">
+  <!-- Search Criteria -->
+  <view class="search-section">
+    <view class="criteria-card">
+      <view class="criteria-title">查询条件</view>
+
+      <!-- Date Range -->
+      <view class="criteria-item">
+        <text class="criteria-label">时间范围</text>
+        <view class="date-inputs">
+          <picker
+            mode="date"
+            value="{{startDate}}"
+            bindchange="onStartDateChange"
+          >
+            <view class="date-picker">
+              <text>{{startDate || '开始日期'}}</text>
+              <icon type="arrow" size="12" color="#999"/>
+            </view>
+          </picker>
+          <text class="date-separator">至</text>
+          <picker
+            mode="date"
+            value="{{endDate}}"
+            bindchange="onEndDateChange"
+          >
+            <view class="date-picker">
+              <text>{{endDate || '结束日期'}}</text>
+              <icon type="arrow" size="12" color="#999"/>
+            </view>
+          </picker>
+        </view>
+      </view>
+
+      <!-- Similarity Threshold -->
+      <view class="criteria-item">
+        <text class="criteria-label">相似度阈值: {{similarityThreshold}}%</text>
+        <slider
+          min="0"
+          max="100"
+          value="{{similarityThreshold}}"
+          activeColor="#1aad19"
+          bindchange="onThresholdChange"
+          show-value
+        />
+      </view>
+
+      <button
+        class="weui-btn"
+        type="primary"
+        bindtap="onSearch"
+        disabled="{{searching || !startDate || !endDate}}"
+        loading="{{searching}}"
+      >
+        {{searching ? '搜索中...' : '搜索重复工单'}}
+      </button>
+    </view>
+  </view>
+
+  <!-- Duplicate Groups -->
+  <scroll-view class="results-scroll" scroll-y enhanced="{{true}}" show-scrollbar="{{false}}">
+    <!-- Empty State -->
+    <view wx:if="{{!searching && duplicateGroups.length === 0 && searched}}" class="empty-state">
+      <image src="/assets/icons/empty.png" class="empty-icon"/>
+      <text class="empty-text">未发现重复工单</text>
+    </view>
+
+    <!-- Duplicate Groups -->
+    <view wx:elif="{{duplicateGroups.length > 0}}" class="groups-container">
+      <view class="results-header">
+        <text class="results-count">发现 {{duplicateGroups.length}} 组重复工单</text>
+      </view>
+
+      <view
+        wx:for="{{duplicateGroups}}"
+        wx:key="id"
+        class="duplicate-group"
+      >
+        <view class="group-header">
+          <text class="group-title">重复组 #{{index + 1}}</text>
+          <text class="group-count">{{item.orders.length}} 个工单</text>
+        </view>
+
+        <!-- Primary Work Order -->
+        <view class="work-order primary-order">
+          <view class="order-badge primary">主工单</view>
+          <view class="order-info">
+            <text class="order-id">工单 #{{item.primary.id}}</text>
+            <text class="order-location">{{item.primary.location}}</text>
+            <text class="order-fault">{{item.primary.fault_type}}</text>
+            <text class="order-time">{{item.primary.created_at}}</text>
+          </view>
+          <button
+            class="mini-btn"
+            size="mini"
+            bindtap="onViewOrder"
+            data-id="{{item.primary.id}}"
+          >
+            查看
+          </button>
+        </view>
+
+        <!-- Similar Orders -->
+        <view
+          wx:for="{{item.orders}}"
+          wx:for-item="order"
+          wx:for-index="orderIndex"
+          wx:key="id"
+          class="work-order similar-order"
+        >
+          <view class="similarity-indicator similarity-{{order.similarity_level}}">
+            {{order.similarity}}%
+          </view>
+          <view class="order-info">
+            <text class="order-id">工单 #{{order.id}}</text>
+            <text class="order-location">{{order.location}}</text>
+            <text class="order-fault">{{order.fault_type}}</text>
+            <text class="order-time">{{order.created_at}}</text>
+
+            <!-- Similarity Breakdown -->
+            <view class="similarity-breakdown">
+              <view class="breakdown-item">
+                <text class="breakdown-label">位置:</text>
+                <text class="breakdown-value">{{order.breakdown.location}}%</text>
+              </view>
+              <view class="breakdown-item">
+                <text class="breakdown-label">故障:</text>
+                <text class="breakdown-value">{{order.breakdown.fault_type}}%</text>
+              </view>
+              <view class="breakdown-item">
+                <text class="breakdown-label">时间:</text>
+                <text class="breakdown-value">{{order.breakdown.time}}%</text>
+              </view>
+            </view>
+          </view>
+
+          <view class="order-actions">
+            <button
+              class="mini-btn"
+              size="mini"
+              bindtap="onViewOrder"
+              data-id="{{order.id}}"
+            >
+              查看
+            </button>
+          </view>
+        </view>
+
+        <!-- Group Actions -->
+        <view class="group-actions">
+          <button
+            class="weui-btn action-btn"
+            type="primary"
+            size="mini"
+            bindtap="onLinkDuplicates"
+            data-group-id="{{item.id}}"
+          >
+            标记为重复
+          </button>
+          <button
+            class="weui-btn action-btn"
+            type="default"
+            size="mini"
+            bindtap="onDismissGroup"
+            data-group-id="{{item.id}}"
+          >
+            非重复
+          </button>
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+</view>

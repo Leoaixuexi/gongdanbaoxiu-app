@@ -1,0 +1,75 @@
+<!--
+  Work Order Card Component
+  Displays work order summary with modern UI design
+-->
+<view class="ticket-card" bindtap="handleTap">
+  <!-- 状态标签 - 绝对定位到右上角 -->
+  <view class="status-badge {{statusClass}}">
+    {{statusText}}
+  </view>
+
+  <!-- 标题: ID 和紧急标签 -->
+  <view class="ticket-header">
+    <view class="ticket-id-row">
+      <text class="ticket-id">{{workOrder.order_number || workOrder.id}}</text>
+      <view wx:if="{{isUrgent}}" class="urgent-badge">紧急</view>
+      <!-- SLA 超期标签 -->
+      <view wx:if="{{showSLABadge && !isUrgent}}" class="sla-badge-inline sla-{{slaColorClass}}">
+        <text class="badge-icon">⚠</text>
+        <text class="badge-text">{{slaBadgeText}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 描述框 -->
+  <view class="description-box">
+    {{workOrder.description || '无描述'}}
+  </view>
+
+  <!-- 元数据布局: 两列 -->
+  <view class="metadata-row">
+    <!-- 左列: 位置 & 时间 -->
+    <view class="metadata-col">
+      <view class="metadata-item">
+        <view class="icon icon-location"></view>
+        <text class="metadata-text">{{workOrder.floor}}</text>
+        <text class="location-separator"></text>
+        <text class="metadata-text">{{workOrder.location}}</text>
+      </view>
+      <view class="metadata-item">
+        <view class="icon icon-time"></view>
+        <text class="metadata-text">{{relativeTime}}</text>
+      </view>
+    </view>
+
+    <!-- 右列: 提报人 & 类别 -->
+    <view class="metadata-col metadata-col-right">
+      <view class="metadata-item">
+        <view class="icon icon-person"></view>
+        <text class="metadata-text">{{workOrder.submitter_name || workOrder.submitter.name || '未知'}}</text>
+      </view>
+      <view class="metadata-item">
+        <view class="icon icon-building"></view>
+        <text class="metadata-text">{{workOrder.order_category || '未分类'}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 照片列表 -->
+  <view class="photo-list">
+    <view wx:for="{{[0,1,2]}}" wx:key="index" class="photo-placeholder">
+      <image
+        wx:if="{{workOrder.photos && workOrder.photos[index]}}"
+        src="{{workOrder.photos[index]}}"
+        class="photo-image"
+        mode="aspectFill"
+      />
+      <view wx:else class="photo-empty">
+        <text class="photo-label">照片</text>
+        <view class="photo-icon-wrapper">
+          <text class="photo-icon">🖼️</text>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

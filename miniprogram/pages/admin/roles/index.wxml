@@ -1,0 +1,157 @@
+<!--
+  Roles Configuration Page (T151, T157-T158)
+  Manage roles and their permissions
+-->
+<view class="container">
+  <!-- Loading State -->
+  <view wx:if="{{loading}}" class="loading-container">
+    <view class="weui-loadmore">
+      <view class="weui-loading"></view>
+      <view class="weui-loadmore__tips">加载中...</view>
+    </view>
+  </view>
+
+  <!-- Roles List -->
+  <scroll-view wx:else scroll-y class="roles-scroll" enhanced="{{true}}" show-scrollbar="{{false}}">
+    <view class="roles-container">
+      <view class="page-header">
+        <text class="page-title">角色权限配置</text>
+        <text class="page-desc">配置各角色的系统访问权限</text>
+      </view>
+
+      <!-- Role Cards -->
+      <view
+        wx:for="{{roles}}"
+        wx:key="id"
+        class="role-card"
+      >
+        <view class="role-header">
+          <view class="role-info">
+            <text class="role-name">{{item.name}}</text>
+            <view class="user-count-badge">{{item.user_count || 0}} 个用户</view>
+          </view>
+          <view wx:if="{{!isSystemAdmin}}" class="lock-icon">
+            <icon type="safe" size="20" color="#999"/>
+          </view>
+        </view>
+
+        <view class="permissions-section">
+          <view class="section-title">模块权限</view>
+
+          <!-- Submit Work Orders -->
+          <view class="permission-item">
+            <view class="permission-info">
+              <text class="permission-name">提交工单</text>
+              <text class="permission-desc">允许提交维修工单</text>
+            </view>
+            <switch
+              checked="{{item.permissions.submit_work_orders}}"
+              bindchange="onPermissionChange"
+              data-role-id="{{item.id}}"
+              data-permission="submit_work_orders"
+              color="#1aad19"
+              disabled="{{!isSystemAdmin}}"
+            />
+          </view>
+
+          <!-- Review Work Orders -->
+          <view class="permission-item">
+            <view class="permission-info">
+              <text class="permission-name">审核工单</text>
+              <text class="permission-desc">允许审核和分配工单</text>
+            </view>
+            <switch
+              checked="{{item.permissions.review_work_orders}}"
+              bindchange="onPermissionChange"
+              data-role-id="{{item.id}}"
+              data-permission="review_work_orders"
+              color="#1aad19"
+              disabled="{{!isSystemAdmin}}"
+            />
+          </view>
+
+          <!-- View Analytics -->
+          <view class="permission-item">
+            <view class="permission-info">
+              <text class="permission-name">查看分析</text>
+              <text class="permission-desc">允许查看统计分析数据</text>
+            </view>
+            <switch
+              checked="{{item.permissions.view_analytics}}"
+              bindchange="onPermissionChange"
+              data-role-id="{{item.id}}"
+              data-permission="view_analytics"
+              color="#1aad19"
+              disabled="{{!isSystemAdmin}}"
+            />
+          </view>
+
+          <!-- Manage Users -->
+          <view class="permission-item">
+            <view class="permission-info">
+              <text class="permission-name">用户管理</text>
+              <text class="permission-desc">允许管理用户和权限</text>
+            </view>
+            <switch
+              checked="{{item.permissions.manage_users}}"
+              bindchange="onPermissionChange"
+              data-role-id="{{item.id}}"
+              data-permission="manage_users"
+              color="#1aad19"
+              disabled="{{!isSystemAdmin}}"
+            />
+          </view>
+
+          <!-- Configure System -->
+          <view class="permission-item">
+            <view class="permission-info">
+              <text class="permission-name">系统配置</text>
+              <text class="permission-desc">允许配置系统参数</text>
+            </view>
+            <switch
+              checked="{{item.permissions.configure_system}}"
+              bindchange="onPermissionChange"
+              data-role-id="{{item.id}}"
+              data-permission="configure_system"
+              color="#1aad19"
+              disabled="{{!isSystemAdmin}}"
+            />
+          </view>
+        </view>
+      </view>
+
+      <!-- Permission Denied Warning -->
+      <view wx:if="{{!isSystemAdmin}}" class="warning-box">
+        <icon type="warn" size="20" color="#ff9800"/>
+        <text>仅系统管理员可以修改角色权限</text>
+      </view>
+    </view>
+  </scroll-view>
+
+  <!-- Save Button (only for system admin) -->
+  <view wx:if="{{isSystemAdmin && hasChanges}}" class="action-buttons">
+    <button
+      class="weui-btn"
+      type="primary"
+      bindtap="onSave"
+      disabled="{{saving}}"
+      loading="{{saving}}"
+    >
+      {{saving ? '保存中...' : '保存修改'}}
+    </button>
+  </view>
+</view>
+
+<!-- Confirmation Modal -->
+<view class="modal-mask" wx:if="{{showConfirm}}" bindtap="onCancelSave">
+  <view class="confirm-modal" catchtap="onModalStopPropagation">
+    <view class="confirm-title">确认保存权限配置?</view>
+    <view class="confirm-content">
+      <text>修改权限后将立即生效，可能影响现有用户的系统访问。确认要保存吗？</text>
+    </view>
+    <view class="confirm-actions">
+      <button class="weui-btn cancel-btn" bindtap="onCancelSave">取消</button>
+      <button class="weui-btn" type="primary" bindtap="onConfirmSave">确认保存</button>
+    </view>
+  </view>
+</view>

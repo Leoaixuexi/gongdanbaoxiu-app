@@ -1,0 +1,211 @@
+/**
+ * þG
+ Äö7
+ * (rpxUMž°Í”¾¡
+ */
+
+/* ¹h */
+.image-uploader {
+  width: 100%;
+}
+
+/* gGQ< */
+.photo-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+}
+
+/* gGyŒ
+ 	®q«7 */
+.photo-item,
+.upload-btn {
+  position: relative;
+  width: 210rpx;
+  height: 210rpx;
+  border-radius: 12rpx;
+  overflow: hidden;
+}
+
+/* gGy */
+.photo-item {
+  background-color: #f5f5f5;
+}
+
+.photo-image {
+  width: 100%;
+  height: 100%;
+}
+
+/*  d	® */
+.delete-btn {
+  position: absolute;
+  top: 8rpx;
+  right: 8rpx;
+  width: 48rpx;
+  height: 48rpx;
+  background-color: rgba(0, 0, 0, 0.6);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.delete-icon {
+  color: #ffffff;
+  font-size: 40rpx;
+  font-weight: 300;
+  line-height: 1;
+}
+
+/* 
+ Û¦ */
+.upload-progress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 5;
+}
+
+.progress-bar {
+  width: 160rpx;
+  height: 8rpx;
+  background-color: rgba(255, 255, 255, 0.3);
+  border-radius: 4rpx;
+  overflow: hidden;
+  margin-bottom: 12rpx;
+}
+
+.progress-fill {
+  height: 100%;
+  background-color: #07c160;
+  transition: width 0.3s ease;
+}
+
+.progress-text {
+  font-size: 24rpx;
+  color: #ffffff;
+}
+
+/* 
+ 1% */
+.upload-failed {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(244, 67, 54, 0.9);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 5;
+}
+
+.failed-icon {
+  width: 48rpx;
+  height: 48rpx;
+  border: 2rpx solid #ffffff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #ffffff;
+  margin-bottom: 8rpx;
+}
+
+.failed-text {
+  font-size: 24rpx;
+  color: #ffffff;
+  margin-bottom: 12rpx;
+}
+
+.retry-btn {
+  padding: 8rpx 24rpx;
+  background-color: #ffffff;
+  border-radius: 32rpx;
+  font-size: 24rpx;
+  color: #f44336;
+  font-weight: 500;
+}
+
+/* 
+ 	® */
+.upload-btn {
+  background-color: #f5f5f5;
+  border: 2rpx dashed #d9d9d9;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.upload-btn:active {
+  background-color: #e8e8e8;
+  border-color: #bfbfbf;
+}
+
+.upload-icon {
+  font-size: 64rpx;
+  color: #999999;
+  line-height: 1;
+  margin-bottom: 8rpx;
+}
+
+.upload-text {
+  font-size: 24rpx;
+  color: #666666;
+  margin-bottom: 4rpx;
+}
+
+.upload-count {
+  font-size: 20rpx;
+  color: #999999;
+}
+
+/* Ð:áo */
+.uploader-tips {
+  margin-top: 16rpx;
+  padding: 16rpx;
+  background-color: #f7f8fa;
+  border-radius: 8rpx;
+}
+
+.tips-text {
+  font-size: 24rpx;
+  color: #999999;
+  line-height: 1.5;
+}
+
+/* Í”¾¡ */
+@media screen and (max-width: 375px) {
+  .photo-item,
+  .upload-btn {
+    width: 190rpx;
+    height: 190rpx;
+  }
+
+  .upload-icon {
+    font-size: 56rpx;
+  }
+}
+
+@media screen and (min-width: 768px) {
+  .photo-item,
+  .upload-btn {
+    width: 230rpx;
+    height: 230rpx;
+  }
+}

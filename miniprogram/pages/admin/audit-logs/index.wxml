@@ -1,0 +1,149 @@
+<!--
+  Audit Log Viewer Page (T159-T160)
+  View and search system audit logs
+-->
+<view class="container">
+  <!-- Search Filters -->
+  <view class="filters-section">
+    <view class="filter-row">
+      <view class="filter-item" bindtap="onShowUserFilter">
+        <text class="filter-label">用户</text>
+        <text class="filter-value">{{selectedUserName || '全部'}}</text>
+        <icon type="arrow" size="12" color="#999"/>
+      </view>
+      <view class="filter-item" bindtap="onShowActionFilter">
+        <text class="filter-label">操作</text>
+        <text class="filter-value">{{selectedActionName || '全部'}}</text>
+        <icon type="arrow" size="12" color="#999"/>
+      </view>
+    </view>
+
+    <view class="filter-row">
+      <view class="filter-item" bindtap="onShowResourceFilter">
+        <text class="filter-label">资源</text>
+        <text class="filter-value">{{selectedResourceName || '全部'}}</text>
+        <icon type="arrow" size="12" color="#999"/>
+      </view>
+      <view class="filter-item" bindtap="onShowDatePicker">
+        <text class="filter-label">日期</text>
+        <text class="filter-value">{{dateRangeText || '全部'}}</text>
+        <icon type="arrow" size="12" color="#999"/>
+      </view>
+    </view>
+
+    <button class="weui-btn search-btn" type="primary" size="mini" bindtap="onSearch">
+      搜索日志
+    </button>
+  </view>
+
+  <!-- Audit Logs Timeline -->
+  <scroll-view
+    class="logs-scroll"
+    scroll-y
+    bindscrolltolower="onLoadMore"
+    lower-threshold="100"
+    enhanced="{{true}}"
+    show-scrollbar="{{false}}"
+  >
+    <!-- Loading -->
+    <view wx:if="{{loading && logs.length === 0}}" class="loading-container">
+      <view class="weui-loadmore">
+        <view class="weui-loading"></view>
+        <view class="weui-loadmore__tips">加载中...</view>
+      </view>
+    </view>
+
+    <!-- Empty State -->
+    <view wx:elif="{{!loading && logs.length === 0}}" class="empty-state">
+      <image src="/assets/icons/empty.png" class="empty-icon"/>
+      <text class="empty-text">暂无审计日志</text>
+    </view>
+
+    <!-- Timeline -->
+    <view wx:else class="timeline-container">
+      <view
+        wx:for="{{logs}}"
+        wx:key="id"
+        class="log-item {{item.expanded ? 'expanded' : ''}}"
+        bindtap="onToggleExpand"
+        data-id="{{item.id}}"
+      >
+        <view class="log-indicator action-{{item.action}}"></view>
+        <view class="log-content">
+          <view class="log-header">
+            <view class="log-title">
+              <text class="action-badge action-{{item.action}}">{{item.action_name}}</text>
+              <text class="resource-text">{{item.resource_type}}</text>
+              <view wx:if="{{!item.success}}" class="failed-badge">失败</view>
+            </view>
+            <text class="log-time">{{item.time}}</text>
+          </view>
+
+          <view class="log-details">
+            <view class="detail-row">
+              <text class="detail-label">操作用户:</text>
+              <text class="detail-value">{{item.user_name}}</text>
+            </view>
+            <view class="detail-row">
+              <text class="detail-label">资源ID:</text>
+              <text class="detail-value">{{item.resource_id}}</text>
+            </view>
+          </view>
+
+          <!-- Expanded Details -->
+          <view wx:if="{{item.expanded}}" class="expanded-details">
+            <view class="expanded-section">
+              <text class="section-title">变更前:</text>
+              <view class="json-view">{{item.before_state || '无'}}</view>
+            </view>
+            <view class="expanded-section">
+              <text class="section-title">变更后:</text>
+              <view class="json-view">{{item.after_state || '无'}}</view>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <!-- Load More -->
+      <view wx:if="{{hasMore}}" class="load-more">
+        <view class="weui-loadmore">
+          <view class="weui-loading" wx:if="{{loadingMore}}"></view>
+          <view class="weui-loadmore__tips">{{loadingMore ? '加载中...' : '上拉加载更多'}}</view>
+        </view>
+      </view>
+      <view wx:else class="load-more">
+        <view class="weui-loadmore weui-loadmore_line">
+          <view class="weui-loadmore__tips weui-loadmore__tips_in-line">没有更多了</view>
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+
+  <!-- Export Button -->
+  <view class="fab" bindtap="onExport">
+    <icon type="download" size="24" color="#fff"/>
+  </view>
+</view>
+
+<!-- Filter Modals (simplified for brevity) -->
+<view class="modal-mask" wx:if="{{showUserFilter}}" bindtap="onCloseUserFilter">
+  <view class="modal-container" catchtap="onModalStopPropagation">
+    <view class="modal-header">
+      <text class="modal-title">选择用户</text>
+      <icon type="close" size="20" bindtap="onCloseUserFilter"/>
+    </view>
+    <view class="modal-content">
+      <view
+        wx:for="{{userOptions}}"
+        wx:key="value"
+        class="option-item {{selectedUser === item.value ? 'selected' : ''}}"
+        bindtap="onSelectUser"
+        data-value="{{item.value}}"
+        data-name="{{item.label}}"
+      >
+        <text>{{item.label}}</text>
+        <icon wx:if="{{selectedUser === item.value}}" type="success" size="18" color="#1aad19"/>
+      </view>
+    </view>
+  </view>
+</view>

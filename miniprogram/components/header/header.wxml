@@ -1,0 +1,27 @@
+<!-- components/header/header.wxml -->
+<view class="header-container" style="padding-top: {{statusBarHeight}}px;">
+  <view class="header-content">
+    <!-- 左侧返回按钮 -->
+    <view class="header-left">
+      <view class="back-btn" bindtap="onBack">
+        <view class="icon-chevron-left"></view>
+      </view>
+    </view>
+
+    <!-- 中间标题 -->
+    <view class="header-center">
+      <text class="header-title">修改工单</text>
+    </view>
+
+    <!-- 右侧菜单按钮 -->
+    <view class="header-right">
+      <view class="menu-capsule" bindtap="onMenuClick">
+        <view class="icon-more"></view>
+        <view class="divider"></view>
+        <view class="icon-dot-container">
+          <view class="icon-dot"></view>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,8 @@
+<!-- 正在开发中页面 -->
+<view class="developing-page">
+  <view class="developing-content">
+    <text class="developing-icon">🚧</text>
+    <text class="developing-title">正在开发中</text>
+    <text class="developing-desc">该功能正在努力开发中，敬请期待...</text>
+  </view>
+</view>

@@ -1,0 +1,52 @@
+<!--components/work-order-stepper/index.wxml-->
+<view class="stepper-container">
+  <!-- Stepper步骤指示器 -->
+  <view class="stepper-wrapper">
+    <view class="stepper-items">
+      <block wx:for="{{steps}}" wx:key="index">
+        <view class="stepper-item">
+          <!-- 文本标签 -->
+          <view class="label-container">
+            <text class="label {{index < currentStep || index === currentStep ? 'label-active' : 'label-inactive'}}">
+              {{item}}
+            </text>
+          </view>
+
+          <!-- 指示器圆圈和连接线 -->
+          <view class="indicator-container">
+            <!-- 连接线（右侧） -->
+            <view wx:if="{{index < steps.length - 1}}"
+                  class="connecting-line {{index < currentStep ? 'line-active' : 'line-inactive'}}">
+            </view>
+
+            <!-- 已完成：实心绿点 -->
+            <view wx:if="{{index < currentStep}}" class="dot dot-completed"></view>
+
+            <!-- 当前步骤：带对勾的浅绿圆圈 -->
+            <view wx:if="{{index === currentStep}}" class="dot dot-current">
+              <!-- SVG 对勾图标 -->
+              <view class="check-icon">✓</view>
+            </view>
+
+            <!-- 未来步骤：灰色点 -->
+            <view wx:if="{{index > currentStep}}" class="dot dot-future"></view>
+          </view>
+        </view>
+      </block>
+    </view>
+  </view>
+
+  <!-- 主状态文本 -->
+  <view class="status-text-container">
+    <text class="status-text">{{steps[currentStep]}}</text>
+  </view>
+
+  <!-- 时长标签 -->
+  <view class="duration-container">
+    <view class="duration-pill">
+      <!-- 顶部小三角箭头 -->
+      <view class="duration-arrow"></view>
+      <text class="duration-text">工单总用时: {{durationStr}}</text>
+    </view>
+  </view>
+</view>

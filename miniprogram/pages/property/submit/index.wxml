@@ -1,0 +1,214 @@
+<!--新增工单页面-->
+<view class="submit-container">
+  <!-- 表单卡片列表 -->
+  <view class="form-cards">
+    <!-- 工单编号 -->
+    <view class="card">
+      <view class="card-label-required">
+        <text class="star">*</text>
+        <text class="label">工单编号</text>
+      </view>
+      <view class="card-right" bindtap="handleScan">
+        <input
+          class="card-input"
+          placeholder="扫码自动生成"
+          value="{{orderNumber}}"
+          disabled="{{true}}"
+        />
+        <view class="scan-icon">
+          <image class="scan-icon-img" src="/images/scan.png" mode="aspectFit" />
+        </view>
+      </view>
+    </view>
+
+    <!-- 楼层 -->
+    <view class="card">
+      <view class="card-label-required">
+        <text class="star">*</text>
+        <text class="label">楼层</text>
+      </view>
+      <picker mode="selector" range="{{floorOptions}}" value="{{floorIndex}}" bindchange="onFloorChange">
+        <view class="card-picker">
+          <text class="picker-text {{floorIndex === 0 ? 'placeholder' : ''}}">
+            {{floorOptions[floorIndex]}}
+          </text>
+        </view>
+      </picker>
+    </view>
+
+    <!-- 具体位置 -->
+    <view class="card">
+      <view class="card-label-required">
+        <text class="star">*</text>
+        <text class="label">具体位置</text>
+      </view>
+      <input
+        class="card-input"
+        placeholder="请填写"
+        value="{{location}}"
+        bindinput="onLocationInput"
+      />
+    </view>
+
+    <!-- 工单类别 -->
+    <view class="card">
+      <view class="card-label-required">
+        <text class="star">*</text>
+        <text class="label">工单类别</text>
+      </view>
+      <picker mode="selector" range="{{orderCategories}}" value="{{orderCategoryIndex}}" bindchange="onOrderCategoryChange">
+        <view class="card-picker">
+          <text class="picker-text {{orderCategoryIndex === 0 ? 'placeholder' : ''}}">
+            {{orderCategories[orderCategoryIndex]}}
+          </text>
+        </view>
+      </picker>
+    </view>
+
+    <!-- 责任方 -->
+    <view class="card">
+      <view class="card-label-required">
+        <text class="star">*</text>
+        <text class="label">责任方</text>
+      </view>
+      <picker mode="selector" range="{{responsibleParties}}" value="{{responsiblePartyIndex}}" bindchange="onResponsiblePartyChange">
+        <view class="card-picker">
+          <text class="picker-text {{responsiblePartyIndex === 0 ? 'placeholder' : ''}}">
+            {{responsibleParties[responsiblePartyIndex]}}
+          </text>
+        </view>
+      </picker>
+    </view>
+
+    <!-- 优先级 -->
+    <view class="card">
+      <view class="card-label-required">
+        <text class="star">*</text>
+        <text class="label">优先级</text>
+      </view>
+      <view class="priority-row">
+        <view
+          wx:for="{{priorityOptions}}"
+          wx:key="key"
+          class="priority-btn {{selectedPriority === item.key ? 'active-' + item.color : ''}}"
+          bindtap="onPrioritySelect"
+          data-key="{{item.key}}"
+        >
+          <text class="priority-text">{{item.label}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 日期时间 -->
+    <view class="card">
+      <view class="card-label-required">
+        <text class="star">*</text>
+        <text class="label">日期时间</text>
+      </view>
+      <view class="datetime-display" bindtap="showDateTimePicker">
+        <text class="datetime-text">{{displayDateTime}}</text>
+        <text class="datetime-text">{{reportTime}}</text>
+      </view>
+    </view>
+
+    <!-- 问题描述 -->
+    <view class="card card-textarea">
+      <view class="card-label-required">
+        <text class="star">*</text>
+        <text class="label">问题描述</text>
+      </view>
+      <textarea
+        class="textarea-box"
+        placeholder="请详细描述遇到的问题，包括故障现象、影响范围等..."
+        value="{{description}}"
+        bindinput="onDescriptionInput"
+        maxlength="80"
+      />
+    </view>
+
+    <!-- 现场照片 -->
+    <view class="card card-photos">
+      <view class="photos-header">
+        <view class="card-label-required">
+          <text class="star">*</text>
+          <text class="label">现场照片</text>
+        </view>
+        <text class="photos-tip">最多3张</text>
+      </view>
+      <view class="photos-row">
+        <view wx:for="{{uploadedPhotos}}" wx:key="index" class="photo-box">
+          <view wx:if="{{item}}" class="photo-preview">
+            <image class="photo-img" src="{{item}}" mode="aspectFill" bindtap="handlePhotoPreview" data-index="{{index}}" />
+            <view class="photo-del" bindtap="handleRemovePhoto" data-index="{{index}}">
+              <text class="del-text">×</text>
+            </view>
+          </view>
+          <view wx:else class="photo-add" bindtap="handlePhotoUpload" data-index="{{index}}">
+            <text class="add-plus">+</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 备注 -->
+    <view class="card card-textarea">
+      <view class="card-label-wrapper">
+        <text class="label">备注</text>
+      </view>
+      <textarea
+        class="textarea-box textarea-box-remark"
+        placeholder="请填写备注信息（非必填）"
+        value="{{remark}}"
+        bindinput="onRemarkInput"
+        maxlength="30"
+      />
+    </view>
+  </view>
+
+  <!-- 底部按钮 -->
+  <view class="bottom-btns">
+    <view class="btn-cancel" bindtap="goBack">
+      <text class="btn-cancel-text">取消</text>
+    </view>
+    <view class="btn-submit" bindtap="handleSubmit">
+      <text class="btn-submit-text">提交工单</text>
+    </view>
+  </view>
+
+  <!-- 日期时间选择弹窗 -->
+  <view wx:if="{{isDateTimePickerOpen}}" class="modal-overlay" catchtap="closeDateTimePicker">
+    <view class="modal-content" catchtap="stopPropagation">
+      <view class="modal-header">
+        <text class="modal-title">选择日期时间</text>
+      </view>
+
+      <view class="datetime-picker-content">
+        <view class="picker-row">
+          <text class="picker-label">日期</text>
+          <picker mode="date" value="{{tempDate}}" bindchange="onTempDateChange">
+            <view class="datetime-picker-display">
+              <text class="datetime-picker-text">{{tempDate || '请选择日期'}}</text>
+            </view>
+          </picker>
+        </view>
+        <view class="picker-row">
+          <text class="picker-label">时间</text>
+          <picker mode="time" value="{{tempTime}}" bindchange="onTempTimeChange">
+            <view class="datetime-picker-display">
+              <text class="datetime-picker-text">{{tempTime || '请选择时间'}}</text>
+            </view>
+          </picker>
+        </view>
+      </view>
+
+      <view class="modal-actions">
+        <view class="modal-button modal-button-cancel" bindtap="cancelDateTimePicker">
+          <text class="modal-button-text">取消</text>
+        </view>
+        <view class="modal-button modal-button-confirm" bindtap="confirmDateTimePicker">
+          <text class="modal-button-text modal-button-text-white">确定</text>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

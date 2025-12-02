@@ -1,0 +1,8 @@
+{
+  "navigationBarTitleText": "审计日志",
+  "navigationBarBackgroundColor": "#14AB80",
+  "navigationBarTextStyle": "white",
+  "enablePullDownRefresh": false,
+  "backgroundColor": "#F7F7F7",
+  "usingComponents": {}
+}

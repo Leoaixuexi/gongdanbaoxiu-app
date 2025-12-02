@@ -1,0 +1,178 @@
+/* components/work-order-stepper/index.wxss */
+
+/* 主容器 */
+.stepper-container {
+  background-color: #ffffff;
+  border-radius: 32rpx;
+  padding: 40rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* 步骤指示器包装器 */
+.stepper-wrapper {
+  position: relative;
+  margin-bottom: 32rpx;
+}
+
+.stepper-items {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  position: relative;
+  z-index: 0;
+}
+
+/* 单个步骤项 */
+.stepper-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+}
+
+/* 文本标签容器 */
+.label-container {
+  height: 48rpx;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  margin-bottom: 16rpx;
+  width: 100%;
+}
+
+/* 文本标签 */
+.label {
+  white-space: nowrap;
+  line-height: 1;
+  transition: all 0.2s;
+}
+
+.label-active {
+  color: #0CA77D;
+  font-size: 24rpx;
+  font-weight: bold;
+}
+
+.label-inactive {
+  color: #9ca3af;
+  font-size: 20rpx;
+}
+
+/* 指示器容器 */
+.indicator-container {
+  height: 48rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  position: relative;
+}
+
+/* 连接线 */
+.connecting-line {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  left: calc(50% + 20rpx);
+  width: calc(100% - 40rpx);
+  height: 4rpx;
+}
+
+.line-active {
+  background-color: #0CA77D;
+}
+
+.line-inactive {
+  background-color: #e5e7eb;
+}
+
+/* 指示器圆点 */
+.dot {
+  position: relative;
+  z-index: 10;
+  border-radius: 50%;
+}
+
+/* 已完成的圆点 */
+.dot-completed {
+  width: 20rpx;
+  height: 20rpx;
+  background-color: #0CA77D;
+}
+
+/* 当前步骤的圆点（带对勾） */
+.dot-current {
+  width: 40rpx;
+  height: 40rpx;
+  background-color: #E8F5F1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 对勾图标 */
+.check-icon {
+  font-size: 20rpx;
+  color: #0CA77D;
+  font-weight: bold;
+  line-height: 1;
+}
+
+/* 未来步骤的圆点 */
+.dot-future {
+  width: 20rpx;
+  height: 20rpx;
+  background-color: #e5e7eb;
+}
+
+/* 主状态文本容器 */
+.status-text-container {
+  text-align: center;
+  margin-bottom: 24rpx;
+}
+
+.status-text {
+  font-size: 40rpx;
+  font-weight: bold;
+  color: #1F2937;
+  letter-spacing: -0.5rpx;
+}
+
+/* 时长标签容器 */
+.duration-container {
+  display: flex;
+  justify-content: center;
+}
+
+/* 时长标签 */
+.duration-pill {
+  background-color: #fff7ed;
+  padding: 12rpx 32rpx;
+  border-radius: 9999rpx;
+  border: 2rpx solid #ffedd5;
+  box-shadow: 0 2rpx 4rpx 0 rgba(0, 0, 0, 0.05);
+  position: relative;
+}
+
+/* 时长标签上的小三角箭头 */
+.duration-arrow {
+  position: absolute;
+  top: -10rpx;
+  left: 50%;
+  transform: translateX(-50%) rotate(45deg);
+  width: 20rpx;
+  height: 20rpx;
+  background-color: #fff7ed;
+  border-top: 2rpx solid #ffedd5;
+  border-left: 2rpx solid #ffedd5;
+}
+
+.duration-text {
+  color: #ea580c;
+  font-weight: bold;
+  font-size: 28rpx;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}

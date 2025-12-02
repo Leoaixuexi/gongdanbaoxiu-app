@@ -1,0 +1,413 @@
+/* Duplicate Work Orders Page - Apple Design Style */
+
+/* ==================== Container ==================== */
+.container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: var(--color-bg-secondary);
+}
+
+/* ==================== Search Section ==================== */
+.search-section {
+  background: linear-gradient(135deg, #007AFF 0%, #5AC8FA 100%);
+  padding: var(--spacing-lg);
+  padding-top: calc(var(--spacing-lg) + constant(safe-area-inset-top));
+  padding-top: calc(var(--spacing-lg) + env(safe-area-inset-top));
+  box-shadow: var(--shadow-md);
+}
+
+.criteria-card {
+  background-color: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(40rpx);
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-xl);
+}
+
+.criteria-title {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-lg);
+}
+
+.criteria-item {
+  margin-bottom: var(--spacing-xl);
+}
+
+.criteria-item:last-child {
+  margin-bottom: 0;
+}
+
+.criteria-label {
+  display: block;
+  font-size: var(--font-size-base);
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-md);
+  font-weight: var(--font-weight-semibold);
+}
+
+.date-inputs {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.date-picker {
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-md) var(--spacing-lg);
+  background-color: var(--color-bg-primary);
+  border: 2rpx solid var(--color-border);
+  border-radius: var(--radius-lg);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+  transition: all var(--transition-base);
+}
+
+.date-picker:active {
+  border-color: var(--color-primary);
+  background-color: white;
+  transform: scale(0.98);
+}
+
+.date-separator {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-tertiary);
+  font-weight: var(--font-weight-medium);
+}
+
+.search-btn {
+  width: 100%;
+  margin-top: var(--spacing-lg);
+  padding: var(--spacing-md);
+  background-color: var(--color-primary);
+  color: white;
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  border: none;
+  box-shadow: 0 4rpx 12rpx rgba(0, 122, 255, 0.3);
+  transition: all var(--transition-base);
+}
+
+.search-btn:active {
+  transform: scale(0.96);
+  box-shadow: 0 2rpx 8rpx rgba(0, 122, 255, 0.2);
+}
+
+/* ==================== Results Scroll ==================== */
+.results-scroll {
+  flex: 1;
+  overflow-y: auto;
+}
+
+/* ==================== Empty State ==================== */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-3xl) 0;
+  min-height: 60vh;
+}
+
+.empty-icon {
+  width: 240rpx;
+  height: 240rpx;
+  opacity: 0.4;
+  margin-bottom: var(--spacing-xl);
+}
+
+.empty-text {
+  font-size: var(--font-size-lg);
+  color: var(--color-text-secondary);
+  font-weight: var(--font-weight-medium);
+}
+
+/* ==================== Groups Container ==================== */
+.groups-container {
+  padding: var(--spacing-lg);
+  padding-bottom: calc(var(--spacing-lg) + constant(safe-area-inset-bottom));
+  padding-bottom: calc(var(--spacing-lg) + env(safe-area-inset-bottom));
+}
+
+.results-header {
+  margin-bottom: var(--spacing-lg);
+  padding: var(--spacing-md) var(--spacing-lg);
+  background-color: rgba(0, 122, 255, 0.1);
+  border-radius: var(--radius-lg);
+  border-left: 4rpx solid var(--color-primary);
+}
+
+.results-count {
+  font-size: var(--font-size-base);
+  color: var(--color-primary);
+  font-weight: var(--font-weight-semibold);
+}
+
+/* ==================== Duplicate Group ==================== */
+.duplicate-group {
+  background-color: var(--color-bg-elevated);
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-xl);
+  margin-bottom: var(--spacing-lg);
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-base);
+}
+
+.group-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-lg);
+  padding-bottom: var(--spacing-md);
+  border-bottom: 1rpx solid var(--color-border);
+}
+
+.group-title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.group-count {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-tertiary);
+  font-weight: var(--font-weight-medium);
+  padding: var(--spacing-xs) var(--spacing-md);
+  background-color: rgba(0, 122, 255, 0.1);
+  border-radius: var(--radius-full);
+  color: var(--color-primary);
+}
+
+/* ==================== Work Order Card ==================== */
+.work-order {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-md);
+  padding: var(--spacing-lg);
+  background-color: var(--color-bg-primary);
+  border: 2rpx solid var(--color-border);
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--spacing-md);
+  transition: all var(--transition-base);
+}
+
+.work-order:active {
+  background-color: var(--color-bg-secondary);
+  transform: scale(0.98);
+}
+
+.primary-order {
+  background-color: rgba(52, 199, 89, 0.08);
+  border: 2rpx solid var(--color-success);
+  box-shadow: 0 2rpx 8rpx rgba(52, 199, 89, 0.15);
+}
+
+/* ==================== Order Badges ==================== */
+.order-badge {
+  padding: var(--spacing-xs) var(--spacing-md);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-xs);
+  color: white;
+  white-space: nowrap;
+  font-weight: var(--font-weight-semibold);
+}
+
+.order-badge.primary {
+  background: linear-gradient(135deg, #34C759 0%, #30D158 100%);
+  box-shadow: 0 2rpx 8rpx rgba(52, 199, 89, 0.3);
+}
+
+.order-badge.duplicate {
+  background: linear-gradient(135deg, #8E8E93 0%, #AEAEB2 100%);
+}
+
+/* ==================== Similarity Indicator ==================== */
+.similarity-indicator {
+  padding: var(--spacing-xs) var(--spacing-md);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  color: white;
+  white-space: nowrap;
+}
+
+.similarity-indicator.similarity-high {
+  background: linear-gradient(135deg, #34C759 0%, #30D158 100%);
+}
+
+.similarity-indicator.similarity-medium {
+  background: linear-gradient(135deg, #FF9500 0%, #FF9F0A 100%);
+}
+
+.similarity-indicator.similarity-low {
+  background: linear-gradient(135deg, #FF3B30 0%, #FF453A 100%);
+}
+
+/* ==================== Order Info ==================== */
+.order-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.order-id {
+  font-size: var(--font-size-base);
+  color: var(--color-text-primary);
+  font-weight: var(--font-weight-semibold);
+}
+
+.order-location,
+.order-fault,
+.order-time {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  font-weight: var(--font-weight-medium);
+}
+
+/* ==================== Similarity Breakdown ==================== */
+.similarity-breakdown {
+  display: flex;
+  gap: var(--spacing-lg);
+  margin-top: var(--spacing-sm);
+  flex-wrap: wrap;
+}
+
+.breakdown-item {
+  display: flex;
+  gap: var(--spacing-xs);
+  font-size: var(--font-size-xs);
+}
+
+.breakdown-label {
+  color: var(--color-text-tertiary);
+  font-weight: var(--font-weight-medium);
+}
+
+.breakdown-value {
+  color: var(--color-success);
+  font-weight: var(--font-weight-semibold);
+}
+
+/* ==================== Order Actions ==================== */
+.order-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.mini-btn {
+  padding: var(--spacing-sm) var(--spacing-lg);
+  font-size: var(--font-size-sm);
+  border-radius: var(--radius-full);
+  border: 2rpx solid var(--color-border);
+  background-color: var(--color-bg-elevated);
+  color: var(--color-text-primary);
+  font-weight: var(--font-weight-semibold);
+  transition: all var(--transition-base);
+  white-space: nowrap;
+}
+
+.mini-btn:active {
+  transform: scale(0.95);
+  background-color: var(--color-bg-secondary);
+}
+
+.mini-btn.primary {
+  background: linear-gradient(135deg, #007AFF 0%, #5AC8FA 100%);
+  color: white;
+  border-color: transparent;
+  box-shadow: 0 2rpx 8rpx rgba(0, 122, 255, 0.3);
+}
+
+.mini-btn.primary:active {
+  box-shadow: 0 1rpx 4rpx rgba(0, 122, 255, 0.2);
+}
+
+.mini-btn.warn {
+  background: linear-gradient(135deg, #FF9500 0%, #FF9F0A 100%);
+  color: white;
+  border-color: transparent;
+  box-shadow: 0 2rpx 8rpx rgba(255, 149, 0, 0.3);
+}
+
+.mini-btn.warn:active {
+  box-shadow: 0 1rpx 4rpx rgba(255, 149, 0, 0.2);
+}
+
+/* ==================== Group Actions ==================== */
+.group-actions {
+  display: flex;
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-md);
+  padding-top: var(--spacing-md);
+  border-top: 1rpx solid var(--color-border);
+}
+
+.action-btn {
+  flex: 1;
+  margin: 0;
+  padding: var(--spacing-md);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  transition: all var(--transition-base);
+}
+
+.action-btn.primary {
+  background: linear-gradient(135deg, #007AFF 0%, #5AC8FA 100%);
+  color: white;
+  border: none;
+  box-shadow: 0 4rpx 12rpx rgba(0, 122, 255, 0.3);
+}
+
+.action-btn.primary:active {
+  transform: scale(0.96);
+  box-shadow: 0 2rpx 8rpx rgba(0, 122, 255, 0.2);
+}
+
+.action-btn.secondary {
+  background-color: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+  border: 2rpx solid var(--color-border);
+}
+
+.action-btn.secondary:active {
+  transform: scale(0.96);
+  background-color: var(--color-bg-tertiary);
+}
+
+/* ==================== Loading State ==================== */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-3xl) 0;
+  min-height: 60vh;
+}
+
+.loading-spinner {
+  width: 80rpx;
+  height: 80rpx;
+  border: 4rpx solid rgba(0, 122, 255, 0.2);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading-text {
+  margin-top: var(--spacing-lg);
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+  font-weight: var(--font-weight-medium);
+}

@@ -1,0 +1,39 @@
+<!--pages/avatar/avatar.wxml-->
+<view class="container">
+  <!-- 头像预览区域 -->
+  <view class="preview-section">
+    <view class="avatar-glow-wrapper">
+      <view class="avatar-container premium-shadow">
+        <image
+          class="avatar-preview"
+          src="{{preview}}"
+          mode="aspectFill"
+        />
+        <button class="camera-btn bg-primary" bindtap="chooseImage">
+          <text class="camera-icon">📷</text>
+        </button>
+      </view>
+    </view>
+
+    <!-- 选择按钮 -->
+    <button class="choose-btn bg-card premium-shadow-sm" bindtap="chooseImage">
+      <view class="choose-icon-wrapper">
+        <text class="choose-icon">🖼️</text>
+      </view>
+      <view class="choose-text-wrapper">
+        <text class="choose-title text-foreground">选择新头像</text>
+        <text class="choose-desc text-muted-foreground">支持 JPG、PNG 格式</text>
+      </view>
+    </button>
+  </view>
+
+  <!-- 底部按钮 -->
+  <view class="bottom-actions">
+    <button class="action-btn cancel-btn bg-muted" bindtap="handleCancel">
+      <text class="text-muted-foreground">取消</text>
+    </button>
+    <button class="action-btn save-btn bg-primary" bindtap="saveAvatar">
+      <text class="text-white">保存</text>
+    </button>
+  </view>
+</view>

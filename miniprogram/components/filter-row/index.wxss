@@ -1,0 +1,43 @@
+.filter-row {
+  width: 100%;
+  height: 96rpx;
+  border-radius: 24rpx;
+  background: #f9fafb;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 32rpx;
+  margin-bottom: 24rpx;
+  box-shadow: inset 0 0 0 2rpx rgba(229, 231, 235, 0.9);
+  box-sizing: border-box;
+}
+
+.label {
+  font-size: 26rpx;
+  color: #1f2937;
+  font-weight: 500;
+}
+
+.info {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.placeholder {
+  font-size: 24rpx;
+  color: #9ca3af;
+}
+
+.value {
+  font-size: 24rpx;
+  color: #111827;
+}
+
+.arrow {
+  width: 24rpx;
+  height: 24rpx;
+  border-top: 4rpx solid #9ca3af;
+  border-right: 4rpx solid #9ca3af;
+  transform: rotate(45deg);
+}

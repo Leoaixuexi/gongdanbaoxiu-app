@@ -1,0 +1,252 @@
+<!--首页 - 工单列表界面(基于 Taro 设计)-->
+<view class="container">
+  <!-- 顶部固定区域 -->
+  <view class="sticky-header">
+    <!-- 绿色渐变头部 -->
+    <view class="header">
+      <!-- 搜索栏 -->
+      <view class="search-bar">
+        <view class="search-input-wrapper">
+          <view class="icon-search"></view>
+          <input
+            class="search-input"
+            placeholder="编号/楼层/位置/问题描述"
+            value="{{searchText}}"
+            bindinput="onSearchInput"
+          />
+          <view class="scan-button-inline" bindtap="handleScan">
+            <view class="icon-scan"></view>
+          </view>
+        </view>
+        <view class="icon-buttons">
+          <view class="filter-button" bindtap="handleFilter">
+            <view class="icon-filter"></view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 时间筛选标签 -->
+      <view class="time-tabs">
+        <view
+          class="time-tab {{activeTab === 'today' ? 'time-tab-active' : ''}}"
+          bindtap="handleTabChange"
+          data-tab="today"
+        >
+          <text class="time-tab-text {{activeTab === 'today' ? 'time-tab-text-active' : ''}}">今日</text>
+        </view>
+        <view
+          class="time-tab {{activeTab === 'week' ? 'time-tab-active' : ''}}"
+          bindtap="handleTabChange"
+          data-tab="week"
+        >
+          <text class="time-tab-text {{activeTab === 'week' ? 'time-tab-text-active' : ''}}">本周</text>
+        </view>
+        <view
+          class="time-tab {{activeTab === 'month' ? 'time-tab-active' : ''}}"
+          bindtap="handleTabChange"
+          data-tab="month"
+        >
+          <text class="time-tab-text {{activeTab === 'month' ? 'time-tab-text-active' : ''}}">本月</text>
+        </view>
+        <view
+          class="time-tab {{activeTab === 'date' ? 'time-tab-active' : ''}}"
+          bindtap="handleTabChange"
+          data-tab="date"
+        >
+          <text class="time-tab-text {{activeTab === 'date' ? 'time-tab-text-active' : ''}}">按日期</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 状态标签 -->
+    <view class="status-tabs">
+      <scroll-view scroll-x class="status-scroll" enhanced="{{true}}" show-scrollbar="{{false}}">
+        <view class="status-tabs-inner">
+          <view
+            class="status-tab {{activeStatus === 'reported' ? 'status-tab-active status-tab-reported' : ''}}"
+            bindtap="handleStatusChange"
+            data-status="reported"
+          >
+            <text class="status-tab-text {{activeStatus === 'reported' ? 'status-tab-text-active' : ''}}">已提报</text>
+          </view>
+          <view
+            class="status-tab {{activeStatus === 'maintenance' ? 'status-tab-active status-tab-maintenance' : ''}}"
+            bindtap="handleStatusChange"
+            data-status="maintenance"
+          >
+            <text class="status-tab-text {{activeStatus === 'maintenance' ? 'status-tab-text-active' : ''}}">维修中</text>
+          </view>
+          <view
+            class="status-tab {{activeStatus === 'review' ? 'status-tab-active status-tab-review' : ''}}"
+            bindtap="handleStatusChange"
+            data-status="review"
+          >
+            <text class="status-tab-text {{activeStatus === 'review' ? 'status-tab-text-active' : ''}}">待复核</text>
+          </view>
+          <view
+            class="status-tab {{activeStatus === 'completed' ? 'status-tab-active status-tab-completed' : ''}}"
+            bindtap="handleStatusChange"
+            data-status="completed"
+          >
+            <text class="status-tab-text {{activeStatus === 'completed' ? 'status-tab-text-active' : ''}}">已完成</text>
+          </view>
+        </view>
+      </scroll-view>
+    </view>
+  </view>
+
+  <!-- 工单列表 -->
+  <view class="order-list">
+    <block wx:if="{{!loading && workOrders.length > 0}}">
+      <view
+        wx:for="{{workOrders}}"
+        wx:key="index"
+        class="ticket-card"
+        bindtap="navigateToDetail"
+        data-id="{{item.order_id}}"
+      >
+        <!-- 状态标签 - 绝对定位到右上角 -->
+        <view class="status-badge {{item.statusClass}}">
+          {{item.statusText}}
+        </view>
+
+        <!-- 标题: ID 和紧急标签 -->
+        <view class="ticket-header">
+          <view class="ticket-id-row">
+            <text class="ticket-id">{{item.order_id || item.id}}</text>
+            <view wx:if="{{item.priority === 'Emergency'}}" class="urgent-badge">紧急</view>
+            <view wx:elif="{{item.is_overdue}}" class="urgent-badge overdue-badge">超期</view>
+          </view>
+        </view>
+
+        <!-- 描述框 -->
+        <view class="description-box">
+          {{item.description || '无描述'}}
+        </view>
+
+        <!-- 元数据布局: 两列 -->
+        <view class="metadata-row">
+          <!-- 左列: 位置 & 时间 -->
+          <view class="metadata-col">
+            <view class="metadata-item">
+              <view class="icon icon-location"></view>
+              <text class="metadata-text">{{item.floor}}</text>
+              <text class="location-separator"></text>
+              <text class="metadata-text">{{item.location}}</text>
+            </view>
+            <view class="metadata-item">
+              <view class="icon icon-time"></view>
+              <text class="metadata-text">{{item.created_at}}</text>
+            </view>
+          </view>
+
+          <!-- 右列: 提报人 & 类别 -->
+          <view class="metadata-col metadata-col-right">
+            <view class="metadata-item">
+              <view class="icon icon-person"></view>
+              <text class="metadata-text">{{item.submitter_name || '未知'}}</text>
+            </view>
+            <view class="metadata-item">
+              <view class="icon icon-building"></view>
+              <text class="metadata-text">{{item.fault_type_name || '未分类'}}</text>
+            </view>
+          </view>
+        </view>
+
+        <!-- 照片列表 -->
+        <view class="photo-list">
+          <view wx:for="{{[0,1,2]}}" wx:key="index" wx:for-item="photoIndex" class="photo-placeholder">
+            <image
+              wx:if="{{item.photos && item.photos[photoIndex]}}"
+              src="{{item.photos[photoIndex]}}"
+              class="photo-image"
+              mode="aspectFill"
+            />
+            <view wx:else class="photo-empty">
+              <text class="photo-label">照片</text>
+              <view class="photo-icon-wrapper">
+                <text class="photo-icon">🖼️</text>
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+    </block>
+
+    <!-- Loading State -->
+    <view class="loading-state" wx:if="{{loading}}">
+      <view class="weui-loadmore">
+        <view class="weui-loading"></view>
+        <view class="weui-loadmore__tips">加载中...</view>
+      </view>
+    </view>
+
+    <!-- Empty State -->
+    <view class="empty-state" wx:if="{{!loading && workOrders.length === 0}}">
+      <text class="empty-icon">📋</text>
+      <text class="empty-text">暂无工单记录</text>
+      <view class="empty-btn" bindtap="navigateToNewOrder">
+        <text class="empty-btn-text">提交工单</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 日期选择弹窗 -->
+  <view wx:if="{{isDatePickerOpen}}" class="modal-overlay" catchtap="closeDatePicker">
+    <view class="modal-content" catchtap="stopPropagation">
+      <view class="date-picker-content">
+        <picker mode="date" value="{{startDate}}" bindchange="onStartDateChange">
+          <view class="date-display">
+            <text class="date-text">{{startDate || '请选择开始日期'}}</text>
+          </view>
+        </picker>
+        <text class="date-separator">至</text>
+        <picker mode="date" value="{{endDate}}" bindchange="onEndDateChange">
+          <view class="date-display">
+            <text class="date-text">{{endDate || '请选择结束日期'}}</text>
+          </view>
+        </picker>
+      </view>
+
+      <view class="modal-actions">
+        <view class="modal-button modal-button-cancel" bindtap="cancelDatePicker">
+          <text class="modal-button-text">取消</text>
+        </view>
+        <view class="modal-button modal-button-confirm" bindtap="confirmDatePicker">
+          <text class="modal-button-text modal-button-text-white">确定</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 筛选弹窗 -->
+  <view wx:if="{{isFilterOpen}}" class="filter-layer">
+    <view class="backdrop" bindtap="handleBackdropTap"></view>
+    <view class="filter-sheet animate-slide-up">
+      <view class="sheet-header">
+        <text class="sheet-title">筛选</text>
+        <view class="icon-close" bindtap="closeFilterPanel"></view>
+      </view>
+      <scroll-view scroll-y="true" class="filter-body no-scrollbar" enhanced="{{true}}" show-scrollbar="{{false}}">
+        <block wx:for="{{filterRows}}" wx:key="id">
+          <filter-row
+            label="{{item.label}}"
+            has-arrow="{{item.hasArrow}}"
+            placeholder="{{item.placeholder}}"
+            value="{{item.value}}"
+          ></filter-row>
+        </block>
+        <view class="space"></view>
+      </scroll-view>
+      <view class="sheet-footer">
+        <button class="btn reset" bindtap="handleReset">重置</button>
+        <button class="btn confirm" bindtap="handleConfirm">确定</button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 浮动按钮 -->
+  <view class="fab" bindtap="navigateToNewOrder">
+    <text class="fab-icon">+</text>
+  </view>
+</view>

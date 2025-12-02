@@ -1,0 +1,491 @@
+/* 提交工单页面 - 独立卡片布局 */
+
+.submit-container {
+  min-height: 100vh;
+  background-color: #F5F5F5;
+  padding-bottom: 200rpx;
+}
+
+/* 表单卡片容器 */
+.form-cards {
+  padding: 24rpx 32rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+/* 单个卡片 */
+.card {
+  background-color: white;
+  border-radius: 16rpx;
+  padding: 20rpx 28rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 70rpx;
+}
+
+/* 标签 */
+.card-label {
+  font-size: 30rpx;
+  color: #333;
+  line-height: 30rpx;
+  height: 30rpx;
+}
+
+.card-label-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  flex-shrink: 0;
+  line-height: 30rpx;
+  height: 30rpx;
+  min-width: 128rpx;
+}
+
+.card-label-required {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  flex-shrink: 0;
+  line-height: 30rpx;
+  height: 30rpx;
+  min-width: 128rpx;
+}
+
+.star {
+  color: #FF3B30;
+  font-size: 30rpx;
+  line-height: 30rpx;
+}
+
+.label {
+  font-size: 30rpx;
+  color: #1F1F1F;
+  line-height: 30rpx;
+  height: 30rpx;
+  font-weight: 500;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+/* 右侧内容区 */
+.card-right {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  flex: 1;
+  justify-content: flex-end;
+}
+
+/* 输入框 */
+.card-input {
+  flex: 1;
+  font-size: 30rpx;
+  color: #333;
+  text-align: right;
+  line-height: 30rpx;
+  min-height: 30rpx;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+.card-input::placeholder {
+  color: #CCCCCC !important;
+  font-size: 30rpx;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+.card-input[disabled] {
+  background-color: transparent;
+  color: #CCCCCC;
+}
+
+.card-input[disabled]::placeholder {
+  color: #CCCCCC !important;
+  font-size: 30rpx;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+/* 扫描图标 */
+.scan-icon {
+  width: 48rpx;
+  height: 48rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.scan-icon-img {
+  width: 40rpx;
+  height: 40rpx;
+}
+
+/* 选择器 */
+picker {
+  flex: 1;
+}
+
+.card-picker {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  justify-content: flex-end;
+}
+
+.picker-text {
+  font-size: 30rpx;
+  color: #333;
+  line-height: 1.2;
+  transform: translateY(-16rpx);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+.picker-text.placeholder {
+  color: #CCCCCC;
+  font-size: 30rpx;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+.arrow {
+  font-size: 36rpx;
+  color: #CCCCCC;
+  font-weight: 300;
+  line-height: 1;
+  transform: translateY(-12rpx);
+}
+
+/* 优先级按钮行 - 水平布局 */
+.priority-row {
+  display: flex;
+  gap: 12rpx;
+}
+
+.priority-btn {
+  width: 64rpx;
+  height: 56rpx;
+  background-color: #F5F5F5;
+  border-radius: 8rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.priority-btn.active-green {
+  background-color: #34C759;
+}
+
+.priority-btn.active-yellow {
+  background-color: #FFCC00;
+}
+
+.priority-btn.active-orange {
+  background-color: #FF9500;
+}
+
+.priority-btn.active-red {
+  background-color: #FF3B30;
+}
+
+.priority-text {
+  font-size: 26rpx;
+  color: #666;
+}
+
+.priority-btn.active-green .priority-text,
+.priority-btn.active-yellow .priority-text,
+.priority-btn.active-orange .priority-text,
+.priority-btn.active-red .priority-text {
+  color: white;
+}
+
+/* 日期时间显示 */
+.datetime-display {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.datetime-text {
+  font-size: 30rpx;
+  color: #333;
+}
+
+.datetime-text:first-child {
+  margin-right: 8rpx;
+}
+
+/* 问题描述卡片 */
+.card-textarea {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 24rpx;
+}
+
+.textarea-box {
+  width: 100%;
+  min-height: 140rpx;
+  font-size: 30rpx;
+  color: #333;
+  line-height: 1.6;
+  background-color: #FAFAFA;
+  border: 1rpx solid #F0E6D3;
+  border-radius: 8rpx;
+  padding: 24rpx;
+  box-sizing: border-box;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+.textarea-box::placeholder {
+  color: #CCCCCC;
+  font-size: 30rpx;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+.textarea-box-remark {
+  min-height: 130rpx;
+  height: 130rpx;
+}
+
+/* 现场照片卡片 */
+.card-photos {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 24rpx;
+}
+
+.photos-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.photos-tip {
+  font-size: 26rpx;
+  color: #999;
+}
+
+.photos-row {
+  width: 100%;
+  display: flex;
+  gap: 20rpx;
+  justify-content: center;
+  align-items: center;
+}
+
+.photo-box {
+  width: 160rpx;
+  height: 160rpx;
+  flex-shrink: 0;
+}
+
+.photo-preview {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  border-radius: 8rpx;
+  overflow: hidden;
+}
+
+.photo-img {
+  width: 100%;
+  height: 100%;
+}
+
+.photo-del {
+  position: absolute;
+  top: 8rpx;
+  right: 8rpx;
+  width: 36rpx;
+  height: 36rpx;
+  background-color: rgba(0, 0, 0, 0.5);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.del-text {
+  font-size: 28rpx;
+  color: white;
+  line-height: 1;
+}
+
+.photo-add {
+  width: 100%;
+  height: 100%;
+  background-color: #F5F5F5;
+  border: 2rpx dashed #DDDDDD;
+  border-radius: 8rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.add-plus {
+  font-size: 56rpx;
+  color: #CCCCCC;
+  line-height: 1;
+  font-weight: 300;
+}
+
+/* 底部按钮 */
+.bottom-btns {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: white;
+  padding: 24rpx 32rpx;
+  padding-bottom: calc(24rpx + env(safe-area-inset-bottom));
+  box-shadow: 0 -2rpx 16rpx rgba(0, 0, 0, 0.05);
+  display: flex;
+  gap: 24rpx;
+}
+
+.btn-cancel {
+  flex: 1;
+  height: 88rpx;
+  background-color: white;
+  border: 1rpx solid #DDDDDD;
+  border-radius: 12rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-cancel-text {
+  font-size: 30rpx;
+  color: #666;
+}
+
+.btn-submit {
+  flex: 1;
+  height: 88rpx;
+  background-color: #0CA77D;
+  border-radius: 12rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4rpx 12rpx rgba(12, 167, 125, 0.3);
+}
+
+.btn-submit-text {
+  font-size: 30rpx;
+  color: white;
+  font-weight: 500;
+}
+
+/* 日期时间选择弹窗 */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.modal-content {
+  width: 100%;
+  background-color: white;
+  border-radius: 32rpx 32rpx 0 0;
+  padding: 32rpx;
+  animation: slide-up 0.3s ease-out;
+}
+
+@keyframes slide-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 48rpx;
+}
+
+.modal-title {
+  font-size: 36rpx;
+  font-weight: 500;
+  color: #333;
+}
+
+.datetime-picker-content {
+  margin-bottom: 64rpx;
+}
+
+.picker-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24rpx 0;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.picker-row:last-child {
+  border-bottom: none;
+}
+
+.picker-label {
+  font-size: 32rpx;
+  color: #333;
+  font-weight: 500;
+}
+
+.datetime-picker-display {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+  padding: 16rpx 24rpx;
+  background-color: #f9fafb;
+  border-radius: 12rpx;
+  margin-left: 32rpx;
+}
+
+.datetime-picker-text {
+  font-size: 30rpx;
+  color: #333;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 32rpx;
+}
+
+.modal-button {
+  flex: 1;
+  height: 88rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 16rpx;
+}
+
+.modal-button-cancel {
+  background-color: white;
+  border: 1rpx solid #DDDDDD;
+}
+
+.modal-button-confirm {
+  background-color: #0CA77D;
+}
+
+.modal-button-text {
+  font-size: 32rpx;
+  font-weight: 500;
+  color: #666;
+}
+
+.modal-button-text-white {
+  color: white;
+}

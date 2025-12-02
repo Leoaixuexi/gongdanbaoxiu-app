@@ -1,0 +1,267 @@
+/* Property Submitted Orders List - Apple Design Style */
+
+/* ==================== Container ==================== */
+.container {
+  min-height: 100vh;
+  background-color: var(--color-bg-secondary);
+  padding-bottom: constant(safe-area-inset-bottom);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* ==================== Page Header ==================== */
+.page-header {
+  background: linear-gradient(135deg, #007AFF 0%, #5AC8FA 100%);
+  padding: var(--spacing-xl) var(--spacing-lg);
+  padding-top: calc(var(--spacing-xl) + constant(safe-area-inset-top));
+  padding-top: calc(var(--spacing-xl) + env(safe-area-inset-top));
+}
+
+.page-title {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: white;
+  margin-bottom: var(--spacing-lg);
+}
+
+/* ==================== Filter Section ==================== */
+.filter-section {
+  display: flex;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+}
+
+.filter-picker {
+  flex: 1;
+  min-width: 200rpx;
+}
+
+.filter-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-md) var(--spacing-lg);
+  background-color: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(20rpx);
+  border-radius: var(--radius-lg);
+  font-size: var(--font-size-sm);
+  transition: all var(--transition-base);
+}
+
+.filter-content:active {
+  background-color: rgba(255, 255, 255, 0.35);
+  transform: scale(0.98);
+}
+
+.filter-label {
+  color: white;
+  font-weight: var(--font-weight-medium);
+}
+
+.filter-arrow {
+  font-size: var(--font-size-xs);
+  color: rgba(255, 255, 255, 0.8);
+  margin-left: var(--spacing-xs);
+}
+
+/* Overdue Filter */
+.overdue-filter {
+  margin-top: var(--spacing-md);
+}
+
+.overdue-checkbox {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm);
+  background-color: rgba(255, 255, 255, 0.15);
+  border-radius: var(--radius-md);
+}
+
+.checkbox-text {
+  font-size: var(--font-size-sm);
+  color: white;
+  font-weight: var(--font-weight-medium);
+}
+
+/* ==================== List Section ==================== */
+.list-section {
+  padding: var(--spacing-lg);
+}
+
+/* ==================== Loading State ==================== */
+.loading-state {
+  padding: var(--spacing-lg);
+}
+
+.skeleton-card {
+  background-color: var(--color-bg-elevated);
+  padding: var(--spacing-lg);
+  margin-bottom: var(--spacing-md);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+}
+
+.skeleton-header {
+  height: 48rpx;
+  width: 60%;
+  background: linear-gradient(90deg,
+    rgba(0, 122, 255, 0.08) 25%,
+    rgba(0, 122, 255, 0.12) 50%,
+    rgba(0, 122, 255, 0.08) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: var(--radius-md);
+  margin-bottom: var(--spacing-md);
+}
+
+.skeleton-line {
+  height: 32rpx;
+  width: 100%;
+  background: linear-gradient(90deg,
+    rgba(0, 122, 255, 0.05) 25%,
+    rgba(0, 122, 255, 0.08) 50%,
+    rgba(0, 122, 255, 0.05) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: var(--radius-md);
+  margin-bottom: var(--spacing-sm);
+}
+
+.skeleton-line.short {
+  width: 40%;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ==================== Load More ==================== */
+.load-more {
+  padding: var(--spacing-xl) 0;
+  text-align: center;
+}
+
+.weui-loadmore {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.weui-loading {
+  width: 60rpx;
+  height: 60rpx;
+  border: 4rpx solid rgba(0, 122, 255, 0.2);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.weui-loadmore__tips {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-tertiary);
+}
+
+.load-more-btn {
+  padding: var(--spacing-md) var(--spacing-2xl);
+  background-color: rgba(0, 122, 255, 0.1);
+  border-radius: var(--radius-full);
+  color: var(--color-primary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  display: inline-block;
+  transition: all var(--transition-base);
+}
+
+.load-more-btn:active {
+  background-color: rgba(0, 122, 255, 0.2);
+  transform: scale(0.96);
+}
+
+.no-more {
+  padding: var(--spacing-xl) 0;
+  text-align: center;
+}
+
+.no-more-text {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  font-weight: var(--font-weight-medium);
+}
+
+/* ==================== Empty State ==================== */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-3xl) var(--spacing-lg);
+  min-height: 60vh;
+}
+
+.empty-icon {
+  width: 240rpx;
+  height: 240rpx;
+  margin-bottom: var(--spacing-xl);
+  opacity: 0.5;
+}
+
+.empty-text {
+  font-size: var(--font-size-lg);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-2xl);
+  font-weight: var(--font-weight-medium);
+}
+
+.empty-btn {
+  min-width: 320rpx;
+  height: 88rpx;
+  border-radius: var(--radius-full);
+  background: linear-gradient(135deg, #007AFF 0%, #5AC8FA 100%);
+  color: white;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  border: none;
+  box-shadow: 0 4rpx 12rpx rgba(0, 122, 255, 0.3);
+  transition: all var(--transition-base);
+}
+
+.empty-btn:active {
+  transform: scale(0.96);
+}
+
+/* ==================== Floating Action Button ==================== */
+.fab {
+  position: fixed;
+  right: var(--spacing-lg);
+  bottom: calc(120rpx + constant(safe-area-inset-bottom));
+  bottom: calc(120rpx + env(safe-area-inset-bottom));
+  width: 112rpx;
+  height: 112rpx;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #007AFF 0%, #5AC8FA 100%);
+  box-shadow: 0 8rpx 24rpx rgba(0, 122, 255, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  transition: all var(--transition-base);
+}
+
+.fab:active {
+  transform: scale(0.92);
+}
+
+.fab-icon {
+  font-size: 64rpx;
+  color: white;
+  font-weight: 300;
+  line-height: 1;
+}

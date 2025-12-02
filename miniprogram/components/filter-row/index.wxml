@@ -1,0 +1,8 @@
+<view class="filter-row">
+  <text class="label">{{label}}</text>
+  <view class="info">
+    <text wx:if="{{placeholder && !value}}" class="placeholder">{{placeholder}}</text>
+    <text wx:if="{{value}}" class="value">{{value}}</text>
+    <view wx:if="{{hasArrow}}" class="arrow"></view>
+  </view>
+</view>

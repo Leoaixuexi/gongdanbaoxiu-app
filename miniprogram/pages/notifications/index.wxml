@@ -1,0 +1,75 @@
+<view class="notifications-container">
+  <!-- Header -->
+  <view class="page-header">
+    <text class="header-title">消息通知</text>
+    <view class="header-badge" wx:if="{{unreadCount > 0}}">
+      <text class="badge-text">{{unreadCount > 99 ? '99+' : unreadCount}}</text>
+    </view>
+  </view>
+
+  <!-- Tabs -->
+  <view class="tabs-container">
+    <view class="tabs">
+      <view
+        wx:for="{{tabs}}"
+        wx:key="index"
+        class="tab-item {{activeTab === index ? 'active' : ''}}"
+        data-index="{{index}}"
+        bindtap="switchTab"
+      >
+        <text class="tab-text">{{item.name}}</text>
+        <view wx:if="{{activeTab === index}}" class="tab-indicator"></view>
+      </view>
+    </view>
+
+    <!-- Mark All As Read Button -->
+    <view
+      wx:if="{{unreadCount > 0}}"
+      class="mark-all-btn"
+      bindtap="markAllAsRead"
+    >
+      <text class="mark-all-text">全部已读</text>
+    </view>
+  </view>
+
+  <!-- Loading -->
+  <view wx:if="{{loading}}" class="loading-container">
+    <view class="loading-spinner"></view>
+    <text class="loading-text">加载中...</text>
+  </view>
+
+  <!-- Notifications List -->
+  <view wx:elif="{{notifications.length > 0}}" class="notifications-list">
+    <view
+      wx:for="{{notifications}}"
+      wx:key="_id"
+      class="notification-item {{item.read ? 'read' : 'unread'}}"
+      data-notification="{{item}}"
+      bindtap="handleNotificationTap"
+    >
+      <!-- Unread Indicator -->
+      <view wx:if="{{!item.read}}" class="unread-dot"></view>
+
+      <!-- Content -->
+      <view class="notification-content">
+        <view class="notification-header">
+          <text class="notification-title">{{item.title}}</text>
+          <text class="notification-time">{{item.time_display}}</text>
+        </view>
+        <text class="notification-message">{{item.message}}</text>
+      </view>
+
+      <!-- Arrow Icon -->
+      <view class="notification-arrow">
+        <text class="arrow-icon">›</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- Empty State -->
+  <view wx:else class="empty-container">
+    <view class="empty-icon">🔔</view>
+    <text class="empty-text">暂无通知</text>
+    <text class="empty-hint">当有新消息时会在这里显示</text>
+  </view>
+</view>

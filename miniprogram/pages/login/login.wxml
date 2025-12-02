@@ -1,0 +1,98 @@
+<view class="container">
+  <!-- 动态背景层 -->
+  <view class="background-layer">
+    <!-- 6个呼吸光晕 -->
+    <view class="glow glow-1"></view>
+    <view class="glow glow-2"></view>
+    <view class="glow glow-3"></view>
+    <view class="glow glow-4"></view>
+    <view class="glow glow-5"></view>
+    <view class="glow glow-6"></view>
+  </view>
+
+  <!-- 登录卡片容器 -->
+  <view class="login-wrapper">
+    <view class="login-card">
+      <!-- 标题区域 -->
+      <view class="title-section">
+        <text class="title">小物业报修管理</text>
+        <text class="subtitle">欢迎登录</text>
+      </view>
+
+      <!-- 表单区域 -->
+      <view class="form-container">
+        <!-- 用户名输入框 -->
+        <view class="input-group">
+          <view class="input-icon">
+            <view class="icon-wrapper user-icon"></view>
+          </view>
+          <input
+            class="input-field"
+            type="text"
+            placeholder="请输入用户名"
+            placeholder-class="input-placeholder"
+            value="{{username}}"
+            bindinput="onUsernameInput"
+            confirm-type="next"
+          />
+        </view>
+
+        <!-- 密码输入框 -->
+        <view class="input-group">
+          <view class="input-icon">
+            <view class="icon-wrapper lock-icon"></view>
+          </view>
+          <input
+            class="input-field"
+            password="{{!showPassword}}"
+            placeholder="请输入密码"
+            placeholder-class="input-placeholder"
+            value="{{password}}"
+            bindinput="onPasswordInput"
+            confirm-type="done"
+            bindconfirm="handleLogin"
+          />
+          <view class="input-eye-icon" wx:if="{{password.length > 0}}" bindtap="togglePassword">
+            <view class="icon-wrapper {{showPassword ? 'eye-open-icon' : 'eye-close-icon'}}"></view>
+          </view>
+        </view>
+
+        <!-- 忘记密码 -->
+        <view class="forgot-section">
+          <text class="forgot-link" bindtap="handleForgotPassword">忘记密码</text>
+        </view>
+
+        <!-- 登录按钮 -->
+        <view class="login-button" bindtap="handleLogin">
+          <text class="button-text">登 录</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 测试账号区域 - 独立模块，位于页面底部 -->
+  <view class="test-accounts-section">
+    <text class="test-accounts-title">测试账号</text>
+    <view class="test-accounts-grid">
+      <!-- 系统管理员 -->
+      <view class="test-account-card" bindtap="fillTestAccount" data-username="admin" data-password="admin123">
+        <text class="test-account-role">系统管理员</text>
+      </view>
+
+      <!-- 物业经理 -->
+      <view class="test-account-card" bindtap="fillTestAccount" data-username="manager" data-password="manager123">
+        <text class="test-account-role">物业经理</text>
+      </view>
+
+      <!-- 维修员 -->
+      <view class="test-account-card" bindtap="fillTestAccount" data-username="technician" data-password="tech123">
+        <text class="test-account-role">维修员</text>
+      </view>
+
+      <!-- 巡检员 -->
+      <view class="test-account-card" bindtap="fillTestAccount" data-username="staff" data-password="staff123">
+        <text class="test-account-role">巡检员</text>
+      </view>
+    </view>
+  </view>
+</view>

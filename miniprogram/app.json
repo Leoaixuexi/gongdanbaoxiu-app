@@ -1,0 +1,79 @@
+{
+  "pages": [
+    "pages/login/login",
+    "pages/index/index",
+    "pages/data/index",
+    "pages/property/submit/index",
+    "pages/property/submitted/index",
+    "pages/property/review/index",
+    "pages/maintenance/pending/index",
+    "pages/maintenance/inprogress/index",
+    "pages/maintenance/history/index",
+    "pages/work-order-detail/index",
+    "pages/work-order-edit/index",
+    "pages/cloud-test/cloud-test",
+    "pages/admin/users/index",
+    "pages/admin/users/add/index",
+    "pages/admin/users/edit/index",
+    "pages/admin/roles/index",
+    "pages/admin/config/index",
+    "pages/admin/audit-logs/index",
+    "pages/admin/duplicates/index"
+  ],
+  "window": {
+    "backgroundTextStyle": "light",
+    "navigationBarBackgroundColor": "#0CA77D",
+    "navigationBarTitleText": "小物业报修系统",
+    "navigationBarTextStyle": "white",
+    "enablePullDownRefresh": true,
+    "backgroundColor": "#F7F7F7"
+  },
+  "tabBar": {
+    "custom": true,
+    "color": "#7A7E83",
+    "selectedColor": "#0CA77D",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "white",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "工作台",
+        "iconPath": "images/tabbar/home.png",
+        "selectedIconPath": "images/tabbar/home-active.png"
+      },
+      {
+        "pagePath": "pages/data/index",
+        "text": "数据",
+        "iconPath": "images/tabbar/baobiaohui.png",
+        "selectedIconPath": "images/tabbar/baobiaolv.png"
+      },
+      {
+        "pagePath": "pages/admin/users/index",
+        "text": "消息",
+        "iconPath": "images/tabbar/message.png",
+        "selectedIconPath": "images/tabbar/message-active.png"
+      },
+      {
+        "pagePath": "pages/property/submitted/index",
+        "text": "我的",
+        "iconPath": "images/tabbar/profile.png",
+        "selectedIconPath": "images/tabbar/profile-active.png"
+      }
+    ]
+  },
+  "permission": {
+    "scope.userLocation": {
+      "desc": "用于定位报修位置"
+    }
+  },
+  "requiredBackgroundModes": ["audio", "location"],
+  "networkTimeout": {
+    "request": 10000,
+    "downloadFile": 10000,
+    "uploadFile": 10000
+  },
+  "debug": false,
+  "style": "v2",
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents"
+}

@@ -1,0 +1,163 @@
+<!-- System Tools Page - Apple Design -->
+<view class="system-tools-container">
+  <!-- Header -->
+  <view class="page-header">
+    <text class="header-title">系统工具</text>
+    <text class="header-subtitle">管理员专用工具</text>
+  </view>
+
+  <!-- Security Section -->
+  <view class="section">
+    <view class="section-header">
+      <text class="section-icon">🔐</text>
+      <text class="section-title">安全管理</text>
+    </view>
+
+    <!-- Password Migration Tool -->
+    <view class="tool-card">
+      <view class="tool-info">
+        <text class="tool-title">密码加密迁移</text>
+        <text class="tool-desc">将所有明文密码迁移为PBKDF2加密格式</text>
+        <view class="tool-status">
+          <text class="status-label">迁移状态：</text>
+          <text class="status-value {{migrationStatus.completed ? 'status-success' : 'status-pending'}}">
+            {{migrationStatus.message || '未执行'}}
+          </text>
+        </view>
+        <view class="tool-stats" wx:if="{{migrationStatus.stats}}">
+          <view class="stat-item">
+            <text class="stat-label">总用户数：</text>
+            <text class="stat-value">{{migrationStatus.stats.total_users}}</text>
+          </view>
+          <view class="stat-item">
+            <text class="stat-label">已迁移：</text>
+            <text class="stat-value success">{{migrationStatus.stats.migrated}}</text>
+          </view>
+          <view class="stat-item">
+            <text class="stat-label">已跳过：</text>
+            <text class="stat-value">{{migrationStatus.stats.skipped}}</text>
+          </view>
+          <view class="stat-item" wx:if="{{migrationStatus.stats.errors > 0}}">
+            <text class="stat-label">错误数：</text>
+            <text class="stat-value error">{{migrationStatus.stats.errors}}</text>
+          </view>
+        </view>
+      </view>
+      <view class="tool-action">
+        <button
+          class="action-btn {{migrationLoading ? 'btn-loading' : ''}}"
+          bindtap="handlePasswordMigration"
+          disabled="{{migrationLoading}}"
+        >
+          <text wx:if="{{!migrationLoading}}">{{migrationStatus.completed ? '重新迁移' : '开始迁移'}}</text>
+          <text wx:else>迁移中...</text>
+        </button>
+      </view>
+    </view>
+  </view>
+
+  <!-- Database Section -->
+  <view class="section">
+    <view class="section-header">
+      <text class="section-icon">💾</text>
+      <text class="section-title">数据库管理</text>
+    </view>
+
+    <!-- Database Stats -->
+    <view class="tool-card">
+      <view class="tool-info">
+        <text class="tool-title">数据库统计</text>
+        <text class="tool-desc">查看各集合的数据统计信息</text>
+        <view class="tool-stats" wx:if="{{dbStats}}">
+          <view class="stat-item">
+            <text class="stat-label">用户数：</text>
+            <text class="stat-value">{{dbStats.users || 0}}</text>
+          </view>
+          <view class="stat-item">
+            <text class="stat-label">工单数：</text>
+            <text class="stat-value">{{dbStats.workOrders || 0}}</text>
+          </view>
+          <view class="stat-item">
+            <text class="stat-label">通知数：</text>
+            <text class="stat-value">{{dbStats.notifications || 0}}</text>
+          </view>
+          <view class="stat-item">
+            <text class="stat-label">审计日志：</text>
+            <text class="stat-value">{{dbStats.auditLogs || 0}}</text>
+          </view>
+        </view>
+      </view>
+      <view class="tool-action">
+        <button
+          class="action-btn secondary"
+          bindtap="loadDatabaseStats"
+          disabled="{{statsLoading}}"
+        >
+          <text wx:if="{{!statsLoading}}">刷新统计</text>
+          <text wx:else>加载中...</text>
+        </button>
+      </view>
+    </view>
+  </view>
+
+  <!-- Notification Section -->
+  <view class="section">
+    <view class="section-header">
+      <text class="section-icon">🔔</text>
+      <text class="section-title">通知管理</text>
+    </view>
+
+    <!-- Subscription Message Config -->
+    <view class="tool-card">
+      <view class="tool-info">
+        <text class="tool-title">订阅消息配置</text>
+        <text class="tool-desc">查看订阅消息模板配置状态</text>
+        <view class="config-info">
+          <view class="info-item">
+            <text class="info-icon">⚠️</text>
+            <text class="info-text">订阅消息模板需要在微信公众平台配置</text>
+          </view>
+          <view class="info-item">
+            <text class="info-icon">📝</text>
+            <text class="info-text">配置完成后需更新云函数中的模板ID</text>
+          </view>
+        </view>
+      </view>
+      <view class="tool-action">
+        <button
+          class="action-btn secondary"
+          bindtap="viewSubscriptionGuide"
+        >
+          查看配置指南
+        </button>
+      </view>
+    </view>
+  </view>
+
+  <!-- System Info Section -->
+  <view class="section">
+    <view class="section-header">
+      <text class="section-icon">ℹ️</text>
+      <text class="section-title">系统信息</text>
+    </view>
+
+    <view class="info-card">
+      <view class="info-row">
+        <text class="info-label">系统版本：</text>
+        <text class="info-value">v1.0.0</text>
+      </view>
+      <view class="info-row">
+        <text class="info-label">完成度：</text>
+        <text class="info-value">85%</text>
+      </view>
+      <view class="info-row">
+        <text class="info-label">云开发环境：</text>
+        <text class="info-value">{{envId || '加载中...'}}</text>
+      </view>
+      <view class="info-row">
+        <text class="info-label">当前用户：</text>
+        <text class="info-value">{{userInfo.name || '未知'}}</text>
+      </view>
+    </view>
+  </view>
+</view>

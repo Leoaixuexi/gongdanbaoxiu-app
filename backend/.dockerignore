@@ -1,0 +1,50 @@
+# Dependencies
+node_modules
+npm-debug.log
+package-lock.json
+
+# Testing
+coverage
+*.test.js
+tests
+
+# Development files
+.env
+.env.local
+.env.development
+.env.test
+*.log
+
+# IDE and editor files
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# Git files
+.git
+.gitignore
+.gitattributes
+
+# Documentation
+*.md
+docs
+
+# CI/CD
+.github
+.gitlab-ci.yml
+
+# Database files
+*.sqlite
+*.sqlite3
+*.db
+
+# Temporary files
+tmp
+temp
+*.tmp
+
+# OS files
+.DS_Store
+Thumbs.db

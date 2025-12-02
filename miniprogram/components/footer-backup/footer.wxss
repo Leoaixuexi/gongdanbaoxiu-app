@@ -1,0 +1,63 @@
+/* components/footer/footer.wxss */
+.footer-container {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(20rpx);
+  -webkit-backdrop-filter: blur(20rpx);
+  border-top: 1rpx solid #f1f5f9;
+  padding: 32rpx 32rpx 64rpx 32rpx;
+  z-index: 998;
+  transition: all 0.3s ease;
+}
+
+.footer-content {
+  display: flex;
+  gap: 32rpx;
+  max-width: 1024rpx;
+  margin: 0 auto;
+}
+
+/* 按钮基础样式 */
+.btn {
+  flex: 1;
+  height: 88rpx;
+  border-radius: 24rpx;
+  font-size: 30rpx;
+  font-weight: 500;
+  border: none;
+  outline: none;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: visible;
+}
+
+.btn-active {
+  transform: scale(0.98);
+}
+
+/* 取消按钮 */
+.btn-cancel {
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+.btn-cancel:hover {
+  background: #e2e8f0;
+}
+
+/* 保存按钮 */
+.btn-save {
+  background: linear-gradient(to right, #10b981, #14b8a6);
+  color: #ffffff;
+  box-shadow: 0 8rpx 16rpx -4rpx rgba(16, 185, 129, 0.15);
+}
+
+.btn-save:hover {
+  box-shadow: 0 16rpx 32rpx -4rpx rgba(16, 185, 129, 0.25);
+}

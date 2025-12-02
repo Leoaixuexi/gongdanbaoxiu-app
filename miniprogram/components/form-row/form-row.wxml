@@ -1,0 +1,51 @@
+<!-- components/form-row/form-row.wxml -->
+<view class="form-row {{align === 'start' ? 'align-start' : 'align-center'}} {{activeClass}}"
+      bindtouchstart="handleTouchStart"
+      bindtouchend="handleTouchEnd">
+
+  <!-- 标签区域 -->
+  <view class="label-section {{align === 'start' ? 'label-top' : ''}}">
+    <text wx:if="{{required}}" class="required-mark">*</text>
+    <text class="label-text">{{label}}</text>
+  </view>
+
+  <!-- 内容区域 -->
+  <view class="content-section">
+    <!-- 自定义插槽内容 -->
+    <slot wx:if="{{hasSlot}}"></slot>
+
+    <!-- 显示类型 -->
+    <text wx:elif="{{type === 'display'}}" class="display-text">{{value}}</text>
+
+    <!-- 选择器类型 -->
+    <view wx:elif="{{type === 'select'}}" class="select-wrapper" bindtap="handleSelectClick">
+      <text class="select-text {{!value ? 'placeholder' : ''}}">
+        {{value || placeholder || '请选择'}}
+      </text>
+      <view class="icon-chevron-right"></view>
+    </view>
+
+    <!-- 多行文本 -->
+    <textarea
+      wx:elif="{{type === 'textarea'}}"
+      class="textarea-input"
+      value="{{value}}"
+      placeholder="{{placeholder}}"
+      disabled="{{readOnly}}"
+      bindinput="handleInput"
+      auto-height
+      maxlength="-1"
+    />
+
+    <!-- 文本/数字输入 -->
+    <input
+      wx:else
+      class="text-input"
+      type="{{type === 'number' ? 'number' : 'text'}}"
+      value="{{value}}"
+      placeholder="{{placeholder}}"
+      disabled="{{readOnly}}"
+      bindinput="handleInput"
+    />
+  </view>
+</view>

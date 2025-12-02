@@ -1,0 +1,7 @@
+{
+  "component": true,
+  "usingComponents": {
+    "status-badge": "/components/status-badge/index",
+    "duration-timer": "/components/duration-timer/index"
+  }
+}

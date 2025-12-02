@@ -1,0 +1,7 @@
+{
+  "component": true,
+  "options": {
+    "addGlobalClass": true,
+    "styleIsolation": "apply-shared"
+  }
+}

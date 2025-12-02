@@ -1,0 +1,452 @@
+/**
+ * 数据页面样式
+ */
+
+/* 全局变量定义 */
+page {
+  --border: #e5e7eb;
+  --foreground: #1f2937;
+  --muted-foreground: #6b7280;
+  --muted: #f3f4f6;
+  --secondary: #f5f5f5;
+  --primary: #00A678;
+}
+
+.container {
+  min-height: 100vh;
+  padding-bottom: 180rpx;
+  background: #f5f5f5;
+}
+
+.gradient-bg {
+  background: #f5f5f5;
+}
+
+/* 工具类 */
+.flex {
+  display: flex;
+}
+
+.items-center {
+  align-items: center;
+}
+
+.justify-between {
+  justify-content: space-between;
+}
+
+.flex-1 {
+  flex: 1;
+}
+
+.min-w-0 {
+  min-width: 0;
+}
+
+.gap-1 {
+  gap: 8rpx;
+}
+
+.gap-2 {
+  gap: 16rpx;
+}
+
+.gap-3 {
+  gap: 24rpx;
+}
+
+.gap-4 {
+  gap: 32rpx;
+}
+
+.flex-col {
+  flex-direction: column;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tracking-tight {
+  letter-spacing: -0.5rpx;
+}
+
+/* 文字大小 */
+.text-xs {
+  font-size: 24rpx;
+}
+
+.text-sm {
+  font-size: 28rpx;
+}
+
+.text-base {
+  font-size: 32rpx;
+}
+
+.text-xl {
+  font-size: 36rpx;
+}
+
+.text-2xl {
+  font-size: 48rpx;
+}
+
+.text-3xl {
+  font-size: 56rpx;
+}
+
+/* 字重 */
+.font-medium {
+  font-weight: 500;
+}
+
+.font-semibold {
+  font-weight: 600;
+}
+
+.font-bold {
+  font-weight: 700;
+}
+
+/* 颜色 */
+.text-white {
+  color: #ffffff;
+}
+
+.text-foreground {
+  color: var(--foreground);
+}
+
+.text-muted-foreground {
+  color: var(--muted-foreground);
+}
+
+.text-primary {
+  color: var(--primary);
+}
+
+.text-orange-500 {
+  color: #f97316;
+}
+
+.text-blue-500 {
+  color: #3b82f6;
+}
+
+.text-emerald-500 {
+  color: #10b981;
+}
+
+.text-rose-500 {
+  color: #f43f5e;
+}
+
+.text-amber-500 {
+  color: #f59e0b;
+}
+
+/* 背景色 */
+.bg-blue-50 {
+  background-color: #eff6ff;
+}
+
+.bg-amber-50 {
+  background-color: #fffbeb;
+}
+
+.bg-emerald-50 {
+  background-color: #ecfdf5;
+}
+
+/* 间距 */
+.p-4 {
+  padding: 32rpx;
+}
+
+.p-5 {
+  padding: 40rpx;
+}
+
+.px-5 {
+  padding-left: 40rpx;
+  padding-right: 40rpx;
+}
+
+.mb-1 {
+  margin-bottom: 8rpx;
+}
+
+.mb-3 {
+  margin-bottom: 24rpx;
+}
+
+.mt-1 {
+  margin-top: 8rpx;
+}
+
+.mt-2 {
+  margin-top: 16rpx;
+}
+
+.ml-1 {
+  margin-left: 8rpx;
+}
+
+/* 边框 */
+.border-r {
+  border-right: 1rpx solid #e5e7eb;
+}
+
+.border-b {
+  border-bottom: 1rpx solid #e5e7eb;
+}
+
+/* 网格 */
+.grid {
+  display: grid;
+}
+
+.grid-cols-2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.grid-cols-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.grid-cols-4 {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+/* 主内容区 */
+.main {
+  padding: 40rpx 40rpx 0;
+}
+
+.section {
+  margin-bottom: 32rpx;
+  padding: 32rpx;
+  background-color: #ffffff;
+  border-radius: 24rpx;
+  border: 2rpx solid #e5e7eb;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+}
+
+.section-title {
+  margin-bottom: 24rpx;
+  font-size: 32rpx;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+/* 卡片样式 */
+.card {
+  background-color: #ffffff;
+  border-radius: 24rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+  transition: all 0.3s;
+}
+
+.card-backdrop {
+  background-color: #ffffff;
+}
+
+/* 统计卡片 */
+.stat-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 24rpx 20rpx;
+  border-radius: 16rpx;
+  transition: all 0.2s;
+}
+
+.stat-card:active {
+  transform: scale(1.05);
+}
+
+/* 图标容器 */
+.icon-wrapper {
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: 16rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.icon-sm {
+  width: 40rpx;
+  height: 40rpx;
+}
+
+.icon-xs {
+  width: 28rpx;
+  height: 28rpx;
+}
+
+/* 分隔线 */
+.separator {
+  height: 1rpx;
+  background-color: #e5e7eb;
+  opacity: 0.6;
+}
+
+/* 徽章 */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4rpx 16rpx;
+  border-radius: 9999rpx;
+  font-size: 24rpx;
+  font-weight: 600;
+}
+
+.badge-primary {
+  background-color: #00A678;
+  color: #ffffff;
+  box-shadow: 0 2rpx 4rpx rgba(0, 166, 120, 0.2);
+}
+
+/* 头像 */
+.avatar-sm {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 4rpx solid var(--border);
+  box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.05);
+  flex-shrink: 0;
+}
+
+.current-user-avatar {
+  border-color: #00A678;
+  box-shadow: 0 0 0 4rpx rgba(0, 166, 120, 0.2);
+}
+
+.avatar-sm image {
+  width: 100%;
+  height: 100%;
+}
+
+/* 趋势标识 */
+.trend-badge {
+  width: 56rpx;
+  height: 56rpx;
+  border-radius: 16rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.trend-badge.up {
+  background-color: #ecfdf5;
+  color: #059669;
+}
+
+.trend-badge.down {
+  background-color: #fff1f2;
+  color: #e11d48;
+}
+
+.trend-badge.same {
+  background-color: #f8fafc;
+  color: #64748b;
+}
+
+.trend-badge.down image {
+  transform: rotate(180deg);
+}
+
+.trend-line {
+  width: 28rpx;
+  height: 4rpx;
+  background-color: #64748b;
+  border-radius: 2rpx;
+}
+
+/* 个人绩效项 */
+.performance-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24rpx 32rpx;
+  border-bottom: 1rpx solid #f3f4f6;
+}
+
+.performance-icon {
+  width: 48rpx;
+  height: 48rpx;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.performance-icon-text {
+  color: #ffffff;
+  font-size: 24rpx;
+  font-weight: bold;
+  line-height: 1;
+}
+
+.performance-value {
+  display: flex;
+  align-items: baseline;
+  gap: 4rpx;
+}
+
+.performance-number {
+  font-size: 40rpx;
+  font-weight: bold;
+  color: #1f2937;
+  line-height: 1;
+}
+
+.performance-unit {
+  font-size: 24rpx;
+  color: #6b7280;
+  line-height: 1;
+}
+
+.performance-stars {
+  display: flex;
+  align-items: center;
+  font-size: 24rpx;
+  line-height: 1;
+  margin-left: 8rpx;
+}
+
+/* 查看全部按钮 */
+.view-all-button {
+  padding: 32rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8rpx;
+  color: #00A678;
+  border-top: 1rpx solid #e5e7eb;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.view-all-button:active {
+  background-color: #f9fafb;
+}

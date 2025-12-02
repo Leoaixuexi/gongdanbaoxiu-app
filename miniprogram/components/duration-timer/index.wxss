@@ -1,0 +1,43 @@
+/* Duration Timer Component Styles */
+
+.duration-timer {
+  display: inline-flex;
+  align-items: center;
+  gap: 4rpx;
+}
+
+.timer-icon {
+  font-size: 28rpx;
+  opacity: 0.7;
+}
+
+.timer-text {
+  font-family: 'Courier New', monospace;
+  font-weight: 500;
+  color: #333;
+}
+
+/* Size variants */
+.size-small .timer-icon {
+  font-size: 24rpx;
+}
+
+.size-small .timer-text {
+  font-size: 24rpx;
+}
+
+.size-medium .timer-icon {
+  font-size: 28rpx;
+}
+
+.size-medium .timer-text {
+  font-size: 28rpx;
+}
+
+.size-large .timer-icon {
+  font-size: 32rpx;
+}
+
+.size-large .timer-text {
+  font-size: 32rpx;
+}

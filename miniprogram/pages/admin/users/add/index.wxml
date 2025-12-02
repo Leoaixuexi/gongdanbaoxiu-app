@@ -1,0 +1,202 @@
+<!--
+  Add User Page (T153-T154)
+  Form to create new user with validation
+-->
+<view class="container">
+  <scroll-view scroll-y class="form-scroll" enhanced="{{true}}" show-scrollbar="{{false}}">
+    <view class="form-container">
+      <!-- Username -->
+      <view class="form-section">
+        <view class="form-label required">用户名</view>
+        <input
+          class="weui-input {{errors.username ? 'error' : ''}}"
+          placeholder="请输入用户名（至少3个字符）"
+          value="{{formData.username}}"
+          bindinput="onUsernameInput"
+          bindblur="onUsernameBlur"
+        />
+        <view class="form-hint">用于登录系统的用户名</view>
+        <view wx:if="{{errors.username}}" class="error-text">{{errors.username}}</view>
+      </view>
+
+      <!-- Password -->
+      <view class="form-section">
+        <view class="form-label required">密码</view>
+        <input
+          class="weui-input {{errors.password ? 'error' : ''}}"
+          placeholder="请输入密码（至少6个字符）"
+          type="password"
+          value="{{formData.password}}"
+          bindinput="onPasswordInput"
+          bindblur="onPasswordBlur"
+        />
+        <view class="form-hint">初始登录密码，用户可稍后修改</view>
+        <view wx:if="{{errors.password}}" class="error-text">{{errors.password}}</view>
+      </view>
+
+      <!-- Name -->
+      <view class="form-section">
+        <view class="form-label required">姓名</view>
+        <input
+          class="weui-input {{errors.name ? 'error' : ''}}"
+          placeholder="请输入姓名"
+          value="{{formData.name}}"
+          bindinput="onNameInput"
+          bindblur="onNameBlur"
+        />
+        <view wx:if="{{errors.name}}" class="error-text">{{errors.name}}</view>
+      </view>
+
+      <!-- Role -->
+      <view class="form-section">
+        <view class="form-label required">角色</view>
+        <view class="picker-container" bindtap="onShowRolePicker">
+          <text class="picker-text {{formData.role_id ? '' : 'placeholder'}}">
+            {{selectedRoleName || '请选择角色'}}
+          </text>
+          <icon type="arrow" size="12" color="#999"/>
+        </view>
+        <view wx:if="{{errors.role_id}}" class="error-text">{{errors.role_id}}</view>
+      </view>
+
+      <!-- Contact Phone -->
+      <view class="form-section">
+        <view class="form-label">联系电话</view>
+        <input
+          class="weui-input {{errors.contact_phone ? 'error' : ''}}"
+          placeholder="请输入联系电话"
+          type="number"
+          maxlength="11"
+          value="{{formData.contact_phone}}"
+          bindinput="onPhoneInput"
+          bindblur="onPhoneBlur"
+        />
+        <view wx:if="{{errors.contact_phone}}" class="error-text">{{errors.contact_phone}}</view>
+      </view>
+
+      <!-- Department -->
+      <view class="form-section">
+        <view class="form-label">部门</view>
+        <view class="picker-container" bindtap="onShowDeptPicker">
+          <text class="picker-text {{formData.department ? '' : 'placeholder'}}">
+            {{formData.department || '请选择部门'}}
+          </text>
+          <icon type="arrow" size="12" color="#999"/>
+        </view>
+      </view>
+
+      <!-- Supervisor -->
+      <view class="form-section">
+        <view class="form-label">主管</view>
+        <view class="picker-container" bindtap="onShowSupervisorPicker">
+          <text class="picker-text {{formData.supervisor_id ? '' : 'placeholder'}}">
+            {{selectedSupervisorName || '请选择主管'}}
+          </text>
+          <icon type="arrow" size="12" color="#999"/>
+        </view>
+        <view class="form-hint">根据角色筛选可用主管</view>
+      </view>
+
+      <!-- Active Status -->
+      <view class="form-section">
+        <view class="form-row">
+          <view class="form-label">启用状态</view>
+          <switch
+            checked="{{formData.is_active}}"
+            bindchange="onActiveChange"
+            color="#1aad19"
+          />
+        </view>
+        <view class="form-hint">停用后用户将无法登录系统</view>
+      </view>
+    </view>
+  </scroll-view>
+
+  <!-- Action Buttons -->
+  <view class="action-buttons">
+    <button class="weui-btn cancel-btn" bindtap="onCancel">取消</button>
+    <button
+      class="weui-btn"
+      type="primary"
+      bindtap="onSubmit"
+      disabled="{{submitting}}"
+      loading="{{submitting}}"
+    >
+      {{submitting ? '创建中...' : '创建用户'}}
+    </button>
+  </view>
+</view>
+
+<!-- Role Picker Modal -->
+<view class="modal-mask" wx:if="{{showRolePicker}}" bindtap="onCloseRolePicker">
+  <view class="modal-container" catchtap="onModalStopPropagation">
+    <view class="modal-header">
+      <text class="modal-title">选择角色</text>
+      <icon type="close" size="20" bindtap="onCloseRolePicker"/>
+    </view>
+    <view class="modal-content">
+      <view
+        wx:for="{{roles}}"
+        wx:key="id"
+        class="option-item {{formData.role_id === item.id ? 'selected' : ''}}"
+        bindtap="onSelectRole"
+        data-id="{{item.id}}"
+        data-name="{{item.name}}"
+      >
+        <text>{{item.name}}</text>
+        <icon wx:if="{{formData.role_id === item.id}}" type="success" size="18" color="#1aad19"/>
+      </view>
+    </view>
+  </view>
+</view>
+
+<!-- Department Picker Modal -->
+<view class="modal-mask" wx:if="{{showDeptPicker}}" bindtap="onCloseDeptPicker">
+  <view class="modal-container" catchtap="onModalStopPropagation">
+    <view class="modal-header">
+      <text class="modal-title">选择部门</text>
+      <icon type="close" size="20" bindtap="onCloseDeptPicker"/>
+    </view>
+    <view class="modal-content">
+      <view
+        wx:for="{{departments}}"
+        wx:key="*this"
+        class="option-item {{formData.department === item ? 'selected' : ''}}"
+        bindtap="onSelectDept"
+        data-dept="{{item}}"
+      >
+        <text>{{item}}</text>
+        <icon wx:if="{{formData.department === item}}" type="success" size="18" color="#1aad19"/>
+      </view>
+    </view>
+  </view>
+</view>
+
+<!-- Supervisor Picker Modal -->
+<view class="modal-mask" wx:if="{{showSupervisorPicker}}" bindtap="onCloseSupervisorPicker">
+  <view class="modal-container" catchtap="onModalStopPropagation">
+    <view class="modal-header">
+      <text class="modal-title">选择主管</text>
+      <icon type="close" size="20" bindtap="onCloseSupervisorPicker"/>
+    </view>
+    <view class="modal-content">
+      <view wx:if="{{supervisors.length === 0}}" class="empty-hint">
+        <text>暂无可选主管</text>
+      </view>
+      <view
+        wx:for="{{supervisors}}"
+        wx:key="id"
+        class="option-item {{formData.supervisor_id === item.id ? 'selected' : ''}}"
+        bindtap="onSelectSupervisor"
+        data-id="{{item.id}}"
+        data-name="{{item.name}}"
+      >
+        <view class="option-info">
+          <text class="option-name">{{item.name}}</text>
+          <text class="option-desc">{{item.role_name}} - {{item.department}}</text>
+        </view>
+        <icon wx:if="{{formData.supervisor_id === item.id}}" type="success" size="18" color="#1aad19"/>
+      </view>
+    </view>
+  </view>
+</view>

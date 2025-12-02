@@ -1,0 +1,10 @@
+{
+  "navigationBarTitleText": "待审核工单",
+  "navigationBarBackgroundColor": "#14AB80",
+  "navigationBarTextStyle": "white",
+  "enablePullDownRefresh": true,
+  "backgroundColor": "#F7F7F7",
+  "usingComponents": {
+    "work-order-card": "/components/work-order-card/index"
+  }
+}

@@ -1,0 +1,219 @@
+<!-- Dashboard Page - Admin Manager Overview -->
+<view class="dashboard-container">
+  <!-- Header -->
+  <view class="dashboard-header">
+    <text class="header-title">数据看板</text>
+    <view class="header-actions">
+      <text class="refresh-time" wx:if="{{lastRefreshTime}}">更新于 {{lastRefreshTime}}</text>
+      <button class="btn-refresh" bindtap="handleManualRefresh" disabled="{{loading}}">
+        <text class="icon-refresh {{loading ? 'rotating' : ''}}">↻</text>
+      </button>
+    </view>
+  </view>
+
+  <!-- KPI Cards Section -->
+  <view class="kpi-section">
+    <view class="section-title">关键指标</view>
+    <view class="kpi-grid">
+      <!-- Total Active Orders -->
+      <view class="kpi-card">
+        <view class="kpi-icon" style="background-color: #2196f3;">
+          <text class="icon">📋</text>
+        </view>
+        <view class="kpi-content">
+          <text class="kpi-value">{{overview.totalActiveOrders || 0}}</text>
+          <text class="kpi-label">活跃工单</text>
+        </view>
+      </view>
+
+      <!-- Average Response Time -->
+      <view class="kpi-card">
+        <view class="kpi-icon" style="background-color: #ff9800;">
+          <text class="icon">⏱</text>
+        </view>
+        <view class="kpi-content">
+          <text class="kpi-value {{overview.avgResponseTime > 24 ? 'kpi-warning' : ''}}">
+            {{overview.avgResponseTime ? overview.avgResponseTime.toFixed(1) : '0.0'}}
+          </text>
+          <text class="kpi-label">平均响应时间(小时)</text>
+        </view>
+      </view>
+
+      <!-- Average Resolution Time -->
+      <view class="kpi-card">
+        <view class="kpi-icon" style="background-color: #4caf50;">
+          <text class="icon">✓</text>
+        </view>
+        <view class="kpi-content">
+          <text class="kpi-value {{overview.avgResolutionTime > 72 ? 'kpi-warning' : ''}}">
+            {{overview.avgResolutionTime ? overview.avgResolutionTime.toFixed(1) : '0.0'}}
+          </text>
+          <text class="kpi-label">平均完成时间(小时)</text>
+        </view>
+      </view>
+
+      <!-- Overdue Rate -->
+      <view class="kpi-card">
+        <view class="kpi-icon" style="background-color: #f44336;">
+          <text class="icon">⚠</text>
+        </view>
+        <view class="kpi-content">
+          <text class="kpi-value {{overview.overdueRate > 10 ? 'kpi-danger' : ''}}">
+            {{overview.overdueRate ? overview.overdueRate.toFixed(1) : '0.0'}}%
+          </text>
+          <text class="kpi-label">超期率</text>
+        </view>
+      </view>
+
+      <!-- First-Time Fix Rate -->
+      <view class="kpi-card">
+        <view class="kpi-icon" style="background-color: #9c27b0;">
+          <text class="icon">🔧</text>
+        </view>
+        <view class="kpi-content">
+          <text class="kpi-value {{overview.firstTimeFixRate > 85 ? 'kpi-good' : ''}}">
+            {{overview.firstTimeFixRate ? overview.firstTimeFixRate.toFixed(1) : '0.0'}}%
+          </text>
+          <text class="kpi-label">一次修复率</text>
+        </view>
+      </view>
+
+      <!-- Completion Rate -->
+      <view class="kpi-card">
+        <view class="kpi-icon" style="background-color: #00bcd4;">
+          <text class="icon">📊</text>
+        </view>
+        <view class="kpi-content">
+          <text class="kpi-value {{overview.completionRate > 90 ? 'kpi-good' : ''}}">
+            {{overview.completionRate ? overview.completionRate.toFixed(1) : '0.0'}}%
+          </text>
+          <text class="kpi-label">完成率</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- Filter Section -->
+  <view class="filter-section">
+    <view class="section-title" bindtap="toggleFilters">
+      <text>筛选条件</text>
+      <text class="icon-arrow {{showFilters ? 'icon-arrow-up' : 'icon-arrow-down'}}">▼</text>
+    </view>
+
+    <view class="filter-content" wx:if="{{showFilters}}">
+      <!-- Status Filter -->
+      <view class="filter-row">
+        <text class="filter-label">状态</text>
+        <picker mode="selector" range="{{statusOptions}}" range-key="label" value="{{statusIndex}}" bindchange="handleStatusChange">
+          <view class="filter-picker">
+            <text>{{statusOptions[statusIndex].label}}</text>
+            <text class="icon-arrow-down">▼</text>
+          </view>
+        </picker>
+      </view>
+
+      <!-- Priority Filter -->
+      <view class="filter-row">
+        <text class="filter-label">优先级</text>
+        <picker mode="selector" range="{{priorityOptions}}" range-key="label" value="{{priorityIndex}}" bindchange="handlePriorityChange">
+          <view class="filter-picker">
+            <text>{{priorityOptions[priorityIndex].label}}</text>
+            <text class="icon-arrow-down">▼</text>
+          </view>
+        </picker>
+      </view>
+
+      <!-- Fault Type Filter -->
+      <view class="filter-row">
+        <text class="filter-label">故障类型</text>
+        <picker mode="selector" range="{{faultTypeOptions}}" range-key="name" value="{{faultTypeIndex}}" bindchange="handleFaultTypeChange">
+          <view class="filter-picker">
+            <text>{{faultTypeOptions[faultTypeIndex].name}}</text>
+            <text class="icon-arrow-down">▼</text>
+          </view>
+        </picker>
+      </view>
+
+      <!-- Floor Filter -->
+      <view class="filter-row">
+        <text class="filter-label">楼层</text>
+        <input class="filter-input" type="text" placeholder="输入楼层" value="{{filters.floor}}" bindinput="handleFloorInput" />
+      </view>
+
+      <!-- Date Range Filter -->
+      <view class="filter-row">
+        <text class="filter-label">开始日期</text>
+        <picker mode="date" value="{{filters.startDate}}" bindchange="handleStartDateChange">
+          <view class="filter-picker">
+            <text>{{filters.startDate || '选择日期'}}</text>
+            <text class="icon-arrow-down">▼</text>
+          </view>
+        </picker>
+      </view>
+
+      <view class="filter-row">
+        <text class="filter-label">结束日期</text>
+        <picker mode="date" value="{{filters.endDate}}" bindchange="handleEndDateChange">
+          <view class="filter-picker">
+            <text>{{filters.endDate || '选择日期'}}</text>
+            <text class="icon-arrow-down">▼</text>
+          </view>
+        </picker>
+      </view>
+
+      <!-- Filter Actions -->
+      <view class="filter-actions">
+        <button class="btn-clear" bindtap="handleClearFilters">清除筛选</button>
+        <button class="btn-apply" bindtap="handleApplyFilters">应用筛选</button>
+      </view>
+    </view>
+  </view>
+
+  <!-- Work Orders List Section -->
+  <view class="work-orders-section">
+    <view class="section-title">
+      <text>工单列表</text>
+      <text class="count-badge">{{total || 0}}</text>
+    </view>
+
+    <!-- Loading State -->
+    <view class="loading-container" wx:if="{{loading && workOrders.length === 0}}">
+      <view class="loading-skeleton" wx:for="{{[1,2,3]}}" wx:key="*this">
+        <view class="skeleton-line"></view>
+        <view class="skeleton-line short"></view>
+      </view>
+    </view>
+
+    <!-- Empty State -->
+    <view class="empty-state" wx:if="{{!loading && workOrders.length === 0}}">
+      <text class="empty-icon">📋</text>
+      <text class="empty-text">暂无工单数据</text>
+      <text class="empty-hint">尝试调整筛选条件</text>
+    </view>
+
+    <!-- Work Order Cards -->
+    <view class="work-order-list" wx:else>
+      <work-order-card
+        wx:for="{{workOrders}}"
+        wx:key="id"
+        work-order="{{item}}"
+        bindtap="handleWorkOrderTap"
+      />
+    </view>
+
+    <!-- Pagination -->
+    <view class="pagination" wx:if="{{total > pageSize}}">
+      <button class="btn-prev" bindtap="handlePrevPage" disabled="{{page === 1}}">上一页</button>
+      <text class="page-info">{{page}} / {{totalPages}}</text>
+      <button class="btn-next" bindtap="handleNextPage" disabled="{{page >= totalPages}}">下一页</button>
+    </view>
+  </view>
+
+  <!-- Navigation Button to Analytics -->
+  <view class="navigation-button">
+    <button class="btn-analytics" bindtap="navigateToAnalytics">
+      <text class="icon">📊</text>
+      <text>数据分析</text>
+    </button>
+  </view>
+</view>

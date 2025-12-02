@@ -1,0 +1,138 @@
+<!-- pages/editOrder/editOrder.wxml -->
+<view class="page-container">
+  <!-- 自定义Header -->
+  <custom-header />
+
+  <!-- 主内容区域 -->
+  <view class="main-content">
+
+    <!-- 工单编号 -->
+    <form-row
+      label="工单编号"
+      value="{{formData.orderCode}}"
+      type="display"
+    />
+
+    <!-- 楼层 -->
+    <form-row
+      label="楼层"
+      value="{{formData.floor}}"
+      type="text"
+      bind:change="handleFloorChange"
+    />
+
+    <!-- 具体位置 -->
+    <form-row
+      label="具体位置"
+      value="{{formData.location}}"
+      type="text"
+      bind:change="handleLocationChange"
+    />
+
+    <!-- 工单类别 -->
+    <form-row
+      label="工单类别"
+      value="{{formData.category}}"
+      type="select"
+      bind:selectclick="handleCategorySelect"
+    />
+
+    <!-- 责任方 -->
+    <form-row
+      label="责任方"
+      value="{{formData.responsible}}"
+      type="select"
+      bind:selectclick="handleResponsibleSelect"
+    />
+
+    <!-- 优先级 -->
+    <form-row
+      label="优先级"
+      value="{{formData.priority}}"
+      type="select"
+      bind:selectclick="handlePrioritySelect"
+    />
+
+    <!-- 报修时间 -->
+    <form-row
+      label="报修时间"
+      value="{{formData.reportTime}}"
+      type="display"
+    />
+
+    <!-- 问题描述 -->
+    <form-row
+      label="问题描述"
+      value="{{formData.description}}"
+      type="textarea"
+      align="start"
+      bind:change="handleDescriptionChange"
+    />
+
+    <!-- 现场照片 -->
+    <form-row
+      label="现场照片"
+      align="start"
+      required="{{true}}"
+      hasSlot="{{true}}"
+    >
+      <view class="photo-container">
+        <!-- 图片列表 -->
+        <block wx:for="{{formData.images}}" wx:key="index">
+          <view class="photo-item">
+            <image
+              class="photo-image"
+              src="{{item}}"
+              mode="aspectFill"
+              bindtap="handlePreviewImage"
+              data-index="{{index}}"
+            />
+            <!-- 删除按钮 -->
+            <view class="delete-btn" bindtap="handleRemoveImage" data-index="{{index}}">
+              <view class="icon-x"></view>
+            </view>
+          </view>
+        </block>
+
+        <!-- 添加按钮 -->
+        <view
+          wx:if="{{formData.images.length < 3}}"
+          class="add-photo-btn"
+          bindtap="handleAddImage"
+        >
+          <view class="icon-plus"></view>
+        </view>
+      </view>
+    </form-row>
+
+    <!-- 工单状态 -->
+    <form-row
+      label="工单状态"
+      value="{{formData.status}}"
+      type="display"
+    />
+
+    <!-- 报修人 -->
+    <form-row
+      label="报修人"
+      value="{{formData.reporter}}"
+      type="display"
+    />
+
+    <!-- 备注 -->
+    <view class="remarks-section">
+      <view class="remarks-label">备注</view>
+      <textarea
+        class="remarks-input"
+        placeholder="请填写备注信息(非必填)"
+        value="{{formData.remarks}}"
+        bindinput="handleRemarksChange"
+        maxlength="-1"
+      />
+    </view>
+
+  </view>
+
+  <!-- 底部操作栏 -->
+  <custom-footer bind:save="handleSave" bind:cancel="handleCancel" />
+</view>

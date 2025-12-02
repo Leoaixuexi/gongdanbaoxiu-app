@@ -1,0 +1,43 @@
+<view class="container">
+  <view class="header">
+    <text class="title">☁️ 云开发功能测试</text>
+  </view>
+
+  <!-- 测试1：云登录 -->
+  <view class="test-section">
+    <view class="section-title">测试1：云登录获取 openid</view>
+    <button class="test-btn" bindtap="testCloudLogin" loading="{{loginLoading}}">
+      测试云登录
+    </button>
+    <view class="result-box" wx:if="{{loginResult}}">
+      <text class="result-text">{{loginResult}}</text>
+    </view>
+  </view>
+
+  <!-- 测试2：云存储上传 -->
+  <view class="test-section">
+    <view class="section-title">测试2：云存储上传图片</view>
+    <button class="test-btn" bindtap="testCloudStorage" loading="{{uploadLoading}}">
+      选择并上传图片
+    </button>
+    <view class="result-box" wx:if="{{uploadResult}}">
+      <text class="result-text">{{uploadResult}}</text>
+    </view>
+    <image wx:if="{{uploadedImageUrl}}" class="uploaded-image" src="{{uploadedImageUrl}}" mode="aspectFit"></image>
+  </view>
+
+  <!-- 测试3：云函数调用 -->
+  <view class="test-section">
+    <view class="section-title">测试3：直接调用云函数</view>
+    <button class="test-btn" bindtap="testCloudFunction" loading="{{functionLoading}}">
+      调用 login 云函数
+    </button>
+    <view class="result-box" wx:if="{{functionResult}}">
+      <text class="result-text">{{functionResult}}</text>
+    </view>
+  </view>
+
+  <view class="tips">
+    <text class="tips-text">💡 提示：此页面用于测试云开发功能，无需后端服务器</text>
+  </view>
+</view>
