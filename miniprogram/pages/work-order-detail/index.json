@@ -1,7 +1,5 @@
 {
-  "navigationBarTitleText": "工单详情",
-  "navigationBarBackgroundColor": "#0CA77D",
-  "navigationBarTextStyle": "white",
+  "navigationStyle": "custom",
   "enablePullDownRefresh": true,
   "backgroundColor": "#F7F7F7",
   "usingComponents": {
@@ -9,6 +7,7 @@
     "timeline": "/components/timeline/index",
     "duration-timer": "/components/duration-timer/index",
     "work-order-stepper": "/components/work-order-stepper/index",
-    "timeline-item": "/components/timeline-item/index"
+    "timeline-item": "/components/timeline-item/index",
+    "custom-header": "/components/header/header"
   }
 }

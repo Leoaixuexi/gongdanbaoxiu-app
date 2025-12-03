@@ -1,25 +1,40 @@
 <!--pages/phone/phone.wxml-->
 <view class="container">
+  <!-- 导航栏 -->
+  <view class="nav-bar" style="padding-top: {{statusBarHeight}}px;">
+    <view class="nav-content">
+      <view class="nav-left" bindtap="handleCancel">
+        <view class="back-icon"></view>
+      </view>
+      <view class="nav-title">修改手机号</view>
+      <view class="nav-right"></view>
+    </view>
+  </view>
+
   <!-- 表单区域 -->
   <view class="form-section">
     <!-- 当前手机号 -->
-    <view class="current-phone-card bg-card premium-shadow-sm">
+    <view class="current-phone-card">
       <view class="phone-icon-wrapper">
-        <text class="phone-icon">📞</text>
+        <view class="phone-icon-svg">
+          <view class="phone-icon-inner"></view>
+        </view>
       </view>
       <view class="phone-info">
-        <text class="phone-label text-muted-foreground">当前手机号</text>
-        <text class="phone-number text-foreground">{{currentPhone}}</text>
+        <text class="phone-label">当前手机号</text>
+        <text class="phone-number">{{currentPhone}}</text>
       </view>
     </view>
 
     <!-- 新手机号表单 -->
-    <view class="form-card bg-card premium-shadow-sm">
+    <view class="form-card">
       <!-- 新手机号 -->
       <view class="input-field">
         <view class="field-label">
-          <text class="field-icon text-muted-foreground">📱</text>
-          <text class="field-text text-foreground">新手机号</text>
+          <view class="field-icon-box">
+            <view class="mobile-icon"></view>
+          </view>
+          <text class="field-text">新手机号</text>
         </view>
         <input
           class="input"
@@ -34,8 +49,10 @@
       <!-- 验证码 -->
       <view class="input-field">
         <view class="field-label">
-          <text class="field-icon text-muted-foreground">💬</text>
-          <text class="field-text text-foreground">验证码</text>
+          <view class="field-icon-box">
+            <view class="code-icon"></view>
+          </view>
+          <text class="field-text">验证码</text>
         </view>
         <view class="code-input-wrapper">
           <input
@@ -66,11 +83,11 @@
 
   <!-- 底部按钮 -->
   <view class="bottom-actions">
-    <button class="action-btn cancel-btn bg-muted" bindtap="handleCancel">
-      <text class="text-muted-foreground">取消</text>
+    <button class="action-btn cancel-btn" bindtap="handleCancel">
+      <text class="btn-text">取消</text>
     </button>
-    <button class="action-btn save-btn bg-primary" bindtap="handleSubmit">
-      <text class="text-white">确认修改</text>
+    <button class="action-btn save-btn" bindtap="handleSubmit">
+      <text class="btn-text">确认修改</text>
     </button>
   </view>
 </view>

@@ -1,10 +1,9 @@
 {
-  "navigationBarTitleText": "提交工单",
-  "navigationBarBackgroundColor": "#0CA77D",
-  "navigationBarTextStyle": "white",
+  "navigationStyle": "custom",
   "enablePullDownRefresh": false,
   "backgroundColor": "#F7F7F7",
   "usingComponents": {
-    "image-uploader": "/components/image-uploader/index"
+    "image-uploader": "/components/image-uploader/index",
+    "custom-header": "/components/header/header"
   }
 }

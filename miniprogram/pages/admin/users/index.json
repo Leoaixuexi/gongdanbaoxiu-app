@@ -1,8 +1,8 @@
 {
-  "navigationBarTitleText": "消息",
-  "navigationBarBackgroundColor": "#0CA77D",
-  "navigationBarTextStyle": "white",
+  "navigationStyle": "custom",
   "enablePullDownRefresh": false,
   "backgroundColor": "#F7F7F7",
-  "usingComponents": {}
+  "usingComponents": {
+    "custom-header": "/components/header/header"
+  }
 }

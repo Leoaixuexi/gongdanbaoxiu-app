@@ -3,6 +3,7 @@ const app = getApp()
 
 Page({
   data: {
+    statusBarHeight: 20,
     currentPhone: '177******35',
     newPhone: '',
     verifyCode: '',
@@ -11,9 +12,18 @@ Page({
   },
 
   onLoad() {
+    // 获取状态栏高度
+    const systemInfo = wx.getSystemInfoSync();
     this.setData({
-      currentPhone: app.globalData.userInfo.phone
-    })
+      statusBarHeight: systemInfo.statusBarHeight || 20
+    });
+
+    // 获取用户手机号
+    if (app.globalData.userInfo && app.globalData.userInfo.phone) {
+      this.setData({
+        currentPhone: app.globalData.userInfo.phone
+      });
+    }
   },
 
   // 输入新手机号

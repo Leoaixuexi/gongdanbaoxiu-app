@@ -1,8 +1,0 @@
-{
-  "usingComponents": {
-    "custom-header": "/components/header/header",
-    "custom-footer": "/components/footer/footer",
-    "form-row": "/components/form-row/form-row"
-  },
-  "navigationStyle": "custom"
-}

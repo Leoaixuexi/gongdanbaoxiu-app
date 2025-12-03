@@ -1,6 +1,7 @@
 // pages/password/password.js
 Page({
   data: {
+    statusBarHeight: 20,
     oldPassword: '',
     newPassword: '',
     confirmPassword: '',
@@ -8,6 +9,14 @@ Page({
     showOld: false,
     showNew: false,
     showConfirm: false
+  },
+
+  onLoad() {
+    // 获取状态栏高度
+    const systemInfo = wx.getSystemInfoSync();
+    this.setData({
+      statusBarHeight: systemInfo.statusBarHeight || 20
+    });
   },
 
   // 输入原密码

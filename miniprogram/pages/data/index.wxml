@@ -1,5 +1,8 @@
 <!-- 数据统计页面 -->
 <view class="container gradient-bg">
+  <!-- 自定义Header -->
+  <custom-header title="数据" />
+
   <!-- 主内容区 -->
   <view class="main px-5">
     <!-- 工单汇总 -->

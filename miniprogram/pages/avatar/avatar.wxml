@@ -1,0 +1,52 @@
+<!--pages/avatar/avatar.wxml-->
+<view class="container">
+  <!-- 导航栏 -->
+  <view class="nav-bar" style="padding-top: {{statusBarHeight}}px;">
+    <view class="nav-content">
+      <view class="nav-left" bindtap="handleCancel">
+        <view class="back-icon"></view>
+      </view>
+      <view class="nav-title">修改头像</view>
+      <view class="nav-right"></view>
+    </view>
+  </view>
+
+  <!-- 头像预览区域 -->
+  <view class="preview-section">
+    <view class="avatar-wrapper">
+      <view class="avatar-container">
+        <image
+          class="avatar-preview"
+          src="{{preview}}"
+          mode="aspectFill"
+        />
+        <button class="camera-btn" bindtap="chooseImage">
+          <view class="camera-icon-wrapper">
+            <view class="camera-icon"></view>
+          </view>
+        </button>
+      </view>
+    </view>
+
+    <!-- 选择按钮 -->
+    <button class="choose-btn" bindtap="chooseImage">
+      <view class="choose-icon-wrapper">
+        <view class="image-icon"></view>
+      </view>
+      <view class="choose-text-wrapper">
+        <text class="choose-title">选择新头像</text>
+        <text class="choose-desc">支持 JPG、PNG 格式</text>
+      </view>
+    </button>
+  </view>
+
+  <!-- 底部按钮 -->
+  <view class="bottom-actions">
+    <button class="action-btn cancel-btn" bindtap="handleCancel">
+      <text class="btn-text">取消</text>
+    </button>
+    <button class="action-btn save-btn" bindtap="saveAvatar">
+      <text class="btn-text">保存</text>
+    </button>
+  </view>
+</view>

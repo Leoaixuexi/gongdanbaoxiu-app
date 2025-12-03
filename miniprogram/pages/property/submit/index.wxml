@@ -1,5 +1,8 @@
 <!--新增工单页面-->
 <view class="submit-container">
+  <!-- 自定义Header -->
+  <custom-header title="提交工单" />
+
   <!-- 表单卡片列表 -->
   <view class="form-cards">
     <!-- 工单编号 -->

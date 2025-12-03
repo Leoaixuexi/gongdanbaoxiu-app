@@ -3,14 +3,23 @@ const app = getApp()
 
 Page({
   data: {
-    preview: '/images/image.png'
+    statusBarHeight: 20,
+    preview: 'https://placehold.co/320x320/10b981/ffffff?text=Avatar'
   },
 
   onLoad() {
-    // 加载当前头像
+    // 获取状态栏高度
+    const systemInfo = wx.getSystemInfoSync();
     this.setData({
-      preview: app.globalData.userInfo.avatar
-    })
+      statusBarHeight: systemInfo.statusBarHeight || 20
+    });
+
+    // 加载当前头像
+    if (app.globalData.userInfo && app.globalData.userInfo.avatar) {
+      this.setData({
+        preview: app.globalData.userInfo.avatar
+      });
+    }
   },
 
   // 选择图片

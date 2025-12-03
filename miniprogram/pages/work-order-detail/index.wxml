@@ -1,5 +1,8 @@
 <!--工单详情页面 (基于 Taro 设计)-->
 <view class="order-detail-container">
+  <!-- 自定义Header -->
+  <custom-header title="工单详情" />
+
   <!-- Loading State -->
   <view class="loading-state" wx:if="{{loading}}">
     <view class="weui-loadmore">

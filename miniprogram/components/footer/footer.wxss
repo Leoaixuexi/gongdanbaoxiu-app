@@ -22,7 +22,6 @@
 
 /* 按钮基础样式 */
 .btn {
-  flex: 1;
   height: 88rpx;
   border-radius: 24rpx;
   font-size: 30rpx;
@@ -43,6 +42,7 @@
 
 /* 取消按钮 */
 .btn-cancel {
+  flex: 1;
   background: #f1f5f9;
   color: #64748b;
 }
@@ -53,6 +53,7 @@
 
 /* 保存按钮 */
 .btn-save {
+  flex: 2.5;
   background: linear-gradient(to right, #10b981, #14b8a6);
   color: #ffffff;
   box-shadow: 0 8rpx 16rpx -4rpx rgba(16, 185, 129, 0.15);

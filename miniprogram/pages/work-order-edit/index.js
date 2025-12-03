@@ -1,330 +1,279 @@
-/**
- * Work Order Edit Page
- * 工单修改页面
- */
-
-const workOrderService = require('../../services/workOrder');
-
+// pages/editOrder/editOrder.js
 Page({
   data: {
-    orderId: null,
-    workOrder: null,
-    editForm: {
-      floor: '',
-      location: '',
-      orderCategory: '',
-      responsibleParty: '',
-      priority: '',
-      description: '',
-      remark: ''
+    orderId: null, // 工单ID
+    headerHeight: 80, // Header 总高度，初始默认值
+    formData: {
+      id: '1',
+      orderCode: 'WO20251120005',
+      floor: 'B1',
+      location: '地下停车场C区',
+      category: '未知',
+      responsible: '未知',
+      priority: '普通',
+      reportTime: '2023-10-27 14:30',
+      description: '地下停车场C区多盏照明灯不亮,光线昏暗',
+      status: 'Pending Repair',
+      reporter: '测试员工',
+      images: [
+        'https://placehold.co/352x352/f1f5f9/94a3b8?text=Image+1',
+        'https://placehold.co/352x352/f1f5f9/94a3b8?text=Image+2'
+      ],
+      remarks: ''
     },
-    floorOptions: ['请选择楼层', '1楼', '2楼', '3楼', '4楼', '5楼', 'B1', 'B2'],
-    floorIndex: 0,
-    orderCategories: ['请选择工单类别', '电梯维修', '水电维修', '消防维修', '空调维修', '其他'],
-    orderCategoryIndex: 0,
-    responsibleParties: ['请选择责任方', '物业公司', '业主', '第三方'],
-    responsiblePartyIndex: 0,
-    priorityOptions: [
-      { key: 'Low', label: '低', color: 'green' },
-      { key: 'Normal', label: '中', color: 'yellow' },
-      { key: 'High', label: '高', color: 'orange' },
-      { key: 'Emergency', label: '紧急', color: 'red' }
-    ],
-    editPhotos: ['', '', ''],
-    uploadingPhotos: false,
-    submitting: false
+    // 照片显示数组（固定3个位置）
+    photoSlots: ['', '', ''],
+    // 选择器选项
+    categoryOptions: ['照明', '水电', '空调', '电梯', '其他'],
+    responsibleOptions: ['物业', '业主', '第三方', '未知'],
+    priorityOptions: ['紧急', '高', '普通', '低']
   },
 
-  /**
-   * Lifecycle - Page Load
-   */
-  onLoad: function (options) {
-    console.log('[Edit] Page load with options:', options);
+  onLoad(options) {
+    // 获取状态栏高度
+    const systemInfo = wx.getSystemInfoSync();
+    const statusBarHeight = systemInfo.statusBarHeight || 20;
+    // header 高度 88rpx 约等于 44px，加上状态栏高度再加上一些间距
+    const headerTotalHeight = statusBarHeight + 44 + 10; // 10px 额外间距
+
+    this.setData({
+      statusBarHeight: statusBarHeight,
+      headerHeight: headerTotalHeight
+    });
+
+    // 获取工单ID
     if (options.id) {
-      this.setData({ orderId: options.id });
-      this.loadWorkOrder();
-    } else {
-      wx.showToast({
-        title: '工单ID无效',
-        icon: 'none'
-      });
-      setTimeout(() => {
-        wx.navigateBack();
-      }, 1500);
-    }
-  },
-
-  /**
-   * Load Work Order Data
-   */
-  loadWorkOrder: async function () {
-    try {
-      wx.showLoading({ title: '加载中...' });
-
-      const workOrder = await workOrderService.getWorkOrderById(this.data.orderId);
-
-      if (!workOrder) {
-        throw new Error('工单不存在');
-      }
-
-      console.log('[Edit] Work order loaded:', workOrder);
-
-      // Find index for floor
-      const floorIndex = this.data.floorOptions.indexOf(workOrder.floor);
-
-      // Find index for order category
-      const orderCategoryIndex = this.data.orderCategories.indexOf(workOrder.order_category);
-
-      // Find index for responsible party
-      const responsiblePartyIndex = this.data.responsibleParties.indexOf(workOrder.responsible_party);
-
-      // Prepare photos array
-      const editPhotos = ['', '', ''];
-      if (workOrder.photos && Array.isArray(workOrder.photos)) {
-        workOrder.photos.forEach((photo, index) => {
-          if (index < 3) {
-            editPhotos[index] = photo;
-          }
-        });
-      }
-
       this.setData({
-        workOrder: workOrder,
-        floorIndex: floorIndex > 0 ? floorIndex : 0,
-        orderCategoryIndex: orderCategoryIndex > 0 ? orderCategoryIndex : 0,
-        responsiblePartyIndex: responsiblePartyIndex > 0 ? responsiblePartyIndex : 0,
-        'editForm.floor': workOrder.floor || '',
-        'editForm.location': workOrder.location || '',
-        'editForm.orderCategory': workOrder.order_category || '',
-        'editForm.responsibleParty': workOrder.responsible_party || '',
-        'editForm.priority': workOrder.priority || '',
-        'editForm.description': workOrder.description || '',
-        'editForm.remark': workOrder.remark || '',
-        editPhotos: editPhotos
-      });
-
-      wx.hideLoading();
-
-    } catch (error) {
-      console.error('[Edit] Load work order error:', error);
-      wx.hideLoading();
-      wx.showModal({
-        title: '加载失败',
-        content: error.message || '加载工单数据失败',
-        showCancel: false,
-        success: () => {
-          wx.navigateBack();
-        }
+        orderId: options.id,
+        'formData.id': options.id
       });
     }
+
+    // 初始化照片槽位
+    this.updatePhotoSlots();
   },
 
-  /**
-   * Form Input Handlers
-   */
-  onFloorChange: function (e) {
-    const index = parseInt(e.detail.value);
+  // 更新照片槽位显示
+  updatePhotoSlots() {
+    const images = this.data.formData.images || [];
+    const photoSlots = ['', '', ''];
+
+    // 将现有照片填充到槽位中
+    images.forEach((img, index) => {
+      if (index < 3) {
+        photoSlots[index] = img;
+      }
+    });
+
     this.setData({
-      floorIndex: index,
-      'editForm.floor': this.data.floorOptions[index]
+      photoSlots: photoSlots
     });
   },
 
-  onLocationInput: function (e) {
-    this.setData({ 'editForm.location': e.detail.value });
-  },
-
-  onOrderCategoryChange: function (e) {
-    const index = parseInt(e.detail.value);
+  // 楼层变化
+  handleFloorChange(e) {
     this.setData({
-      orderCategoryIndex: index,
-      'editForm.orderCategory': this.data.orderCategories[index]
+      'formData.floor': e.detail.value
     });
   },
 
-  onResponsiblePartyChange: function (e) {
-    const index = parseInt(e.detail.value);
+  // 具体位置变化
+  handleLocationChange(e) {
     this.setData({
-      responsiblePartyIndex: index,
-      'editForm.responsibleParty': this.data.responsibleParties[index]
+      'formData.location': e.detail.value
     });
   },
 
-  onPrioritySelect: function (e) {
-    const priority = e.currentTarget.dataset.key;
-    this.setData({ 'editForm.priority': priority });
+  // 问题描述变化
+  handleDescriptionChange(e) {
+    this.setData({
+      'formData.description': e.detail.value
+    });
   },
 
-  onDescriptionInput: function (e) {
-    this.setData({ 'editForm.description': e.detail.value });
+  // 备注变化
+  handleRemarksChange(e) {
+    this.setData({
+      'formData.remarks': e.detail.value
+    });
   },
 
-  onRemarkInput: function (e) {
-    this.setData({ 'editForm.remark': e.detail.value });
+  // 工单类别选择
+  handleCategorySelect() {
+    wx.showActionSheet({
+      itemList: this.data.categoryOptions,
+      success: (res) => {
+        this.setData({
+          'formData.category': this.data.categoryOptions[res.tapIndex]
+        });
+      }
+    });
   },
 
-  /**
-   * Photo Upload Handler
-   */
-  handlePhotoUpload: async function (e) {
+  // 责任方选择
+  handleResponsibleSelect() {
+    wx.showActionSheet({
+      itemList: this.data.responsibleOptions,
+      success: (res) => {
+        this.setData({
+          'formData.responsible': this.data.responsibleOptions[res.tapIndex]
+        });
+      }
+    });
+  },
+
+  // 优先级选择
+  handlePrioritySelect() {
+    wx.showActionSheet({
+      itemList: this.data.priorityOptions,
+      success: (res) => {
+        this.setData({
+          'formData.priority': this.data.priorityOptions[res.tapIndex]
+        });
+      }
+    });
+  },
+
+  // 添加图片
+  handleAddImage(e) {
     const index = e.currentTarget.dataset.index;
-    try {
-      const res = await wx.chooseImage({
-        count: 1,
-        sizeType: ['compressed'],
-        sourceType: ['album', 'camera']
-      });
 
-      if (res.tempFilePaths && res.tempFilePaths.length > 0) {
-        this.setData({ uploadingPhotos: true });
-
+    wx.chooseImage({
+      count: 1,
+      sizeType: ['compressed'],
+      sourceType: ['album', 'camera'],
+      success: (res) => {
         const tempFilePath = res.tempFilePaths[0];
-        const cloudPath = `work-orders/${Date.now()}-${Math.random().toString(36).substr(2, 9)}.jpg`;
+        const images = [...this.data.formData.images];
 
-        const uploadRes = await wx.cloud.uploadFile({
-          cloudPath: cloudPath,
-          filePath: tempFilePath
-        });
-
-        const fileID = uploadRes.fileID;
-        const tempFileURL = await wx.cloud.getTempFileURL({
-          fileList: [fileID]
-        });
-
-        const photoUrl = tempFileURL.fileList[0].tempFileURL;
-        const editPhotos = this.data.editPhotos;
-        editPhotos[index] = photoUrl;
+        // 如果该位置已有图片，替换；否则添加
+        if (index < images.length) {
+          images[index] = tempFilePath;
+        } else {
+          images.push(tempFilePath);
+        }
 
         this.setData({
-          editPhotos: editPhotos,
-          uploadingPhotos: false
+          'formData.images': images
         });
 
-        wx.showToast({
-          title: '上传成功',
-          icon: 'success'
-        });
+        // 更新照片槽位显示
+        this.updatePhotoSlots();
       }
-    } catch (error) {
-      console.error('[Edit] Photo upload error:', error);
-      this.setData({ uploadingPhotos: false });
-      wx.showToast({
-        title: '上传失败',
-        icon: 'none'
-      });
-    }
-  },
-
-  /**
-   * Remove Photo
-   */
-  handleRemovePhoto: function (e) {
-    const index = e.currentTarget.dataset.index;
-    const editPhotos = this.data.editPhotos;
-    editPhotos[index] = '';
-    this.setData({ editPhotos: editPhotos });
-  },
-
-  /**
-   * Preview Photo
-   */
-  handlePhotoPreview: function (e) {
-    const index = e.currentTarget.dataset.index;
-    const photos = this.data.editPhotos.filter(p => p);
-    wx.previewImage({
-      current: photos[index],
-      urls: photos
     });
   },
 
-  /**
-   * Submit Edit Form
-   */
-  submitEdit: async function () {
-    const { editForm, floorIndex, orderCategoryIndex, responsiblePartyIndex, editPhotos } = this.data;
+  // 删除图片
+  handleRemoveImage(e) {
+    const index = e.currentTarget.dataset.index;
+    const images = [...this.data.formData.images];
+    images.splice(index, 1);
+    this.setData({
+      'formData.images': images
+    });
 
-    // Validation
-    if (floorIndex === 0) {
-      wx.showToast({ title: '请选择楼层', icon: 'none' });
-      return;
-    }
-    if (!editForm.location.trim()) {
-      wx.showToast({ title: '请填写具体位置', icon: 'none' });
-      return;
-    }
-    if (orderCategoryIndex === 0) {
-      wx.showToast({ title: '请选择工单类别', icon: 'none' });
-      return;
-    }
-    if (responsiblePartyIndex === 0) {
-      wx.showToast({ title: '请选择责任方', icon: 'none' });
-      return;
-    }
-    if (!editForm.priority) {
-      wx.showToast({ title: '请选择优先级', icon: 'none' });
-      return;
-    }
-    if (!editForm.description.trim()) {
-      wx.showToast({ title: '请填写问题描述', icon: 'none' });
-      return;
-    }
+    // 更新照片槽位显示
+    this.updatePhotoSlots();
+  },
 
-    const validPhotos = editPhotos.filter(p => p);
-    if (validPhotos.length === 0) {
-      wx.showToast({ title: '请上传至少一张现场照片', icon: 'none' });
-      return;
-    }
+  // 预览图片
+  handlePreviewImage(e) {
+    const index = e.currentTarget.dataset.index;
+    const images = this.data.formData.images.filter(img => img); // 过滤空值
 
-    try {
-      this.setData({ submitting: true });
-
-      const updateData = {
-        floor: editForm.floor,
-        location: editForm.location,
-        order_category: editForm.orderCategory,
-        responsible_party: editForm.responsibleParty,
-        priority: editForm.priority,
-        description: editForm.description,
-        remark: editForm.remark,
-        photos: validPhotos
-      };
-
-      await workOrderService.updateWorkOrder(this.data.orderId, updateData);
-
-      wx.showToast({
-        title: '修改成功',
-        icon: 'success',
-        duration: 2000
-      });
-
-      this.setData({ submitting: false });
-
-      // 延迟返回
-      setTimeout(() => {
-        wx.navigateBack();
-      }, 1500);
-
-    } catch (error) {
-      console.error('[Edit] Submit edit error:', error);
-      this.setData({ submitting: false });
-      wx.showModal({
-        title: '修改失败',
-        content: error.message || '修改工单失败，请重试',
-        showCancel: false
+    if (images.length > 0 && this.data.photoSlots[index]) {
+      wx.previewImage({
+        current: this.data.photoSlots[index],
+        urls: images
       });
     }
   },
 
-  /**
-   * Navigate Back
-   */
-  navigateBack: function () {
-    wx.navigateBack({
-      fail: () => {
-        wx.redirectTo({
-          url: '/pages/index/index'
-        });
+  // 保存
+  handleSave() {
+    // 验证必填项
+    if (this.data.formData.images.length === 0) {
+      wx.showToast({
+        title: '请上传现场照片',
+        icon: 'none'
+      });
+      return;
+    }
+
+    wx.showLoading({
+      title: '保存中...'
+    });
+
+    // 模拟保存
+    setTimeout(() => {
+      wx.hideLoading();
+      wx.showToast({
+        title: '保存成功',
+        icon: 'success',
+        duration: 1500
+      });
+
+      console.log('保存的数据:', this.data.formData);
+
+      // 保存成功后跳转到工单详情页面
+      setTimeout(() => {
+        const orderId = this.data.orderId || this.data.formData.id;
+        if (orderId) {
+          wx.redirectTo({
+            url: `/pages/work-order-detail/index?id=${orderId}`,
+            fail: () => {
+              // 如果redirectTo失败，尝试navigateTo
+              wx.navigateTo({
+                url: `/pages/work-order-detail/index?id=${orderId}`,
+                fail: () => {
+                  // 如果都失败了，就返回上一页
+                  wx.navigateBack({
+                    fail: () => {
+                      wx.switchTab({
+                        url: '/pages/index/index'
+                      });
+                    }
+                  });
+                }
+              });
+            }
+          });
+        } else {
+          // 没有工单ID，返回上一页
+          wx.navigateBack({
+            fail: () => {
+              wx.switchTab({
+                url: '/pages/index/index'
+              });
+            }
+          });
+        }
+      }, 1500);
+    }, 1000);
+  },
+
+  // 取消
+  handleCancel() {
+    wx.showModal({
+      title: '提示',
+      content: '确定要取消编辑吗?',
+      success: (res) => {
+        if (res.confirm) {
+          wx.navigateBack({
+            fail: () => {
+              wx.switchTab({
+                url: '/pages/index/index',
+                fail: () => {
+                  wx.showToast({
+                    title: '无法返回',
+                    icon: 'none'
+                  });
+                }
+              });
+            }
+          });
+        }
       }
     });
   }
-});
+})

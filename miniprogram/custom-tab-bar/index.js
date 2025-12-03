@@ -2,7 +2,7 @@ Component({
   data: {
     selected: 0,
     color: "#7A7E83",
-    selectedColor: "#0CA77D",
+    selectedColor: "#10b981",
     hidden: false,
     list: [
       {

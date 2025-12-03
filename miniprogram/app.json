@@ -11,6 +11,9 @@
     "pages/maintenance/history/index",
     "pages/work-order-detail/index",
     "pages/work-order-edit/index",
+    "pages/avatar/avatar",
+    "pages/password/password",
+    "pages/phone/phone",
     "pages/cloud-test/cloud-test",
     "pages/admin/users/index",
     "pages/admin/users/add/index",
@@ -22,7 +25,7 @@
   ],
   "window": {
     "backgroundTextStyle": "light",
-    "navigationBarBackgroundColor": "#0CA77D",
+    "navigationBarBackgroundColor": "#10b981",
     "navigationBarTitleText": "小物业报修系统",
     "navigationBarTextStyle": "white",
     "enablePullDownRefresh": true,
@@ -31,7 +34,7 @@
   "tabBar": {
     "custom": true,
     "color": "#7A7E83",
-    "selectedColor": "#0CA77D",
+    "selectedColor": "#10b981",
     "backgroundColor": "#ffffff",
     "borderStyle": "white",
     "list": [

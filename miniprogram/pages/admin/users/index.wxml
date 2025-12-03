@@ -1,5 +1,8 @@
 <!-- 正在开发中页面 -->
 <view class="developing-page">
+  <!-- 自定义Header -->
+  <custom-header title="消息" />
+
   <view class="developing-content">
     <text class="developing-icon">🚧</text>
     <text class="developing-title">正在开发中</text>

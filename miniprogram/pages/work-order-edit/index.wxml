@@ -1,151 +1,144 @@
-<!--工单修改页面-->
-<view class="edit-page-container">
-  <!-- 顶部导航栏 -->
-  <view class="custom-navbar">
-    <view class="navbar-back" bindtap="navigateBack">
-      <text class="back-icon">‹</text>
-    </view>
-    <view class="navbar-title">修改工单</view>
-    <view class="navbar-placeholder"></view>
-  </view>
+<!-- pages/editOrder/editOrder.wxml -->
+<view class="page-container">
+  <!-- 自定义Header -->
+  <custom-header />
 
-  <!-- 表单内容 -->
-  <scroll-view scroll-y class="edit-form-scroll">
-    <view class="edit-form-content">
-      <!-- 楼层 -->
-      <view class="form-group">
-        <view class="form-label required">楼层</view>
-        <picker mode="selector" range="{{floorOptions}}" value="{{floorIndex}}" bindchange="onFloorChange">
-          <view class="form-picker">
-            <text class="picker-text {{floorIndex === 0 ? 'placeholder' : ''}}">
-              {{floorOptions[floorIndex]}}
-            </text>
-            <text class="picker-arrow">›</text>
-          </view>
-        </picker>
-      </view>
+  <!-- 主内容区域 -->
+  <view class="main-content" style="padding-top: {{headerHeight}}px;">
 
-      <!-- 具体位置 -->
-      <view class="form-group">
-        <view class="form-label required">具体位置</view>
-        <input
-          class="form-input"
-          placeholder="请填写具体位置"
-          value="{{editForm.location}}"
-          bindinput="onLocationInput"
-          maxlength="50"
-        />
-      </view>
+    <!-- 工单编号 -->
+    <form-row
+      label="工单编号"
+      value="{{formData.orderCode}}"
+      type="display"
+    />
 
-      <!-- 工单类别 -->
-      <view class="form-group">
-        <view class="form-label required">工单类别</view>
-        <picker mode="selector" range="{{orderCategories}}" value="{{orderCategoryIndex}}" bindchange="onOrderCategoryChange">
-          <view class="form-picker">
-            <text class="picker-text {{orderCategoryIndex === 0 ? 'placeholder' : ''}}">
-              {{orderCategories[orderCategoryIndex]}}
-            </text>
-            <text class="picker-arrow">›</text>
-          </view>
-        </picker>
-      </view>
+    <!-- 楼层 -->
+    <form-row
+      label="楼层"
+      value="{{formData.floor}}"
+      type="text"
+      bind:change="handleFloorChange"
+    />
 
-      <!-- 责任方 -->
-      <view class="form-group">
-        <view class="form-label required">责任方</view>
-        <picker mode="selector" range="{{responsibleParties}}" value="{{responsiblePartyIndex}}" bindchange="onResponsiblePartyChange">
-          <view class="form-picker">
-            <text class="picker-text {{responsiblePartyIndex === 0 ? 'placeholder' : ''}}">
-              {{responsibleParties[responsiblePartyIndex]}}
-            </text>
-            <text class="picker-arrow">›</text>
-          </view>
-        </picker>
-      </view>
+    <!-- 具体位置 -->
+    <form-row
+      label="具体位置"
+      value="{{formData.location}}"
+      type="text"
+      bind:change="handleLocationChange"
+    />
 
-      <!-- 优先级 -->
-      <view class="form-group">
-        <view class="form-label required">优先级</view>
-        <view class="priority-row">
-          <view
-            wx:for="{{priorityOptions}}"
-            wx:key="key"
-            class="priority-btn {{editForm.priority === item.key ? 'active-' + item.color : ''}}"
-            bindtap="onPrioritySelect"
-            data-key="{{item.key}}"
-          >
-            <text class="priority-text">{{item.label}}</text>
-          </view>
-        </view>
-      </view>
+    <!-- 工单类别 -->
+    <form-row
+      label="工单类别"
+      value="{{formData.category}}"
+      type="select"
+      bind:selectclick="handleCategorySelect"
+    />
 
-      <!-- 问题描述 -->
-      <view class="form-group">
-        <view class="form-label required">问题描述</view>
-        <textarea
-          class="form-textarea"
-          placeholder="请详细描述遇到的问题"
-          value="{{editForm.description}}"
-          bindinput="onDescriptionInput"
-          maxlength="80"
-          auto-height
-        />
-        <view class="char-count">{{editForm.description.length}}/80</view>
-      </view>
+    <!-- 责任方 -->
+    <form-row
+      label="责任方"
+      value="{{formData.responsible}}"
+      type="select"
+      bind:selectclick="handleResponsibleSelect"
+    />
 
-      <!-- 现场照片 -->
-      <view class="form-group">
-        <view class="form-label required">现场照片</view>
-        <view class="photos-row">
-          <view wx:for="{{editPhotos}}" wx:key="index" class="photo-box">
-            <view wx:if="{{item}}" class="photo-preview">
-              <image class="photo-img" src="{{item}}" mode="aspectFill" bindtap="handlePhotoPreview" data-index="{{index}}" />
-              <view class="photo-del" bindtap="handleRemovePhoto" data-index="{{index}}">
-                <text class="del-text">×</text>
-              </view>
-            </view>
-            <view wx:else class="photo-add" bindtap="handlePhotoUpload" data-index="{{index}}">
-              <text class="add-plus">+</text>
-              <text class="add-text">添加照片</text>
-            </view>
-          </view>
-        </view>
-        <view class="form-hint">请上传1-3张现场照片</view>
-      </view>
+    <!-- 优先级 -->
+    <form-row
+      label="优先级"
+      value="{{formData.priority}}"
+      type="select"
+      bind:selectclick="handlePrioritySelect"
+    />
 
-      <!-- 备注 -->
-      <view class="form-group">
-        <view class="form-label">备注</view>
-        <textarea
-          class="form-textarea"
-          placeholder="请填写备注信息（非必填）"
-          value="{{editForm.remark}}"
-          bindinput="onRemarkInput"
-          maxlength="30"
-          auto-height
-        />
-        <view class="char-count">{{editForm.remark.length}}/30</view>
-      </view>
-    </view>
-  </scroll-view>
+    <!-- 报修时间 -->
+    <form-row
+      label="报修时间"
+      value="{{formData.reportTime}}"
+      type="display"
+    />
 
-  <!-- 底部按钮 -->
-  <view class="bottom-buttons">
-    <button class="cancel-btn" bindtap="navigateBack">取消</button>
-    <button
-      class="submit-btn"
-      bindtap="submitEdit"
-      disabled="{{submitting || uploadingPhotos}}"
+    <!-- 问题描述 -->
+    <form-row
+      label="问题描述"
+      value="{{formData.description}}"
+      type="textarea"
+      align="start"
+      bind:change="handleDescriptionChange"
+    />
+
+    <!-- 现场照片 -->
+    <form-row
+      label="现场照片"
+      align="start"
+      required="{{true}}"
+      hasSlot="{{true}}"
     >
-      {{submitting ? '提交中...' : '确认修改'}}
-    </button>
+      <view class="photo-container">
+        <!-- 固定3个照片槽位 -->
+        <block wx:for="{{photoSlots}}" wx:key="index">
+          <view class="photo-slot">
+            <!-- 如果有照片则显示照片 -->
+            <block wx:if="{{item}}">
+              <view class="photo-item">
+                <image
+                  class="photo-image"
+                  src="{{item}}"
+                  mode="aspectFill"
+                  bindtap="handlePreviewImage"
+                  data-index="{{index}}"
+                />
+                <!-- 删除按钮 -->
+                <view class="delete-btn" bindtap="handleRemoveImage" data-index="{{index}}">
+                  <view class="icon-x"></view>
+                </view>
+              </view>
+            </block>
+            <!-- 如果没有照片则显示添加按钮 -->
+            <block wx:else>
+              <view
+                class="add-photo-btn"
+                bindtap="handleAddImage"
+                data-index="{{index}}"
+              >
+                <view class="icon-plus"></view>
+              </view>
+            </block>
+          </view>
+        </block>
+      </view>
+    </form-row>
+
+    <!-- 工单状态 -->
+    <form-row
+      label="工单状态"
+      value="{{formData.status}}"
+      type="display"
+    />
+
+    <!-- 报修人 -->
+    <form-row
+      label="报修人"
+      value="{{formData.reporter}}"
+      type="display"
+    />
+
+    <!-- 备注 -->
+    <view class="remarks-section">
+      <view class="remarks-label">备注</view>
+      <textarea
+        class="remarks-input"
+        placeholder="请填写备注信息(非必填)"
+        value="{{formData.remarks}}"
+        bindinput="handleRemarksChange"
+        maxlength="-1"
+      />
+    </view>
+
   </view>
 
-  <!-- Loading 遮罩 -->
-  <view class="loading-overlay" wx:if="{{uploadingPhotos}}">
-    <view class="loading-box">
-      <view class="weui-loading"></view>
-      <text class="loading-text">上传中...</text>
-    </view>
-  </view>
+  <!-- 底部操作栏 -->
+  <custom-footer bind:save="handleSave" bind:cancel="handleCancel" />
 </view>

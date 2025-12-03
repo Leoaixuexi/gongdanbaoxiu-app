@@ -10,7 +10,7 @@
 }
 
 .header-content {
-  height: 104rpx;
+  height: 88rpx;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -25,8 +25,8 @@
 }
 
 .back-btn {
-  padding: 16rpx;
-  margin-left: -16rpx;
+  padding: 12rpx;
+  margin-left: -12rpx;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -38,10 +38,10 @@
 
 /* 返回图标 - 使用伪元素绘制 */
 .icon-chevron-left {
-  width: 24rpx;
-  height: 24rpx;
-  border-left: 4rpx solid #ffffff;
-  border-bottom: 4rpx solid #ffffff;
+  width: 20rpx;
+  height: 20rpx;
+  border-left: 3rpx solid #ffffff;
+  border-bottom: 3rpx solid #ffffff;
   transform: rotate(45deg);
 }
 
@@ -52,10 +52,10 @@
 }
 
 .header-title {
-  font-size: 34rpx;
+  font-size: 32rpx;
   font-weight: 600;
   color: #ffffff;
-  letter-spacing: 1rpx;
+  letter-spacing: 0.5rpx;
 }
 
 /* 右侧菜单区域 */
@@ -71,9 +71,9 @@
   align-items: center;
   background: rgba(0, 0, 0, 0.1);
   backdrop-filter: blur(10rpx);
-  border-radius: 60rpx;
-  padding: 0 24rpx;
-  height: 60rpx;
+  border-radius: 50rpx;
+  padding: 0 20rpx;
+  height: 56rpx;
   border: 1rpx solid rgba(255, 255, 255, 0.1);
 }
 
@@ -83,8 +83,8 @@
 
 /* 更多图标 - 三个点 */
 .icon-more {
-  width: 36rpx;
-  height: 36rpx;
+  width: 32rpx;
+  height: 32rpx;
   position: relative;
   display: flex;
   align-items: center;
@@ -95,8 +95,8 @@
 .icon-more::after {
   content: '';
   position: absolute;
-  width: 4rpx;
-  height: 4rpx;
+  width: 3rpx;
+  height: 3rpx;
   background: rgba(255, 255, 255, 0.9);
   border-radius: 50%;
 }
@@ -110,25 +110,25 @@
 }
 
 .icon-more {
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.9) 2rpx, transparent 2rpx);
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.9) 1.5rpx, transparent 1.5rpx);
   background-position: center;
-  background-size: 4rpx 4rpx;
+  background-size: 3rpx 3rpx;
   background-repeat: no-repeat;
 }
 
 /* 分隔线 */
 .divider {
-  width: 2rpx;
-  height: 28rpx;
+  width: 1rpx;
+  height: 24rpx;
   background: rgba(255, 255, 255, 0.2);
-  margin: 0 24rpx;
+  margin: 0 20rpx;
 }
 
 /* 圆点图标容器 */
 .icon-dot-container {
-  width: 32rpx;
-  height: 32rpx;
-  border: 3rpx solid rgba(255, 255, 255, 0.9);
+  width: 28rpx;
+  height: 28rpx;
+  border: 2rpx solid rgba(255, 255, 255, 0.9);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -136,8 +136,8 @@
 }
 
 .icon-dot {
-  width: 8rpx;
-  height: 8rpx;
+  width: 6rpx;
+  height: 6rpx;
   background: #ffffff;
   border-radius: 50%;
 }

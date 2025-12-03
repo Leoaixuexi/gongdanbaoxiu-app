@@ -50,7 +50,7 @@
 }
 
 .label-active {
-  color: #0CA77D;
+  color: #10b981;
   font-size: 24rpx;
   font-weight: bold;
 }
@@ -81,7 +81,7 @@
 }
 
 .line-active {
-  background-color: #0CA77D;
+  background-color: #10b981;
 }
 
 .line-inactive {
@@ -99,7 +99,7 @@
 .dot-completed {
   width: 20rpx;
   height: 20rpx;
-  background-color: #0CA77D;
+  background-color: #10b981;
 }
 
 /* 当前步骤的圆点（带对勾） */
@@ -115,7 +115,7 @@
 /* 对勾图标 */
 .check-icon {
   font-size: 20rpx;
-  color: #0CA77D;
+  color: #10b981;
   font-weight: bold;
   line-height: 1;
 }

@@ -108,7 +108,7 @@
 .ticket-id {
   font-size: 32rpx;
   font-weight: normal;
-  color: #0CA77D;
+  color: #10b981;
   letter-spacing: -0.5px;
   line-height: 1;
   margin-bottom: 0;
