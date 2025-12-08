@@ -3,14 +3,14 @@
   <view class="header-content">
     <!-- 左侧返回按钮 -->
     <view class="header-left">
-      <view class="back-btn" bindtap="onBack">
+      <view wx:if="{{showBack}}" class="back-btn" bindtap="onBack">
         <view class="icon-chevron-left"></view>
       </view>
     </view>
 
     <!-- 中间标题 -->
     <view class="header-center">
-      <text class="header-title">修改工单</text>
+      <text class="header-title">{{title}}</text>
     </view>
 
     <!-- 右侧占位 -->

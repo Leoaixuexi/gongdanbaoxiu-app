@@ -13,31 +13,22 @@
 
   <!-- 头像预览区域 -->
   <view class="preview-section">
-    <view class="avatar-wrapper">
-      <view class="avatar-container">
+    <view class="avatar-glow-wrapper">
+      <view class="avatar-container" bindtap="chooseImage">
         <image
           class="avatar-preview"
           src="{{preview}}"
           mode="aspectFill"
         />
-        <button class="camera-btn" bindtap="chooseImage">
+        <!-- 相机图标 -->
+        <view class="camera-btn">
           <view class="camera-icon-wrapper">
             <view class="camera-icon"></view>
           </view>
-        </button>
+        </view>
       </view>
     </view>
 
-    <!-- 选择按钮 -->
-    <button class="choose-btn" bindtap="chooseImage">
-      <view class="choose-icon-wrapper">
-        <view class="image-icon"></view>
-      </view>
-      <view class="choose-text-wrapper">
-        <text class="choose-title">选择新头像</text>
-        <text class="choose-desc">支持 JPG、PNG 格式</text>
-      </view>
-    </button>
   </view>
 
   <!-- 底部按钮 -->

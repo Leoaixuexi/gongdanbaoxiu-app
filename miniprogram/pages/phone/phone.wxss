@@ -3,7 +3,7 @@
 /* ==================== 容器 ==================== */
 .container {
   min-height: 100vh;
-  background-color: #F8FAFC;
+  background-color: #E9F2F8;
   display: flex;
   flex-direction: column;
   padding-bottom: 160rpx;
@@ -11,8 +11,7 @@
 
 /* ==================== 导航栏 ==================== */
 .nav-bar {
-  background: #ffffff;
-  border-bottom: 1rpx solid #F1F5F9;
+  background: linear-gradient(to right, #10b981, #14b8a6);
 }
 
 .nav-content {
@@ -32,8 +31,8 @@
 .back-icon {
   width: 20rpx;
   height: 20rpx;
-  border-left: 3rpx solid #1E293B;
-  border-bottom: 3rpx solid #1E293B;
+  border-left: 3rpx solid #ffffff;
+  border-bottom: 3rpx solid #ffffff;
   transform: rotate(45deg);
 }
 
@@ -46,7 +45,7 @@
   text-align: center;
   font-size: 32rpx;
   font-weight: 600;
-  color: #1E293B;
+  color: #ffffff;
 }
 
 .nav-right {
@@ -56,7 +55,7 @@
 /* ==================== 表单区域 ==================== */
 .form-section {
   flex: 1;
-  padding: 24rpx 32rpx 32rpx;
+  padding: 32rpx;
 }
 
 /* ==================== 当前手机号卡片 ==================== */
@@ -68,218 +67,153 @@
   border-radius: 24rpx;
   background: #ffffff;
   margin-bottom: 24rpx;
-  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+  box-shadow: 0 10rpx 24rpx rgba(15, 23, 42, 0.06);
 }
 
-.phone-icon-wrapper {
+.current-icon {
   width: 96rpx;
   height: 96rpx;
   border-radius: 50%;
-  background: rgba(16, 185, 129, 0.1);
+  background: linear-gradient(135deg, #e7f8f2, #d4f3e7);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  box-shadow: inset 0 1rpx 0 rgba(255, 255, 255, 0.9);
 }
 
-/* 电话图标 - 使用CSS绘制 */
-.phone-icon-svg {
-  width: 44rpx;
-  height: 44rpx;
-  position: relative;
+.current-icon-inner {
+  width: 42rpx;
+  height: 42rpx;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2310b981' stroke-width='1.8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M5 4h4l2 5-2.5 1.5a11 11 0 005 5L15 13l5 2v4a2 2 0 01-2 2c-8.837 0-16-7.163-16-16a2 2 0 012-2z'/%3E%3C/svg%3E");
+  background-size: contain;
+  background-repeat: no-repeat;
 }
 
-.phone-icon-inner {
-  width: 100%;
-  height: 100%;
-  border: 4rpx solid #10b981;
-  border-radius: 8rpx;
-  transform: rotate(-25deg);
-  position: relative;
-}
-
-.phone-icon-inner::before {
-  content: '';
-  position: absolute;
-  bottom: 2rpx;
-  left: 2rpx;
-  width: 14rpx;
-  height: 14rpx;
-  background: #10b981;
-  border-radius: 50%;
-}
-
-.phone-info {
+.current-info {
   display: flex;
   flex-direction: column;
   gap: 8rpx;
-  flex: 1;
 }
 
-.phone-label {
+.current-label {
   font-size: 26rpx;
-  color: #64748B;
+  color: #94A3B8;
 }
 
-.phone-number {
+.current-number {
   font-size: 34rpx;
   font-weight: 600;
-  color: #1E293B;
-  letter-spacing: 2rpx;
+  color: #0F172A;
+  letter-spacing: 3rpx;
 }
 
 /* ==================== 表单卡片 ==================== */
 .form-card {
   border-radius: 24rpx;
-  padding: 40rpx 32rpx 32rpx;
+  padding: 32rpx;
   background: #ffffff;
-  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+  box-shadow: 0 10rpx 24rpx rgba(15, 23, 42, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 32rpx;
 }
 
-.input-field {
-  margin-bottom: 40rpx;
+.field-block {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
 }
 
-.input-field:last-of-type {
-  margin-bottom: 0;
-}
-
-.field-label {
+.field-header {
   display: flex;
   align-items: center;
   gap: 16rpx;
-  margin-bottom: 20rpx;
 }
 
-.field-icon-box {
-  width: 40rpx;
-  height: 40rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.field-icon {
+  width: 50rpx;
+  height: 50rpx;
+  border-radius: 16rpx;
+  background: linear-gradient(180deg, #f4f6fb 0%, #edf1f8 100%);
+  box-shadow: inset 0 1rpx 0 rgba(255, 255, 255, 0.9), 0 4rpx 12rpx rgba(148, 163, 184, 0.2);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 28rpx;
   flex-shrink: 0;
 }
 
-/* 手机图标 */
-.mobile-icon {
-  width: 24rpx;
-  height: 32rpx;
-  border: 3rpx solid #64748B;
-  border-radius: 4rpx;
-  position: relative;
+.field-icon.mobile {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23838BA7' stroke-width='1.8'%3E%3Crect x='7' y='3' width='10' height='18' rx='2'/%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M11 18h2'/%3E%3C/svg%3E");
 }
 
-.mobile-icon::after {
-  content: '';
-  position: absolute;
-  bottom: 3rpx;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 8rpx;
-  height: 2rpx;
-  background: #64748B;
-  border-radius: 1rpx;
+.field-icon.sms {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23838BA7' stroke-width='1.8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M4 6h16v12H4zM4 6l8 7 8-7'/%3E%3C/svg%3E");
 }
 
-/* 验证码图标 */
-.code-icon {
-  width: 32rpx;
-  height: 28rpx;
-  border: 3rpx solid #64748B;
-  border-radius: 4rpx;
-  position: relative;
-}
-
-.code-icon::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 16rpx;
-  height: 2rpx;
-  background: #64748B;
-  box-shadow: 0 -6rpx 0 #64748B, 0 6rpx 0 #64748B;
-}
-
-.field-text {
-  font-size: 28rpx;
-  color: #1E293B;
-  font-weight: 500;
-}
-
-/* ==================== 输入框 ==================== */
-.input {
-  width: 100%;
-  padding: 24rpx 0;
-  background-color: transparent;
-  border: none;
-  border-bottom: 2rpx solid #E2E8F0;
+.field-title {
   font-size: 30rpx;
-  color: #1E293B;
-  transition: border-color 0.2s ease;
+  color: #0F172A;
+  font-weight: 600;
 }
 
-.input:focus {
-  border-bottom-color: #10b981;
+.text-input {
+  width: 100%;
+  height: 92rpx;
+  border-radius: 24rpx;
+  border: none;
+  background: #F1F5F9;
+  padding: 0 28rpx;
+  font-size: 30rpx;
+  color: #0F172A;
 }
 
-.input::placeholder {
-  color: #CBD5E1;
-  font-size: 28rpx;
+.text-input:focus {
+  outline: none;
 }
 
-/* ==================== 验证码输入 ==================== */
-.code-input-wrapper {
+.input-placeholder {
+  color: #B8C1D1;
+}
+
+.code-row {
   display: flex;
   gap: 16rpx;
-  align-items: flex-end;
+  align-items: center;
 }
 
-.code-input {
-  flex: 1;
-  min-width: 0;
-}
-
-.send-code-btn {
+.code-btn {
   flex-shrink: 0;
-  padding: 20rpx 28rpx;
-  background: rgba(16, 185, 129, 0.1);
-  border-radius: 12rpx;
-  transition: all 0.2s ease;
+  padding: 0 28rpx;
+  height: 92rpx;
+  border-radius: 24rpx;
+  background: rgba(16, 185, 129, 0.15);
   border: none;
-  height: 72rpx;
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: all 0.2s ease;
 }
 
-.send-code-btn::after {
+.code-btn::after {
   border: none;
 }
 
-.send-code-btn:active {
-  opacity: 0.7;
-  transform: scale(0.98);
+.code-btn:active {
+  opacity: 0.8;
 }
 
-.send-code-btn.disabled {
-  background: #F1F5F9;
-  opacity: 1;
+.code-btn.disabled {
+  background: #E2E8F0;
 }
 
-.send-code-btn.disabled:active {
-  transform: none;
-}
-
-.send-code-text {
-  font-size: 26rpx;
-  font-weight: 500;
+.code-btn-text {
+  font-size: 28rpx;
+  font-weight: 600;
   color: #10b981;
-  white-space: nowrap;
 }
 
-.send-code-btn.disabled .send-code-text {
+.code-btn.disabled .code-btn-text {
   color: #94A3B8;
 }
 

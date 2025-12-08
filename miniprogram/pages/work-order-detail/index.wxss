@@ -48,7 +48,6 @@
 .header {
   background: linear-gradient(to right, #10b981, #14b8a6);
   padding: 32rpx 32rpx 40rpx;
-  padding-top: calc(32rpx + env(safe-area-inset-top) + 176rpx);
   box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
 }
 
@@ -95,10 +94,10 @@
   transform: translateX(-50%);
   width: 80rpx;
   height: 6rpx;
-  background: linear-gradient(to right, #10b981, #14b8a6);
+  background: linear-gradient(to right, #10b981, #10B981);
   border-radius: 3rpx 3rpx 0 0;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 -2rpx 8rpx rgba(16, 185, 129, 0.4);
+  box-shadow: 0 -2rpx 8rpx rgba(12, 167, 125, 0.4);
 }
 
 /* ==================== Content Area ==================== */
@@ -170,6 +169,8 @@
   flex-direction: column;
   align-items: flex-start;
   gap: 16rpx;
+  padding: 32rpx;
+  border-bottom: 1rpx solid #F9FAFB;
 }
 
 .info-value-photos {
@@ -207,6 +208,55 @@
   font-size: 24rpx;
   color: #EA580C;
   font-weight: 500;
+}
+
+/* 备注模块 */
+.remark-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 32rpx;
+  border-bottom: 1rpx solid #F9FAFB;
+  box-sizing: border-box;
+  width: 100%;
+  gap: 24rpx;
+}
+
+.remark-label {
+  font-size: 28rpx;
+  color: #9CA3AF;
+  min-width: 140rpx;
+  flex-shrink: 0;
+  margin-right: 24rpx;
+}
+
+.remark-box {
+  background-color: #F9FAFB;
+  border: 1rpx solid #E5E7EB;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  min-height: 120rpx;
+  line-height: 1.6;
+  flex: 1;
+  width: calc(100% + 40px);
+  margin-right: -40px;
+}
+
+.remark-box-empty {
+  border-style: dashed;
+  color: #9CA3AF;
+}
+
+.remark-text {
+  font-size: 28rpx;
+  color: #1F2937;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.remark-placeholder {
+  font-size: 28rpx;
+  color: #9CA3AF;
 }
 
 /* ==================== Photo Section ==================== */
@@ -430,7 +480,7 @@
 .action-button-edit {
   background: linear-gradient(to right, #10b981, #14b8a6);
   color: white;
-  box-shadow: 0 8rpx 16rpx rgba(16, 185, 129, 0.2);
+  box-shadow: 0 8rpx 16rpx rgba(12, 167, 125, 0.2);
   min-width: 500rpx;
 }
 
@@ -489,7 +539,7 @@
   font-size: 32rpx;
   font-weight: 500;
   border: none;
-  box-shadow: 0 8rpx 24rpx rgba(16, 185, 129, 0.3);
+  box-shadow: 0 8rpx 24rpx rgba(12, 167, 125, 0.3);
   transition: all 0.2s;
 }
 
@@ -621,7 +671,7 @@
 .modal-btn.confirm {
   background: linear-gradient(to right, #10b981, #14b8a6);
   color: white;
-  box-shadow: 0 8rpx 24rpx rgba(16, 185, 129, 0.3);
+  box-shadow: 0 8rpx 24rpx rgba(12, 167, 125, 0.3);
 }
 
 .modal-btn.approve {
@@ -1202,7 +1252,7 @@
 .edit-modal-btn.confirm {
   background: linear-gradient(to right, #10b981, #14b8a6);
   color: white;
-  box-shadow: 0 8rpx 24rpx rgba(16, 185, 129, 0.3);
+  box-shadow: 0 8rpx 24rpx rgba(12, 167, 125, 0.3);
 }
 
 .edit-modal-btn:disabled {

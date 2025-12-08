@@ -3,7 +3,7 @@
 /* ==================== 容器 ==================== */
 .container {
   min-height: 100vh;
-  background: linear-gradient(180deg, #E0F2F1 0%, #F8FAFC 50%);
+  background-color: #F8FAFC;
   display: flex;
   flex-direction: column;
   padding-bottom: 160rpx;
@@ -11,7 +11,7 @@
 
 /* ==================== 导航栏 ==================== */
 .nav-bar {
-  background: transparent;
+  background: linear-gradient(to right, #10b981, #14b8a6);
 }
 
 .nav-content {
@@ -31,8 +31,8 @@
 .back-icon {
   width: 20rpx;
   height: 20rpx;
-  border-left: 3rpx solid #1E293B;
-  border-bottom: 3rpx solid #1E293B;
+  border-left: 3rpx solid #ffffff;
+  border-bottom: 3rpx solid #ffffff;
   transform: rotate(45deg);
 }
 
@@ -45,7 +45,7 @@
   text-align: center;
   font-size: 32rpx;
   font-weight: 600;
-  color: #1E293B;
+  color: #ffffff;
 }
 
 .nav-right {
@@ -58,80 +58,80 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 48rpx;
-  padding: 48rpx 32rpx;
+  padding: 40rpx 32rpx;
 }
 
-/* ==================== 头像容器 ==================== */
-.avatar-wrapper {
+/* 头像光晕效果 */
+.avatar-glow-wrapper {
   position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  margin-top: 60rpx;
 }
 
+.avatar-glow-wrapper::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 360rpx;
+  height: 360rpx;
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.15) 0%, transparent 70%);
+  border-radius: 50%;
+}
+
+/* 头像容器 */
 .avatar-container {
   position: relative;
-  width: 320rpx;
-  height: 320rpx;
+  width: 600rpx;
+  height: 600rpx;
   border-radius: 50%;
+  border: 18rpx solid #ffffff;
   overflow: visible;
+  box-shadow: 0 16rpx 48rpx rgba(0, 0, 0, 0.15);
+  margin: 0 auto;
 }
 
 .avatar-preview {
   width: 100%;
   height: 100%;
   border-radius: 50%;
-  border: 8rpx solid #ffffff;
-  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.12);
 }
 
-/* ==================== 相机按钮 ==================== */
+/* 相机按钮 */
 .camera-btn {
   position: absolute;
   bottom: 8rpx;
   right: 8rpx;
-  width: 88rpx;
-  height: 88rpx;
+  width: 72rpx;
+  height: 72rpx;
   border-radius: 50%;
   background: linear-gradient(to right, #10b981, #14b8a6);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 8rpx 24rpx rgba(16, 185, 129, 0.4);
-  transition: all 0.2s ease;
-  border: 4rpx solid #ffffff;
+  box-shadow: 0 4rpx 16rpx rgba(16, 185, 129, 0.4);
   z-index: 10;
-  padding: 0;
-}
-
-.camera-btn::after {
-  border: none;
 }
 
 .camera-btn:active {
   transform: scale(0.95);
-  box-shadow: 0 4rpx 16rpx rgba(16, 185, 129, 0.3);
 }
 
 .camera-icon-wrapper {
-  width: 40rpx;
-  height: 40rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  width: 36rpx;
+  height: 28rpx;
   position: relative;
 }
 
 /* 相机图标 - CSS绘制 */
 .camera-icon {
-  width: 40rpx;
-  height: 32rpx;
+  width: 36rpx;
+  height: 24rpx;
   border: 3rpx solid #ffffff;
-  border-radius: 6rpx;
+  border-radius: 4rpx;
   position: relative;
-  background: transparent;
 }
 
 .camera-icon::before {
@@ -143,7 +143,7 @@
   width: 16rpx;
   height: 6rpx;
   background: #ffffff;
-  border-radius: 3rpx 3rpx 0 0;
+  border-radius: 2rpx 2rpx 0 0;
 }
 
 .camera-icon::after {
@@ -152,94 +152,10 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 16rpx;
-  height: 16rpx;
+  width: 14rpx;
+  height: 14rpx;
   border: 3rpx solid #ffffff;
   border-radius: 50%;
-}
-
-/* ==================== 选择按钮 ==================== */
-.choose-btn {
-  width: 100%;
-  max-width: 600rpx;
-  padding: 32rpx;
-  border-radius: 24rpx;
-  background: #ffffff;
-  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
-  display: flex;
-  align-items: center;
-  gap: 24rpx;
-  transition: all 0.2s ease;
-  border: none;
-}
-
-.choose-btn::after {
-  border: none;
-}
-
-.choose-btn:active {
-  transform: scale(0.98);
-  background: #F8FAFC;
-}
-
-.choose-icon-wrapper {
-  width: 88rpx;
-  height: 88rpx;
-  border-radius: 50%;
-  background: rgba(16, 185, 129, 0.1);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-/* 图片图标 - CSS绘制 */
-.image-icon {
-  width: 44rpx;
-  height: 40rpx;
-  border: 3rpx solid #10b981;
-  border-radius: 6rpx;
-  position: relative;
-}
-
-.image-icon::before {
-  content: '';
-  position: absolute;
-  top: 6rpx;
-  left: 6rpx;
-  width: 10rpx;
-  height: 10rpx;
-  border: 2rpx solid #10b981;
-  border-radius: 50%;
-}
-
-.image-icon::after {
-  content: '';
-  position: absolute;
-  bottom: 2rpx;
-  left: 2rpx;
-  right: 2rpx;
-  height: 14rpx;
-  background: linear-gradient(135deg, transparent 30%, #10b981 30%, #10b981 70%, transparent 70%);
-}
-
-.choose-text-wrapper {
-  display: flex;
-  flex-direction: column;
-  gap: 8rpx;
-  text-align: left;
-  flex: 1;
-}
-
-.choose-title {
-  font-size: 30rpx;
-  font-weight: 500;
-  color: #1E293B;
-}
-
-.choose-desc {
-  font-size: 26rpx;
-  color: #10b981;
 }
 
 /* ==================== 底部按钮 ==================== */

@@ -1,7 +1,10 @@
 <!--首页 - 工单列表界面(基于 Taro 设计)-->
 <view class="container">
+  <!-- 自定义导航栏 -->
+  <custom-header title="工单列表" showBack="{{false}}" />
+
   <!-- 顶部固定区域 -->
-  <view class="sticky-header">
+  <view class="sticky-header" style="top: {{headerHeight}}px;">
     <!-- 绿色渐变头部 -->
     <view class="header">
       <!-- 搜索栏 -->
@@ -96,7 +99,7 @@
   </view>
 
   <!-- 工单列表 -->
-  <view class="order-list">
+  <view class="order-list" style="padding-top: calc(370rpx + {{headerHeight}}px);">
     <block wx:if="{{!loading && workOrders.length > 0}}">
       <view
         wx:for="{{workOrders}}"
@@ -140,11 +143,11 @@
             </view>
           </view>
 
-          <!-- 右列: 提报人 & 类别 -->
+          <!-- 右列: 责任方 & 类别 -->
           <view class="metadata-col metadata-col-right">
             <view class="metadata-item">
               <view class="icon icon-person"></view>
-              <text class="metadata-text">{{item.submitter_name || '未知'}}</text>
+              <text class="metadata-text">{{item.responsible_party || '未知'}}</text>
             </view>
             <view class="metadata-item">
               <view class="icon icon-building"></view>

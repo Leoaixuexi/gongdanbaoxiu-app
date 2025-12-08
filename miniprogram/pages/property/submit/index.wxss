@@ -9,7 +9,6 @@
 /* 表单卡片容器 */
 .form-cards {
   padding: 24rpx 32rpx;
-  padding-top: calc(24rpx + env(safe-area-inset-top) + 176rpx);
   display: flex;
   flex-direction: column;
   gap: 16rpx;
@@ -368,7 +367,7 @@ picker {
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4rpx 12rpx rgba(16, 185, 129, 0.3);
+  box-shadow: 0 4rpx 12rpx rgba(12, 167, 125, 0.3);
 }
 
 .btn-submit-text {

@@ -44,6 +44,11 @@ Component({
     hasSlot: {
       type: Boolean,
       value: false
+    },
+    // 尺寸: normal | compact
+    size: {
+      type: String,
+      value: 'normal'
     }
   },
 

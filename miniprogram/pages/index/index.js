@@ -26,7 +26,9 @@ Page({
       { id: "category", label: "工单类别", hasArrow: true, value: '', placeholder: '' },
       { id: "reporter", label: "报修人", placeholder: "人名/简拼", value: '', hasArrow: false },
       { id: "priority", label: "优先级", hasArrow: true, value: '', placeholder: '' }
-    ]
+    ],
+    // 自定义导航栏高度
+    headerHeight: 0
   },
 
   /**
@@ -34,6 +36,14 @@ Page({
    */
   onLoad: function (options) {
     console.log('[Index] Page load');
+    // 计算自定义导航栏高度
+    const systemInfo = wx.getSystemInfoSync();
+    const statusBarHeight = systemInfo.statusBarHeight;
+    // 导航栏内容高度 88rpx 转换为 px
+    const navBarHeight = 88 * systemInfo.windowWidth / 750;
+    this.setData({
+      headerHeight: Math.ceil(statusBarHeight + navBarHeight)
+    });
     this.checkAuth();
   },
 

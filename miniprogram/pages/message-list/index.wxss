@@ -1,0 +1,100 @@
+/* 消息列表页样式 */
+.container {
+  min-height: 100vh;
+  background-color: #f9fafb;
+}
+
+/* 头部 */
+.header {
+  background: linear-gradient(to right, #14b8a6, #0d9488);
+  color: #ffffff;
+  padding: 32rpx;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.back-btn {
+  width: 64rpx;
+  height: 64rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: -16rpx;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+}
+
+.back-btn:active {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.back-icon {
+  font-size: 60rpx;
+  font-weight: 300;
+  line-height: 1;
+}
+
+.header-title {
+  flex: 1;
+  font-size: 40rpx;
+  font-weight: 600;
+  text-align: center;
+  margin: 0 16rpx;
+}
+
+.mark-read-btn {
+  width: 64rpx;
+  height: 64rpx;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+}
+
+.mark-read-btn:active {
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+.icon-text {
+  font-size: 36rpx;
+  font-weight: 600;
+}
+
+/* 主内容 */
+.main-content {
+  padding: 32rpx;
+  padding-bottom: 64rpx;
+}
+
+/* 空状态 */
+.empty-state {
+  text-align: center;
+  padding: 240rpx 0;
+}
+
+.empty-text {
+  color: #9ca3af;
+  font-size: 32rpx;
+}
+
+/* 消息列表 */
+.message-list {
+  /* 列表容器 */
+}
+
+/* 底部提示 */
+.footer-tip {
+  text-align: center;
+  color: #9ca3af;
+  font-size: 28rpx;
+  padding: 64rpx 0;
+}

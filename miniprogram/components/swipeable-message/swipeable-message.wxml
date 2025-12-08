@@ -1,0 +1,38 @@
+<!-- 可滑动删除的消息组件 -->
+<view class="swipeable-message">
+  <!-- 删除按钮背景 -->
+  <view class="delete-bg">
+    <view class="delete-btn" bindtap="handleDelete">删除</view>
+  </view>
+
+  <!-- 可滑动的内容区域 -->
+  <movable-area class="movable-area">
+    <movable-view
+      class="movable-view"
+      direction="horizontal"
+      x="{{translateX}}"
+      damping="50"
+      friction="10"
+      bindchange="handleMove"
+      bindtouchend="handleTouchEnd"
+    >
+      <view class="message-content" bindtap="handleTap">
+        <view class="flex-row">
+          <!-- 未读指示器 -->
+          <view class="indicator-wrapper">
+            <view class="{{message.isRead ? 'indicator-read' : 'indicator-unread'}}"></view>
+          </view>
+
+          <!-- 消息内容 -->
+          <view class="content-wrapper">
+            <view class="title-row">
+              <text class="{{message.isRead ? 'title-read' : 'title-unread'}}">{{message.title}}</text>
+              <text class="time-text">{{timeAgo}}</text>
+            </view>
+            <view class="content-text">{{message.content}}</view>
+          </view>
+        </view>
+      </view>
+    </movable-view>
+  </movable-area>
+</view>

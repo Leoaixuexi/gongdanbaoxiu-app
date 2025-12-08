@@ -1,0 +1,34 @@
+<!-- 模块图标组件 -->
+<view class="module-icon">
+  <!-- 喇叭图标 - 通知公告 -->
+  <view wx:if="{{moduleId === 'announcements'}}" class="icon-wrapper">
+    <svg viewBox="0 0 24 24" class="icon">
+      <path d="M19.114 5.636a9 9 0 0 1 0 12.728M16.463 8.288a5 5 0 0 1 0 7.424" stroke="#F97316" stroke-width="2" stroke-linecap="round" fill="none"/>
+      <path d="M6.75 9.75a.75.75 0 0 1 .75-.75h3l5.25-3v12l-5.25-3h-3a.75.75 0 0 1-.75-.75v-4.5z" fill="#F97316"/>
+      <path d="M8 15v3.5a1.5 1.5 0 0 0 3 0V15" stroke="#F97316" stroke-width="1.5" fill="none"/>
+    </svg>
+  </view>
+
+  <!-- 勾选图标 - 待办工单 -->
+  <view wx:elif="{{moduleId === 'tasks'}}" class="icon-wrapper">
+    <svg viewBox="0 0 24 24" class="icon">
+      <circle cx="12" cy="12" r="9" fill="#A855F7"/>
+      <path d="M8.5 12.5l2 2 5-5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </svg>
+  </view>
+
+  <!-- 铃铛图标 - 提醒我的 -->
+  <view wx:elif="{{moduleId === 'reminders'}}" class="icon-wrapper">
+    <svg viewBox="0 0 24 24" class="icon">
+      <path d="M12 3a6 6 0 0 0-6 6v4l-1.5 2.5a1 1 0 0 0 .857 1.5h13.286a1 1 0 0 0 .857-1.5L18 13V9a6 6 0 0 0-6-6z" fill="#3B82F6"/>
+      <path d="M10 17v1a2 2 0 1 0 4 0v-1" stroke="#3B82F6" stroke-width="2" fill="none"/>
+    </svg>
+  </view>
+
+  <!-- 默认图标 -->
+  <view wx:else class="icon-wrapper">
+    <svg viewBox="0 0 24 24" class="icon">
+      <circle cx="12" cy="12" r="9" fill="#9CA3AF"/>
+    </svg>
+  </view>
+</view>

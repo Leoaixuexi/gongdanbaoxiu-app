@@ -28,7 +28,7 @@
 
   <!-- 元数据布局: 两列 -->
   <view class="metadata-row">
-    <!-- 左列: 位置 & 时间 -->
+    <!-- 左列: 位置 & 责任方 -->
     <view class="metadata-col">
       <view class="metadata-item">
         <view class="icon icon-location"></view>
@@ -37,16 +37,16 @@
         <text class="metadata-text">{{workOrder.location}}</text>
       </view>
       <view class="metadata-item">
-        <view class="icon icon-time"></view>
-        <text class="metadata-text">{{relativeTime}}</text>
+        <view class="icon icon-person"></view>
+        <text class="metadata-text">{{workOrder.responsible_party || '未知'}}</text>
       </view>
     </view>
 
-    <!-- 右列: 提报人 & 类别 -->
+    <!-- 右列: 时间 & 类别 -->
     <view class="metadata-col metadata-col-right">
       <view class="metadata-item">
-        <view class="icon icon-person"></view>
-        <text class="metadata-text">{{workOrder.submitter_name || workOrder.submitter.name || '未知'}}</text>
+        <view class="icon icon-time"></view>
+        <text class="metadata-text">{{relativeTime}}</text>
       </view>
       <view class="metadata-item">
         <view class="icon icon-building"></view>

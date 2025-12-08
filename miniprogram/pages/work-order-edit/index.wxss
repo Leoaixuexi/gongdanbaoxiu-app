@@ -1,20 +1,94 @@
 /* pages/editOrder/editOrder.wxss */
 .page-container {
   min-height: 100vh;
-  background: #F8FAFC;
+  background: #E9F2F8;
   padding-bottom: 160rpx;
 }
 
 .main-content {
   padding-top: 140rpx;
-  padding-bottom: 192rpx;
+  padding-bottom: 80rpx;
   padding-left: 32rpx;
   padding-right: 32rpx;
   display: flex;
   flex-direction: column;
-  gap: 24rpx;
+  gap: 20rpx;
   max-width: 1024rpx;
   margin: 0 auto;
+}
+
+.main-content .form-row {
+  border: none;
+  padding: 40rpx 32rpx;
+  box-shadow: 0 10rpx 24rpx rgba(15, 23, 42, 0.08);
+  border-radius: 24rpx;
+  align-items: flex-start;
+}
+
+.main-content .form-row .label-section {
+  width: auto;
+  min-width: 180rpx;
+  font-size: 26rpx;
+  color: #94A3B8;
+  font-weight: 600;
+}
+
+.main-content .form-row .content-section {
+  justify-content: flex-start;
+  align-items: center;
+  padding-left: 24rpx;
+}
+
+.main-content .form-row .display-text,
+.main-content .form-row .select-text,
+.main-content .form-row .text-input,
+.main-content .form-row .textarea-input {
+  text-align: left;
+  font-size: 30rpx;
+  color: #0F172A;
+  font-weight: 500;
+}
+
+.main-content .form-row .text-input,
+.main-content .form-row .textarea-input {
+  background: #F2F6FA;
+  border-radius: 18rpx;
+  padding: 0 28rpx;
+  border: none;
+  width: 100%;
+  height: 92rpx;
+  line-height: 92rpx;
+  box-sizing: border-box;
+}
+
+.main-content .form-row .text-input[disabled],
+.main-content .form-row .textarea-input[disabled],
+.main-content .form-row .display-text {
+  background: transparent;
+  font-weight: 600;
+}
+
+.main-content .form-row .select-wrapper {
+  justify-content: flex-start;
+  background: #F2F6FA;
+  border-radius: 18rpx;
+  padding: 0 28rpx;
+  height: 92rpx;
+}
+
+.main-content .form-row .select-text {
+  font-weight: 600;
+}
+
+.main-content .form-row .select-text.placeholder {
+  color: #B8C1D1;
+}
+
+.main-content .form-row.align-center,
+.main-content .form-row.align-start {
+  padding-top: 40rpx;
+  padding-bottom: 40rpx;
+  min-height: 140rpx;
 }
 
 /* 照片容器 */
@@ -23,7 +97,7 @@
   gap: 16rpx;
   padding: 24rpx 0 12rpx 0;
   width: 100%;
-  justify-content: flex-end;
+  justify-content: flex-start;
   box-sizing: border-box;
 }
 
@@ -176,7 +250,7 @@
   background: #ffffff;
   border-radius: 24rpx;
   border: 1rpx solid rgba(241, 245, 249, 0.8);
-  padding: 40rpx 32rpx;
+  padding: 32rpx;
   box-shadow: 0 4rpx 16rpx -4rpx rgba(0, 0, 0, 0.03);
   transition: box-shadow 0.3s ease;
   box-sizing: border-box;
@@ -196,10 +270,10 @@
 
 .remarks-input {
   width: 100%;
-  background: #f8fafc;
-  border: 1rpx solid #e2e8f0;
-  border-radius: 16rpx;
-  padding: 24rpx;
+  background: #f2f6fa;
+  border: none;
+  border-radius: 20rpx;
+  padding: 28rpx;
   font-size: 30rpx;
   color: #1e293b;
   outline: none;

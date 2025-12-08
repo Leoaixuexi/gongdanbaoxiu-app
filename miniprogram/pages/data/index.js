@@ -58,11 +58,19 @@ Page({
         trend: "same",
         isCurrentUser: true
       }
-    ]
+    ],
+    // 自定义导航栏高度
+    headerHeight: 0
   },
 
   onLoad() {
-    // 页面加载
+    // 计算自定义导航栏高度
+    const systemInfo = wx.getSystemInfoSync();
+    const statusBarHeight = systemInfo.statusBarHeight;
+    const navBarHeight = 88 * systemInfo.windowWidth / 750;
+    this.setData({
+      headerHeight: statusBarHeight + navBarHeight
+    });
   },
 
   onShow() {

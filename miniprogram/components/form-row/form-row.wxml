@@ -1,5 +1,5 @@
 <!-- components/form-row/form-row.wxml -->
-<view class="form-row {{align === 'start' ? 'align-start' : 'align-center'}} {{activeClass}}"
+<view class="form-row {{align === 'start' ? 'align-start' : 'align-center'}} {{size === 'compact' ? 'compact' : ''}} {{activeClass}}"
       bindtouchstart="handleTouchStart"
       bindtouchend="handleTouchEnd">
 

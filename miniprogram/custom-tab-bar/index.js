@@ -2,7 +2,7 @@ Component({
   data: {
     selected: 0,
     color: "#7A7E83",
-    selectedColor: "#10b981",
+    selectedColor: "#0CA77D",
     hidden: false,
     list: [
       {
@@ -18,7 +18,7 @@ Component({
         selectedIconPath: "/images/tabbar/baobiaolv.png"
       },
       {
-        pagePath: "/pages/admin/users/index",
+        pagePath: "/pages/notifications/index",
         text: "消息",
         iconPath: "/images/tabbar/message.png",
         selectedIconPath: "/images/tabbar/message-active.png"

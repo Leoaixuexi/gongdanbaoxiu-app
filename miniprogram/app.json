@@ -15,6 +15,8 @@
     "pages/password/password",
     "pages/phone/phone",
     "pages/cloud-test/cloud-test",
+    "pages/notifications/index",
+    "pages/message-list/index",
     "pages/admin/users/index",
     "pages/admin/users/add/index",
     "pages/admin/users/edit/index",
@@ -25,7 +27,7 @@
   ],
   "window": {
     "backgroundTextStyle": "light",
-    "navigationBarBackgroundColor": "#10b981",
+    "navigationBarBackgroundColor": "#0CA77D",
     "navigationBarTitleText": "小物业报修系统",
     "navigationBarTextStyle": "white",
     "enablePullDownRefresh": true,
@@ -34,7 +36,7 @@
   "tabBar": {
     "custom": true,
     "color": "#7A7E83",
-    "selectedColor": "#10b981",
+    "selectedColor": "#0CA77D",
     "backgroundColor": "#ffffff",
     "borderStyle": "white",
     "list": [
@@ -51,7 +53,7 @@
         "selectedIconPath": "images/tabbar/baobiaolv.png"
       },
       {
-        "pagePath": "pages/admin/users/index",
+        "pagePath": "pages/notifications/index",
         "text": "消息",
         "iconPath": "images/tabbar/message.png",
         "selectedIconPath": "images/tabbar/message-active.png"

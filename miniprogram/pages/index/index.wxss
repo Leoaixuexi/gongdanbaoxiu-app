@@ -14,15 +14,13 @@
   left: 0;
   right: 0;
   z-index: 100;
-  background-color: #F7F8FA;
+  background: linear-gradient(to right, #10b981, #14b8a6);
 }
 
 /* 绿色渐变头部 */
 .header {
   background: linear-gradient(to right, #10b981, #14b8a6);
   padding: 24rpx 32rpx 48rpx;
-  padding-top: calc(24rpx + env(safe-area-inset-top) + 88rpx);
-  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05);
 }
 
 /* 搜索栏 */
@@ -30,7 +28,7 @@
   display: flex;
   align-items: center;
   gap: 24rpx;
-  margin-bottom: 52rpx;
+  margin-bottom: 28rpx;
 }
 
 .search-input-wrapper {
@@ -93,8 +91,8 @@
 }
 
 .icon-scan {
-  width: 50rpx;
-  height: 50rpx;
+  width: 70rpx;
+  height: 70rpx;
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
@@ -102,8 +100,8 @@
 }
 
 .scan-button-inline .icon-scan {
-  width: 40rpx;
-  height: 40rpx;
+  width: 56rpx;
+  height: 56rpx;
 }
 
 .icon-filter {
@@ -135,8 +133,8 @@
 }
 
 .time-tab-active {
-  background: linear-gradient(to right, #10b981, #14b8a6);
-  box-shadow: 0 2rpx 8rpx rgba(16, 185, 129, 0.3);
+  background-color: #10b981;
+  box-shadow: 0 2rpx 8rpx rgba(12, 167, 125, 0.3);
 }
 
 .time-tab-text {
@@ -157,7 +155,6 @@
   position: relative;
   z-index: 20;
   padding: 28rpx 32rpx 32rpx 32rpx;
-  border-bottom: 1rpx solid #f0f0f0;
   box-shadow: 0 4rpx 20rpx -12rpx rgba(0, 0, 0, 0.1);
 }
 
@@ -253,7 +250,6 @@
 /* 工单列表 */
 .order-list {
   padding: 32rpx;
-  padding-top: 390rpx;
   display: flex;
   flex-direction: column;
   gap: 32rpx;
@@ -538,7 +534,7 @@
   background: linear-gradient(to right, #10b981, #14b8a6);
   border-radius: 48rpx;
   display: inline-block;
-  box-shadow: 0 8rpx 24rpx rgba(16, 185, 129, 0.3);
+  box-shadow: 0 8rpx 24rpx rgba(12, 167, 125, 0.3);
 }
 
 .empty-btn-text {
@@ -639,7 +635,7 @@
 }
 
 .modal-button-confirm {
-  background: linear-gradient(to right, #10b981, #14b8a6);
+  background-color: #10b981;
 }
 
 .modal-button-text {
@@ -817,14 +813,14 @@
   word-break: break-all;
 }
 
-/* 元数据布局: 两列 */
+/* 元数据布局: 三列 */
 .metadata-row {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   font-size: 24rpx;
   margin-bottom: 32rpx;
-  gap: 32rpx;
+  gap: 16rpx;
 }
 
 .metadata-col {
@@ -835,16 +831,34 @@
   flex: 1;
 }
 
-.metadata-col-right {
-  align-items: flex-start;
-  margin-right: 70rpx;
+.metadata-col-center {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+  min-width: 0;
   flex: 0 0 auto;
+  transform: translate(-100rpx, 4rpx);
+}
+
+.metadata-col-right {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+  align-items: flex-start;
+  margin-right: 50rpx;
+  flex: 0 0 auto;
+  transform: translateX(-20rpx);
+}
+
+.metadata-spacer {
+  height: 32rpx;
 }
 
 .metadata-item {
   display: flex;
   align-items: center;
   gap: 8rpx;
+  color: #777;
 }
 
 .icon {
@@ -857,7 +871,7 @@
 .icon-building {
   width: 28rpx;
   height: 28rpx;
-  background-image: url('data:image/svg+xml;utf8,<svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg"><path d="M907 887.1h-31.7v-647c0-9.8-7.1-18-16.5-19.7 0 0 1.2 0 0 0L607.5 100.2c-11 0-20 9-20 20v767h-38.6v-767c0-11-9-20-20-20l-357.8 120c-11 0-20 9-20 20v647H117c-11 0-20 9-20 20s9 20 20 20h790c11 0 20-9 20-20s-9-20.1-20-20.1zM691.4 228.8c0-5.5 4.5-10 10-10h60c5.5 0 10 4.5 10 10v60c0 5.5-4.5 10-10 10h-60c-5.5 0-10-4.5-10-10v-60z m0 129.1c0-5.5 4.5-10 10-10h60c5.5 0 10 4.5 10 10v60c0 5.5-4.5 10-10 10h-60c-5.5 0-10-4.5-10-10v-60z m0 129c0-5.5 4.5-10 10-10h60c5.5 0 10 4.5 10 10v60c0 5.5-4.5 10-10 10h-60c-5.5 0-10-4.5-10-10v-60z m0 129.1c0-5.5 4.5-10 10-10h60c5.5 0 10 4.5 10 10v60c0 5.5-4.5 10-10 10h-60c-5.5 0-10-4.5-10-10v-60z m0 129c0-5.5 4.5-10 10-10h60c5.5 0 10 4.5 10 10v60c0 5.5-4.5 10-10 10h-60c-5.5 0-10-4.5-10-10v-60zM372.2 228.8c0-5.5 4.5-10 10-10h60c5.5 0 10 4.5 10 10v60c0 5.5-4.5 10-10 10h-60c-5.5 0-10-4.5-10-10v-60z m0 129.1c0-5.5 4.5-10 10-10h60c5.5 0 10 4.5 10 10v60c0 5.5-4.5 10-10 10h-60c-5.5 0-10-4.5-10-10v-60z m0 129c0-5.5 4.5-10 10-10h60c5.5 0 10 4.5 10 10v60c0 5.5-4.5 10-10 10h-60c-5.5 0-10-4.5-10-10v-60z m0 129.1c0-5.5 4.5-10 10-10h60c5.5 0 10 4.5 10 10v60c0 5.5-4.5 10-10 10h-60c-5.5 0-10-4.5-10-10v-60z m0 129c0-5.5 4.5-10 10-10h60c5.5 0 10 4.5 10 10v60c0 5.5-4.5 10-10 10h-60c-5.5 0-10-4.5-10-10v-60zM247.8 357.9c0-5.5 4.5-10 10-10h60c5.5 0 10 4.5 10 10v60c0 5.5-4.5 10-10 10h-60c-5.5 0-10-4.5-10-10v-60z m0 129c0-5.5 4.5-10 10-10h60c5.5 0 10 4.5 10 10v60c0 5.5-4.5 10-10 10h-60c-5.5 0-10-4.5-10-10v-60z m0 129.1c0-5.5 4.5-10 10-10h60c5.5 0 10 4.5 10 10v60c0 5.5-4.5 10-10 10h-60c-5.5 0-10-4.5-10-10v-60z m0 129c0-5.5 4.5-10 10-10h60c5.5 0 10 4.5 10 10v60c0 5.5-4.5 10-10 10h-60c-5.5 0-10-4.5-10-10v-60z" fill="%23707070"/></svg>');
+  background-image: url('data:image/svg+xml;utf8,<svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg"><path d="M810.666667 938.666667H213.333333c-46.933333 0-85.333333-38.4-85.333333-85.333334V170.666667c0-46.933333 38.4-85.333333 85.333333-85.333334h426.666667c23.466667 0 44.8 8.533333 59.733333 23.466667l170.666667 170.666667c14.933333 14.933333 23.466667 36.266667 23.466667 59.733333v512c0 46.933333-38.4 85.333333-85.333334 85.333333zM213.333333 170.666667v682.666666h597.333334V341.333333l-170.666667-170.666666H213.333333z m128 512h341.333334c23.466667 0 42.666667-19.2 42.666666-42.666667s-19.2-42.666667-42.666666-42.666667H341.333333c-23.466667 0-42.666667 19.2-42.666666 42.666667s19.2 42.666667 42.666666 42.666667z m0-170.666667h341.333334c23.466667 0 42.666667-19.2 42.666666-42.666667s-19.2-42.666667-42.666666-42.666666H341.333333c-23.466667 0-42.666667 19.2-42.666666 42.666666s19.2 42.666667 42.666666 42.666667z" fill="%23707070"/></svg>');
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
@@ -885,6 +899,15 @@
   width: 28rpx;
   height: 28rpx;
   background-image: url('data:image/svg+xml;utf8,<svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg"><path d="M512 176A336 336 0 1 1 176 512 336.64 336.64 0 0 1 512 176M512 64a448 448 0 1 0 448 448 448 448 0 0 0-448-448z" fill="%23707070"/><path d="M704 568.32H456.32V256h112v200.32H704v112z" fill="%23707070"/></svg>');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.icon-responsible {
+  width: 28rpx;
+  height: 28rpx;
+  background-image: url('data:image/svg+xml;utf8,<svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg"><path d="M907 887.1h-31.7v-647c0-9.8-7.1-18-16.5-19.7 0 0 1.2 0 0 0L607.5 100.2c-11 0-20 9-20 20v767h-38.6v-767c0-11-9-20-20-20l-357.8 120c-11 0-20 9-20 20v647H117c-11 0-20 9-20 20s9 20 20 20h790c11 0 20-9 20-20s-9-20.1-20-20.1zM691.4 228.8c0-5.5 4.5-10 10-10h60c5.5 0 10 4.5 10 10v60c0 5.5-4.5 10-10 10h-60c-5.5 0-10-4.5-10-10v-60z m0 129.1c0-5.5 4.5-10 10-10h60c5.5 0 10 4.5 10 10v60c0 5.5-4.5 10-10 10h-60c-5.5 0-10-4.5-10-10v-60z m0 129c0-5.5 4.5-10 10-10h60c5.5 0 10 4.5 10 10v60c0 5.5-4.5 10-10 10h-60c-5.5 0-10-4.5-10-10v-60z m0 129.1c0-5.5 4.5-10 10-10h60c5.5 0 10 4.5 10 10v60c0 5.5-4.5 10-10 10h-60c-5.5 0-10-4.5-10-10v-60z m0 129c0-5.5 4.5-10 10-10h60c5.5 0 10 4.5 10 10v60c0 5.5-4.5 10-10 10h-60c-5.5 0-10-4.5-10-10v-60zM372.2 228.8c0-5.5 4.5-10 10-10h60c5.5 0 10 4.5 10 10v60c0 5.5-4.5 10-10 10h-60c-5.5 0-10-4.5-10-10v-60z m0 129.1c0-5.5 4.5-10 10-10h60c5.5 0 10 4.5 10 10v60c0 5.5-4.5 10-10 10h-60c-5.5 0-10-4.5-10-10v-60z m0 129c0-5.5 4.5-10 10-10h60c5.5 0 10 4.5 10 10v60c0 5.5-4.5 10-10 10h-60c-5.5 0-10-4.5-10-10v-60z m0 129.1c0-5.5 4.5-10 10-10h60c5.5 0 10 4.5 10 10v60c0 5.5-4.5 10-10 10h-60c-5.5 0-10-4.5-10-10v-60z m0 129c0-5.5 4.5-10 10-10h60c5.5 0 10 4.5 10 10v60c0 5.5-4.5 10-10 10h-60c-5.5 0-10-4.5-10-10v-60zM247.8 357.9c0-5.5 4.5-10 10-10h60c5.5 0 10 4.5 10 10v60c0 5.5-4.5 10-10 10h-60c-5.5 0-10-4.5-10-10v-60z m0 129c0-5.5 4.5-10 10-10h60c5.5 0 10 4.5 10 10v60c0 5.5-4.5 10-10 10h-60c-5.5 0-10-4.5-10-10v-60z m0 129.1c0-5.5 4.5-10 10-10h60c5.5 0 10 4.5 10 10v60c0 5.5-4.5 10-10 10h-60c-5.5 0-10-4.5-10-10v-60z m0 129c0-5.5 4.5-10 10-10h60c5.5 0 10 4.5 10 10v60c0 5.5-4.5 10-10 10h-60c-5.5 0-10-4.5-10-10v-60z" fill="%23707070"/></svg>');
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
@@ -1088,7 +1111,7 @@
   flex: 1.6;
   background: linear-gradient(to right, #10b981, #14b8a6);
   color: #ffffff;
-  box-shadow: 0 12rpx 30rpx rgba(16, 185, 129, 0.35);
+  box-shadow: 0 12rpx 30rpx rgba(12, 167, 125, 0.35);
 }
 
 @keyframes slide-up {

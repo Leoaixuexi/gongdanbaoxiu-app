@@ -1,0 +1,35 @@
+<!-- 消息列表页 - 显示特定模块的消息 -->
+<view class="container">
+  <!-- 头部 -->
+  <view class="header">
+    <view class="header-content">
+      <view class="back-btn" bindtap="handleBack">
+        <text class="back-icon">‹</text>
+      </view>
+      <text class="header-title">{{moduleName}}</text>
+      <view class="mark-read-btn" bindtap="handleMarkAllRead">
+        <text class="icon-text">✓</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 消息列表 -->
+  <view class="main-content">
+    <view wx:if="{{messages.length === 0}}" class="empty-state">
+      <text class="empty-text">暂无消息</text>
+    </view>
+
+    <view wx:else class="message-list">
+      <swipeable-message
+        wx:for="{{messages}}"
+        wx:key="id"
+        message="{{item}}"
+        bindtap="handleMessageTap"
+        binddelete="handleDelete"
+      />
+    </view>
+
+    <!-- 底部提示 -->
+    <view class="footer-tip">90天以前的消息将自动删除</view>
+  </view>
+</view>

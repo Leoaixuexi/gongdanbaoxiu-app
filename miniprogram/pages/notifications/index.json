@@ -1,8 +1,6 @@
 {
-  "navigationBarTitleText": "消息通知",
-  "navigationBarBackgroundColor": "#14AB80",
-  "navigationBarTextStyle": "white",
-  "enablePullDownRefresh": true,
-  "backgroundColor": "#F7F7F7",
-  "backgroundTextStyle": "dark"
+  "navigationBarTitleText": "消息",
+  "usingComponents": {
+    "message-card": "/components/message-card/message-card"
+  }
 }

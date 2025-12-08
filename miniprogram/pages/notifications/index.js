@@ -1,191 +1,111 @@
 /**
- * Notifications Page
- * Display user's notifications
+ * 消息首页 - 显示3个消息模块
+ * 从 xiaoxi 项目迁移并适配到当前项目
  */
 
-const app = getApp();
-const notificationService = require('../../services/notification');
-const { formatRelativeTime } = require('../../utils/formatter');
+const notificationService = require('../../services/notification')
+const { MODULE_CONFIG, getModuleStats } = require('../../utils/message-mapper.js')
 
 Page({
   data: {
-    notifications: [],
-    loading: true,
-    unreadOnly: false,
-    unreadCount: 0,
-    tabs: [
-      { name: '全部', value: false },
-      { name: '未读', value: true }
-    ],
-    activeTab: 0
+    modules: MODULE_CONFIG,
+    latestMessages: {
+      announcements: null,
+      tasks: null,
+      reminders: null
+    },
+    unreadCounts: {
+      announcements: 0,
+      tasks: 0,
+      reminders: 0
+    },
+    loading: true
+  },
+
+  onLoad() {
+    console.log('[Notifications Index] Page load')
+    this.loadData()
+  },
+
+  onShow() {
+    console.log('[Notifications Index] Page show')
+    // 每次显示页面时刷新数据（从其他页面返回时）
+    this.loadData()
   },
 
   /**
-   * Lifecycle - Page Load
+   * 加载数据
    */
-  onLoad: function (options) {
-    console.log('[Notifications] Page load');
-    this.loadNotifications();
-  },
-
-  /**
-   * Lifecycle - Page Show
-   */
-  onShow: function () {
-    console.log('[Notifications] Page show');
-    this.loadUnreadCount();
-  },
-
-  /**
-   * Pull down to refresh
-   */
-  onPullDownRefresh: function () {
-    console.log('[Notifications] Pull down refresh');
-    this.loadNotifications();
-    wx.stopPullDownRefresh();
-  },
-
-  /**
-   * Load Notifications
-   */
-  loadNotifications: async function () {
+  async loadData() {
     try {
-      this.setData({ loading: true });
+      this.setData({ loading: true })
 
-      const result = await notificationService.getUserNotifications(
-        this.data.unreadOnly,
-        50
-      );
+      // 获取所有消息
+      const result = await notificationService.getUserNotifications(false, 100)
 
-      // Process notifications to add display fields
-      const notifications = result.notifications.map(notification => {
-        return {
-          ...notification,
-          time_display: formatRelativeTime(notification.created_at)
-        };
-      });
+      if (!result || !result.notifications) {
+        console.warn('[Notifications Index] No notifications data')
+        this.setData({ loading: false })
+        return
+      }
+
+      // 按模块分组并统计
+      const stats = getModuleStats(result.notifications)
+
+      // 转换数据格式以供 message-card 组件使用
+      const latestMessages = {
+        announcements: stats.announcements.latestMessage ? this.transformMessage(stats.announcements.latestMessage) : null,
+        tasks: stats.tasks.latestMessage ? this.transformMessage(stats.tasks.latestMessage) : null,
+        reminders: stats.reminders.latestMessage ? this.transformMessage(stats.reminders.latestMessage) : null
+      }
+
+      const unreadCounts = {
+        announcements: stats.announcements.unreadCount,
+        tasks: stats.tasks.unreadCount,
+        reminders: stats.reminders.unreadCount
+      }
 
       this.setData({
-        notifications,
-        unreadCount: result.unread_count,
+        latestMessages,
+        unreadCounts,
         loading: false
-      });
+      })
 
-      console.log('[Notifications] Loaded:', notifications.length);
+      console.log('[Notifications Index] Data loaded:', { latestMessages, unreadCounts })
 
     } catch (error) {
-      console.error('[Notifications] Load error:', error);
-      this.setData({ loading: false });
-      app.showError('加载通知失败');
-    }
-  },
+      console.error('[Notifications Index] Load error:', error)
+      this.setData({ loading: false })
 
-  /**
-   * Load Unread Count
-   */
-  loadUnreadCount: async function () {
-    try {
-      const count = await notificationService.getUnreadCount();
-      this.setData({ unreadCount: count });
-    } catch (error) {
-      console.error('[Notifications] Load unread count error:', error);
-    }
-  },
-
-  /**
-   * Switch Tab
-   */
-  switchTab: function (e) {
-    const index = e.currentTarget.dataset.index;
-    if (index === this.data.activeTab) return;
-
-    const tab = this.data.tabs[index];
-    this.setData({
-      activeTab: index,
-      unreadOnly: tab.value
-    });
-
-    this.loadNotifications();
-  },
-
-  /**
-   * Handle Notification Tap
-   */
-  handleNotificationTap: async function (e) {
-    const notification = e.currentTarget.dataset.notification;
-
-    // Mark as read if unread
-    if (!notification.read) {
-      try {
-        await notificationService.markAsRead(notification._id);
-
-        // Update local data
-        const notifications = this.data.notifications.map(n => {
-          if (n._id === notification._id) {
-            return { ...n, read: true, read_at: new Date() };
-          }
-          return n;
-        });
-
-        this.setData({
-          notifications,
-          unreadCount: Math.max(0, this.data.unreadCount - 1)
-        });
-      } catch (error) {
-        console.error('[Notifications] Mark as read error:', error);
-      }
-    }
-
-    // Navigate to related page if has order_id
-    if (notification.data && notification.data.order_id) {
-      wx.navigateTo({
-        url: `/pages/work-order-detail/index?id=${notification.data.order_id}`
-      });
-    }
-  },
-
-  /**
-   * Mark All As Read
-   */
-  markAllAsRead: async function () {
-    try {
-      wx.showLoading({ title: '标记中...', mask: true });
-
-      await notificationService.markAllAsRead();
-
-      wx.hideLoading();
       wx.showToast({
-        title: '已全部标记为已读',
-        icon: 'success'
-      });
-
-      // Refresh list
-      this.loadNotifications();
-
-    } catch (error) {
-      wx.hideLoading();
-      console.error('[Notifications] Mark all as read error:', error);
-      app.showError('操作失败');
+        title: '加载失败',
+        icon: 'error',
+        duration: 2000
+      })
     }
   },
 
   /**
-   * Delete Notification (future implementation)
+   * 转换消息格式
+   * 从后端格式转换为组件需要的格式
    */
-  handleDelete: function (e) {
-    const notificationId = e.currentTarget.dataset.id;
+  transformMessage(notification) {
+    return {
+      title: notification.title || '系统通知',
+      content: notification.message || '',
+      timestamp: new Date(notification.created_at)
+    }
+  },
 
-    wx.showModal({
-      title: '确认删除',
-      content: '确定要删除这条通知吗？',
-      success: (res) => {
-        if (res.confirm) {
-          wx.showToast({
-            title: '功能开发中',
-            icon: 'none'
-          });
-        }
-      }
-    });
+  /**
+   * 点击卡片
+   */
+  handleCardTap(e) {
+    const { moduleId } = e.detail
+    console.log('[Notifications Index] Card tapped:', moduleId)
+
+    wx.navigateTo({
+      url: `/pages/message-list/index?moduleId=${moduleId}`
+    })
   }
-});
+})

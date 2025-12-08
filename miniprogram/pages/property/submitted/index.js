@@ -1,4 +1,5 @@
 // pages/index/index.js
+const auth = require('../../../services/auth');
 const app = getApp()
 
 Page({
@@ -9,10 +10,18 @@ Page({
       department: '物业管理部',
       avatar: 'https://placehold.co/200x200/10b981/ffffff?text=ZW',
       phone: '177******35'
-    }
+    },
+    headerHeight: 0
   },
 
   onLoad() {
+    // 计算自定义导航栏高度
+    const systemInfo = wx.getSystemInfoSync();
+    const statusBarHeight = systemInfo.statusBarHeight;
+    const navBarHeight = 88 * systemInfo.windowWidth / 750;
+    this.setData({
+      headerHeight: statusBarHeight + navBarHeight
+    });
     this.loadUserInfo();
   },
 
@@ -112,18 +121,14 @@ Page({
           app.globalData.userInfo = null;
           app.globalData.isLoggedIn = false;
 
-          wx.showToast({
-            title: '已退出登录',
-            icon: 'success',
-            duration: 1500
-          });
-
-          // 跳转到登录页
-          setTimeout(() => {
-            wx.reLaunch({
-              url: '/pages/login/login'
+          auth.logout().catch((error) => {
+            console.error('[Profile] Logout failed:', error);
+            wx.showToast({
+              title: '退出登录失败',
+              icon: 'none',
+              duration: 2000
             });
-          }, 1500);
+          });
         }
       }
     })

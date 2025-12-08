@@ -5,6 +5,11 @@ Component({
     title: {
       type: String,
       value: '修改工单'
+    },
+    // 是否显示返回按钮
+    showBack: {
+      type: Boolean,
+      value: true
     }
   },
 

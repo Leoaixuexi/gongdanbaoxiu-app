@@ -36,7 +36,8 @@ Page({
     submitting: false,
     isDateTimePickerOpen: false,
     tempDate: '',
-    tempTime: ''
+    tempTime: '',
+    headerHeight: 0
   },
 
   /**
@@ -44,6 +45,13 @@ Page({
    */
   onLoad: function (options) {
     console.log('[Submit] Page load');
+    // 计算自定义导航栏高度
+    const systemInfo = wx.getSystemInfoSync();
+    const statusBarHeight = systemInfo.statusBarHeight;
+    const navBarHeight = 88 * systemInfo.windowWidth / 750;
+    this.setData({
+      headerHeight: statusBarHeight + navBarHeight
+    });
     this.checkAuth();
     // Set default date and time to now
     const now = new Date();

@@ -4,7 +4,7 @@ const app = getApp()
 Page({
   data: {
     statusBarHeight: 20,
-    preview: 'https://placehold.co/320x320/10b981/ffffff?text=Avatar'
+    preview: 'https://placehold.co/300x300/10b981/ffffff?text=Avatar'
   },
 
   onLoad() {

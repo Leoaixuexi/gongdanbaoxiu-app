@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "消息列表",
+  "navigationStyle": "custom",
+  "usingComponents": {
+    "swipeable-message": "/components/swipeable-message/swipeable-message"
+  }
+}

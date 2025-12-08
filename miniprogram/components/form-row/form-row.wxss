@@ -34,6 +34,17 @@
   padding-bottom: 40rpx;
 }
 
+/* 紧凑模式：减少卡片背景高度 */
+.form-row.compact {
+  padding-top: 24rpx;
+  padding-bottom: 24rpx;
+}
+
+.form-row.compact.align-start {
+  padding-top: 28rpx;
+  padding-bottom: 28rpx;
+}
+
 /* 标签区域 */
 .label-section {
   width: 208rpx;
@@ -66,6 +77,7 @@
   flex: 1;
   display: flex;
   justify-content: flex-end;
+  align-items: center;
   min-width: 0;
 }
 
@@ -80,6 +92,15 @@
   white-space: nowrap;
   width: 100%;
   user-select: text;
+  line-height: 92rpx;
+  height: 92rpx;
+}
+
+.form-row.compact .display-text,
+.form-row.compact .select-text,
+.form-row.compact .text-input {
+  line-height: 72rpx;
+  height: 72rpx;
 }
 
 /* 选择器 */
@@ -100,8 +121,9 @@
   font-size: 30rpx;
   color: #1e293b;
   font-weight: 500;
+  line-height: 92rpx;
+  height: 92rpx;
 }
-
 .select-text.placeholder {
   color: #cbd5e1;
 }

@@ -1,0 +1,6 @@
+{
+  "component": true,
+  "usingComponents": {
+    "module-icon": "/components/module-icon/module-icon"
+  }
+}

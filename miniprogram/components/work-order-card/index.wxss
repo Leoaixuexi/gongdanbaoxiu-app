@@ -198,6 +198,7 @@
   align-items: flex-start;
   margin-right: 70rpx;
   flex: 0 0 auto;
+  transform: translateX(-20rpx);
 }
 
 .metadata-item {

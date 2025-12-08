@@ -1,10 +1,10 @@
 <!--工单详情页面 (基于 Taro 设计)-->
 <view class="order-detail-container">
-  <!-- 自定义Header -->
+  <!-- 自定义导航栏 -->
   <custom-header title="工单详情" />
 
   <!-- Loading State -->
-  <view class="loading-state" wx:if="{{loading}}">
+  <view class="loading-state" wx:if="{{loading}}" style="padding-top: {{headerHeight}}px;">
     <view class="weui-loadmore">
       <view class="weui-loading"></view>
       <view class="weui-loadmore__tips">加载中...</view>
@@ -14,7 +14,7 @@
   <!-- Work Order Content -->
   <block wx:if="{{!loading && workOrder}}">
     <!-- 顶部绿色渐变区域 -->
-    <view class="header">
+    <view class="header" style="padding-top: calc({{headerHeight}}px + 32rpx);">
       <!-- 使用新的步骤条组件 -->
       <work-order-stepper workOrderData="{{stepperData}}" />
     </view>
@@ -68,10 +68,6 @@
             <text class="info-label">问题描述</text>
             <text class="info-value">{{workOrder.description}}</text>
           </view>
-          <view class="info-row" wx:if="{{workOrder.remark}}">
-            <text class="info-label">备注</text>
-            <text class="info-value">{{workOrder.remark}}</text>
-          </view>
 
           <!-- 现场照片 -->
           <view class="info-row info-row-photos" wx:if="{{workOrder.photos && workOrder.photos.length > 0}}">
@@ -100,25 +96,14 @@
             <text class="info-label">报修人</text>
             <text class="info-value">{{workOrder.submitter.name || workOrder.submitter_name || '未知'}}</text>
           </view>
-          <view class="info-row" wx:if="{{workOrder.assigned_technician}}">
-            <text class="info-label">维修人员</text>
-            <text class="info-value">{{workOrder.assigned_technician.name || '未分配'}}</text>
-          </view>
-          <view class="info-row" wx:if="{{assignedTime}}">
-            <text class="info-label">接单时间</text>
-            <text class="info-value">{{assignedTime}}</text>
-          </view>
-          <view class="info-row" wx:if="{{workOrder.completion_notes}}">
-            <text class="info-label">完成说明</text>
-            <text class="info-value">{{workOrder.completion_notes}}</text>
-          </view>
-          <view class="info-row" wx:if="{{workOrder.review_notes}}">
-            <text class="info-label">审核意见</text>
-            <text class="info-value">{{workOrder.review_notes}}</text>
-          </view>
-          <view class="info-row" wx:if="{{workOrder.rework_count > 0}}">
-            <text class="info-label">返工次数</text>
-            <text class="info-value">{{workOrder.rework_count}} 次</text>
+
+          <!-- 备注信息 -->
+          <view class="remark-row">
+            <text class="remark-label">备注</text>
+            <view class="remark-box {{workOrder.remark ? '' : 'remark-box-empty'}}">
+              <text wx:if="{{workOrder.remark}}" class="remark-text">{{workOrder.remark}}</text>
+              <text wx:else class="remark-placeholder">暂无备注信息</text>
+            </view>
           </view>
         </view>
       </view>
@@ -137,58 +122,22 @@
 
     <!-- 底部操作按钮 (仅在工单信息Tab显示) -->
     <view class="bottom-actions" wx:if="{{activeTab === 'info'}}">
-      <!-- 更多操作按钮 -->
+      <!-- 更多操作按钮 - 所有状态都显示 -->
       <button
-        wx:if="{{canEdit}}"
+        wx:if="{{canShowMore}}"
         class="action-button action-button-more"
         bindtap="handleMore"
       >
         <text class="more-icon">⋯</text>
       </button>
 
-      <!-- 修改按钮 - 物业人员可以修改自己创建的工单 -->
+      <!-- 修改按钮 - 只在"已提报"状态显示 -->
       <button
         wx:if="{{canEdit}}"
         class="action-button action-button-edit"
         bindtap="handleEdit"
       >
         <text class="action-button-text">修改</text>
-      </button>
-
-      <!-- 开始维修 -->
-      <button
-        wx:if="{{canStart}}"
-        class="action-button action-button-primary"
-        bindtap="handleStart"
-      >
-        <text class="action-button-text">开始维修</text>
-      </button>
-
-      <!-- 完成维修 -->
-      <button
-        wx:if="{{canUpdate}}"
-        class="action-button action-button-success"
-        bindtap="handleUpdate"
-      >
-        <text class="action-button-text">完成维修</text>
-      </button>
-
-      <!-- 批准工单 -->
-      <button
-        wx:if="{{canReview}}"
-        class="action-button action-button-approve"
-        bindtap="handleApprove"
-      >
-        <text class="action-button-text">批准</text>
-      </button>
-
-      <!-- 拒绝工单 -->
-      <button
-        wx:if="{{canReview}}"
-        class="action-button action-button-reject"
-        bindtap="handleReject"
-      >
-        <text class="action-button-text">拒绝</text>
       </button>
     </view>
   </block>

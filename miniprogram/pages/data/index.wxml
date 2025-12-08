@@ -1,10 +1,10 @@
 <!-- 数据统计页面 -->
 <view class="container gradient-bg">
-  <!-- 自定义Header -->
-  <custom-header title="数据" />
+  <!-- 自定义导航栏 -->
+  <custom-header title="数据" showBack="{{false}}" />
 
   <!-- 主内容区 -->
-  <view class="main px-5">
+  <view class="main px-5" style="padding-top: {{headerHeight + 20}}px;">
     <!-- 工单汇总 -->
     <view class="section mb-3">
       <view class="section-title mb-3">

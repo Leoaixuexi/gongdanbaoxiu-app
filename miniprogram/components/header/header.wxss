@@ -6,7 +6,6 @@
   right: 0;
   background: linear-gradient(to right, #10b981, #14b8a6);
   z-index: 999;
-  box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.1);
 }
 
 .header-content {

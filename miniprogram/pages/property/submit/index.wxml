@@ -1,10 +1,10 @@
 <!--新增工单页面-->
 <view class="submit-container">
-  <!-- 自定义Header -->
+  <!-- 自定义导航栏 -->
   <custom-header title="提交工单" />
 
   <!-- 表单卡片列表 -->
-  <view class="form-cards">
+  <view class="form-cards" style="padding-top: calc({{headerHeight}}px + 24rpx);">
     <!-- 工单编号 -->
     <view class="card">
       <view class="card-label-required">

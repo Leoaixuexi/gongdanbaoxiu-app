@@ -76,7 +76,8 @@ Page({
       { value: 'Completed', label: '已完成', color: '#9e9e9e' }
     ],
     selectedStatus: '',
-    submittingStatus: false
+    submittingStatus: false,
+    headerHeight: 0
   },
 
   /**
@@ -84,6 +85,13 @@ Page({
    */
   onLoad: function (options) {
     console.log('[Detail] Page load with options:', options);
+    // 计算自定义导航栏高度
+    const systemInfo = wx.getSystemInfoSync();
+    const statusBarHeight = systemInfo.statusBarHeight;
+    const navBarHeight = 88 * systemInfo.windowWidth / 750;
+    this.setData({
+      headerHeight: statusBarHeight + navBarHeight
+    });
     if (options.id) {
       this.setData({ orderId: options.id });
       this.loadWorkOrder();
@@ -154,27 +162,24 @@ Page({
       const isMaintenanceWorker = userInfo.role_id === ROLES.MAINTENANCE_STAFF;
 
       // Determine action buttons visibility with null checks
+      // 修改按钮：只在"已提报"状态显示
       const canEdit = isPropertyStaff &&
         workOrder.status === 'Pending Repair' &&
         workOrder.submitter && workOrder.submitter.user_id === userInfo.id;
 
+      // 更多操作按钮：所有状态都显示
+      const canShowMore = isPropertyStaff &&
+        workOrder.submitter && workOrder.submitter.user_id === userInfo.id;
+
       const canCancel = isPropertyStaff &&
-        ['Pending Repair', 'In Progress'].includes(workOrder.status) &&
         workOrder.submitter && workOrder.submitter.user_id === userInfo.id;
 
-      const canStart = isMaintenanceWorker &&
-        workOrder.status === 'Pending Repair' &&
-        workOrder.assigned_technician && workOrder.assigned_technician.user_id === userInfo.id;
+      // 统一显示：所有状态特定按钮都不显示
+      const canStart = false;
+      const canUpdate = false;
+      const canReview = false;
 
-      const canUpdate = isMaintenanceWorker &&
-        workOrder.status === 'In Progress' &&
-        workOrder.assigned_technician && workOrder.assigned_technician.user_id === userInfo.id;
-
-      // Can review if status is Repaired and user is submitter
-      const canReview = workOrder.status === 'Repaired' &&
-        workOrder.submitter && workOrder.submitter.user_id === userInfo.id;
-
-      const showActions = canEdit || canCancel || canStart || canUpdate || canReview;
+      const showActions = canShowMore || canEdit;
 
       this.setData({
         workOrder: processedOrder,
@@ -182,6 +187,7 @@ Page({
         isPropertyStaff,
         isMaintenanceWorker,
         canEdit,
+        canShowMore,
         canCancel,
         canStart,
         canUpdate,

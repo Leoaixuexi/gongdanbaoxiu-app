@@ -15,60 +15,56 @@
   <view class="form-section">
     <!-- 当前手机号 -->
     <view class="current-phone-card">
-      <view class="phone-icon-wrapper">
-        <view class="phone-icon-svg">
-          <view class="phone-icon-inner"></view>
-        </view>
+      <view class="current-icon">
+        <view class="current-icon-inner"></view>
       </view>
-      <view class="phone-info">
-        <text class="phone-label">当前手机号</text>
-        <text class="phone-number">{{currentPhone}}</text>
+      <view class="current-info">
+        <text class="current-label">当前手机号</text>
+        <text class="current-number">{{currentPhone}}</text>
       </view>
     </view>
 
     <!-- 新手机号表单 -->
     <view class="form-card">
       <!-- 新手机号 -->
-      <view class="input-field">
-        <view class="field-label">
-          <view class="field-icon-box">
-            <view class="mobile-icon"></view>
-          </view>
-          <text class="field-text">新手机号</text>
+      <view class="field-block">
+        <view class="field-header">
+          <view class="field-icon mobile"></view>
+          <text class="field-title">新手机号</text>
         </view>
         <input
-          class="input"
+          class="text-input"
           type="number"
           maxlength="11"
           value="{{newPhone}}"
           placeholder="请输入新手机号"
           bindinput="onPhoneInput"
+          placeholder-class="input-placeholder"
         />
       </view>
 
       <!-- 验证码 -->
-      <view class="input-field">
-        <view class="field-label">
-          <view class="field-icon-box">
-            <view class="code-icon"></view>
-          </view>
-          <text class="field-text">验证码</text>
+      <view class="field-block">
+        <view class="field-header">
+          <view class="field-icon sms"></view>
+          <text class="field-title">验证码</text>
         </view>
-        <view class="code-input-wrapper">
+        <view class="code-row">
           <input
-            class="input code-input"
+            class="text-input"
             type="number"
             maxlength="6"
             value="{{verifyCode}}"
             placeholder="请输入验证码"
             bindinput="onCodeInput"
+            placeholder-class="input-placeholder"
           />
           <button
-            class="send-code-btn {{countdown > 0 ? 'disabled' : ''}}"
+            class="code-btn {{countdown > 0 ? 'disabled' : ''}}"
             bindtap="sendCode"
             disabled="{{countdown > 0}}"
           >
-            <text class="send-code-text">{{countdown > 0 ? countdown + 's' : '获取验证码'}}</text>
+            <text class="code-btn-text">{{countdown > 0 ? countdown + 's' : '获取验证码'}}</text>
           </button>
         </view>
       </view>
