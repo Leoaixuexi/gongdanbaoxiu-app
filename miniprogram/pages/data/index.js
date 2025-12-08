@@ -108,14 +108,14 @@ Page({
         }
       ];
     } else if (isMaintenanceWorker) {
-      // 维修员统计配置（不包含待接单）
+      // 维修员统计配置
       return [
         {
-          key: 'in_progress',
-          label: '维修中',
-          status: 'In Progress',
-          bgClass: '#cffafe',
-          color: '#0891b2'
+          key: 'today_maintenance',
+          label: '今日维修',
+          status: null, // 今日维修需要特殊处理
+          bgClass: '#dbeafe',
+          color: '#2563eb'
         },
         {
           key: 'repaired',
@@ -184,6 +184,26 @@ Page({
             const createdAt = order.created_at?.$date ?
               new Date(order.created_at.$date) : new Date(order.created_at);
             return createdAt >= today;
+          }).length;
+        } else if (config.key === 'today_maintenance' && isMaintenanceWorker) {
+          // 今日维修：统计今天接单或正在维修的工单
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          count = myOrders.filter(order => {
+            // 统计今天接单的工单（状态为 In Progress）或今天更新的维修中工单
+            if (order.status === 'In Progress') {
+              // 检查更新时间或创建时间是否在今天
+              const updatedAt = order.updated_at?.$date ?
+                new Date(order.updated_at.$date) : (order.updated_at ? new Date(order.updated_at) : null);
+              const createdAt = order.created_at?.$date ?
+                new Date(order.created_at.$date) : new Date(order.created_at);
+
+              if (updatedAt && updatedAt >= today) {
+                return true;
+              }
+              return createdAt >= today;
+            }
+            return false;
           }).length;
         } else if (config.status) {
           // 按状态统计
