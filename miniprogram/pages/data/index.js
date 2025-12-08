@@ -108,15 +108,8 @@ Page({
         }
       ];
     } else if (isMaintenanceWorker) {
-      // 维修员统计配置
+      // 维修员统计配置（不包含待接单）
       return [
-        {
-          key: 'pending_accept',
-          label: '待接单',
-          status: 'Pending Repair',
-          bgClass: '#dbeafe',
-          color: '#2563eb'
-        },
         {
           key: 'in_progress',
           label: '维修中',

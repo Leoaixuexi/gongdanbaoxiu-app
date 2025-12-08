@@ -169,7 +169,8 @@
     <view class="empty-state" wx:if="{{!loading && workOrders.length === 0}}">
       <text class="empty-icon">📋</text>
       <text class="empty-text">暂无工单记录</text>
-      <view class="empty-btn" bindtap="navigateToNewOrder">
+      <!-- 提交工单按钮 - 只对物业员工显示 -->
+      <view wx:if="{{isPropertyStaff}}" class="empty-btn" bindtap="navigateToNewOrder">
         <text class="empty-btn-text">提交工单</text>
       </view>
     </view>
