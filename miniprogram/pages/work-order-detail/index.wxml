@@ -139,6 +139,15 @@
       >
         <text class="action-button-text">修改</text>
       </button>
+
+      <!-- 接单按钮 - 维修员专用 -->
+      <button
+        wx:if="{{canAcceptOrder}}"
+        class="action-button action-button-accept"
+        bindtap="handleAcceptOrder"
+      >
+        <text class="action-button-text">接单</text>
+      </button>
     </view>
   </block>
 

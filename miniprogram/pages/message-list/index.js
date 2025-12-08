@@ -1,157 +1,252 @@
 /**
- * 消息列表页 - 显示特定模块的消息
- * 从 xiaoxi 项目迁移并适配到当前项目
+ * 消息列表页 - 基于UI设计图重新设计
+ * 显示特定模块的消息列表（通知公告、待办工单、提醒我的）
  */
-
-const notificationService = require('../../services/notification')
-const { MODULE_CONFIG, filterMessagesByModule } = require('../../utils/message-mapper.js')
 
 Page({
   data: {
     moduleId: '',
     moduleName: '',
     messages: [],
-    loading: true
+    loading: true,
+    refreshing: false,
+    statusBarHeight: 0,
+    headerHeight: 0
   },
 
   onLoad(options) {
-    const { moduleId } = options
-    console.log('[Message List] Page load, moduleId:', moduleId)
+    const { moduleId, moduleName } = options;
+    console.log('[Message List] Page load, moduleId:', moduleId, 'moduleName:', moduleName);
 
-    if (!moduleId) {
-      console.error('[Message List] No moduleId provided')
-      wx.navigateBack()
-      return
-    }
-
-    const moduleName = MODULE_CONFIG[moduleId]?.name || '消息列表'
+    // 计算导航栏高度
+    const systemInfo = wx.getSystemInfoSync();
+    const statusBarHeight = systemInfo.statusBarHeight;
+    const navBarHeight = 88 * systemInfo.windowWidth / 750;
 
     this.setData({
-      moduleId,
-      moduleName
-    })
+      moduleId: moduleId || 'notification',
+      moduleName: moduleName || '消息列表',
+      statusBarHeight,
+      headerHeight: statusBarHeight + navBarHeight
+    });
 
-    this.loadMessages()
+    this.loadMessages();
   },
 
   onShow() {
-    console.log('[Message List] Page show')
-    // 每次显示时刷新数据
-    this.loadMessages()
+    console.log('[Message List] Page show');
   },
 
   /**
    * 加载消息列表
+   * TODO: 接入真实后端数据
    */
   async loadMessages() {
+    this.setData({ loading: true });
+
     try {
-      this.setData({ loading: true })
+      // 模拟加载延迟
+      await this.delay(500);
 
-      // 获取所有消息
-      const result = await notificationService.getUserNotifications(false, 100)
-
-      if (!result || !result.notifications) {
-        console.warn('[Message List] No notifications data')
-        this.setData({ loading: false, messages: [] })
-        return
-      }
-
-      // 按模块筛选消息
-      const filteredNotifications = filterMessagesByModule(result.notifications, this.data.moduleId)
-
-      // 转换数据格式
-      const messages = this.transformMessages(filteredNotifications)
+      // 根据模块ID获取对应的模拟数据
+      const mockData = this.getMockMessages(this.data.moduleId);
 
       this.setData({
-        messages,
-        loading: false
-      })
+        messages: mockData,
+        loading: false,
+        refreshing: false
+      });
 
-      console.log('[Message List] Loaded:', messages.length, 'messages for module:', this.data.moduleId)
+      console.log('[Message List] Loaded:', mockData.length, 'messages');
 
     } catch (error) {
-      console.error('[Message List] Load error:', error)
-      this.setData({ loading: false })
+      console.error('[Message List] Load error:', error);
+      this.setData({
+        loading: false,
+        refreshing: false
+      });
 
       wx.showToast({
         title: '加载失败',
         icon: 'error',
         duration: 2000
-      })
+      });
     }
   },
 
   /**
-   * 转换消息数据格式
-   * 从当前项目的数据结构转换为消息组件需要的数据结构
+   * 获取模拟消息数据
    */
-  transformMessages(notifications) {
-    return notifications.map(notification => {
-      return {
-        // 组件需要的字段
-        id: notification._id,                    // _id → id
-        title: notification.title || '系统通知',  // title
-        content: notification.message || '',     // message → content
-        timestamp: new Date(notification.created_at), // created_at → timestamp
-        isRead: notification.read || false,      // read → isRead
+  getMockMessages(moduleId) {
+    const mockDataMap = {
+      'notification': [
+        {
+          id: '1',
+          title: '系统维护通知',
+          content: '系统将于2024年1月15日凌晨2:00-6:00进行例行维护，届时系统将暂停服务，请提前做好准...',
+          timeText: '2小时前',
+          isRead: false
+        },
+        {
+          id: '2',
+          title: '新功能上线公告',
+          content: '全新的消息通知功能已上线，支持实时推送和历史消息查看，欢迎体验。',
+          timeText: '4小时前',
+          isRead: false
+        },
+        {
+          id: '3',
+          title: '节假日安排通知',
+          content: '根据国家法定节假日安排，春节放假时间为1月20日至1月27日，共8天。',
+          timeText: '1天前',
+          isRead: false
+        },
+        {
+          id: '4',
+          title: '安全培训通知',
+          content: '定于本周五下午3点在会议室进行消防安全培训，请全体员工准时参加。',
+          timeText: '2天前',
+          isRead: true
+        },
+        {
+          id: '5',
+          title: '办公区域调整公告',
+          content: '因办公区域调整，三楼部分工位将进行重新分配，请相关同事配合搬迁工作。',
+          timeText: '3天前',
+          isRead: true
+        }
+      ],
+      'workorder': [
+        {
+          id: '1',
+          title: '办公楼一层空调维修',
+          content: '一层大厅空调制热效果差，需要检修。工单编号：WO20240115001',
+          timeText: '4小时前',
+          isRead: false
+        },
+        {
+          id: '2',
+          title: '会议室投影仪故障',
+          content: '302会议室投影仪无法正常开机，请尽快处理。工单编号：WO20240115002',
+          timeText: '6小时前',
+          isRead: false
+        },
+        {
+          id: '3',
+          title: '电梯年度检验',
+          content: 'A栋电梯需进行年度安全检验，请安排技术人员配合。工单编号：WO20240114001',
+          timeText: '10小时前',
+          isRead: false
+        },
+        {
+          id: '4',
+          title: '消防设备巡检',
+          content: '本月消防设备巡检任务已分配，请于本周内完成。工单编号：WO20240113001',
+          timeText: '1天前',
+          isRead: false
+        },
+        {
+          id: '5',
+          title: '门禁系统升级',
+          content: '门禁系统软件升级，需配合进行现场调试。工单编号：WO20240112001',
+          timeText: '1天前',
+          isRead: false
+        }
+      ],
+      'reminder': [
+        {
+          id: '1',
+          title: '检查安全通道',
+          content: '请检查B栋安全通道是否畅通，确保无杂物堆放。',
+          timeText: '1天前',
+          isRead: false
+        },
+        {
+          id: '2',
+          title: '设备保养提醒',
+          content: '中央空调系统已到保养周期，请联系供应商安排保养。',
+          timeText: '2天前',
+          isRead: true
+        },
+        {
+          id: '3',
+          title: '合同到期提醒',
+          content: '保洁服务合同将于下月15日到期，请及时处理续约事宜。',
+          timeText: '3天前',
+          isRead: true
+        },
+        {
+          id: '4',
+          title: '缴费提醒',
+          content: '本月物业费缴纳截止日期为25日，请及时通知业主。',
+          timeText: '4天前',
+          isRead: true
+        }
+      ]
+    };
 
-        // 保留原始数据，用于跳转等操作
-        _originalData: notification
-      }
-    })
+    return mockDataMap[moduleId] || [];
+  },
+
+  /**
+   * 延迟函数
+   */
+  delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
   },
 
   /**
    * 返回上一页
    */
   handleBack() {
-    wx.navigateBack()
+    wx.navigateBack();
   },
 
   /**
-   * 标记该模块的所有消息已读
+   * 标记所有消息为已读
    */
   async handleMarkAllRead() {
+    const unreadMessages = this.data.messages.filter(m => !m.isRead);
+
+    if (unreadMessages.length === 0) {
+      wx.showToast({
+        title: '没有未读消息',
+        icon: 'none',
+        duration: 1500
+      });
+      return;
+    }
+
+    wx.showLoading({ title: '处理中...', mask: true });
+
     try {
-      wx.showLoading({ title: '标记中...', mask: true })
+      // 模拟网络请求
+      await this.delay(500);
 
-      // 获取该模块的所有未读消息ID
-      const unreadMessages = this.data.messages.filter(m => !m.isRead)
+      // 更新本地数据
+      const messages = this.data.messages.map(m => ({
+        ...m,
+        isRead: true
+      }));
 
-      if (unreadMessages.length === 0) {
-        wx.hideLoading()
-        wx.showToast({
-          title: '没有未读消息',
-          icon: 'none',
-          duration: 1500
-        })
-        return
-      }
+      this.setData({ messages });
 
-      // 标记所有未读消息为已读
-      for (const message of unreadMessages) {
-        await notificationService.markAsRead(message.id)
-      }
-
-      wx.hideLoading()
+      wx.hideLoading();
       wx.showToast({
         title: '已全部标记为已读',
         icon: 'success',
         duration: 1500
-      })
-
-      // 刷新列表
-      this.loadMessages()
+      });
 
     } catch (error) {
-      wx.hideLoading()
-      console.error('[Message List] Mark all as read error:', error)
+      wx.hideLoading();
+      console.error('[Message List] Mark all read error:', error);
 
       wx.showToast({
         title: '操作失败',
         icon: 'error',
         duration: 2000
-      })
+      });
     }
   },
 
@@ -159,90 +254,52 @@ Page({
    * 点击消息
    */
   async handleMessageTap(e) {
-    const { messageId } = e.detail
+    const messageId = e.currentTarget.dataset.id;
+    const message = this.data.messages.find(m => m.id === messageId);
 
-    // 查找消息
-    const message = this.data.messages.find(m => m.id === messageId)
     if (!message) {
-      console.error('[Message List] Message not found:', messageId)
-      return
+      console.error('[Message List] Message not found:', messageId);
+      return;
     }
 
-    const originalData = message._originalData
-
-    // 如果未读，标记为已读
+    // 标记为已读
     if (!message.isRead) {
-      try {
-        await notificationService.markAsRead(messageId)
+      const messages = this.data.messages.map(m => {
+        if (m.id === messageId) {
+          return { ...m, isRead: true };
+        }
+        return m;
+      });
+      this.setData({ messages });
+    }
 
-        // 更新本地数据
-        const messages = this.data.messages.map(m => {
-          if (m.id === messageId) {
-            return { ...m, isRead: true }
-          }
-          return m
-        })
-
-        this.setData({ messages })
-
-      } catch (error) {
-        console.error('[Message List] Mark as read error:', error)
+    // 根据模块类型跳转
+    if (this.data.moduleId === 'workorder') {
+      // 待办工单 - 跳转到工单详情
+      // 从消息内容中提取工单编号
+      const match = message.content.match(/WO\d+/);
+      if (match) {
+        wx.navigateTo({
+          url: `/pages/work-order-detail/index?id=${match[0]}`
+        });
+        return;
       }
     }
 
-    // 跳转到相关页面
-    if (originalData && originalData.data && originalData.data.order_id) {
-      wx.navigateTo({
-        url: `/pages/work-order-detail/index?id=${originalData.data.order_id}`
-      })
-    } else {
-      // 如果没有关联工单，显示消息详情
-      wx.showModal({
-        title: message.title,
-        content: message.content,
-        showCancel: false,
-        confirmText: '知道了'
-      })
-    }
+    // 其他类型 - 显示消息详情弹窗
+    wx.showModal({
+      title: message.title,
+      content: message.content,
+      showCancel: false,
+      confirmText: '知道了'
+    });
   },
 
   /**
-   * 删除消息
+   * 下拉刷新
    */
-  handleDelete(e) {
-    const { messageId } = e.detail
-
-    wx.showModal({
-      title: '确认删除',
-      content: '确定要删除这条消息吗？',
-      success: async (res) => {
-        if (res.confirm) {
-          try {
-            // TODO: 当前项目的 notification 服务可能没有删除接口
-            // 如果有删除接口，在这里调用
-            // await notificationService.deleteNotification(messageId)
-
-            // 暂时只在本地删除
-            const messages = this.data.messages.filter(m => m.id !== messageId)
-            this.setData({ messages })
-
-            wx.showToast({
-              title: '删除成功',
-              icon: 'success',
-              duration: 1500
-            })
-
-          } catch (error) {
-            console.error('[Message List] Delete error:', error)
-
-            wx.showToast({
-              title: '删除失败',
-              icon: 'error',
-              duration: 2000
-            })
-          }
-        }
-      }
-    })
+  onRefresh() {
+    this.setData({ refreshing: true });
+    this.loadMessages();
   }
-})
+});

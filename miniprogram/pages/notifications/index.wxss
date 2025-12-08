@@ -1,34 +1,155 @@
-/* 首页样式 */
-.container {
+/**
+ * 消息页面样式 - 基于UI设计图重新设计
+ */
+
+/* 页面容器 */
+.message-page {
   min-height: 100vh;
-  background-color: #f3f4f6;
+  background-color: #F5F5F5;
 }
 
-/* 头部 */
-.header {
-  background-color: #14b8a6;
-  color: #ffffff;
+/* 页面内容 */
+.page-content {
+  padding-left: 32rpx;
+  padding-right: 32rpx;
+  padding-bottom: 32rpx;
+}
+
+/* 消息分类列表 */
+.category-list {
+  display: flex;
+  flex-direction: column;
+  gap: 24rpx;
+  margin-top: 24rpx;
+}
+
+/* 分类卡片 */
+.category-card {
+  display: flex;
+  align-items: center;
+  background: #FFFFFF;
+  border-radius: 24rpx;
   padding: 32rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+}
+
+.category-card:active {
+  transform: scale(0.98);
+  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.08);
+}
+
+/* 图标容器 */
+.card-icon {
+  width: 100rpx;
+  height: 100rpx;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
+  margin-right: 24rpx;
 }
 
-.header-title {
-  font-size: 36rpx;
-  font-weight: 500;
+/* SVG 图标基础样式 */
+.svg-icon {
+  width: 48rpx;
+  height: 48rpx;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
 }
 
-/* 主内容 */
-.main-content {
-  padding: 32rpx;
-  padding-bottom: 64rpx;
+/* 通知公告图标 - 喇叭 */
+.icon-notification {
+  background: linear-gradient(135deg, #FF9F43 0%, #FECA57 100%);
+  box-shadow: 0 8rpx 24rpx rgba(255, 159, 67, 0.35);
+}
+
+.icon-megaphone {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23FFFFFF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 11l18-5v12L3 13v-2z'/%3E%3Cpath d='M11.6 16.8a3 3 0 1 1-5.8-1.6'/%3E%3C/svg%3E");
+}
+
+/* 待办工单图标 - 勾选 */
+.icon-workorder {
+  background: linear-gradient(135deg, #10B981 0%, #34D399 100%);
+  box-shadow: 0 8rpx 24rpx rgba(16, 185, 129, 0.35);
+}
+
+.icon-check {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23FFFFFF' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6L9 17l-5-5'/%3E%3C/svg%3E");
+}
+
+/* 提醒我的图标 - 铃铛 */
+.icon-reminder {
+  background: linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%);
+  box-shadow: 0 8rpx 24rpx rgba(59, 130, 246, 0.35);
+}
+
+.icon-bell {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23FFFFFF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9'/%3E%3Cpath d='M13.73 21a2 2 0 0 1-3.46 0'/%3E%3C/svg%3E");
+}
+
+/* 卡片内容 */
+.card-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+  min-width: 0;
+}
+
+.card-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #1F2937;
+  line-height: 1.4;
+}
+
+.card-subtitle {
+  font-size: 26rpx;
+  color: #9CA3AF;
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 卡片右侧 */
+.card-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12rpx;
+  flex-shrink: 0;
+  margin-left: 16rpx;
+}
+
+.card-time {
+  font-size: 24rpx;
+  color: #9CA3AF;
+}
+
+/* 数量徽章 - 统一红色圆形 */
+.card-badge {
+  width: 40rpx;
+  height: 40rpx;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22rpx;
+  font-weight: 600;
+  color: #FFFFFF;
+  background: linear-gradient(135deg, #EF4444 0%, #F87171 100%);
+  box-shadow: 0 4rpx 12rpx rgba(239, 68, 68, 0.4);
 }
 
 /* 底部提示 */
 .footer-tip {
   text-align: center;
-  color: #9ca3af;
-  font-size: 28rpx;
-  padding: 64rpx 0;
+  color: #9CA3AF;
+  font-size: 26rpx;
+  margin-top: 80rpx;
+  padding-bottom: 120rpx;
 }

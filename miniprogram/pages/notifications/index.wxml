@@ -1,41 +1,63 @@
-<!-- 首页 - 消息模块列表 -->
-<view class="container">
-  <!-- 头部 -->
-  <view class="header">
-    <text class="header-title">消息</text>
-  </view>
+<!-- 消息页面 - 基于UI设计图重新设计 -->
+<view class="message-page">
+  <!-- 自定义导航栏 -->
+  <custom-header title="消息" showBack="{{false}}" />
 
-  <!-- 主内容 -->
-  <view class="main-content">
-    <!-- 通知公告 -->
-    <message-card
-      moduleId="announcements"
-      moduleName="{{modules.announcements.name}}"
-      iconBgColor="bg-orange-100"
-      latestMessage="{{latestMessages.announcements}}"
-      unreadCount="{{unreadCounts.announcements}}"
-      bindtap="handleCardTap"
-    />
+  <!-- 页面内容 -->
+  <view class="page-content" style="padding-top: {{headerHeight}}px;">
+    <!-- 消息分类卡片列表 -->
+    <view class="category-list">
+      <!-- 通知公告卡片 -->
+      <view class="category-card" bindtap="navigateToList" data-module="notification">
+        <view class="card-icon icon-notification">
+          <view class="svg-icon icon-megaphone"></view>
+        </view>
+        <view class="card-content">
+          <text class="card-title">通知公告</text>
+          <text class="card-subtitle">{{notificationSubtitle || '暂无通知'}}</text>
+        </view>
+        <view class="card-right">
+          <text class="card-time">{{notificationTime || ''}}</text>
+          <view class="card-badge" wx:if="{{notificationCount > 0}}">
+            {{notificationCount}}
+          </view>
+        </view>
+      </view>
 
-    <!-- 待办工单 -->
-    <message-card
-      moduleId="tasks"
-      moduleName="{{modules.tasks.name}}"
-      iconBgColor="bg-purple-100"
-      latestMessage="{{latestMessages.tasks}}"
-      unreadCount="{{unreadCounts.tasks}}"
-      bindtap="handleCardTap"
-    />
+      <!-- 待办工单卡片 -->
+      <view class="category-card" bindtap="navigateToList" data-module="workorder">
+        <view class="card-icon icon-workorder">
+          <view class="svg-icon icon-check"></view>
+        </view>
+        <view class="card-content">
+          <text class="card-title">待办工单</text>
+          <text class="card-subtitle">{{workorderSubtitle || '暂无待办工单'}}</text>
+        </view>
+        <view class="card-right">
+          <text class="card-time">{{workorderTime || ''}}</text>
+          <view class="card-badge" wx:if="{{workorderCount > 0}}">
+            {{workorderCount}}
+          </view>
+        </view>
+      </view>
 
-    <!-- 提醒我的 -->
-    <message-card
-      moduleId="reminders"
-      moduleName="{{modules.reminders.name}}"
-      iconBgColor="bg-blue-100"
-      latestMessage="{{latestMessages.reminders}}"
-      unreadCount="{{unreadCounts.reminders}}"
-      bindtap="handleCardTap"
-    />
+      <!-- 提醒我的卡片 -->
+      <view class="category-card" bindtap="navigateToList" data-module="reminder">
+        <view class="card-icon icon-reminder">
+          <view class="svg-icon icon-bell"></view>
+        </view>
+        <view class="card-content">
+          <text class="card-title">提醒我的</text>
+          <text class="card-subtitle">{{reminderSubtitle || '暂无提醒'}}</text>
+        </view>
+        <view class="card-right">
+          <text class="card-time">{{reminderTime || ''}}</text>
+          <view class="card-badge" wx:if="{{reminderCount > 0}}">
+            {{reminderCount}}
+          </view>
+        </view>
+      </view>
+    </view>
 
     <!-- 底部提示 -->
     <view class="footer-tip">90天以前的消息将自动删除</view>

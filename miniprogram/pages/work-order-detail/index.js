@@ -52,6 +52,7 @@ Page({
     canStart: false,
     canUpdate: false,
     canReview: false, // T106
+    canAcceptOrder: false, // 维修员接单权限
     // Repair completion form - T091-T092
     showRepairForm: false,
     repairStatus: 'Repaired',
@@ -174,12 +175,17 @@ Page({
       const canCancel = isPropertyStaff &&
         workOrder.submitter && workOrder.submitter.user_id === userInfo.id;
 
+      // 接单按钮：维修员 && 工单状态为待维修 && 责任方=用户部门
+      const canAcceptOrder = isMaintenanceWorker &&
+        workOrder.status === 'Pending Repair' &&
+        workOrder.responsible_party === userInfo.department;
+
       // 统一显示：所有状态特定按钮都不显示
       const canStart = false;
       const canUpdate = false;
       const canReview = false;
 
-      const showActions = canShowMore || canEdit;
+      const showActions = canShowMore || canEdit || canAcceptOrder;
 
       this.setData({
         workOrder: processedOrder,
@@ -192,6 +198,7 @@ Page({
         canStart,
         canUpdate,
         canReview,
+        canAcceptOrder,
         showActions
       });
 
@@ -598,6 +605,75 @@ Page({
         }
       }
     });
+  },
+
+  /**
+   * Handle Accept Order - 维修员接单
+   */
+  handleAcceptOrder: async function () {
+    try {
+      wx.showModal({
+        title: '确认接单',
+        content: '确认接单并开始维修吗？',
+        success: async (res) => {
+          if (res.confirm) {
+            try {
+              wx.showLoading({
+                title: '接单中...',
+                mask: true
+              });
+
+              // Update status to In Progress
+              await workOrderService.updateWorkOrderStatus(
+                parseInt(this.data.orderId),
+                'In Progress',
+                '维修员接单开始维修'
+              );
+
+              wx.hideLoading();
+
+              // Success feedback
+              wx.showToast({
+                title: '接单成功',
+                icon: 'success',
+                duration: 2000
+              });
+
+              // Refresh work order data
+              setTimeout(() => {
+                this.loadWorkOrder();
+              }, 500);
+
+            } catch (error) {
+              wx.hideLoading();
+              console.error('[Detail] Accept order error:', error);
+
+              // Error feedback
+              const errorMsg = error.message || '接单失败，请稍后重试';
+              wx.showModal({
+                title: '接单失败',
+                content: errorMsg,
+                showCancel: true,
+                cancelText: '取消',
+                confirmText: '重试',
+                success: (retryRes) => {
+                  if (retryRes.confirm) {
+                    this.handleAcceptOrder();
+                  }
+                }
+              });
+            }
+          }
+        }
+      });
+    } catch (error) {
+      console.error('[Detail] Accept order check error:', error);
+      wx.showModal({
+        title: '操作失败',
+        content: '无法接单，请稍后重试',
+        showCancel: false
+      });
+    }
   },
 
   /**

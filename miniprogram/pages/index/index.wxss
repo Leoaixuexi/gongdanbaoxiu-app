@@ -15,6 +15,8 @@
   right: 0;
   z-index: 100;
   background: linear-gradient(to right, #10b981, #14b8a6);
+  border-top: none;
+  box-shadow: none;
 }
 
 /* 绿色渐变头部 */
@@ -223,6 +225,38 @@
 
 .status-tab-completed .status-tab-text-active {
   color: #059669;
+  font-weight: 600;
+}
+
+/* 维修员特有状态样式 */
+
+/* 待接单状态 - 浅蓝色背景+深蓝色字体（同已提报） */
+.status-tab-pending_accept {
+  background: #dbeafe;
+}
+
+.status-tab-pending_accept .status-tab-text-active {
+  color: #2563eb;
+  font-weight: 600;
+}
+
+/* 已修复状态 - 浅紫色背景+深紫色字体 */
+.status-tab-repaired {
+  background: #f3e8ff;
+}
+
+.status-tab-repaired .status-tab-text-active {
+  color: #9333ea;
+  font-weight: 600;
+}
+
+/* 需重修状态 - 浅橙色背景+深橙色字体 */
+.status-tab-rework {
+  background: #ffedd5;
+}
+
+.status-tab-rework .status-tab-text-active {
+  color: #ea580c;
   font-weight: 600;
 }
 

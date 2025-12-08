@@ -1,111 +1,94 @@
 /**
- * 消息首页 - 显示3个消息模块
- * 从 xiaoxi 项目迁移并适配到当前项目
+ * 消息页面 - 基于UI设计图重新设计
+ * 显示三个消息分类：通知公告、待办工单、提醒我的
  */
-
-const notificationService = require('../../services/notification')
-const { MODULE_CONFIG, getModuleStats } = require('../../utils/message-mapper.js')
 
 Page({
   data: {
-    modules: MODULE_CONFIG,
-    latestMessages: {
-      announcements: null,
-      tasks: null,
-      reminders: null
-    },
-    unreadCounts: {
-      announcements: 0,
-      tasks: 0,
-      reminders: 0
-    },
-    loading: true
+    headerHeight: 0,
+    // 通知公告
+    notificationCount: 3,
+    notificationSubtitle: '系统维护通知',
+    notificationTime: '2小时前',
+    // 待办工单
+    workorderCount: 5,
+    workorderSubtitle: '办公楼一层空调维修',
+    workorderTime: '4小时前',
+    // 提醒我的
+    reminderCount: 1,
+    reminderSubtitle: '检查安全通道',
+    reminderTime: '1天前'
   },
 
   onLoad() {
-    console.log('[Notifications Index] Page load')
-    this.loadData()
+    console.log('[Notifications] Page load');
+    // 计算自定义导航栏高度
+    const systemInfo = wx.getSystemInfoSync();
+    const statusBarHeight = systemInfo.statusBarHeight;
+    const navBarHeight = 88 * systemInfo.windowWidth / 750;
+    this.setData({
+      headerHeight: statusBarHeight + navBarHeight
+    });
   },
 
   onShow() {
-    console.log('[Notifications Index] Page show')
-    // 每次显示页面时刷新数据（从其他页面返回时）
-    this.loadData()
-  },
-
-  /**
-   * 加载数据
-   */
-  async loadData() {
-    try {
-      this.setData({ loading: true })
-
-      // 获取所有消息
-      const result = await notificationService.getUserNotifications(false, 100)
-
-      if (!result || !result.notifications) {
-        console.warn('[Notifications Index] No notifications data')
-        this.setData({ loading: false })
-        return
-      }
-
-      // 按模块分组并统计
-      const stats = getModuleStats(result.notifications)
-
-      // 转换数据格式以供 message-card 组件使用
-      const latestMessages = {
-        announcements: stats.announcements.latestMessage ? this.transformMessage(stats.announcements.latestMessage) : null,
-        tasks: stats.tasks.latestMessage ? this.transformMessage(stats.tasks.latestMessage) : null,
-        reminders: stats.reminders.latestMessage ? this.transformMessage(stats.reminders.latestMessage) : null
-      }
-
-      const unreadCounts = {
-        announcements: stats.announcements.unreadCount,
-        tasks: stats.tasks.unreadCount,
-        reminders: stats.reminders.unreadCount
-      }
-
-      this.setData({
-        latestMessages,
-        unreadCounts,
-        loading: false
-      })
-
-      console.log('[Notifications Index] Data loaded:', { latestMessages, unreadCounts })
-
-    } catch (error) {
-      console.error('[Notifications Index] Load error:', error)
-      this.setData({ loading: false })
-
-      wx.showToast({
-        title: '加载失败',
-        icon: 'error',
-        duration: 2000
-      })
+    console.log('[Notifications] Page show');
+    // 设置自定义 tabBar 选中状态
+    if (typeof this.getTabBar === 'function' && this.getTabBar()) {
+      this.getTabBar().setData({
+        selected: 2
+      });
     }
+    // 加载消息数据
+    this.loadMessageData();
   },
 
   /**
-   * 转换消息格式
-   * 从后端格式转换为组件需要的格式
+   * 加载消息数据
+   * TODO: 接入真实后端数据
    */
-  transformMessage(notification) {
-    return {
-      title: notification.title || '系统通知',
-      content: notification.message || '',
-      timestamp: new Date(notification.created_at)
-    }
+  loadMessageData() {
+    // 目前使用模拟数据，后续可接入真实API
+    console.log('[Notifications] Loading message data...');
+
+    // 模拟加载数据 - 当接入后端时，取消注释以下代码
+    // try {
+    //   const notifications = await notificationService.getUserNotifications();
+    //   this.setData({
+    //     notificationCount: notifications.unreadCount,
+    //     notificationSubtitle: notifications.latestMessage,
+    //     notificationTime: notifications.latestTime,
+    //     ...
+    //   });
+    // } catch (error) {
+    //   console.error('[Notifications] Load error:', error);
+    // }
   },
 
   /**
-   * 点击卡片
+   * 导航到消息列表页面
    */
-  handleCardTap(e) {
-    const { moduleId } = e.detail
-    console.log('[Notifications Index] Card tapped:', moduleId)
+  navigateToList(e) {
+    const moduleId = e.currentTarget.dataset.module;
+    console.log('[Notifications] Navigate to list:', moduleId);
+
+    // 模块名称映射
+    const moduleNames = {
+      'notification': '通知公告',
+      'workorder': '待办工单',
+      'reminder': '提醒我的'
+    };
 
     wx.navigateTo({
-      url: `/pages/message-list/index?moduleId=${moduleId}`
-    })
+      url: `/pages/message-list/index?moduleId=${moduleId}&moduleName=${moduleNames[moduleId]}`
+    });
+  },
+
+  /**
+   * 下拉刷新
+   */
+  onPullDownRefresh() {
+    this.loadMessageData();
+    wx.stopPullDownRefresh();
   }
-})
+});

@@ -28,7 +28,15 @@ Page({
       { id: "priority", label: "优先级", hasArrow: true, value: '', placeholder: '' }
     ],
     // 自定义导航栏高度
-    headerHeight: 0
+    headerHeight: 0,
+    // 用户角色信息
+    userRole: null, // 3=维修员, 4=物业员工
+    userDepartment: null,
+    userId: null,
+    isPropertyStaff: false,
+    isMaintenanceWorker: false,
+    // 动态状态按钮列表
+    statusButtons: []
   },
 
   /**
@@ -50,20 +58,77 @@ Page({
   /**
    * Lifecycle - Page Show
    */
-  onShow: function () {
+  onShow: async function () {
     console.log('[Index] Page show');
+
     // 设置自定义 tabBar 选中状态
     if (typeof this.getTabBar === 'function' && this.getTabBar()) {
       this.getTabBar().setData({
         selected: 0
       });
     }
-    // 重置日期选择为默认状态
-    this.setData({
-      activeTab: '',
-      activeStatus: 'reported'
-    });
+
+    // 获取用户角色信息
+    try {
+      const userInfo = await auth.getCurrentUser();
+      if (userInfo) {
+        const isPropertyStaff = userInfo.role_id === 4;
+        const isMaintenanceWorker = userInfo.role_id === 3;
+
+        // 根据角色配置状态按钮
+        const statusButtons = this.getStatusButtonsByRole(isPropertyStaff, isMaintenanceWorker);
+
+        // 根据角色设置默认状态
+        const defaultStatus = isPropertyStaff ? 'reported' : 'pending_accept';
+
+        this.setData({
+          userRole: userInfo.role_id,
+          userDepartment: userInfo.department,
+          userId: userInfo.id,
+          isPropertyStaff,
+          isMaintenanceWorker,
+          statusButtons,
+          activeTab: '',
+          activeStatus: defaultStatus
+        });
+
+        console.log('[Index] User role:', {
+          role_id: userInfo.role_id,
+          department: userInfo.department,
+          isPropertyStaff,
+          isMaintenanceWorker
+        });
+      }
+    } catch (error) {
+      console.error('[Index] Get user info error:', error);
+    }
+
     this.loadWorkOrders();
+  },
+
+  /**
+   * 根据角色获取状态按钮配置
+   */
+  getStatusButtonsByRole: function (isPropertyStaff, isMaintenanceWorker) {
+    if (isPropertyStaff) {
+      // 物业员工状态按钮
+      return [
+        { key: 'reported', label: '已提报', status: 'Pending Repair' },
+        { key: 'maintenance', label: '维修中', status: 'In Progress' },
+        { key: 'review', label: '待复核', status: 'Repaired' },
+        { key: 'completed', label: '已完成', status: 'Completed' }
+      ];
+    } else if (isMaintenanceWorker) {
+      // 维修员状态按钮
+      return [
+        { key: 'pending_accept', label: '待接单', status: 'Pending Repair' },
+        { key: 'maintenance', label: '维修中', status: 'In Progress' },
+        { key: 'repaired', label: '已修复', status: 'Repaired' },
+        { key: 'rework', label: '需重修', status: 'Needs Rework' },
+        { key: 'completed', label: '已完成', status: 'Completed' }
+      ];
+    }
+    return [];
   },
 
   /**
@@ -108,8 +173,11 @@ Page({
       // Get work orders from cloud database
       const allOrders = await workOrderService.getWorkOrders({});
 
+      // Filter by user role
+      let filteredOrders = this.filterByUserRole(allOrders);
+
       // Filter by time range
-      let filteredOrders = this.filterByTimeRange(allOrders);
+      filteredOrders = this.filterByTimeRange(filteredOrders);
 
       // Filter by status
       filteredOrders = this.filterByStatus(filteredOrders);
@@ -161,6 +229,30 @@ Page({
   },
 
   /**
+   * Filter orders by user role
+   * 物业员工：只看自己提报的工单
+   * 维修员：只看责任方=自己部门的工单
+   */
+  filterByUserRole: function (orders) {
+    const { isPropertyStaff, isMaintenanceWorker, userId, userDepartment } = this.data;
+
+    if (isPropertyStaff && userId) {
+      // 物业员工：只显示自己提报的工单
+      return orders.filter(order => {
+        return order.submitter && order.submitter.user_id === userId;
+      });
+    } else if (isMaintenanceWorker && userDepartment) {
+      // 维修员：只显示责任方=自己部门的工单
+      return orders.filter(order => {
+        return order.responsible_party === userDepartment;
+      });
+    }
+
+    // 默认返回所有工单
+    return orders;
+  },
+
+  /**
    * Filter orders by time range
    */
   filterByTimeRange: function (orders) {
@@ -205,22 +297,17 @@ Page({
    * Filter orders by status
    */
   filterByStatus: function (orders) {
-    const { activeStatus } = this.data;
+    const { activeStatus, isPropertyStaff, isMaintenanceWorker } = this.data;
 
     // 如果 activeStatus 为空,返回所有工单
     if (!activeStatus) {
       return orders;
     }
 
-    const statusMap = {
-      'reported': 'Pending Repair',
-      'maintenance': 'In Progress',
-      'review': 'Repaired',
-      'completed': 'Completed'
-    };
-
-    const targetStatus = statusMap[activeStatus];
-    if (targetStatus) {
+    // 找到对应的状态按钮配置
+    const statusButton = this.data.statusButtons.find(btn => btn.key === activeStatus);
+    if (statusButton) {
+      const targetStatus = statusButton.status;
       return orders.filter(order => order.status === targetStatus);
     }
 
@@ -235,20 +322,39 @@ Page({
       'Pending Repair': 'blue',
       'In Progress': 'orange',
       'Repaired': 'amber',
+      'Needs Rework': 'red',
       'Completed': 'green'
     };
 
-    const statusTextMap = {
-      'Pending Repair': '已提报',
-      'In Progress': '维修中',
-      'Repaired': '待复核',
-      'Completed': '已完成'
-    };
+    // 根据角色显示不同的状态文本
+    const { isMaintenanceWorker } = this.data;
+    let statusTextMap;
+
+    if (isMaintenanceWorker) {
+      // 维修员视角的状态文本
+      statusTextMap = {
+        'Pending Repair': '待接单',
+        'In Progress': '维修中',
+        'Repaired': '已修复',
+        'Needs Rework': '需重修',
+        'Completed': '已完成'
+      };
+    } else {
+      // 物业员工视角的状态文本
+      statusTextMap = {
+        'Pending Repair': '已提报',
+        'In Progress': '维修中',
+        'Repaired': '待复核',
+        'Needs Rework': '需重修',
+        'Completed': '已完成'
+      };
+    }
 
     const statusClassMap = {
       'Pending Repair': 'status-reported',
       'In Progress': 'status-maintenance',
       'Repaired': 'status-review',
+      'Needs Rework': 'status-rework',
       'Completed': 'status-completed'
     };
 

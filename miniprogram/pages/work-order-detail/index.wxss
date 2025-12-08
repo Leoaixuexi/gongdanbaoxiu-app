@@ -484,6 +484,13 @@
   min-width: 500rpx;
 }
 
+.action-button-accept {
+  background: linear-gradient(to right, #3b82f6, #2563eb);
+  color: white;
+  box-shadow: 0 8rpx 16rpx rgba(59, 130, 246, 0.25);
+  min-width: 500rpx;
+}
+
 .action-button-primary {
   background: linear-gradient(to right, #10b981, #14b8a6);
   color: white;

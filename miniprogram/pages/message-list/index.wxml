@@ -1,35 +1,90 @@
-<!-- 消息列表页 - 显示特定模块的消息 -->
-<view class="container">
-  <!-- 头部 -->
-  <view class="header">
+<!-- 消息列表页 - 基于UI设计图重新设计 -->
+<view class="message-list-page">
+  <!-- 自定义头部导航栏 -->
+  <view class="header" style="padding-top: {{statusBarHeight}}px;">
     <view class="header-content">
+      <!-- 返回按钮 -->
       <view class="back-btn" bindtap="handleBack">
-        <text class="back-icon">‹</text>
+        <view class="back-icon"></view>
       </view>
-      <text class="header-title">{{moduleName}}</text>
-      <view class="mark-read-btn" bindtap="handleMarkAllRead">
-        <text class="icon-text">✓</text>
+      <!-- 标题居中区域 -->
+      <view class="title-center">
+        <text class="header-title">{{moduleName}}</text>
+        <view class="clear-btn" bindtap="handleMarkAllRead">
+          <view class="clear-svg-icon"></view>
+        </view>
       </view>
+      <!-- 右侧占位（与返回按钮宽度相同保持标题居中） -->
+      <view class="header-right-placeholder"></view>
     </view>
   </view>
 
-  <!-- 消息列表 -->
-  <view class="main-content">
-    <view wx:if="{{messages.length === 0}}" class="empty-state">
+  <!-- 消息列表内容 -->
+  <scroll-view 
+    scroll-y 
+    class="message-scroll" 
+    style="padding-top: {{headerHeight}}px;"
+    refresher-enabled="{{true}}"
+    refresher-triggered="{{refreshing}}"
+    bindrefresherrefresh="onRefresh"
+  >
+    <!-- Loading 状态 -->
+    <view class="loading-state" wx:if="{{loading}}">
+      <view class="loading-spinner"></view>
+      <text class="loading-text">加载中...</text>
+    </view>
+
+    <!-- 空状态 -->
+    <view class="empty-state" wx:elif="{{messages.length === 0}}">
+      <text class="empty-icon">📭</text>
       <text class="empty-text">暂无消息</text>
     </view>
 
-    <view wx:else class="message-list">
-      <swipeable-message
-        wx:for="{{messages}}"
+    <!-- 消息列表 -->
+    <view class="message-list" wx:else>
+      <view 
+        class="swipe-container" 
+        wx:for="{{messages}}" 
         wx:key="id"
-        message="{{item}}"
-        bindtap="handleMessageTap"
-        binddelete="handleDelete"
-      />
+      >
+        <!-- 滑动显示的操作按钮 -->
+        <view class="swipe-actions">
+          <view class="action-btn action-cancel" bindtap="handleCancel" data-id="{{item.id}}">
+            <text>取消</text>
+          </view>
+          <view class="action-btn action-delete" bindtap="handleDelete" data-id="{{item.id}}">
+            <text>删除</text>
+          </view>
+        </view>
+        
+        <!-- 消息卡片（可滑动） -->
+        <view 
+          class="message-item {{item.swiped ? 'swiped' : ''}}" 
+          bindtouchstart="onTouchStart"
+          bindtouchmove="onTouchMove"
+          bindtouchend="onTouchEnd"
+          bindtap="handleMessageTap"
+          data-id="{{item.id}}"
+          data-index="{{index}}"
+        >
+          <!-- 未读指示点 -->
+          <view class="unread-dot {{item.isRead ? 'dot-hidden' : 'dot-visible'}}"></view>
+          
+          <!-- 消息内容 -->
+          <view class="message-content">
+            <!-- 标题行 -->
+            <view class="message-header">
+              <text class="message-title {{item.isRead ? '' : 'title-unread'}}">{{item.title}}</text>
+              <text class="message-time">{{item.timeText}}</text>
+            </view>
+            <!-- 描述文本 -->
+            <text class="message-desc">{{item.content}}</text>
+          </view>
+        </view>
+      </view>
     </view>
 
     <!-- 底部提示 -->
     <view class="footer-tip">90天以前的消息将自动删除</view>
-  </view>
+  </scroll-view>
 </view>

@@ -100,8 +100,8 @@
       </view>
     </view>
 
-    <!-- 月度排名 -->
-    <view class="section mb-3">
+    <!-- 月度排名 - 只对物业员工显示 -->
+    <view wx:if="{{isPropertyStaff}}" class="section mb-3">
       <view class="flex items-center justify-between mb-3">
         <view class="flex items-center gap-2">
           <text class="text-base font-bold text-foreground tracking-tight">完成工单排名</text>

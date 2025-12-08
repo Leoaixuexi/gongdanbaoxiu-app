@@ -1,11 +1,65 @@
-<!-- 正在开发中页面 -->
-<view class="developing-page">
+<!-- 消息页面 - 基于UI设计图重新设计 -->
+<view class="message-page">
   <!-- 自定义导航栏 -->
   <custom-header title="消息" showBack="{{false}}" />
 
-  <view class="developing-content" style="margin-top: {{headerHeight}}px;">
-    <text class="developing-icon">🚧</text>
-    <text class="developing-title">正在开发中</text>
-    <text class="developing-desc">该功能正在努力开发中，敬请期待...</text>
+  <!-- 页面内容 -->
+  <view class="page-content" style="padding-top: {{headerHeight}}px;">
+    <!-- 消息分类卡片列表 -->
+    <view class="category-list">
+      <!-- 通知公告卡片 -->
+      <view class="category-card" bindtap="navigateToList" data-module="notification">
+        <view class="card-icon icon-notification">
+          <text class="icon-emoji">📢</text>
+        </view>
+        <view class="card-content">
+          <text class="card-title">通知公告</text>
+          <text class="card-subtitle">{{notificationSubtitle || '暂无通知'}}</text>
+        </view>
+        <view class="card-right">
+          <text class="card-time">{{notificationTime || ''}}</text>
+          <view class="card-badge badge-orange" wx:if="{{notificationCount > 0}}">
+            {{notificationCount}}
+          </view>
+        </view>
+      </view>
+
+      <!-- 待办工单卡片 -->
+      <view class="category-card" bindtap="navigateToList" data-module="workorder">
+        <view class="card-icon icon-workorder">
+          <text class="icon-emoji">✅</text>
+        </view>
+        <view class="card-content">
+          <text class="card-title">待办工单</text>
+          <text class="card-subtitle">{{workorderSubtitle || '暂无待办工单'}}</text>
+        </view>
+        <view class="card-right">
+          <text class="card-time">{{workorderTime || ''}}</text>
+          <view class="card-badge badge-green" wx:if="{{workorderCount > 0}}">
+            {{workorderCount}}
+          </view>
+        </view>
+      </view>
+
+      <!-- 提醒我的卡片 -->
+      <view class="category-card" bindtap="navigateToList" data-module="reminder">
+        <view class="card-icon icon-reminder">
+          <text class="icon-emoji">🔔</text>
+        </view>
+        <view class="card-content">
+          <text class="card-title">提醒我的</text>
+          <text class="card-subtitle">{{reminderSubtitle || '暂无提醒'}}</text>
+        </view>
+        <view class="card-right">
+          <text class="card-time">{{reminderTime || ''}}</text>
+          <view class="card-badge badge-red" wx:if="{{reminderCount > 0}}">
+            {{reminderCount}}
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 底部提示 -->
+    <view class="footer-tip">90天以前的消息将自动删除</view>
   </view>
 </view>

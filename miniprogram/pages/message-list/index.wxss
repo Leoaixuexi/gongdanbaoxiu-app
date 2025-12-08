@@ -1,34 +1,42 @@
-/* 消息列表页样式 */
-.container {
+/**
+ * 消息列表页样式 - 基于UI设计图重新设计
+ */
+
+/* 页面容器 */
+.message-list-page {
   min-height: 100vh;
-  background-color: #f9fafb;
+  background-color: #F5F5F5;
 }
 
-/* 头部 */
+/* ==================== 头部导航栏 ==================== */
 .header {
-  background: linear-gradient(to right, #14b8a6, #0d9488);
-  color: #ffffff;
-  padding: 32rpx;
-  position: sticky;
+  position: fixed;
   top: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to right, #10b981, #14b8a6);
   z-index: 100;
+  border-bottom: none;
+  box-shadow: none;
 }
 
 .header-content {
+  height: 88rpx;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  padding: 0 32rpx;
 }
 
+/* 返回按钮 */
 .back-btn {
   width: 64rpx;
   height: 64rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-left: -16rpx;
   border-radius: 50%;
   transition: background-color 0.2s;
+  flex-shrink: 0;
 }
 
 .back-btn:active {
@@ -36,65 +44,252 @@
 }
 
 .back-icon {
-  font-size: 60rpx;
-  font-weight: 300;
-  line-height: 1;
+  width: 20rpx;
+  height: 20rpx;
+  border-left: 4rpx solid #ffffff;
+  border-bottom: 4rpx solid #ffffff;
+  transform: rotate(45deg);
+  margin-left: 8rpx;
 }
 
-.header-title {
-  flex: 1;
-  font-size: 40rpx;
-  font-weight: 600;
-  text-align: center;
-  margin: 0 16rpx;
-}
-
-.mark-read-btn {
-  width: 64rpx;
-  height: 64rpx;
-  background-color: rgba(255, 255, 255, 0.2);
-  border-radius: 50%;
+/* 标题居中区域 */
+.title-center {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background-color 0.2s;
+  gap: 16rpx;
+  flex: 1;
 }
 
-.mark-read-btn:active {
+/* 标题 */
+.header-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+/* 清除按钮 */
+.clear-btn {
+  width: 56rpx;
+  height: 56rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.clear-btn:active {
   background-color: rgba(255, 255, 255, 0.3);
 }
 
-.icon-text {
-  font-size: 36rpx;
-  font-weight: 600;
+/* 清除 SVG 图标 */
+.clear-svg-icon {
+  width: 32rpx;
+  height: 32rpx;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23FFFFFF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 6h18'/%3E%3Cpath d='M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2'/%3E%3Cpath d='M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6'/%3E%3Cline x1='10' y1='11' x2='10' y2='17'/%3E%3Cline x1='14' y1='11' x2='14' y2='17'/%3E%3C/svg%3E");
 }
 
-/* 主内容 */
-.main-content {
-  padding: 32rpx;
-  padding-bottom: 64rpx;
+/* 右侧占位 */
+.header-right-placeholder {
+  width: 64rpx;
+  flex-shrink: 0;
 }
 
-/* 空状态 */
+/* ==================== 消息滚动区域 ==================== */
+.message-scroll {
+  height: 100vh;
+  box-sizing: border-box;
+}
+
+/* ==================== Loading 状态 ==================== */
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 200rpx 0;
+}
+
+.loading-spinner {
+  width: 60rpx;
+  height: 60rpx;
+  border: 6rpx solid #E5E7EB;
+  border-top-color: #10B981;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading-text {
+  margin-top: 24rpx;
+  font-size: 28rpx;
+  color: #9CA3AF;
+}
+
+/* ==================== 空状态 ==================== */
 .empty-state {
-  text-align: center;
-  padding: 240rpx 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 200rpx 0;
+}
+
+.empty-icon {
+  font-size: 120rpx;
+  margin-bottom: 32rpx;
+  opacity: 0.6;
 }
 
 .empty-text {
-  color: #9ca3af;
   font-size: 32rpx;
+  color: #9CA3AF;
 }
 
-/* 消息列表 */
+/* ==================== 消息列表 ==================== */
 .message-list {
-  /* 列表容器 */
+  padding: 24rpx 32rpx;
 }
 
-/* 底部提示 */
+/* 滑动容器 */
+.swipe-container {
+  position: relative;
+  margin-bottom: 24rpx;
+  overflow: hidden;
+  border-radius: 24rpx;
+}
+
+/* 滑动操作按钮 */
+.swipe-actions {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  align-items: stretch;
+}
+
+.action-btn {
+  width: 160rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #FFFFFF;
+  font-size: 28rpx;
+  font-weight: 500;
+}
+
+.action-cancel {
+  background: linear-gradient(135deg, #9CA3AF 0%, #6B7280 100%);
+}
+
+.action-delete {
+  background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+}
+
+/* 消息卡片 */
+.message-item {
+  display: flex;
+  align-items: flex-start;
+  background: #FFFFFF;
+  border-radius: 24rpx;
+  padding: 32rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.04);
+  transition: transform 0.3s ease;
+  position: relative;
+  z-index: 1;
+}
+
+.message-item.swiped {
+  transform: translateX(-320rpx);
+}
+
+.message-item:active {
+  background: #FAFAFA;
+}
+
+/* 未读指示点 */
+.unread-dot {
+  width: 16rpx;
+  height: 16rpx;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #F97316 0%, #FB923C 100%);
+  flex-shrink: 0;
+  margin-right: 20rpx;
+  margin-top: 12rpx;
+  box-shadow: 0 2rpx 8rpx rgba(249, 115, 22, 0.4);
+  transition: opacity 0.2s;
+}
+
+.dot-hidden {
+  opacity: 0;
+}
+
+.dot-visible {
+  opacity: 1;
+}
+
+/* 消息内容区域 */
+.message-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.message-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 12rpx;
+}
+
+.message-title {
+  font-size: 30rpx;
+  font-weight: 500;
+  color: #4B5563;
+  line-height: 1.5;
+  flex: 1;
+  margin-right: 16rpx;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+}
+
+.title-unread {
+  font-weight: 600;
+  color: #1F2937;
+}
+
+.message-time {
+  font-size: 24rpx;
+  color: #9CA3AF;
+  flex-shrink: 0;
+}
+
+.message-desc {
+  font-size: 26rpx;
+  color: #6B7280;
+  line-height: 1.6;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+/* ==================== 底部提示 ==================== */
 .footer-tip {
   text-align: center;
-  color: #9ca3af;
-  font-size: 28rpx;
-  padding: 64rpx 0;
+  color: #9CA3AF;
+  font-size: 26rpx;
+  padding: 48rpx 0 120rpx;
 }

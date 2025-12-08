@@ -1,48 +1,149 @@
 /**
- * 正在开发中页面样式
+ * 消息页面样式 - 基于UI设计图重新设计
  */
 
-.developing-page {
+/* 页面容器 */
+.message-page {
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background-color: #F5F5F5;
+}
+
+/* 页面内容 */
+.page-content {
+  padding: 32rpx;
+}
+
+/* 消息分类列表 */
+.category-list {
+  display: flex;
+  flex-direction: column;
+  gap: 24rpx;
+}
+
+/* 分类卡片 */
+.category-card {
+  display: flex;
+  align-items: center;
+  background: #FFFFFF;
+  border-radius: 24rpx;
+  padding: 32rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+}
+
+.category-card:active {
+  transform: scale(0.98);
+  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.08);
+}
+
+/* 图标容器 */
+.card-icon {
+  width: 100rpx;
+  height: 100rpx;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
+  margin-right: 24rpx;
 }
 
-.developing-content {
+.icon-emoji {
+  font-size: 48rpx;
+}
+
+/* 通知公告图标 - 橙色渐变 */
+.icon-notification {
+  background: linear-gradient(135deg, #FFB347 0%, #FFCC80 100%);
+  box-shadow: 0 8rpx 24rpx rgba(255, 179, 71, 0.3);
+}
+
+/* 待办工单图标 - 绿色渐变 */
+.icon-workorder {
+  background: linear-gradient(135deg, #10B981 0%, #34D399 100%);
+  box-shadow: 0 8rpx 24rpx rgba(16, 185, 129, 0.3);
+}
+
+/* 提醒我的图标 - 蓝色渐变 */
+.icon-reminder {
+  background: linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%);
+  box-shadow: 0 8rpx 24rpx rgba(59, 130, 246, 0.3);
+}
+
+/* 卡片内容 */
+.card-content {
+  flex: 1;
   display: flex;
   flex-direction: column;
+  gap: 8rpx;
+  min-width: 0;
+}
+
+.card-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #1F2937;
+  line-height: 1.4;
+}
+
+.card-subtitle {
+  font-size: 26rpx;
+  color: #9CA3AF;
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 卡片右侧 */
+.card-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12rpx;
+  flex-shrink: 0;
+  margin-left: 16rpx;
+}
+
+.card-time {
+  font-size: 24rpx;
+  color: #9CA3AF;
+}
+
+/* 数量徽章 */
+.card-badge {
+  min-width: 40rpx;
+  height: 40rpx;
+  padding: 0 12rpx;
+  border-radius: 20rpx;
+  display: flex;
   align-items: center;
-  gap: 40rpx;
-  padding: 80rpx 60rpx;
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 40rpx;
-  box-shadow: 0 20rpx 60rpx rgba(0, 0, 0, 0.15);
+  justify-content: center;
+  font-size: 24rpx;
+  font-weight: 600;
+  color: #FFFFFF;
 }
 
-.developing-icon {
-  font-size: 160rpx;
-  animation: bounce 2s infinite ease-in-out;
+.badge-orange {
+  background: linear-gradient(135deg, #F97316 0%, #FB923C 100%);
+  box-shadow: 0 4rpx 12rpx rgba(249, 115, 22, 0.4);
 }
 
-.developing-title {
-  font-size: 48rpx;
-  font-weight: bold;
-  color: #333;
+.badge-green {
+  background: linear-gradient(135deg, #10B981 0%, #34D399 100%);
+  box-shadow: 0 4rpx 12rpx rgba(16, 185, 129, 0.4);
 }
 
-.developing-desc {
-  font-size: 28rpx;
-  color: #666;
+.badge-red {
+  background: linear-gradient(135deg, #EF4444 0%, #F87171 100%);
+  box-shadow: 0 4rpx 12rpx rgba(239, 68, 68, 0.4);
+}
+
+/* 底部提示 */
+.footer-tip {
   text-align: center;
-}
-
-@keyframes bounce {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-20rpx);
-  }
+  color: #9CA3AF;
+  font-size: 26rpx;
+  margin-top: 80rpx;
+  padding-bottom: 120rpx;
 }
