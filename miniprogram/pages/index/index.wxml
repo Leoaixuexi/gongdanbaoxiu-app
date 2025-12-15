@@ -80,7 +80,7 @@
   </view>
 
   <!-- 工单列表 -->
-  <view class="order-list" style="padding-top: calc(370rpx + {{headerHeight}}px);">
+  <view class="order-list" style="padding-top: calc(300rpx + {{headerHeight}}px);">
     <block wx:if="{{!loading && workOrders.length > 0}}">
       <view
         wx:for="{{workOrders}}"

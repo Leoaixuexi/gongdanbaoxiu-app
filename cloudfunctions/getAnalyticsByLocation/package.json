@@ -1,0 +1,9 @@
+{
+  "name": "getAnalyticsByLocation",
+  "version": "1.0.0",
+  "description": "获取位置/楼栋分布数据",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}

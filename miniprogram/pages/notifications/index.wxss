@@ -1,155 +1,178 @@
 /**
- * 消息页面样式 - 基于UI设计图重新设计
+ * 消息页面样式 - Professionally Redesigned
+ * Style: Modern, Clean, Soft Depth
  */
 
-/* 页面容器 */
+/* 页面容器 - 使用更高级的冷灰背景 */
 .message-page {
   min-height: 100vh;
-  background-color: #F5F5F5;
+  background-color: #F7F8FA;
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 /* 页面内容 */
 .page-content {
   padding-left: 32rpx;
   padding-right: 32rpx;
-  padding-bottom: 32rpx;
+  padding-bottom: 40rpx;
 }
 
 /* 消息分类列表 */
 .category-list {
   display: flex;
   flex-direction: column;
-  gap: 24rpx;
+  gap: 20rpx; /* 减小列表间距 */
   margin-top: 24rpx;
 }
 
-/* 分类卡片 */
+/* 分类卡片 - 核心容器 */
 .category-card {
   display: flex;
   align-items: center;
   background: #FFFFFF;
-  border-radius: 24rpx;
-  padding: 32rpx;
-  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.05);
-  transition: all 0.2s ease;
+  border-radius: 24rpx; /* 稍微减小圆角以匹配紧凑感 */
+  padding: 20rpx 24rpx; /* 显著减小上下内边距 */
+  position: relative;
+  overflow: hidden;
+  box-shadow: 
+    0 12rpx 32rpx -8rpx rgba(16, 24, 40, 0.08),
+    0 4rpx 8rpx -4rpx rgba(16, 24, 40, 0.03);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid rgba(255, 255, 255, 0.6);
 }
 
+/* 按压交互 - 物理下沉感 */
 .category-card:active {
   transform: scale(0.98);
-  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.08);
+  box-shadow: 
+    0 4rpx 12rpx -4rpx rgba(16, 24, 40, 0.12),
+    0 2rpx 4rpx -2rpx rgba(16, 24, 40, 0.04);
 }
 
-/* 图标容器 */
+/* 图标容器 - 紧凑尺寸 */
 .card-icon {
-  width: 100rpx;
-  height: 100rpx;
-  border-radius: 50%;
+  width: 80rpx; /* 减小图标容器 */
+  height: 80rpx;
+  border-radius: 32rpx;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  margin-right: 24rpx;
+  margin-right: 20rpx; /* 减小右边距 */
+  position: relative;
+  box-sizing: border-box;
+  border: 2rpx solid rgba(255, 255, 255, 0.2);
 }
 
-/* SVG 图标基础样式 */
+/* SVG 图标尺寸微调 */
 .svg-icon {
-  width: 48rpx;
-  height: 48rpx;
+  width: 40rpx; /* 稍微减小图标 */
+  height: 40rpx;
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
+  filter: drop-shadow(0 4rpx 8rpx rgba(0,0,0,0.1));
 }
 
-/* 通知公告图标 - 喇叭 */
+/* 1. 通知公告 - 活力橙 */
 .icon-notification {
-  background: linear-gradient(135deg, #FF9F43 0%, #FECA57 100%);
-  box-shadow: 0 8rpx 24rpx rgba(255, 159, 67, 0.35);
+  background: linear-gradient(135deg, #FFAB2E 0%, #FFC86F 100%);
+  box-shadow: 0 12rpx 32rpx rgba(255, 171, 46, 0.35);
 }
-
 .icon-megaphone {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23FFFFFF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 11l18-5v12L3 13v-2z'/%3E%3Cpath d='M11.6 16.8a3 3 0 1 1-5.8-1.6'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23FFFFFF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 2l-1.5 5h-7L2 2h10z'/%3E%3Cpath d='M2 8v8'/%3E%3Cpath d='M22 8v8'/%3E%3Cpath d='M11 5L6 9H2v6h4l5 4V5z'/%3E%3Cpath d='M19.07 4.93L17.66 6.34C18.16 6.84 18.5 7.53 18.5 8.28c0 .76-.34 1.45-.84 1.95l1.41 1.41C19.98 10.74 20.5 9.58 20.5 8.28c0-1.3-.52-2.46-1.43-3.35z'/%3E%3Cpath d='M15.5 8.28c0 .4-.16.76-.42 1.02l1.41 1.41c.64-.64 1.01-1.51 1.01-2.43 0-.92-.37-1.79-1.01-2.43l-1.41 1.41c.26.26.42.62.42 1.02z'/%3E%3C/svg%3E");
 }
 
-/* 待办工单图标 - 勾选 */
+/* 2. 待办事项 - 清新绿 */
 .icon-workorder {
-  background: linear-gradient(135deg, #10B981 0%, #34D399 100%);
-  box-shadow: 0 8rpx 24rpx rgba(16, 185, 129, 0.35);
+  background: linear-gradient(135deg, #059669 0%, #34D399 100%);
+  box-shadow: 0 12rpx 32rpx rgba(5, 150, 105, 0.35);
 }
-
 .icon-check {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23FFFFFF' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6L9 17l-5-5'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23FFFFFF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2'/%3E%3Crect x='9' y='3' width='6' height='4' rx='2'/%3E%3Cpath d='M9 14l2 2 4-4'/%3E%3C/svg%3E");
 }
 
-/* 提醒我的图标 - 铃铛 */
+/* 3. 提醒我的 - 科技蓝 */
 .icon-reminder {
-  background: linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%);
-  box-shadow: 0 8rpx 24rpx rgba(59, 130, 246, 0.35);
+  background: linear-gradient(135deg, #2563EB 0%, #60A5FA 100%);
+  box-shadow: 0 12rpx 32rpx rgba(37, 99, 235, 0.35);
 }
-
 .icon-bell {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23FFFFFF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9'/%3E%3Cpath d='M13.73 21a2 2 0 0 1-3.46 0'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23FFFFFF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M10.26 21.05a2 2 0 0 0 3.48 0'/%3E%3Cpath d='M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9'/%3E%3C/svg%3E");
 }
 
-/* 卡片内容 */
+/* 卡片文本内容 */
 .card-content {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 8rpx;
+  gap: 10rpx;
   min-width: 0;
+  justify-content: center;
 }
 
 .card-title {
-  font-size: 32rpx;
-  font-weight: 600;
-  color: #1F2937;
-  line-height: 1.4;
+  font-size: 28rpx; /* 缩小一个字号 */
+  font-weight: 700;
+  color: #111827;
+  letter-spacing: 0.5rpx;
+  line-height: 1.2;
 }
 
 .card-subtitle {
-  font-size: 26rpx;
-  color: #9CA3AF;
+  font-size: 24rpx;
+  color: #6B7280; /* 使用 Cool Gray 色系 */
   line-height: 1.4;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-/* 卡片右侧 */
+/* 卡片右侧信息 */
 .card-right {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 12rpx;
+  gap: 16rpx;
   flex-shrink: 0;
-  margin-left: 16rpx;
+  margin-left: 24rpx;
+  justify-content: center;
+  height: 100%;
 }
 
 .card-time {
-  font-size: 24rpx;
+  font-size: 22rpx;
   color: #9CA3AF;
+  font-weight: 500;
+  font-family: 'DIN Alternate', sans-serif; /* 尝试使用数字字体 */
 }
 
-/* 数量徽章 - 统一红色圆形 */
+/* 数量徽章 - 完美圆形 + 投影 */
 .card-badge {
-  width: 40rpx;
-  height: 40rpx;
-  border-radius: 50%;
+  min-width: 44rpx; /* 稍微加大 */
+  height: 44rpx;
+  padding: 0 8rpx;
+  border-radius: 44rpx; /* 胶囊形兼容多位数 */
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 22rpx;
-  font-weight: 600;
+  font-size: 24rpx;
+  font-weight: 700;
   color: #FFFFFF;
+  /* 鲜艳的红色渐变 */
   background: linear-gradient(135deg, #EF4444 0%, #F87171 100%);
-  box-shadow: 0 4rpx 12rpx rgba(239, 68, 68, 0.4);
+  /* 红色发光投影 */
+  box-shadow: 0 4rpx 12rpx rgba(239, 68, 68, 0.4); 
+  box-sizing: border-box;
 }
 
 /* 底部提示 */
 .footer-tip {
   text-align: center;
   color: #9CA3AF;
-  font-size: 26rpx;
-  margin-top: 80rpx;
-  padding-bottom: 120rpx;
+  font-size: 24rpx;
+  margin-top: 60rpx;
+  padding-bottom: 80rpx;
+  opacity: 0.6;
+  letter-spacing: 1rpx;
 }

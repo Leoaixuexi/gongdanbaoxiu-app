@@ -52,52 +52,91 @@
 }
 
 /* ==================== Tab Navigation ==================== */
+/* ==================== Tab Navigation (Capsule Style) ==================== */
 .tab-nav {
-  background: linear-gradient(to bottom, #ffffff 0%, #fafbfc 100%);
-  border-bottom: 1rpx solid #E8ECEF;
+  background-color: #FFFFFF;
+  border-radius: 60rpx;
   display: flex;
-  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.06);
-  padding: 16rpx 32rpx 0;
+  padding: 0;
+  margin: 12rpx 32rpx 0;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
+  border: 1rpx solid #F3F4F6;
+  position: relative;
+  overflow: hidden;
 }
 
 .tab-item {
   flex: 1;
   text-align: center;
-  padding: 28rpx 0;
+  padding: 24rpx 0;
   position: relative;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+  background-color: #FFFFFF;
+}
+
+/* Active State for Left Tab (Index 0) */
+.tab-item:first-child.tab-item-active {
+  background: linear-gradient(90deg, #E0F2FE 0%, #ECFDF5 100%);
+  border-radius: 60rpx 60rpx 60rpx 0; /* Asymmetric curve */
+  z-index: 2;
+}
+
+/* Active State for Right Tab (Index 1) */
+.tab-item:last-child.tab-item-active {
+  background: linear-gradient(90deg, #ECFDF5 0%, #E0F2FE 100%);
+  border-radius: 60rpx 60rpx 0 60rpx; /* Asymmetric curve */
+  z-index: 2;
 }
 
 .tab-item:active {
-  transform: scale(0.95);
+  opacity: 0.9;
 }
 
 .tab-text {
-  font-size: 30rpx;
+  font-size: 28rpx;
   font-weight: 500;
   color: #6B7280;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
-  display: inline-block;
+  z-index: 3;
+  line-height: 1;
+  transition: all 0.3s;
 }
 
 .tab-text-active {
-  color: #10b981;
-  font-weight: 600;
-  font-size: 32rpx;
+  color: #059669;
+  font-weight: bold;
+  font-size: 30rpx;
 }
 
+/* Curve Highlight (Bottom Indicator) */
 .tab-indicator {
   position: absolute;
   bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 80rpx;
+  width: 50%;
+  height: 8rpx;
+  background: transparent; 
+  /* The image shows the background itself acts as the highlighter. 
+     We can keep a subtle bottom indicator if needed, or rely on the background shape.
+     Let's add a colorful bottom border to the active item instead of a separate indicator.
+  */
+  display: none; 
+}
+
+/* Add bottom curve via pseudo-element on active item */
+.tab-item-active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 20%;
+  width: 60%;
   height: 6rpx;
-  background: linear-gradient(to right, #10b981, #10B981);
-  border-radius: 3rpx 3rpx 0 0;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 -2rpx 8rpx rgba(12, 167, 125, 0.4);
+  background: linear-gradient(90deg, #34D399, #10B981);
+  border-radius: 100rpx 100rpx 0 0;
 }
 
 /* ==================== Content Area ==================== */
@@ -110,7 +149,7 @@
 .info-content {
   width: 100%;
   box-sizing: border-box;
-  padding: 32rpx;
+  padding: 4rpx 24rpx 24rpx 24rpx;
   padding-bottom: 220rpx;
 }
 
@@ -127,7 +166,7 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  padding: 32rpx;
+  padding: 16rpx 24rpx;
   border-bottom: 1rpx solid #F9FAFB;
   transition: background-color 0.2s;
   box-sizing: border-box;
@@ -143,7 +182,7 @@
   color: #9CA3AF;
   flex-shrink: 0;
   min-width: 140rpx;
-  margin-right: 24rpx;
+  margin-right: 16rpx;
 }
 
 .info-value {
@@ -169,7 +208,7 @@
   flex-direction: column;
   align-items: flex-start;
   gap: 16rpx;
-  padding: 32rpx;
+  padding: 16rpx 24rpx;
   border-bottom: 1rpx solid #F9FAFB;
 }
 
@@ -205,7 +244,7 @@
 }
 
 .badge-text {
-  font-size: 24rpx;
+  font-size: 22rpx;
   color: #EA580C;
   font-weight: 500;
 }
@@ -215,7 +254,7 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  padding: 32rpx;
+  padding: 16rpx 24rpx;
   border-bottom: 1rpx solid #F9FAFB;
   box-sizing: border-box;
   width: 100%;

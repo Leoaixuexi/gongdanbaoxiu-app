@@ -14,7 +14,7 @@
   <!-- Work Order Content -->
   <block wx:if="{{!loading && workOrder}}">
     <!-- 顶部绿色渐变区域 -->
-    <view class="header" style="padding-top: calc({{headerHeight}}px + 32rpx);">
+    <view class="header" style="padding-top: calc({{headerHeight}}px + 4rpx);">
       <!-- 使用新的步骤条组件 -->
       <work-order-stepper workOrderData="{{stepperData}}" />
     </view>

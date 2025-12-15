@@ -75,7 +75,7 @@ Page({
     // 模块名称映射
     const moduleNames = {
       'notification': '通知公告',
-      'workorder': '待办工单',
+      'workorder': '待办事项',
       'reminder': '提醒我的'
     };
 

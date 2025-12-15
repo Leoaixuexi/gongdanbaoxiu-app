@@ -24,14 +24,14 @@
         </view>
       </view>
 
-      <!-- 待办工单卡片 -->
+      <!-- 待办事项卡片 -->
       <view class="category-card" bindtap="navigateToList" data-module="workorder">
         <view class="card-icon icon-workorder">
           <view class="svg-icon icon-check"></view>
         </view>
         <view class="card-content">
-          <text class="card-title">待办工单</text>
-          <text class="card-subtitle">{{workorderSubtitle || '暂无待办工单'}}</text>
+          <text class="card-title">待办事项</text>
+          <text class="card-subtitle">{{workorderSubtitle || '暂无待办事项'}}</text>
         </view>
         <view class="card-right">
           <text class="card-time">{{workorderTime || ''}}</text>

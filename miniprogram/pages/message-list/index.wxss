@@ -1,11 +1,12 @@
 /**
- * 消息列表页样式 - 基于UI设计图重新设计
+ * 消息列表页样式 - Professionally Redesigned V2
+ * Style: Advanced Modern, Unified, High-End
  */
 
 /* 页面容器 */
 .message-list-page {
   min-height: 100vh;
-  background-color: #F5F5F5;
+  background-color: #F7F8FA; /* 统一的高级冷灰背景 */
 }
 
 /* ==================== 头部导航栏 ==================== */
@@ -14,10 +15,12 @@
   top: 0;
   left: 0;
   right: 0;
-  background: linear-gradient(to right, #10b981, #14b8a6);
+  /* 统一使用 Emerald/Teal 渐变，保持品牌一致性 */
+  background: linear-gradient(135deg, #10B981 0%, #0D9488 100%);
   z-index: 100;
   border-bottom: none;
-  box-shadow: none;
+  /* 柔和的导航栏投影 */
+  box-shadow: 0 4rpx 24rpx rgba(13, 148, 136, 0.15);
 }
 
 .header-content {
@@ -35,53 +38,62 @@
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  transition: background-color 0.2s;
+  transition: all 0.2s;
   flex-shrink: 0;
+  margin-right: 16rpx; /* 增加间距 */
 }
 
 .back-btn:active {
-  background-color: rgba(255, 255, 255, 0.2);
+  background-color: rgba(255, 255, 255, 0.15);
+  transform: scale(0.9);
 }
 
 .back-icon {
-  width: 20rpx;
-  height: 20rpx;
+  width: 22rpx;
+  height: 22rpx;
   border-left: 4rpx solid #ffffff;
   border-bottom: 4rpx solid #ffffff;
   transform: rotate(45deg);
   margin-left: 8rpx;
 }
 
-/* 标题居中区域 */
+/* 标题居中区域 - 重新设计 */
 .title-center {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 16rpx;
   flex: 1;
+  transform: translateX(-16rpx); /* 视觉从中心微调以平衡返回按钮 */
 }
 
 /* 标题 */
 .header-title {
-  font-size: 32rpx;
+  font-size: 34rpx;
   font-weight: 600;
   color: #ffffff;
+  letter-spacing: 1.5rpx;
+  text-shadow: 0 2rpx 4rpx rgba(0,0,0,0.05);
 }
 
-/* 清除按钮 */
+/* 清除按钮 - 悬浮胶囊样式 */
 .clear-btn {
-  width: 56rpx;
-  height: 56rpx;
+  position: absolute; /* 绝对定位在右侧，不影响标题居中 */
+  right: 32rpx;
+  height: 60rpx;
+  width: 60rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 50%;
-  transition: background-color 0.2s;
-  background-color: rgba(255, 255, 255, 0.15);
+  border-radius: 20rpx; /* 方圆形 */
+  background-color: rgba(255, 255, 255, 0.15); /* 磨砂玻璃 */
+  backdrop-filter: blur(8rpx);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .clear-btn:active {
-  background-color: rgba(255, 255, 255, 0.3);
+  transform: scale(0.92);
+  background-color: rgba(255, 255, 255, 0.25);
 }
 
 /* 清除 SVG 图标 */
@@ -91,13 +103,13 @@
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23FFFFFF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 6h18'/%3E%3Cpath d='M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2'/%3E%3Cpath d='M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6'/%3E%3Cline x1='10' y1='11' x2='10' y2='17'/%3E%3Cline x1='14' y1='11' x2='14' y2='17'/%3E%3C/svg%3E");
+  /* 精致的清洁刷图标 */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23FFFFFF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 2a1 1 0 0 1 1 1v5h.5a2 2 0 0 1 2 2v2H8.5v-2a2 2 0 0 1 2-2h.5V3a1 1 0 0 1 1-1z'/%3E%3Cpath d='M8 12c-2.5 0-4 1.5-4 4 0 3 2 6 8 6s8-3 8-6c0-2.5-1.5-4-4-4'/%3E%3Cpath d='M8 12h8'/%3E%3C/svg%3E");
 }
 
-/* 右侧占位 */
+/* 右侧占位 - 已不再需要，因为使用了绝对定位，但保留以防万一 */
 .header-right-placeholder {
-  width: 64rpx;
-  flex-shrink: 0;
+  display: none;
 }
 
 /* ==================== 消息滚动区域 ==================== */
@@ -112,16 +124,16 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 200rpx 0;
+  padding-top: 240rpx;
 }
 
 .loading-spinner {
-  width: 60rpx;
-  height: 60rpx;
-  border: 6rpx solid #E5E7EB;
+  width: 64rpx;
+  height: 64rpx;
+  border: 6rpx solid #E2E8F0;
   border-top-color: #10B981;
   border-radius: 50%;
-  animation: spin 0.8s linear infinite;
+  animation: spin 0.8s cubic-bezier(0.5, 0, 0.5, 1) infinite;
 }
 
 @keyframes spin {
@@ -129,9 +141,11 @@
 }
 
 .loading-text {
-  margin-top: 24rpx;
-  font-size: 28rpx;
-  color: #9CA3AF;
+  margin-top: 32rpx;
+  font-size: 26rpx;
+  color: #94A3B8;
+  letter-spacing: 2rpx;
+  font-weight: 500;
 }
 
 /* ==================== 空状态 ==================== */
@@ -140,31 +154,40 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 200rpx 0;
+  padding-top: 240rpx;
 }
 
+/* 使用 CSS 绘制或 SVG 背景图替代 emoji */
 .empty-icon {
-  font-size: 120rpx;
-  margin-bottom: 32rpx;
-  opacity: 0.6;
+  width: 200rpx;
+  height: 200rpx;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23E2E8F0' stroke-width='1' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='2' y='4' width='20' height='16' rx='2'/%3E%3Cpath d='M22 6l-10 7L2 6'/%3E%3Cpath d='M10 12h4' stroke-dasharray='1 3'/%3E%3C/svg%3E");
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  margin-bottom: 24rpx;
+  opacity: 0.8;
 }
 
 .empty-text {
-  font-size: 32rpx;
-  color: #9CA3AF;
+  font-size: 30rpx;
+  color: #94A3B8;
+  letter-spacing: 1rpx;
+  font-weight: 500;
 }
 
 /* ==================== 消息列表 ==================== */
 .message-list {
-  padding: 24rpx 32rpx;
+  padding: 24rpx; /* 减小边缘间距 */
+  padding-bottom: 40rpx;
 }
 
 /* 滑动容器 */
 .swipe-container {
   position: relative;
-  margin-bottom: 24rpx;
-  overflow: hidden;
-  border-radius: 24rpx;
+  margin-bottom: 20rpx; /* 减小项间距 */
+  border-radius: 24rpx; /* 稍微减小圆角 */
+  box-shadow: 0 4rpx 12rpx -4rpx rgba(0, 0, 0, 0.04), 0 2rpx 4rpx -2rpx rgba(0, 0, 0, 0.02);
 }
 
 /* 滑动操作按钮 */
@@ -175,24 +198,33 @@
   bottom: 0;
   display: flex;
   align-items: stretch;
+  border-radius: 0 24rpx 24rpx 0;
+  overflow: hidden;
 }
 
 .action-btn {
-  width: 160rpx;
+  width: 120rpx; /* 稍微减小按钮宽度 */
   display: flex;
   align-items: center;
   justify-content: center;
   color: #FFFFFF;
-  font-size: 28rpx;
+  font-size: 26rpx;
   font-weight: 500;
+  letter-spacing: 1rpx;
+  transition: all 0.2s;
 }
 
 .action-cancel {
-  background: linear-gradient(135deg, #9CA3AF 0%, #6B7280 100%);
+  background: #CBD5E1;
+  color: #475569;
 }
 
 .action-delete {
-  background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+  background: #EF4444;
+}
+
+.action-btn:active {
+  filter: brightness(0.95);
 }
 
 /* 消息卡片 */
@@ -200,16 +232,16 @@
   display: flex;
   align-items: flex-start;
   background: #FFFFFF;
-  border-radius: 24rpx;
-  padding: 32rpx;
-  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.04);
-  transition: transform 0.3s ease;
+  border-radius: 24rpx; /* 统一圆角 */
+  padding: 24rpx; /* 显著减小内边距 */
   position: relative;
-  z-index: 1;
+  z-index: 2;
+  transition: transform 0.3s cubic-bezier(0.2, 0, 0.2, 1);
 }
 
 .message-item.swiped {
-  transform: translateX(-320rpx);
+  transform: translateX(-240rpx); /* 配合减小的宽度调整 */
+  border-radius: 24rpx 0 0 24rpx;
 }
 
 .message-item:active {
@@ -221,64 +253,45 @@
   width: 16rpx;
   height: 16rpx;
   border-radius: 50%;
-  background: linear-gradient(135deg, #F97316 0%, #FB923C 100%);
+  background: linear-gradient(135deg, #EF4444 0%, #F87171 100%);
   flex-shrink: 0;
-  margin-right: 20rpx;
+  margin-right: 20rpx; /* 减小间距 */
   margin-top: 12rpx;
-  box-shadow: 0 2rpx 8rpx rgba(249, 115, 22, 0.4);
-  transition: opacity 0.2s;
-}
-
-.dot-hidden {
-  opacity: 0;
-}
-
-.dot-visible {
-  opacity: 1;
+  box-shadow: 0 0 8rpx rgba(239, 68, 68, 0.5);
+  transition: opacity 0.3s;
 }
 
 /* 消息内容区域 */
 .message-content {
   flex: 1;
   min-width: 0;
-}
-
-.message-header {
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  margin-bottom: 12rpx;
+  flex-direction: column;
+  gap: 8rpx; /* 减小内部行间距 */
 }
 
 .message-title {
   font-size: 30rpx;
-  font-weight: 500;
-  color: #4B5563;
-  line-height: 1.5;
-  flex: 1;
-  margin-right: 16rpx;
+  color: #1F2937;
+  font-weight: 600; /* 统一为粗体 */
+  line-height: 1.4;
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
   -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
+  letter-spacing: 0.5rpx;
 }
 
 .title-unread {
-  font-weight: 600;
-  color: #1F2937;
-}
-
-.message-time {
-  font-size: 24rpx;
-  color: #9CA3AF;
-  flex-shrink: 0;
+  color: #111827; /* 未读仅颜色加深 */
 }
 
 .message-desc {
   font-size: 26rpx;
-  color: #6B7280;
-  line-height: 1.6;
+  color: #4B5563;
+  line-height: 1.5;
+  text-align: justify;
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
@@ -286,10 +299,25 @@
   -webkit-box-orient: vertical;
 }
 
+/* 时间显示 - 纯文本样式 */
+.message-time {
+  align-self: flex-start;
+  font-size: 20rpx;
+  color: #9CA3AF; /* 浅灰文字 */
+  background-color: transparent; /* 移除背景色 */
+  padding: 0; /* 移除内边距 */
+  border-radius: 0;
+  font-family: 'DIN Alternate', sans-serif;
+  letter-spacing: 1rpx;
+  margin-top: 4rpx;
+  font-weight: 400; /* 不需要太重 */
+}
+
 /* ==================== 底部提示 ==================== */
 .footer-tip {
   text-align: center;
-  color: #9CA3AF;
-  font-size: 26rpx;
-  padding: 48rpx 0 120rpx;
+  color: #CBD5E1;
+  font-size: 24rpx;
+  padding: 40rpx 0 120rpx;
+  letter-spacing: 2rpx;
 }

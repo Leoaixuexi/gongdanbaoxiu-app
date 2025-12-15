@@ -4,7 +4,7 @@
 .stepper-container {
   background-color: #ffffff;
   border-radius: 32rpx;
-  padding: 40rpx;
+  padding: 24rpx 40rpx;
   box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
   width: 100%;
   box-sizing: border-box;
@@ -134,7 +134,7 @@
 }
 
 .status-text {
-  font-size: 40rpx;
+  font-size: 36rpx;
   font-weight: bold;
   color: #1F2937;
   letter-spacing: -0.5rpx;
@@ -172,7 +172,7 @@
 .duration-text {
   color: #ea580c;
   font-weight: bold;
-  font-size: 28rpx;
+  font-size: 26rpx;
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
 }

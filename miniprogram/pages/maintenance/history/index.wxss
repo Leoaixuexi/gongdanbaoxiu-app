@@ -11,16 +11,16 @@
 /* ==================== Page Header ==================== */
 .page-header {
   background: linear-gradient(135deg, #007AFF 0%, #5AC8FA 100%);
-  padding: var(--spacing-xl) var(--spacing-lg);
-  padding-top: calc(var(--spacing-xl) + constant(safe-area-inset-top));
-  padding-top: calc(var(--spacing-xl) + env(safe-area-inset-top));
+  padding: var(--spacing-md) var(--spacing-sm);
+  padding-top: calc(var(--spacing-md) + constant(safe-area-inset-top));
+  padding-top: calc(var(--spacing-md) + env(safe-area-inset-top));
 }
 
 .page-title {
-  font-size: var(--font-size-2xl);
+  font-size: var(--font-size-lg);
   font-weight: var(--font-weight-bold);
   color: white;
-  margin-bottom: var(--spacing-lg);
+  margin-bottom: var(--spacing-sm);
 }
 
 /* ==================== Filter Section ==================== */
@@ -39,11 +39,11 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--spacing-md) var(--spacing-lg);
+  padding: 10rpx 20rpx;
   background-color: rgba(255, 255, 255, 0.25);
   backdrop-filter: blur(20rpx);
-  border-radius: var(--radius-lg);
-  font-size: var(--font-size-sm);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
   transition: all var(--transition-base);
 }
 
@@ -85,7 +85,7 @@
 
 /* ==================== List Section ==================== */
 .list-section {
-  padding: var(--spacing-lg);
+  padding: var(--spacing-sm);
 }
 
 /* ==================== Loading State ==================== */
@@ -222,8 +222,8 @@
 
 .empty-btn {
   min-width: 320rpx;
-  height: 88rpx;
-  border-radius: var(--radius-full);
+  padding: 4rpx;
+  border-radius: var(--radius-md);
   background: linear-gradient(135deg, #007AFF 0%, #5AC8FA 100%);
   color: white;
   font-size: var(--font-size-base);

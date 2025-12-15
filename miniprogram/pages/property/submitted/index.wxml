@@ -88,9 +88,9 @@
 
   <!-- 退出登录按钮 -->
   <view class="logout-wrapper">
-    <button class="logout-btn bg-card premium-shadow-sm" bindtap="handleLogout">
+    <view class="logout-btn bg-card premium-shadow-sm" bindtap="handleLogout">
       <view class="logout-icon"></view>
       <text class="logout-text text-destructive">退出登录</text>
-    </button>
+    </view>
   </view>
 </view>

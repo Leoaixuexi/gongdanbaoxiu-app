@@ -72,13 +72,12 @@
           
           <!-- 消息内容 -->
           <view class="message-content">
-            <!-- 标题行 -->
-            <view class="message-header">
-              <text class="message-title {{item.isRead ? '' : 'title-unread'}}">{{item.title}}</text>
-              <text class="message-time">{{item.timeText}}</text>
-            </view>
+            <!-- 标题 -->
+            <text class="message-title {{item.isRead ? '' : 'title-unread'}}">{{item.title}}</text>
             <!-- 描述文本 -->
             <text class="message-desc">{{item.content}}</text>
+            <!-- 时间 - 显示在底部 -->
+            <text class="message-time">{{item.timeText}}</text>
           </view>
         </view>
       </view>

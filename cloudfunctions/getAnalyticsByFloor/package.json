@@ -1,0 +1,9 @@
+{
+  "name": "getAnalyticsByFloor",
+  "version": "1.0.0",
+  "description": "获取楼层分布数据",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}
