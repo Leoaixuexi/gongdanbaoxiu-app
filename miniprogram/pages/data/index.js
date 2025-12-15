@@ -4,10 +4,13 @@
 
 const auth = require('../../services/auth');
 const workOrderService = require('../../services/workOrder');
+const dateUtils = require('../../utils/dateUtils');
+const chartUtils = require('../../utils/chartUtils');
+const animationUtils = require('../../utils/animationUtils');
 
 Page({
   data: {
-    // 工单统计
+    // 工单统计（物业员工/维修员使用）
     stats: [],
     // 月度排名
     rankings: [],
@@ -19,7 +22,43 @@ Page({
     userId: null,
     isPropertyStaff: false,
     isMaintenanceWorker: false,
-    loading: true
+    isManager: false,  // 物业经理
+    loading: true,
+
+    // ========== 物业经理专用数据 ==========
+    // Tab切换
+    activeTab: 'stats',  // 'stats' | 'charts'
+
+    // 时间过滤
+    timeFilter: 'today',  // 'yesterday' | 'today' | 'week' | 'month' | 'custom'
+    startDate: '',
+    endDate: '',
+    showDatePicker: false,
+
+    // KPI指标
+    kpiData: {
+      totalOrders: 0,
+      completedOrders: 0,
+      completionRate: 0,
+      inProgressOrders: 0,
+      avgCompletionTime: 0
+    },
+
+    // 卡片动画
+    card1Anim: {},
+    card2Anim: {},
+    card3Anim: {},
+    card4Anim: {},
+
+    // 排名数据
+    employeeRankings: [],
+    responsiblePartyRankings: [],
+
+    // 图表数据
+    statusChartData: [],
+    floorChartData: {},
+    locationChartData: {},
+    chartsInitialized: false
   },
 
   onLoad() {
@@ -46,24 +85,33 @@ Page({
       if (userInfo) {
         const isPropertyStaff = userInfo.role_id === 4;
         const isMaintenanceWorker = userInfo.role_id === 3;
+        const isManager = userInfo.role_id === 2;  // 物业经理
 
         this.setData({
           userRole: userInfo.role_id,
           userDepartment: userInfo.department,
           userId: userInfo.id,
           isPropertyStaff,
-          isMaintenanceWorker
+          isMaintenanceWorker,
+          isManager
         });
 
         console.log('[Data] User role:', {
           role_id: userInfo.role_id,
           department: userInfo.department,
           isPropertyStaff,
-          isMaintenanceWorker
+          isMaintenanceWorker,
+          isManager
         });
 
-        // 加载统计数据
-        await this.loadStatistics();
+        // 根据角色加载不同的数据
+        if (isManager) {
+          // 物业经理：初始化全局分析视图
+          this.initManagerView();
+        } else {
+          // 物业员工/维修员：加载个人统计数据
+          await this.loadStatistics();
+        }
       }
     } catch (error) {
       console.error('[Data] Get user info error:', error);
@@ -247,5 +295,179 @@ Page({
     // wx.navigateTo({
     //   url: '/pages/rankings/index'
     // });
+  },
+
+  // ========== 物业经理专用方法 ==========
+
+  /**
+   * 初始化物业经理视图
+   */
+  initManagerView() {
+    console.log('[Manager] Initializing manager view');
+
+    // 初始化日期范围为"今天"
+    const { startDate, endDate } = dateUtils.getDateRange('today');
+    this.setData({
+      startDate: dateUtils.formatDate(startDate),
+      endDate: dateUtils.formatDate(endDate),
+      timeFilter: 'today'
+    });
+
+    // 加载所有数据
+    this.fetchAllManagerData();
+  },
+
+  /**
+   * Tab切换
+   */
+  switchTab(e) {
+    const tab = e.currentTarget.dataset.tab;
+    this.setData({ activeTab: tab });
+
+    // 如果切换到图表tab且图表未初始化，则初始化图表
+    if (tab === 'charts' && !this.data.chartsInitialized) {
+      this.initCharts();
+    }
+  },
+
+  /**
+   * 时间过滤器切换
+   */
+  onTimeFilterChange(e) {
+    const filter = e.currentTarget.dataset.filter;
+
+    if (filter === 'custom') {
+      // 显示日期选择器
+      this.setData({ showDatePicker: true });
+    } else {
+      const { startDate, endDate } = dateUtils.getDateRange(filter);
+      this.setData({
+        timeFilter: filter,
+        startDate: dateUtils.formatDate(startDate),
+        endDate: dateUtils.formatDate(endDate)
+      });
+
+      // 重新加载数据
+      this.fetchAllManagerData();
+    }
+  },
+
+  /**
+   * 自定义日期选择
+   */
+  onDatePickerConfirm(e) {
+    const { start, end } = e.detail;
+    this.setData({
+      timeFilter: 'custom',
+      startDate: start,
+      endDate: end,
+      showDatePicker: false
+    });
+
+    // 重新加载数据
+    this.fetchAllManagerData();
+  },
+
+  onDatePickerCancel() {
+    this.setData({ showDatePicker: false });
+  },
+
+  /**
+   * 加载所有物业经理数据
+   */
+  async fetchAllManagerData() {
+    wx.showLoading({ title: '加载中...' });
+
+    try {
+      const { startDate, endDate } = this.data;
+
+      // 并行调用所有云函数
+      const [kpiRes, employeeRes, responsibleRes, statusRes, floorRes, locationRes] = await Promise.all([
+        wx.cloud.callFunction({
+          name: 'getAnalyticsOverview',
+          data: { startDate, endDate }
+        }),
+        wx.cloud.callFunction({
+          name: 'getEmployeeRanking',
+          data: { startDate, endDate }
+        }),
+        wx.cloud.callFunction({
+          name: 'getResponsiblePartyRanking',
+          data: { startDate, endDate }
+        }),
+        wx.cloud.callFunction({
+          name: 'getAnalyticsByStatus',
+          data: { startDate, endDate }
+        }),
+        wx.cloud.callFunction({
+          name: 'getAnalyticsByFloor',
+          data: { startDate, endDate }
+        }),
+        wx.cloud.callFunction({
+          name: 'getAnalyticsByLocation',
+          data: { startDate, endDate }
+        })
+      ]);
+
+      // 更新数据
+      this.setData({
+        kpiData: kpiRes.result.data,
+        employeeRankings: employeeRes.result.data,
+        responsiblePartyRankings: responsibleRes.result.data,
+        statusChartData: statusRes.result.data,
+        floorChartData: floorRes.result.data,
+        locationChartData: locationRes.result.data,
+        loading: false
+      });
+
+      // 触发KPI卡片动画
+      this.animateKPICards();
+
+      // 如果当前在图表tab，刷新图表
+      if (this.data.activeTab === 'charts') {
+        this.initCharts();
+      }
+
+      wx.hideLoading();
+
+    } catch (error) {
+      console.error('[Manager] Fetch data error:', error);
+      wx.hideLoading();
+      wx.showToast({
+        title: '加载失败',
+        icon: 'none'
+      });
+    }
+  },
+
+  /**
+   * KPI卡片动画
+   */
+  animateKPICards() {
+    const animKeys = ['card1Anim', 'card2Anim', 'card3Anim', 'card4Anim'];
+    animationUtils.animateCards(this, animKeys, 100, 100);
+  },
+
+  /**
+   * 初始化ECharts图表
+   */
+  initCharts() {
+    // 标记图表已初始化
+    this.setData({ chartsInitialized: true });
+
+    // 图表将通过ec-canvas组件在WXML中初始化
+    // 这里只需要确保数据已准备好
+    console.log('[Manager] Charts initialized with data:', {
+      status: this.data.statusChartData.length,
+      floor: this.data.floorChartData.categories?.length,
+      location: this.data.locationChartData.categories?.length
+    });
+  },
+
+  /**
+   * 手动刷新
+   */
+  onRefresh() {
+    this.fetchAllManagerData();
   }
 });
