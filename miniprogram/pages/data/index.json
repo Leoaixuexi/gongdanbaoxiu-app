@@ -3,6 +3,7 @@
   "enablePullDownRefresh": false,
   "backgroundColor": "#F7F7F7",
   "usingComponents": {
-    "custom-header": "/components/header/header"
+    "custom-header": "/components/header/header",
+    "ec-canvas": "/components/ec-canvas/ec-canvas"
   }
 }

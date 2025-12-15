@@ -58,7 +58,18 @@ Page({
     statusChartData: [],
     floorChartData: {},
     locationChartData: {},
-    chartsInitialized: false
+    chartsInitialized: false,
+
+    // ECharts配置对象
+    ecStatus: {
+      lazyLoad: true
+    },
+    ecFloor: {
+      lazyLoad: true
+    },
+    ecLocation: {
+      lazyLoad: true
+    }
   },
 
   onLoad() {
@@ -452,15 +463,97 @@ Page({
    * 初始化ECharts图表
    */
   initCharts() {
-    // 标记图表已初始化
-    this.setData({ chartsInitialized: true });
-
-    // 图表将通过ec-canvas组件在WXML中初始化
-    // 这里只需要确保数据已准备好
-    console.log('[Manager] Charts initialized with data:', {
+    console.log('[Manager] Initializing charts with data:', {
       status: this.data.statusChartData.length,
       floor: this.data.floorChartData.categories?.length,
       location: this.data.locationChartData.categories?.length
+    });
+
+    // 初始化状态环形图
+    this.initStatusChart();
+    // 初始化楼层柱状图
+    this.initFloorChart();
+    // 初始化位置柱状图
+    this.initLocationChart();
+
+    // 标记图表已初始化
+    this.setData({ chartsInitialized: true });
+  },
+
+  /**
+   * 初始化状态环形图
+   */
+  initStatusChart() {
+    const component = this.selectComponent('#statusChart');
+    if (!component) {
+      console.warn('[Manager] Status chart component not found');
+      return;
+    }
+
+    component.init((canvas, width, height, dpr) => {
+      const chart = echarts.init(canvas, null, {
+        width: width,
+        height: height,
+        devicePixelRatio: dpr
+      });
+      canvas.setChart(chart);
+
+      const option = chartUtils.getRingChartOption(this.data.statusChartData);
+      chart.setOption(option);
+
+      return chart;
+    });
+  },
+
+  /**
+   * 初始化楼层柱状图
+   */
+  initFloorChart() {
+    const component = this.selectComponent('#floorChart');
+    if (!component) {
+      console.warn('[Manager] Floor chart component not found');
+      return;
+    }
+
+    component.init((canvas, width, height, dpr) => {
+      const chart = echarts.init(canvas, null, {
+        width: width,
+        height: height,
+        devicePixelRatio: dpr
+      });
+      canvas.setChart(chart);
+
+      const { categories, values } = this.data.floorChartData;
+      const option = chartUtils.getBarChartOption(categories || [], values || [], '楼层分布');
+      chart.setOption(option);
+
+      return chart;
+    });
+  },
+
+  /**
+   * 初始化位置柱状图
+   */
+  initLocationChart() {
+    const component = this.selectComponent('#locationChart');
+    if (!component) {
+      console.warn('[Manager] Location chart component not found');
+      return;
+    }
+
+    component.init((canvas, width, height, dpr) => {
+      const chart = echarts.init(canvas, null, {
+        width: width,
+        height: height,
+        devicePixelRatio: dpr
+      });
+      canvas.setChart(chart);
+
+      const { categories, values } = this.data.locationChartData;
+      const option = chartUtils.getBarChartOption(categories || [], values || [], '位置分布');
+      chart.setOption(option);
+
+      return chart;
     });
   },
 

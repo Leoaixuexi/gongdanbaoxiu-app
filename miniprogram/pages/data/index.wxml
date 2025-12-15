@@ -245,8 +245,35 @@
 
     <!-- Tab 2: 可视化图表 -->
     <view wx:if="{{activeTab === 'charts'}}">
-      <text class="text-muted-foreground">图表功能开发中...</text>
-      <!-- TODO: 添加ECharts组件 -->
+      <!-- 工单状态环形图 -->
+      <view class="section mb-3">
+        <view class="section-title mb-2">
+          <text class="text-base font-bold">工单处理进度</text>
+        </view>
+        <view class="chart-container">
+          <ec-canvas id="statusChart" canvas-id="statusChart" ec="{{ ecStatus }}" class="chart-canvas"></ec-canvas>
+        </view>
+      </view>
+
+      <!-- 楼层分布柱状图 -->
+      <view class="section mb-3">
+        <view class="section-title mb-2">
+          <text class="text-base font-bold">楼层分布</text>
+        </view>
+        <view class="chart-container">
+          <ec-canvas id="floorChart" canvas-id="floorChart" ec="{{ ecFloor }}" class="chart-canvas"></ec-canvas>
+        </view>
+      </view>
+
+      <!-- 位置分布柱状图 -->
+      <view class="section mb-3">
+        <view class="section-title mb-2">
+          <text class="text-base font-bold">位置分布</text>
+        </view>
+        <view class="chart-container">
+          <ec-canvas id="locationChart" canvas-id="locationChart" ec="{{ ecLocation }}" class="chart-canvas"></ec-canvas>
+        </view>
+      </view>
     </view>
   </view>
 </view>
