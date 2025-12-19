@@ -4,6 +4,7 @@
  */
 
 const auth = require('../../services/auth');
+const { ROLES, STORAGE_KEYS } = require('../../utils/constants');
 
 Page({
   data: {
@@ -11,10 +12,21 @@ Page({
     password: '',
     showPassword: false,
     loading: false,
-    rememberUsername: false
+    rememberUsername: false,
+    showTestAccounts: false
   },
 
   onLoad() {
+    // Hide test accounts in release builds
+    try {
+      const accountInfo = wx.getAccountInfoSync?.();
+      const envVersion = accountInfo?.miniProgram?.envVersion || 'develop'; // develop | trial | release
+      this.setData({ showTestAccounts: envVersion !== 'release' });
+    } catch (e) {
+      // If API not available, default to hiding in unknown environments
+      this.setData({ showTestAccounts: false });
+    }
+
     // 加载记住的账号
     this.loadRememberedUsername();
     // 自动尝试登录
@@ -49,10 +61,17 @@ Page({
       // 检查是否已登录
       const isAuth = await auth.isAuthenticated();
       if (isAuth) {
-        // 已登录,直接跳转到首页
-        wx.switchTab({
-          url: '/pages/index/index'
-        });
+        // 已登录,根据角色跳转
+        const userInfo = wx.getStorageSync(STORAGE_KEYS.USER_INFO);
+        if (userInfo && userInfo.role_id == ROLES.ADMIN) {
+          wx.navigateTo({
+            url: '/pages/admin/dashboard/index'
+          });
+        } else {
+          wx.switchTab({
+            url: '/pages/index/index'
+          });
+        }
         return;
       }
     } catch (error) {
@@ -94,11 +113,7 @@ Page({
     const username = (this.data.username || '').trim();
     const password = (this.data.password || '').trim();
 
-    console.log('[Login] Attempting login with:', {
-      username,
-      usernameLength: username.length,
-      passwordLength: password.length
-    });
+    console.log('[Login] Attempting login with username:', username);
 
     // 验证输入
     if (!username || username.length === 0) {
@@ -152,11 +167,20 @@ Page({
         icon: 'success'
       });
 
-      // 登录成功，跳转到首页
+      // 登录成功，根据角色跳转
       setTimeout(() => {
-        wx.switchTab({
-          url: '/pages/index/index'
-        });
+        // 使用 == 宽松比较，兼容字符串和数字类型
+        if (user.role_id == ROLES.ADMIN) {
+          // 管理员跳转到管理台首页
+          wx.navigateTo({
+            url: '/pages/admin/dashboard/index'
+          });
+        } else {
+          // 其他角色跳转到工作台
+          wx.switchTab({
+            url: '/pages/index/index'
+          });
+        }
       }, 1500);
 
     } catch (error) {
@@ -193,6 +217,10 @@ Page({
    * 快速填充测试账号
    */
   fillTestAccount(e) {
+    if (!this.data.showTestAccounts) {
+      return;
+    }
+
     const { username, password } = e.currentTarget.dataset;
 
     if (!username || !password) {

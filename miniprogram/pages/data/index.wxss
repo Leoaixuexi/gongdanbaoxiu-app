@@ -5,21 +5,28 @@
 /* 全局变量定义 */
 page {
   --border: #e5e7eb;
-  --foreground: #1f2937;
+  --foreground: #111827; /* Darker, crisper text */
   --muted-foreground: #6b7280;
   --muted: #f3f4f6;
-  --secondary: #f5f5f5;
+  --secondary: #f9fafb;
   --primary: #00A678;
+  --primary-gradient: linear-gradient(135deg, #00A678 0%, #059669 100%);
+  --card-bg: rgba(255, 255, 255, 0.9);
+  --glass-border: 1px solid rgba(255, 255, 255, 0.6);
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
 
 .container {
   min-height: 100vh;
   padding-bottom: 180rpx;
-  background: #f5f5f5;
+  background: #f3f4f6; /* Lighter, warmer gray */
+  background-image: linear-gradient(to bottom, #ebf5ff, #f3f4f6 600rpx); /* Subtle top gradient */
 }
 
 .gradient-bg {
-  background: #f5f5f5;
+  background: transparent;
 }
 
 /* 工具类 */
@@ -156,6 +163,22 @@ page {
   color: #f59e0b;
 }
 
+.text-violet-500 {
+  color: #8B5CF6;
+}
+
+.text-cyan-500 {
+  color: #06B6D4;
+}
+
+/* Gradient text for KPI */
+.text-gradient-green {
+  background: linear-gradient(to right, #10b981, #14b8a6);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
 /* 背景色 */
 .bg-blue-50 {
   background-color: #eff6ff;
@@ -212,6 +235,45 @@ page {
   border-bottom: 1rpx solid #e5e7eb;
 }
 
+/* 定位 */
+.relative {
+  position: relative;
+}
+
+.absolute {
+  position: absolute;
+}
+
+.right-0 {
+  right: 0;
+}
+
+.bottom-0 {
+  bottom: 0;
+}
+
+.z-0 {
+  z-index: 0;
+}
+
+.z-10 {
+  z-index: 10;
+}
+
+/* 透明度 */
+.opacity-10 {
+  opacity: 0.1;
+}
+
+/* 尺寸 */
+.w-full {
+  width: 100%;
+}
+
+.h-full {
+  height: 100%;
+}
+
 /* 网格 */
 .grid {
   display: grid;
@@ -236,31 +298,38 @@ page {
 
 .section {
   margin-bottom: 32rpx;
-  padding: 32rpx;
-  background-color: #ffffff;
+  padding: 40rpx;
+  background-color: var(--card-bg);
   border-radius: 24rpx;
-  border: 2rpx solid #e5e7eb;
-  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+  backdrop-filter: blur(12px);
+  border: var(--glass-border);
+  box-shadow: var(--shadow-sm);
 }
 
 .section-title {
-  margin-bottom: 24rpx;
-  font-size: 32rpx;
+  margin-bottom: 32rpx;
+  font-size: 34rpx;
   font-weight: 700;
-  color: #1f2937;
+  color: var(--foreground);
+  letter-spacing: -0.5rpx;
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
 }
 
 /* 卡片样式 */
 .card {
-  background-color: #ffffff;
+  background-color: var(--card-bg);
   border-radius: 24rpx;
-  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+  box-shadow: var(--shadow-sm);
+  border: var(--glass-border);
   overflow: hidden;
-  transition: all 0.3s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .card-backdrop {
-  background-color: #ffffff;
+  background-color: var(--card-bg);
+  backdrop-filter: blur(8px);
 }
 
 /* 统计卡片 */
@@ -271,7 +340,7 @@ page {
   justify-content: center;
   text-align: center;
   padding: 24rpx 20rpx;
-  border-radius: 16rpx;
+  border-radius: 24rpx;
   transition: all 0.2s;
 }
 
@@ -283,7 +352,7 @@ page {
 .icon-wrapper {
   width: 64rpx;
   height: 64rpx;
-  border-radius: 16rpx;
+  border-radius: 24rpx;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -348,7 +417,7 @@ page {
 .trend-badge {
   width: 56rpx;
   height: 56rpx;
-  border-radius: 16rpx;
+  border-radius: 24rpx;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -463,52 +532,69 @@ page {
 
 .date-chip {
   flex: 1;
-  padding: 16rpx 24rpx;
+  padding: 12rpx 20rpx;
   text-align: center;
-  border-radius: 16rpx;
-  background: #f5f5f5;
+  border-radius: 999rpx; /* Pill shape */
+  background: #f3f4f6;
   color: #6b7280;
-  font-size: 28rpx;
+  font-size: 26rpx;
   font-weight: 600;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
 }
 
 .date-chip.active {
-  background: #00A678;
-  color: #ffffff;
-  box-shadow: 0 4rpx 8rpx rgba(0, 166, 120, 0.2);
+  background: linear-gradient(to right, #10b981, #14b8a6) !important;
+  color: #ffffff !important;
+  box-shadow: 0 4rpx 12rpx rgba(16, 185, 129, 0.3);
+  border-color: transparent;
 }
 
 .date-chip:active {
   transform: scale(0.95);
 }
 
-/* Tab切换栏 */
+/* Tab切换栏 - Clean Sticky Text Style */
 .manager-tabs {
+  position: sticky;
+  z-index: 50;
   display: flex;
-  background: #ffffff;
-  border-radius: 24rpx;
-  padding: 8rpx;
-  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+  justify-content: space-around;
+  align-items: center;
+  /* Extend to screen edges by counteracting parent padding */
+  margin-left: -40rpx;
+  margin-right: -40rpx;
+  padding: 10rpx 40rpx 0 40rpx; /* Restore internal padding */
+  margin-bottom: 24rpx;
+  /* Background matches page */
+  background-color: #F7F7F7;
 }
 
 .tab-item {
-  flex: 1;
-  padding: 20rpx 32rpx;
+  position: relative;
+  padding: 16rpx 32rpx;
   text-align: center;
-  border-radius: 16rpx;
-  font-size: 30rpx;
-  font-weight: 600;
-  color: #6b7280;
-  transition: all 0.2s;
+  font-size: 30rpx; /* Smaller font size */
+  font-weight: 500;
+  color: #9ca3af; /* Gray for inactive */
+  transition: all 0.3s ease;
 }
 
 .tab-item.active {
-  background: #00A678;
-  color: #ffffff;
-  box-shadow: 0 4rpx 8rpx rgba(0, 166, 120, 0.2);
+  background: transparent;
+  color: #000000; /* Black for active */
+  font-weight: 800; /* Bold/Heavy */
+  box-shadow: none;
+  transform: scale(1.05);
 }
 
+/* Custom indicator if needed, but the image shows just text. 
+   Adding a small dot or line could be nice, but let's stick to the prompt's "text turns black" */
+.active-indicator {
+  display: none; 
+}
+
+/* Override active state transform from previous utility if it conflicts */
 .tab-item:active {
   transform: scale(0.98);
 }
@@ -517,37 +603,58 @@ page {
 .kpi-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 16rpx;
+  gap: 24rpx;
 }
 
 .kpi-card {
   background: #ffffff;
-  padding: 32rpx 24rpx;
-  border-radius: 20rpx;
-  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+  padding: 40rpx 32rpx;
+  border-radius: 24rpx;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.04);
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 8rpx;
-  transition: all 0.3s;
+  align-items: flex-start; /* Left align for modern look */
+  gap: 12rpx;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
 }
 
 .kpi-card:active {
-  transform: scale(1.02);
-  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.08);
+  transform: translateY(-2rpx);
+  box-shadow: var(--shadow-md);
+}
+
+/* Decorative background circle for KPI cards */
+.kpi-card::after {
+  content: '';
+  position: absolute;
+  top: -20rpx;
+  right: -20rpx;
+  width: 120rpx;
+  height: 120rpx;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(20, 184, 166, 0.18) 100%);
+  border-radius: 50%;
+  z-index: 0;
 }
 
 .kpi-value {
-  font-size: 56rpx;
-  font-weight: bold;
-  color: #1f2937;
-  line-height: 1.2;
+  font-size: 64rpx;
+  font-weight: 800;
+  color: var(--foreground);
+  line-height: 1;
+  letter-spacing: -2rpx;
+  position: relative;
+  z-index: 1;
 }
 
 .kpi-label {
   font-size: 26rpx;
-  color: #6b7280;
+  color: var(--muted-foreground);
   font-weight: 500;
+  position: relative;
+  z-index: 1;
 }
 
 .kpi-subtitle {
@@ -581,6 +688,14 @@ page {
   color: #6b7280;
 }
 
+/* 图表标题与内容之间的分割线 */
+.chart-divider {
+  width: 100%;
+  height: 1px;
+  background-color: #e5e7eb;
+  margin-bottom: 16rpx;
+}
+
 /* 图表容器 */
 .chart-container {
   width: 100%;
@@ -593,4 +708,96 @@ page {
 .chart-canvas {
   width: 100%;
   height: 100%;
+}
+
+/* ========== 日期选择弹窗样式 ========== */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 10000;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.modal-content {
+  width: 100%;
+  background-color: white;
+  border-radius: 24rpx 24rpx 0 0; /* 保留非对称圆角 */
+  padding: 32rpx;
+  animation: slide-up 0.3s ease-out;
+}
+
+@keyframes slide-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.date-picker-content {
+  margin-bottom: 64rpx;
+}
+
+.date-display {
+  display: flex;
+  justify-content: center;
+  padding: 32rpx 0;
+  border: 1rpx solid #e5e7eb;
+  border-radius: 24rpx;
+  margin-bottom: 16rpx;
+}
+
+.date-text {
+  font-size: 32rpx;
+  color: #333;
+}
+
+.date-separator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-size: 28rpx;
+  color: #9ca3af;
+  padding: 16rpx 0;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 32rpx;
+}
+
+.modal-button {
+  flex: 1;
+  height: 88rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 24rpx;
+}
+
+.modal-button-cancel {
+  background-color: white;
+  border: 1rpx solid #DDDDDD;
+}
+
+.modal-button-confirm {
+  background-color: #00A678;
+}
+
+.modal-button-text {
+  font-size: 32rpx;
+  font-weight: 500;
+  color: #666;
+}
+
+.modal-button-text-white {
+  color: white;
 }

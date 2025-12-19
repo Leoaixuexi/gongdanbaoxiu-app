@@ -8,6 +8,9 @@ const dateUtils = require('../../utils/dateUtils');
 const chartUtils = require('../../utils/chartUtils');
 const animationUtils = require('../../utils/animationUtils');
 
+// 引入 echarts
+import * as echarts from '../../components/ec-canvas/echarts';
+
 Page({
   data: {
     // 工单统计（物业员工/维修员使用）
@@ -34,6 +37,8 @@ Page({
     startDate: '',
     endDate: '',
     showDatePicker: false,
+    customStartDate: '',  // 自定义日期选择器临时值
+    customEndDate: '',    // 自定义日期选择器临时值
 
     // KPI指标
     kpiData: {
@@ -50,25 +55,28 @@ Page({
     card3Anim: {},
     card4Anim: {},
 
-    // 排名数据
-    employeeRankings: [],
-    responsiblePartyRankings: [],
-
     // 图表数据
     statusChartData: [],
-    floorChartData: {},
-    locationChartData: {},
+    trendChartData: { categories: [], reported: [], completed: [] },
+    categoryChartData: [],
+    responsibleChartData: [],
+    floorChartData: { categories: [], values: [] },
     chartsInitialized: false,
 
-    // ECharts配置对象
-    ecStatus: {
-      lazyLoad: true
-    },
-    ecFloor: {
-      lazyLoad: true
-    },
-    ecLocation: {
-      lazyLoad: true
+    // ECharts配置对象（5个图表）
+    ecStatus: { lazyLoad: true },
+    ecTrend: { lazyLoad: true },
+    ecCategory: { lazyLoad: true },
+    ecResponsible: { lazyLoad: true },
+    ecFloor: { lazyLoad: true },
+
+    // Base64 Icons
+    icons: {
+      calendar: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiM2YjcyODAiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cmVjdCB4PSIzIiB5PSI0IiB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIHJ4PSIyIiByeT0iMiI+PC9yZWN0PjxsaW5lIHkxPSIyIiB5Mj0iNiIgeDE9IjE2IiB4Mj0iMTYiPjwvbGluZT48bGluZSB5MT0iMiIgeTI9IjYiIHgxPSI4IiB4Mj0iOCI+PC9saW5lPjxsaW5lIHkxPSIxMCIgeTI9IjEwIiB4MT0iMyIgeDI9IjIxIj48L2xpbmU+PC9zdmc+',
+      document: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiMzNzQxNTEiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cGF0aCBkPSJNMTQgMkg2YTIgMiAwIDAgMCAyIDJ2MTZhMiAyIDAgMCAwIDIgMmgyYTIgMiAwIDAgMCAyLTJWMc4gMTQtNS01WiI+PC9wYXRoPjxwb2x5bGluZSBwb2ludHM9IjE0IDIgMTQgOCAyMCA4Ij48L3BvbHlsaW5lPjxsaW5lIHgxPSIxNiIgeTE9IjEzIiB4Mj0iOCIgeTI9IjEzIj48L2xpbmU+PGxpbmUgeDE9IjE2IiB5MT0iMTciIHgyPSI4IiB5Mj0iMTciPjwvbGluZT48cG9seWxpbmUgcG9pbnRzPSIxMCA5IDkgOSA4IDkiPjwvcG9seWxpbmU+PC9zdmc+',
+      check: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiMxMGI5ODEiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cGF0aCBkPSJNMjIgMTEuMDhWMTIwMiAyIDAgMCAxLTIgMmgtM2wtNS01bDEgMWgzVjRzOSAxMSI+PC9wYXRoPjxwYXRoIGQ9Ik0yMiA0IDEyIDE0LjAxbC0zLTMiPjwvcGF0aD48L3N2Zz4=',
+      clock: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiMzYjgyZjYiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48Y2lyY2xlIGN4PSIxMiIgY3k9IjEyIiByPSIxMCI+PC9jaXJjbGU+PHBvbHlsaW5lIHBvaW50cz0iMTIgNiAxMiAxMiAxNiAxNCI+PC9wb2x5bGluZT48L3N2Zz4=',
+      timer: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmNTllMGIiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cGF0aCBkPSJNNSAyMmgxNCI+PC9wYXRoPjxwYXRoIGQ9Ik01IDJoMTQiPjwvcGF0aD48cGF0aCBkPSJNMTcgMjJhNSA1IDAgMSAxIDAtMTBIN2E1IDUgMCAxIDEgMCAxMCI+PC9wYXRoPjxwYXRoIGQ9Ik0xNyAyYTUgNSAwIDEgMCAwIDEwSDdhNSA1IDAgMSAwIDAtMTAiPjwvcGF0aD48L3N2Zz4='
     }
   },
 
@@ -142,28 +150,38 @@ Page({
           label: '今日提报',
           status: null, // 今日提报不按状态过滤
           bgClass: '#dbeafe',
-          color: '#2563eb'
+          color: '#2563eb',
+          icon: 'icon-jinritibao',
+          iconSize: '64rpx'
         },
         {
           key: 'in_progress',
           label: '维修中',
           status: 'In Progress',
           bgClass: '#cffafe',
-          color: '#0891b2'
+          color: '#0891b2',
+          icon: 'icon-FM-weixiuzhongxin',
+          iconSize: '64rpx'
         },
         {
           key: 'review',
           label: '待复核',
           status: 'Repaired',
           bgClass: '#fee2e2',
-          color: '#dc2626'
+          color: '#dc2626',
+          icon: 'icon-daifuhe',
+          iconSize: '52rpx',
+          iconRight: '16rpx',
+          iconTop: '16rpx'
         },
         {
           key: 'completed',
           label: '已完成',
           status: 'Completed',
           bgClass: '#d1fae5',
-          color: '#059669'
+          color: '#059669',
+          icon: 'icon-trues',
+          iconSize: '64rpx'
         }
       ];
     } else if (isMaintenanceWorker) {
@@ -174,28 +192,32 @@ Page({
           label: '今日维修',
           status: null, // 今日维修需要特殊处理
           bgClass: '#dbeafe',
-          color: '#2563eb'
+          color: '#2563eb',
+          icon: 'icon-jihuashishi'
         },
         {
           key: 'repaired',
           label: '已修复',
           status: 'Repaired',
           bgClass: '#f3e8ff',
-          color: '#9333ea'
+          color: '#9333ea',
+          icon: 'icon-yixiufu_huaban'
         },
         {
           key: 'rework',
           label: '需重修',
           status: 'Needs Rework',
           bgClass: '#ffedd5',
-          color: '#ea580c'
+          color: '#ea580c',
+          icon: 'icon-zhongxiu'
         },
         {
           key: 'completed',
           label: '已完成',
           status: 'Completed',
           bgClass: '#d1fae5',
-          color: '#059669'
+          color: '#059669',
+          icon: 'icon-trues'
         }
       ];
     }
@@ -225,9 +247,9 @@ Page({
           order.submitter && order.submitter.user_id === userId
         );
       } else if (isMaintenanceWorker && userDepartment) {
-        // 维修员：只看责任方=自己部门的工单
+        // 维修员：只看分配给自己的工单（云函数也会过滤，这里做兜底）
         myOrders = allOrders.filter(order =>
-          order.responsible_party === userDepartment
+          order.assigned_technician && order.assigned_technician.user_id === userId
         );
       }
 
@@ -273,7 +295,11 @@ Page({
           label: config.label,
           value: count,
           bgClass: config.bgClass,
-          color: config.color
+          color: config.color,
+          icon: config.icon,
+          iconSize: config.iconSize,
+          iconRight: config.iconRight,
+          iconTop: config.iconTop
         };
       });
 
@@ -333,12 +359,21 @@ Page({
    */
   switchTab(e) {
     const tab = e.currentTarget.dataset.tab;
-    this.setData({ activeTab: tab });
+    if (tab === this.data.activeTab) return; // 相同tab不处理
 
-    // 如果切换到图表tab且图表未初始化，则初始化图表
-    if (tab === 'charts' && !this.data.chartsInitialized) {
-      this.initCharts();
-    }
+    // 重置筛选条件为"今天"
+    const { startDate, endDate } = dateUtils.getDateRange('today');
+
+    this.setData({
+      activeTab: tab,
+      timeFilter: 'today',
+      startDate: dateUtils.formatDate(startDate),
+      endDate: dateUtils.formatDate(endDate),
+      chartsInitialized: false  // 重置图表初始化状态
+    });
+
+    // 重新加载数据
+    this.fetchAllManagerData();
   },
 
   /**
@@ -348,8 +383,11 @@ Page({
     const filter = e.currentTarget.dataset.filter;
 
     if (filter === 'custom') {
-      // 显示日期选择器
-      this.setData({ showDatePicker: true });
+      // 显示日期选择器并立即设置 timeFilter 以激活样式
+      this.setData({
+        showDatePicker: true,
+        timeFilter: 'custom'
+      });
     } else {
       const { startDate, endDate } = dateUtils.getDateRange(filter);
       this.setData({
@@ -364,23 +402,71 @@ Page({
   },
 
   /**
-   * 自定义日期选择
+   * 自定义日期选择 - 开始日期变化
    */
-  onDatePickerConfirm(e) {
-    const { start, end } = e.detail;
+  onCustomStartDateChange(e) {
+    this.setData({
+      customStartDate: e.detail.value
+    });
+  },
+
+  /**
+   * 自定义日期选择 - 结束日期变化
+   */
+  onCustomEndDateChange(e) {
+    this.setData({
+      customEndDate: e.detail.value
+    });
+  },
+
+  /**
+   * 关闭日期选择弹窗
+   */
+  closeDatePicker() {
+    this.setData({ showDatePicker: false });
+  },
+
+  /**
+   * 阻止事件冒泡
+   */
+  stopPropagation() {
+    // 阻止点击弹窗内容时关闭弹窗
+  },
+
+  /**
+   * 取消日期选择
+   */
+  cancelDatePicker() {
+    this.setData({
+      showDatePicker: false,
+      customStartDate: '',
+      customEndDate: ''
+    });
+  },
+
+  /**
+   * 确认日期选择
+   */
+  confirmDatePicker() {
+    const { customStartDate, customEndDate } = this.data;
+
+    if (!customStartDate || !customEndDate) {
+      wx.showToast({
+        title: '请选择开始和结束日期',
+        icon: 'none'
+      });
+      return;
+    }
+
     this.setData({
       timeFilter: 'custom',
-      startDate: start,
-      endDate: end,
+      startDate: customStartDate,
+      endDate: customEndDate,
       showDatePicker: false
     });
 
     // 重新加载数据
     this.fetchAllManagerData();
-  },
-
-  onDatePickerCancel() {
-    this.setData({ showDatePicker: false });
   },
 
   /**
@@ -392,51 +478,90 @@ Page({
     try {
       const { startDate, endDate } = this.data;
 
-      // 并行调用所有云函数
-      const [kpiRes, employeeRes, responsibleRes, statusRes, floorRes, locationRes] = await Promise.all([
+      // 计算一周趋势的固定日期范围（今天往前推6天，共7天）
+      const today = new Date();
+      const weekAgo = new Date();
+      weekAgo.setDate(today.getDate() - 6);
+      const trendStartDate = `${weekAgo.getFullYear()}-${String(weekAgo.getMonth() + 1).padStart(2, '0')}-${String(weekAgo.getDate()).padStart(2, '0')}`;
+      const trendEndDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+
+      // 并行调用所有云函数（7个）
+      const [
+        kpiRes, employeeRes,
+        statusRes, trendRes, categoryRes, responsibleRes,
+        floorRes
+      ] = await Promise.all([
+        // Tab1 数据
         wx.cloud.callFunction({
           name: 'getAnalyticsOverview',
           data: { startDate, endDate }
-        }),
+        }).catch(err => ({ result: { success: false, data: null } })),
         wx.cloud.callFunction({
           name: 'getEmployeeRanking',
           data: { startDate, endDate }
-        }),
-        wx.cloud.callFunction({
-          name: 'getResponsiblePartyRanking',
-          data: { startDate, endDate }
-        }),
+        }).catch(err => ({ result: { success: false, data: [] } })),
+        // Tab2 图表数据（5个图表）
         wx.cloud.callFunction({
           name: 'getAnalyticsByStatus',
           data: { startDate, endDate }
-        }),
+        }).catch(err => ({ result: { success: false, data: [] } })),
+        // 一周工单趋势使用固定的最近7天日期，不受日期筛选控制
+        wx.cloud.callFunction({
+          name: 'getAnalyticsTrends',
+          data: { startDate: trendStartDate, endDate: trendEndDate }
+        }).catch(err => ({ result: { success: false, data: { categories: [], reported: [], completed: [] } } })),
+        wx.cloud.callFunction({
+          name: 'getAnalyticsByCategory',
+          data: { startDate, endDate }
+        }).catch(err => ({ result: { success: false, data: [] } })),
+        wx.cloud.callFunction({
+          name: 'getAnalyticsByResponsible',
+          data: { startDate, endDate }
+        }).catch(err => ({ result: { success: false, data: [] } })),
         wx.cloud.callFunction({
           name: 'getAnalyticsByFloor',
           data: { startDate, endDate }
-        }),
-        wx.cloud.callFunction({
-          name: 'getAnalyticsByLocation',
-          data: { startDate, endDate }
-        })
+        }).catch(err => ({ result: { success: false, data: { categories: [], values: [] } } }))
       ]);
+
+      // 安全地提取数据，提供默认值
+      const kpiData = kpiRes.result?.data || {
+        totalOrders: 0,
+        completedOrders: 0,
+        completionRate: 0,
+        inProgressOrders: 0,
+        avgCompletionTime: 0
+      };
+
+      // 转换员工排名数据为统一的 rankings 格式
+      const rankings = (employeeRes.result?.data || []).map((item, index) => ({
+        rank: index + 1,
+        name: item.employeeName,
+        completedOrders: item.totalCompleted,
+        avatar: '/images/icons/default-avatar.png',
+        isCurrentUser: false
+      }));
 
       // 更新数据
       this.setData({
-        kpiData: kpiRes.result.data,
-        employeeRankings: employeeRes.result.data,
-        responsiblePartyRankings: responsibleRes.result.data,
-        statusChartData: statusRes.result.data,
-        floorChartData: floorRes.result.data,
-        locationChartData: locationRes.result.data,
+        kpiData: kpiData,
+        rankings: rankings,
+        statusChartData: statusRes.result?.data || [],
+        trendChartData: trendRes.result?.data || { categories: [], reported: [], completed: [] },
+        categoryChartData: categoryRes.result?.data || [],
+        responsibleChartData: responsibleRes.result?.data || [],
+        floorChartData: floorRes.result?.data || { categories: [], values: [] },
         loading: false
       });
 
       // 触发KPI卡片动画
       this.animateKPICards();
 
-      // 如果当前在图表tab，刷新图表
+      // 如果当前在图表tab，延迟刷新图表（等待组件渲染完成）
       if (this.data.activeTab === 'charts') {
-        this.initCharts();
+        setTimeout(() => {
+          this.initCharts();
+        }, 300);
       }
 
       wx.hideLoading();
@@ -460,28 +585,34 @@ Page({
   },
 
   /**
-   * 初始化ECharts图表
+   * 初始化ECharts图表（5个图表）
    */
   initCharts() {
-    console.log('[Manager] Initializing charts with data:', {
-      status: this.data.statusChartData.length,
-      floor: this.data.floorChartData.categories?.length,
-      location: this.data.locationChartData.categories?.length
-    });
+    console.log('[Manager] Initializing 5 charts');
 
-    // 初始化状态环形图
+    // 检查是否在图表Tab
+    if (this.data.activeTab !== 'charts') {
+      console.log('[Manager] Not in charts tab, skip initialization');
+      return;
+    }
+
+    // 1. 初始化状态环形图
     this.initStatusChart();
-    // 初始化楼层柱状图
+    // 2. 初始化趋势折线图
+    this.initTrendChart();
+    // 3. 初始化故障类型饼图
+    this.initCategoryChart();
+    // 4. 初始化责任方饼图
+    this.initResponsibleChart();
+    // 5. 初始化楼层柱状图
     this.initFloorChart();
-    // 初始化位置柱状图
-    this.initLocationChart();
 
     // 标记图表已初始化
     this.setData({ chartsInitialized: true });
   },
 
   /**
-   * 初始化状态环形图
+   * 1. 初始化状态环形图
    */
   initStatusChart() {
     const component = this.selectComponent('#statusChart');
@@ -498,7 +629,7 @@ Page({
       });
       canvas.setChart(chart);
 
-      const option = chartUtils.getRingChartOption(this.data.statusChartData);
+      const option = chartUtils.getRingChartOption(this.data.statusChartData || []);
       chart.setOption(option);
 
       return chart;
@@ -506,7 +637,83 @@ Page({
   },
 
   /**
-   * 初始化楼层柱状图
+   * 2. 初始化趋势折线图
+   */
+  initTrendChart() {
+    const component = this.selectComponent('#trendChart');
+    if (!component) {
+      console.warn('[Manager] Trend chart component not found');
+      return;
+    }
+
+    component.init((canvas, width, height, dpr) => {
+      const chart = echarts.init(canvas, null, {
+        width: width,
+        height: height,
+        devicePixelRatio: dpr
+      });
+      canvas.setChart(chart);
+
+      const { categories, reported, completed } = this.data.trendChartData || { categories: [], reported: [], completed: [] };
+      const option = chartUtils.getLineChartOption(categories, reported, completed);
+      chart.setOption(option);
+
+      return chart;
+    });
+  },
+
+  /**
+   * 3. 初始化故障类型饼图
+   */
+  initCategoryChart() {
+    const component = this.selectComponent('#categoryChart');
+    if (!component) {
+      console.warn('[Manager] Category chart component not found');
+      return;
+    }
+
+    component.init((canvas, width, height, dpr) => {
+      const chart = echarts.init(canvas, null, {
+        width: width,
+        height: height,
+        devicePixelRatio: dpr
+      });
+      canvas.setChart(chart);
+
+      const option = chartUtils.getPieChartOption(this.data.categoryChartData || [], '故障类型');
+      chart.setOption(option);
+
+      return chart;
+    });
+  },
+
+  /**
+   * 4. 初始化责任方饼图
+   */
+  initResponsibleChart() {
+    const component = this.selectComponent('#responsibleChart');
+    if (!component) {
+      console.warn('[Manager] Responsible chart component not found');
+      return;
+    }
+
+    component.init((canvas, width, height, dpr) => {
+      const chart = echarts.init(canvas, null, {
+        width: width,
+        height: height,
+        devicePixelRatio: dpr
+      });
+      canvas.setChart(chart);
+
+      const option = chartUtils.getPieChartOption(this.data.responsibleChartData || [], '责任方');
+      chart.setOption(option);
+
+      return chart;
+    });
+  },
+
+  /**
+   * 5. 初始化楼层柱状图
    */
   initFloorChart() {
     const component = this.selectComponent('#floorChart');
@@ -523,34 +730,8 @@ Page({
       });
       canvas.setChart(chart);
 
-      const { categories, values } = this.data.floorChartData;
-      const option = chartUtils.getBarChartOption(categories || [], values || [], '楼层分布');
-      chart.setOption(option);
-
-      return chart;
-    });
-  },
-
-  /**
-   * 初始化位置柱状图
-   */
-  initLocationChart() {
-    const component = this.selectComponent('#locationChart');
-    if (!component) {
-      console.warn('[Manager] Location chart component not found');
-      return;
-    }
-
-    component.init((canvas, width, height, dpr) => {
-      const chart = echarts.init(canvas, null, {
-        width: width,
-        height: height,
-        devicePixelRatio: dpr
-      });
-      canvas.setChart(chart);
-
-      const { categories, values } = this.data.locationChartData;
-      const option = chartUtils.getBarChartOption(categories || [], values || [], '位置分布');
+      const { categories, values } = this.data.floorChartData || { categories: [], values: [] };
+      const option = chartUtils.getBarChartOption(categories, values, '楼层分布');
       chart.setOption(option);
 
       return chart;

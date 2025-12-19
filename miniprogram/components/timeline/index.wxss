@@ -147,7 +147,7 @@
 /* Timeline Notes */
 .timeline-notes {
   background-color: #f5f5f5;
-  border-radius: 8rpx;
+  border-radius: 24rpx;
   padding: 16rpx 20rpx;
   margin-top: 16rpx;
   font-size: 26rpx;
@@ -168,7 +168,7 @@
 .timeline-photo {
   width: 160rpx;
   height: 160rpx;
-  border-radius: 8rpx;
+  border-radius: 24rpx;
   background-color: #f5f5f5;
   object-fit: cover;
 }

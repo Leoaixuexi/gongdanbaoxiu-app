@@ -4,6 +4,9 @@
  * 支持滑动显示删除和取消操作
  */
 
+const cloudDB = require('../../services/cloudDatabase');
+const { STORAGE_KEYS } = require('../../utils/constants');
+
 Page({
   data: {
     moduleId: '',
@@ -50,11 +53,29 @@ Page({
     this.setData({ loading: true });
 
     try {
-      await this.delay(500);
-      const mockData = this.getMockMessages(this.data.moduleId);
+      let messages = [];
+
+      if (this.data.moduleId === 'notification') {
+        // 从云端获取公告列表
+        const userInfo = wx.getStorageSync(STORAGE_KEYS.USER_INFO);
+        const roleId = userInfo?.role_id || 4;
+        const result = await cloudDB.announcements.listForUser(roleId);
+
+        messages = (result.list || []).map(item => ({
+          id: item._id,
+          title: item.title,
+          content: this.stripHtml(item.content || ''),
+          timeText: this.formatDate(item.publish_time || item.created_at),
+          isRead: false // 可后续扩展已读状态
+        }));
+      } else {
+        // 其他模块使用模拟数据
+        await this.delay(500);
+        messages = this.getMockMessages(this.data.moduleId);
+      }
 
       // 添加 swiped 状态
-      const messagesWithState = mockData.map(m => ({ ...m, swiped: false }));
+      const messagesWithState = messages.map(m => ({ ...m, swiped: false }));
 
       this.setData({
         messages: messagesWithState,
@@ -62,7 +83,7 @@ Page({
         refreshing: false
       });
 
-      console.log('[Message List] Loaded:', mockData.length, 'messages');
+      console.log('[Message List] Loaded:', messages.length, 'messages');
 
     } catch (error) {
       console.error('[Message List] Load error:', error);
@@ -77,17 +98,32 @@ Page({
   },
 
   /**
+   * 格式化日期
+   */
+  formatDate(date) {
+    if (!date) return '';
+    const d = new Date(date);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    const hour = String(d.getHours()).padStart(2, '0');
+    const minute = String(d.getMinutes()).padStart(2, '0');
+    return `${year}-${month}-${day} ${hour}:${minute}`;
+  },
+
+  /**
+   * 去除HTML标签
+   */
+  stripHtml(html) {
+    if (!html) return '';
+    return html.replace(/<[^>]*>/g, '').substring(0, 100);
+  },
+
+  /**
    * 获取模拟消息数据
    */
   getMockMessages(moduleId) {
     const mockDataMap = {
-      'notification': [
-        { id: '1', title: '系统维护通知', content: '系统将于2024年1月15日凌晨2:00-6:00进行例行维护，届时系统将暂停服务，请提前做好准...', timeText: '2025-12-08 21:00', isRead: false },
-        { id: '2', title: '新功能上线公告', content: '全新的消息通知功能已上线，支持实时推送和历史消息查看，欢迎体验。', timeText: '2025-12-08 18:30', isRead: false },
-        { id: '3', title: '节假日安排通知', content: '根据国家法定节假日安排，春节放假时间为1月20日至1月27日，共8天。', timeText: '2025-12-07 14:20', isRead: false },
-        { id: '4', title: '安全培训通知', content: '定于本周五下午3点在会议室进行消防安全培训，请全体员工准时参加。', timeText: '2025-12-06 09:15', isRead: true },
-        { id: '5', title: '办公区域调整公告', content: '因办公区域调整，三楼部分工位将进行重新分配，请相关同事配合搬迁工作。', timeText: '2025-12-05 16:45', isRead: true }
-      ],
       'workorder': [
         { id: '1', title: '办公楼一层空调维修', content: '一层大厅空调制热效果差，需要检修。工单编号：WO20240115001', timeText: '2025-12-08 19:30', isRead: false },
         { id: '2', title: '会议室投影仪故障', content: '302会议室投影仪无法正常开机，请尽快处理。工单编号：WO20240115002', timeText: '2025-12-08 17:00', isRead: false },

@@ -27,16 +27,33 @@ Page({
       { id: "reporter", label: "报修人", placeholder: "人名/简拼", value: '', hasArrow: false },
       { id: "priority", label: "优先级", hasArrow: true, value: '', placeholder: '' }
     ],
+    // 筛选选择器弹窗
+    isPickerOpen: false,
+    pickerTitle: '',
+    pickerOptions: [],
+    pickerSelectedValue: '',
+    currentPickerId: '',
+    // 报修人输入弹窗
+    isReporterInputOpen: false,
+    reporterInputValue: '',
+    // 筛选选项数据源
+    floorOptions: [],
+    ownerOptions: [],
+    categoryOptions: [],
+    priorityOptions: ['普通', '紧急'],
     // 自定义导航栏高度
     headerHeight: 0,
     // 用户角色信息
-    userRole: null, // 3=维修员, 4=物业员工
+    userRole: null, // 2=物业经理, 3=维修员, 4=物业员工
     userDepartment: null,
     userId: null,
     isPropertyStaff: false,
     isMaintenanceWorker: false,
+    isManager: false,
     // 动态状态按钮列表
-    statusButtons: []
+    statusButtons: [],
+    // 滚动到指定状态按钮
+    scrollIntoView: ''
   },
 
   /**
@@ -61,6 +78,12 @@ Page({
   onShow: async function () {
     console.log('[Index] Page show');
 
+    // 页面滚动到顶部
+    wx.pageScrollTo({
+      scrollTop: 0,
+      duration: 0
+    });
+
     // 设置自定义 tabBar 选中状态
     if (typeof this.getTabBar === 'function' && this.getTabBar()) {
       this.getTabBar().setData({
@@ -74,12 +97,18 @@ Page({
       if (userInfo) {
         const isPropertyStaff = userInfo.role_id === 4;
         const isMaintenanceWorker = userInfo.role_id === 3;
+        const isManager = userInfo.role_id === 2;
 
         // 根据角色配置状态按钮
-        const statusButtons = this.getStatusButtonsByRole(isPropertyStaff, isMaintenanceWorker);
+        const statusButtons = this.getStatusButtonsByRole(isPropertyStaff, isMaintenanceWorker, isManager);
 
         // 根据角色设置默认状态
-        const defaultStatus = isPropertyStaff ? 'reported' : 'pending_accept';
+        let defaultStatus = 'reported';
+        if (isMaintenanceWorker) {
+          defaultStatus = 'pending_accept';
+        } else if (isManager) {
+          defaultStatus = 'all';  // 物业经理默认显示全部
+        }
 
         this.setData({
           userRole: userInfo.role_id,
@@ -87,16 +116,19 @@ Page({
           userId: userInfo.id,
           isPropertyStaff,
           isMaintenanceWorker,
+          isManager,
           statusButtons,
           activeTab: '',
-          activeStatus: defaultStatus
+          activeStatus: defaultStatus,
+          scrollIntoView: 'status-' + defaultStatus
         });
 
         console.log('[Index] User role:', {
           role_id: userInfo.role_id,
           department: userInfo.department,
           isPropertyStaff,
-          isMaintenanceWorker
+          isMaintenanceWorker,
+          isManager
         });
       }
     } catch (error) {
@@ -109,8 +141,20 @@ Page({
   /**
    * 根据角色获取状态按钮配置
    */
-  getStatusButtonsByRole: function (isPropertyStaff, isMaintenanceWorker) {
-    if (isPropertyStaff) {
+  getStatusButtonsByRole: function (isPropertyStaff, isMaintenanceWorker, isManager) {
+    if (isManager) {
+      // 物业经理状态按钮
+      return [
+        { key: 'all', label: '全部', status: null },
+        { key: 'reported', label: '已提报', status: 'Pending Repair' },
+        { key: 'maintenance', label: '维修中', status: 'In Progress' },
+        { key: 'repaired', label: '已修复', status: 'Repaired' },
+        // 云函数没有单独的 "Pending Review" 状态：已修复即待复核
+        { key: 'review', label: '待复核', status: 'Repaired' },
+        { key: 'rework', label: '需重修', status: 'Needs Rework' },
+        { key: 'completed', label: '已完成', status: 'Completed' }
+      ];
+    } else if (isPropertyStaff) {
       // 物业员工状态按钮
       return [
         { key: 'reported', label: '已提报', status: 'Pending Repair' },
@@ -173,6 +217,31 @@ Page({
       // Get work orders from cloud database
       const allOrders = await workOrderService.getWorkOrders({});
 
+      // Debug: 打印第一个工单的关键字段
+      if (allOrders.length > 0) {
+        console.log('[Index] First order debug:', {
+          order_id: allOrders[0].order_id,
+          order_number: allOrders[0].order_number,
+          order_category: allOrders[0].order_category,
+          report_time: allOrders[0].report_time
+        });
+      }
+
+      // Extract unique filter options from all orders (only on first load or when empty)
+      if (this.data.floorOptions.length === 0 || this.data.ownerOptions.length === 0 || this.data.categoryOptions.length === 0) {
+        const floors = [...new Set(allOrders.map(o => o.floor).filter(Boolean))].sort();
+        const owners = [...new Set(allOrders.map(o => o.responsible_party).filter(Boolean))].sort();
+        const categories = [...new Set(allOrders.map(o => o.fault_type_name).filter(Boolean))].sort();
+
+        console.log('[Index] Filter options loaded:', { floors, owners, categories });
+
+        this.setData({
+          floorOptions: floors,
+          ownerOptions: owners,
+          categoryOptions: categories
+        });
+      }
+
       // Filter by user role
       let filteredOrders = this.filterByUserRole(allOrders);
 
@@ -182,16 +251,19 @@ Page({
       // Filter by status
       filteredOrders = this.filterByStatus(filteredOrders);
 
+      // Filter by advanced criteria (from filter panel)
+      filteredOrders = this.filterByAdvancedCriteria(filteredOrders);
+
       // Filter by search text
       if (this.data.searchText) {
         const searchLower = this.data.searchText.toLowerCase();
         filteredOrders = filteredOrders.filter(order => {
-          const orderId = (order.order_id || order.id || '').toLowerCase();
-          const location = (order.location || '').toLowerCase();
-          const description = (order.description || '').toLowerCase();
+          const orderId = String(order.order_id || order.id || '').toLowerCase();
+          const location = String(order.location || '').toLowerCase();
+          const description = String(order.description || '').toLowerCase();
           return orderId.includes(searchLower) ||
-                 location.includes(searchLower) ||
-                 description.includes(searchLower);
+            location.includes(searchLower) ||
+            description.includes(searchLower);
         });
       }
 
@@ -230,21 +302,25 @@ Page({
 
   /**
    * Filter orders by user role
+   * 物业经理：看到所有工单
    * 物业员工：只看自己提报的工单
    * 维修员：只看责任方=自己部门的工单
    */
   filterByUserRole: function (orders) {
-    const { isPropertyStaff, isMaintenanceWorker, userId, userDepartment } = this.data;
+    const { isPropertyStaff, isMaintenanceWorker, isManager, userId, userDepartment } = this.data;
 
-    if (isPropertyStaff && userId) {
+    if (isManager) {
+      // 物业经理：显示所有工单
+      return orders;
+    } else if (isPropertyStaff && userId) {
       // 物业员工：只显示自己提报的工单
       return orders.filter(order => {
         return order.submitter && order.submitter.user_id === userId;
       });
-    } else if (isMaintenanceWorker && userDepartment) {
-      // 维修员：只显示责任方=自己部门的工单
+    } else if (isMaintenanceWorker && userId) {
+      // 维修员：只显示分配给自己的工单（服务端也会做过滤，这里做兜底）
       return orders.filter(order => {
-        return order.responsible_party === userDepartment;
+        return order.assigned_technician && order.assigned_technician.user_id === userId;
       });
     }
 
@@ -297,21 +373,83 @@ Page({
    * Filter orders by status
    */
   filterByStatus: function (orders) {
-    const { activeStatus, isPropertyStaff, isMaintenanceWorker } = this.data;
+    const { activeStatus } = this.data;
 
-    // 如果 activeStatus 为空,返回所有工单
-    if (!activeStatus) {
+    // 如果 activeStatus 为空或为 'all',返回所有工单
+    if (!activeStatus || activeStatus === 'all') {
       return orders;
     }
 
     // 找到对应的状态按钮配置
     const statusButton = this.data.statusButtons.find(btn => btn.key === activeStatus);
-    if (statusButton) {
+    if (statusButton && statusButton.status) {
       const targetStatus = statusButton.status;
       return orders.filter(order => order.status === targetStatus);
     }
 
     return orders;
+  },
+
+  /**
+   * Filter orders by advanced criteria (from filter panel)
+   */
+  filterByAdvancedCriteria: function (orders) {
+    const { filterRows } = this.data;
+
+    // Get filter values
+    const floorFilter = filterRows.find(r => r.id === 'floor')?.value;
+    const ownerFilter = filterRows.find(r => r.id === 'owner')?.value;
+    const categoryFilter = filterRows.find(r => r.id === 'category')?.value;
+    const reporterFilter = filterRows.find(r => r.id === 'reporter')?.value?.toLowerCase();
+    const priorityFilter = filterRows.find(r => r.id === 'priority')?.value;
+
+    console.log('[Index] Advanced filter criteria:', { floorFilter, ownerFilter, categoryFilter, reporterFilter, priorityFilter });
+
+    // 如果所有筛选条件都为空,直接返回原始数据
+    if (!floorFilter && !ownerFilter && !categoryFilter && !reporterFilter && !priorityFilter) {
+      return orders;
+    }
+
+    const filteredOrders = orders.filter(order => {
+      // Floor filter
+      if (floorFilter && order.floor !== floorFilter) {
+        return false;
+      }
+
+      // Owner (responsible_party) filter
+      if (ownerFilter && order.responsible_party !== ownerFilter) {
+        return false;
+      }
+
+      // Category (fault_type_name) filter
+      if (categoryFilter && order.fault_type_name !== categoryFilter) {
+        return false;
+      }
+
+      // Reporter (submitter name) filter - partial match
+      if (reporterFilter) {
+        const submitterName = (order.submitter?.name || '').toLowerCase();
+        if (!submitterName.includes(reporterFilter)) {
+          return false;
+        }
+      }
+
+      // Priority filter
+      if (priorityFilter) {
+        const isEmergency = order.priority === 'Emergency';
+        if (priorityFilter === '紧急' && !isEmergency) {
+          return false;
+        }
+        if (priorityFilter === '普通' && isEmergency) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+
+    console.log('[Index] After advanced filter:', filteredOrders.length, 'orders');
+    return filteredOrders;
   },
 
   /**
@@ -327,10 +465,20 @@ Page({
     };
 
     // 根据角色显示不同的状态文本
-    const { isMaintenanceWorker } = this.data;
+    const { isMaintenanceWorker, isManager } = this.data;
     let statusTextMap;
 
-    if (isMaintenanceWorker) {
+    if (isManager) {
+      // 物业经理视角的状态文本
+      statusTextMap = {
+        'Pending Repair': '已提报',
+        'In Progress': '维修中',
+        'Repaired': '已修复',
+        'Pending Review': '待复核',
+        'Needs Rework': '需重修',
+        'Completed': '已完成'
+      };
+    } else if (isMaintenanceWorker) {
       // 维修员视角的状态文本
       statusTextMap = {
         'Pending Repair': '待接单',
@@ -350,13 +498,28 @@ Page({
       };
     }
 
-    const statusClassMap = {
-      'Pending Repair': 'status-reported',
-      'In Progress': 'status-maintenance',
-      'Repaired': 'status-review',
-      'Needs Rework': 'status-rework',
-      'Completed': 'status-completed'
-    };
+    // 根据角色设置不同的状态样式类
+    let statusClassMap;
+    if (isManager || isMaintenanceWorker) {
+      // 物业经理和维修员：Repaired 显示为"已修复"样式
+      statusClassMap = {
+        'Pending Repair': 'status-reported',
+        'In Progress': 'status-maintenance',
+        'Repaired': 'status-repaired',
+        'Pending Review': 'status-review',
+        'Needs Rework': 'status-rework',
+        'Completed': 'status-completed'
+      };
+    } else {
+      // 物业员工：Repaired 显示为"待复核"样式
+      statusClassMap = {
+        'Pending Repair': 'status-reported',
+        'In Progress': 'status-maintenance',
+        'Repaired': 'status-review',
+        'Needs Rework': 'status-rework',
+        'Completed': 'status-completed'
+      };
+    }
 
     // Format created_at time for display
     let formattedTime = '未知时间';
@@ -367,14 +530,14 @@ Page({
       const day = String(createdAt.getDate()).padStart(2, '0');
       const hour = String(createdAt.getHours()).padStart(2, '0');
       const minute = String(createdAt.getMinutes()).padStart(2, '0');
-      formattedTime = `${year}-${month}-${day}   ${hour}:${minute}`;
+      formattedTime = `${year}-${month}-${day}\u2003${hour}:${minute}`;
     }
 
-    // 过滤照片路径：只保留 http/https 开头的路径，过滤掉 cloud:// 路径
+    // 过滤照片路径：保留 http/https 和 cloud:// 开头的有效路径
     let validPhotos = [];
     if (order.photos && Array.isArray(order.photos)) {
       validPhotos = order.photos.filter(photo => {
-        return photo && (photo.startsWith('http://') || photo.startsWith('https://'));
+        return photo && (photo.startsWith('http://') || photo.startsWith('https://') || photo.startsWith('cloud://'));
       });
     }
 
@@ -405,17 +568,28 @@ Page({
   },
 
   /**
+   * Clear Search Text
+   */
+  clearSearch: function () {
+    this.setData({
+      searchText: ''
+    });
+    this.loadWorkOrders();
+  },
+
+  /**
    * Handle Scan QR Code
    */
   handleScan: function () {
     wx.scanCode({
       success: (res) => {
         console.log('[Index] Scan result:', res);
-        // Use scan result as search text
-        this.setData({
-          searchText: res.result
-        });
-        this.loadWorkOrders();
+        // 扫描结果作为工单编号，直接跳转到工单详情
+        const orderNumber = res.result;
+        if (orderNumber) {
+          // 根据工单编号查找工单ID并跳转
+          this.navigateToOrderByNumber(orderNumber);
+        }
       },
       fail: (err) => {
         console.error('[Index] Scan failed:', err);
@@ -425,6 +599,40 @@ Page({
         });
       }
     });
+  },
+
+  /**
+   * Navigate to Order by Order Number
+   * 根据工单编号查找并跳转到工单详情
+   */
+  navigateToOrderByNumber: async function (orderNumber) {
+    try {
+      wx.showLoading({ title: '查找工单...', mask: true });
+
+      // 调用服务查找工单
+      const result = await workOrderService.getWorkOrderByNumber(orderNumber);
+
+      wx.hideLoading();
+
+      if (result && result.order_id) {
+        // 找到工单，跳转到详情页
+        wx.navigateTo({
+          url: `/pages/work-order-detail/index?id=${result.order_id}`
+        });
+      } else {
+        wx.showToast({
+          title: '未找到该工单',
+          icon: 'none'
+        });
+      }
+    } catch (error) {
+      wx.hideLoading();
+      console.error('[Index] Find order by number failed:', error);
+      wx.showToast({
+        title: '查找工单失败',
+        icon: 'none'
+      });
+    }
   },
 
   /**
@@ -468,7 +676,10 @@ Page({
       ...row,
       value: ''
     }));
-    this.setData({ filterRows: resetFilterRows });
+    this.setData({
+      filterRows: resetFilterRows,
+      reporterInputValue: ''
+    });
   },
 
   /**
@@ -476,11 +687,122 @@ Page({
    */
   handleConfirm: function () {
     this.closeFilterPanel();
-    // TODO: 实际应用筛选条件
-    wx.showToast({
-      title: '筛选条件已应用',
-      icon: 'success',
-      duration: 1500
+    this.loadWorkOrders();
+  },
+
+  /**
+   * 筛选行点击处理
+   */
+  onFilterRowTap: function (e) {
+    const id = e.detail.id;
+    const row = this.data.filterRows.find(r => r.id === id);
+    if (!row) return;
+
+    console.log('[Index] Filter row tap:', id, 'floorOptions:', this.data.floorOptions, 'ownerOptions:', this.data.ownerOptions, 'categoryOptions:', this.data.categoryOptions);
+
+    if (id === 'reporter') {
+      // 报修人使用文本输入
+      this.setData({
+        isReporterInputOpen: true,
+        reporterInputValue: row.value || ''
+      });
+    } else {
+      // 其他使用选择器
+      let options = [];
+      let title = row.label;
+
+      switch (id) {
+        case 'floor':
+          options = this.data.floorOptions;
+          break;
+        case 'owner':
+          options = this.data.ownerOptions;
+          break;
+        case 'category':
+          options = this.data.categoryOptions;
+          break;
+        case 'priority':
+          options = this.data.priorityOptions;
+          break;
+      }
+
+      console.log('[Index] Picker options for', id, ':', options);
+
+      if (options.length === 0) {
+        wx.showToast({ title: '暂无可选项', icon: 'none' });
+        return;
+      }
+
+      this.setData({
+        isPickerOpen: true,
+        pickerTitle: title,
+        pickerOptions: options,
+        pickerSelectedValue: row.value || '',
+        currentPickerId: id
+      });
+    }
+  },
+
+  /**
+   * 选择器选项点击
+   */
+  onPickerOptionTap: function (e) {
+    const value = e.currentTarget.dataset.value;
+    this.setData({ pickerSelectedValue: value });
+  },
+
+  /**
+   * 关闭选择器弹窗
+   */
+  closePickerModal: function () {
+    this.setData({ isPickerOpen: false });
+  },
+
+  /**
+   * 确认选择器选择
+   */
+  confirmPickerSelection: function () {
+    const { currentPickerId, pickerSelectedValue, filterRows } = this.data;
+    const updatedRows = filterRows.map(row => {
+      if (row.id === currentPickerId) {
+        return { ...row, value: pickerSelectedValue };
+      }
+      return row;
+    });
+    this.setData({
+      filterRows: updatedRows,
+      isPickerOpen: false
+    });
+  },
+
+  /**
+   * 报修人输入变化
+   */
+  onReporterInput: function (e) {
+    this.setData({ reporterInputValue: e.detail.value });
+  },
+
+  /**
+   * 关闭报修人输入弹窗
+   */
+  closeReporterInput: function () {
+    this.setData({ isReporterInputOpen: false });
+  },
+
+  /**
+   * 确认报修人输入
+   */
+  confirmReporterInput: function () {
+    const { reporterInputValue, filterRows } = this.data;
+    const updatedRows = filterRows.map(row => {
+      if (row.id === 'reporter') {
+        return { ...row, value: reporterInputValue };
+      }
+      return row;
+    });
+    this.setData({
+      filterRows: updatedRows,
+      isReporterInputOpen: false
     });
   },
 
@@ -518,8 +840,24 @@ Page({
    */
   handleStatusChange: function (e) {
     const status = e.currentTarget.dataset.status;
+    const index = e.currentTarget.dataset.index;
+    const totalButtons = this.data.statusButtons.length;
+
+    // 根据按钮位置决定滚动目标
+    // 如果点击的是前半部分的按钮，滚动到第一个按钮（向左滚动显示左侧）
+    // 如果点击的是后半部分的按钮，滚动到最后一个按钮（向右滚动显示右侧）
+    let scrollTarget = 'status-' + status;
+    if (index <= totalButtons / 2 - 1) {
+      // 点击左侧按钮，滚动到第一个
+      scrollTarget = 'status-' + this.data.statusButtons[0].key;
+    } else {
+      // 点击右侧按钮，滚动到最后一个
+      scrollTarget = 'status-' + this.data.statusButtons[totalButtons - 1].key;
+    }
+
     this.setData({
-      activeStatus: status
+      activeStatus: status,
+      scrollIntoView: scrollTarget
     });
     this.loadWorkOrders();
   },
@@ -600,6 +938,55 @@ Page({
   navigateToNewOrder: function () {
     wx.navigateTo({
       url: '/pages/property/submit/index'
+    });
+  },
+
+  /**
+   * 维修员接单
+   */
+  handleAcceptOrder: function (e) {
+    const order = e.currentTarget.dataset.order;
+    if (!order || !order.order_id) {
+      wx.showToast({ title: '工单信息无效', icon: 'none' });
+      return;
+    }
+
+    wx.showModal({
+      title: '确认接单',
+      content: `确认接单工单 ${order.order_number || order.order_id} 吗？`,
+      success: async (res) => {
+        if (res.confirm) {
+          try {
+            wx.showLoading({ title: '接单中...', mask: true });
+
+            await workOrderService.updateWorkOrderStatus(
+              parseInt(order.order_id),
+              'In Progress',
+              '维修员接单开始维修'
+            );
+
+            wx.hideLoading();
+            wx.showToast({
+              title: '接单成功',
+              icon: 'success',
+              duration: 1500
+            });
+
+            // 刷新列表
+            setTimeout(() => {
+              this.loadWorkOrders();
+            }, 500);
+
+          } catch (error) {
+            wx.hideLoading();
+            console.error('[Index] Accept order error:', error);
+            wx.showToast({
+              title: error.message || '接单失败',
+              icon: 'none'
+            });
+          }
+        }
+      }
     });
   }
 });

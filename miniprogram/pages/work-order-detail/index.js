@@ -44,15 +44,27 @@ Page({
     slaProgressWidth: '0%',
     slaWarningMessage: '',
     slaTimerInterval: null,
-    showActions: false,
     isPropertyStaff: false,
     isMaintenanceWorker: false,
+    isPropertyManager: false,
+    isSubmitter: false,
     canEdit: false,
-    canCancel: false,
     canStart: false,
     canUpdate: false,
     canReview: false, // T106
     canAcceptOrder: false, // 维修员接单权限
+    // 新增按钮权限变量
+    showThreeDots: false, // 显示三个点按钮
+    showEditBtn: false, // 显示修改按钮
+    showAcceptBtn: false, // 显示接单按钮
+    showConfirmRepairBtn: false, // 显示确认修复按钮
+    showUrgeRepairBtn: false, // 显示催维修按钮
+    showUrgeReviewBtn: false, // 显示催复核按钮
+    showReviewedBtn: false, // 显示已复核按钮
+    // 三个点菜单内容
+    showDeleteInMenu: false, // 菜单显示删除
+    showNeedsReworkInMenu: false, // 菜单显示需重修
+    showEmptyMenu: false, // 菜单显示空白卡片
     // Repair completion form - T091-T092
     showRepairForm: false,
     repairStatus: 'Repaired',
@@ -65,20 +77,18 @@ Page({
     reviewDecision: '',
     reviewNotes: '',
     submittingReview: false,
+    headerHeight: 0,
     // More actions popup
     showMoreActions: false,
-    // Toggle status popup
     showStatusPicker: false,
-    availableStatuses: [
-      { value: 'Pending Repair', label: '待维修', color: '#ff9800' },
-      { value: 'In Progress', label: '维修中', color: '#2196f3' },
-      { value: 'Repaired', label: '已维修', color: '#4caf50' },
-      { value: 'Needs Rework', label: '需返工', color: '#f44336' },
-      { value: 'Completed', label: '已完成', color: '#9e9e9e' }
-    ],
     selectedStatus: '',
-    submittingStatus: false,
-    headerHeight: 0
+    availableStatuses: [
+      { value: 'Pending Repair', label: '已提报', color: '#6B7280' },
+      { value: 'In Progress', label: '维修中', color: '#3B82F6' },
+      { value: 'Repaired', label: '已修复', color: '#10B981' },
+      { value: 'Completed', label: '已完成', color: '#059669' },
+      { value: 'Needs Rework', label: '需返工', color: '#EF4444' }
+    ]
   },
 
   /**
@@ -126,8 +136,8 @@ Page({
   onShareAppMessage: function () {
     const workOrder = this.data.workOrder;
     return {
-      title: `工单 ${workOrder.order_number} - ${workOrder.fault_type_name}`,
-      path: `/pages/work-order-detail/index?id=${workOrder.id}`,
+      title: `工单 ${workOrder.order_number} - ${workOrder.order_category || '报修'}`,
+      path: `/pages/work-order-detail/index?id=${workOrder.order_id}`,
       imageUrl: workOrder.photos && workOrder.photos.length > 0
         ? workOrder.photos[0]
         : ''
@@ -159,47 +169,158 @@ Page({
       console.log('[Detail] Current user:', userInfo);
 
       // Determine user permissions
-      const isPropertyStaff = userInfo.role_id === ROLES.PROPERTY_STAFF;
+      // 物业经理和物业员工（巡检员）享有相同的按钮权限
+      const isPropertyStaff = userInfo.role_id === ROLES.PROPERTY_STAFF || userInfo.role_id === ROLES.PROPERTY_MANAGER;
       const isMaintenanceWorker = userInfo.role_id === ROLES.MAINTENANCE_STAFF;
 
       // Determine action buttons visibility with null checks
+      const isPropertyManager = userInfo.role_id === ROLES.PROPERTY_MANAGER;
+
+      // Debug: 打印用户和工单信息
+      console.log('[Detail] Permission check:', {
+        userRoleId: userInfo.role_id,
+        userId: userInfo.id,
+        isPropertyStaff,
+        isPropertyManager,
+        submitterUserId: workOrder.submitter?.user_id,
+        orderStatus: processedOrder.status
+      });
+
       // 修改按钮：只在"已提报"状态显示
-      const canEdit = isPropertyStaff &&
-        workOrder.status === 'Pending Repair' &&
-        workOrder.submitter && workOrder.submitter.user_id === userInfo.id;
+      // 物业经理可操作所有工单，巡检员只能操作自己提交的
+      // 注意：userInfo.id 和 submitter.user_id 需要统一比较
+      const currentUserId = userInfo.id || userInfo.user_id;
+      const submitterUserId = workOrder.submitter?.user_id;
+      const isSubmitter = currentUserId && submitterUserId && currentUserId === submitterUserId;
 
-      // 更多操作按钮：所有状态都显示
-      const canShowMore = isPropertyStaff &&
-        workOrder.submitter && workOrder.submitter.user_id === userInfo.id;
+      const canEdit = (isPropertyManager || (isPropertyStaff && isSubmitter)) &&
+        processedOrder.status === 'Pending Repair';
 
-      const canCancel = isPropertyStaff &&
-        workOrder.submitter && workOrder.submitter.user_id === userInfo.id;
+      // 判断是否为分配的维修员 - 使用统一的 currentUserId
+      const assignedTechnicianId = processedOrder.assigned_technician?.user_id;
+      const isAssignedTechnician = isMaintenanceWorker &&
+        assignedTechnicianId && currentUserId &&
+        assignedTechnicianId === currentUserId;
 
-      // 接单按钮：维修员 && 工单状态为待维修 && 责任方=用户部门
+      console.log('[Detail] Technician check:', {
+        currentUserId,
+        assignedTechnicianId,
+        isMaintenanceWorker,
+        isAssignedTechnician
+      });
+
+      // 接单/开始返工：维修员 && 分配给自己 && (待维修/需返工)
       const canAcceptOrder = isMaintenanceWorker &&
-        workOrder.status === 'Pending Repair' &&
-        workOrder.responsible_party === userInfo.department;
+        isAssignedTechnician &&
+        (processedOrder.status === 'Pending Repair' || processedOrder.status === 'Needs Rework');
+
+      // 完成维修：维修员 && 分配给自己 && 维修中
+      const canUpdate = isMaintenanceWorker &&
+        isAssignedTechnician &&
+        processedOrder.status === 'In Progress';
+
+      // 验收：提交者 && 待复核（Repaired）
+      const canReview = isPropertyStaff && isSubmitter && processedOrder.status === 'Repaired';
 
       // 统一显示：所有状态特定按钮都不显示
       const canStart = false;
-      const canUpdate = false;
-      const canReview = false;
+      // canUpdate / canReview are computed above
 
-      const showActions = canShowMore || canEdit || canAcceptOrder;
+      // 根据状态和角色计算按钮显示
+      const status = processedOrder.status;
+      let showThreeDots = false;
+      let showEditBtn = false;
+      let showAcceptBtn = false;
+      let showConfirmRepairBtn = false;
+      let showUrgeRepairBtn = false;
+      let showUrgeReviewBtn = false;
+      let showReviewedBtn = false;
+      let showDeleteInMenu = false;
+      let showNeedsReworkInMenu = false;
+      let showEmptyMenu = false;
+
+      if (status === 'Pending Repair') {
+        // 已提报/待接单状态
+        if (isPropertyManager || isPropertyStaff) {
+          showThreeDots = true;
+          showEditBtn = canEdit; // 只有提交者或经理可编辑
+          showDeleteInMenu = true;
+        } else if (isAssignedTechnician) {
+          showAcceptBtn = true;
+          // 维修员无三个点菜单
+        }
+      } else if (status === 'In Progress') {
+        // 维修中状态
+        if (isAssignedTechnician) {
+          showThreeDots = true;
+          showConfirmRepairBtn = true;
+          showEmptyMenu = true;
+        } else if (isPropertyManager || isPropertyStaff) {
+          showThreeDots = true;
+          showUrgeRepairBtn = true;
+          showDeleteInMenu = true;
+        }
+      } else if (status === 'Repaired') {
+        // 已修复状态
+        if (isAssignedTechnician) {
+          showThreeDots = true;
+          showUrgeReviewBtn = true;
+          showEmptyMenu = true;
+        } else if (isPropertyManager) {
+          showThreeDots = true;
+          showUrgeReviewBtn = true;
+          showDeleteInMenu = true;
+        } else if (isPropertyStaff && isSubmitter) {
+          // 物业员工（提交者）- 待复核
+          showThreeDots = true;
+          showReviewedBtn = true;
+          showDeleteInMenu = true;
+          showNeedsReworkInMenu = true;
+        }
+      } else if (status === 'Needs Rework') {
+        // 需重修状态
+        if (isAssignedTechnician) {
+          showThreeDots = true;
+          showConfirmRepairBtn = true;
+          showEmptyMenu = true;
+        } else if (isPropertyManager || isPropertyStaff) {
+          showThreeDots = true;
+          showUrgeRepairBtn = true;
+          showDeleteInMenu = true;
+        }
+      } else if (status === 'Completed') {
+        // 已完成状态
+        showThreeDots = true;
+        showEmptyMenu = true;
+      }
+
+      const showActions = showThreeDots || showEditBtn || showAcceptBtn || showConfirmRepairBtn ||
+        showUrgeRepairBtn || showUrgeReviewBtn || showReviewedBtn;
 
       this.setData({
         workOrder: processedOrder,
         loading: false,
         isPropertyStaff,
         isMaintenanceWorker,
+        isPropertyManager,
+        isSubmitter,
         canEdit,
-        canShowMore,
-        canCancel,
         canStart,
         canUpdate,
         canReview,
         canAcceptOrder,
-        showActions
+        showActions,
+        // 新增按钮权限
+        showThreeDots,
+        showEditBtn,
+        showAcceptBtn,
+        showConfirmRepairBtn,
+        showUrgeRepairBtn,
+        showUrgeReviewBtn,
+        showReviewedBtn,
+        showDeleteInMenu,
+        showNeedsReworkInMenu,
+        showEmptyMenu,
       });
 
       // Start work order duration timer after data is set
@@ -306,14 +427,20 @@ Page({
 
       // Convert status_history to timeline data format
       timelineData = order.status_history.map((item, index) => {
+        // 处理描述文字，去掉"工单创建"字样
+        let description = item.notes || '无';
+        if (description === '工单创建') {
+          description = '';
+        }
+
         return {
           id: String(index + 1),
           title: item.to_status_text || item.to_status,
-          description: item.notes || '无',
+          description: description,
           timestamp: item.time_display || formatDateTime(item.changed_at),
           user: item.changed_by ? {
             name: item.changed_by.name || '系统',
-            avatar: item.changed_by.avatar || 'https://picsum.photos/id/64/100/100'
+            avatar: item.changed_by.avatar || ''
           } : null
         };
       });
@@ -396,11 +523,28 @@ Page({
     console.log('[Detail] Current time:', Date.now());
     console.log('[Detail] Time diff (seconds):', Math.floor((Date.now() - startTime) / 1000));
 
+    // 获取完成时间（从 status_history 中查找 Completed 状态的记录）
+    let endTime = null;
+    if (order.status === 'Completed' && order.status_history && Array.isArray(order.status_history)) {
+      const completedRecord = order.status_history.find(h => h.to_status === 'Completed');
+      if (completedRecord && completedRecord.changed_at) {
+        if (completedRecord.changed_at.$date) {
+          endTime = new Date(completedRecord.changed_at.$date).getTime();
+        } else if (typeof completedRecord.changed_at === 'string') {
+          endTime = new Date(completedRecord.changed_at).getTime();
+        } else if (typeof completedRecord.changed_at === 'number') {
+          endTime = completedRecord.changed_at;
+        }
+        console.log('[Detail] Found endTime:', endTime, new Date(endTime).toLocaleString());
+      }
+    }
+
     this.setData({
       stepperData: {
         steps: steps,
         currentStep: currentStep,
-        startTime: startTime
+        startTime: startTime,
+        endTime: endTime
       }
     });
 
@@ -420,8 +564,21 @@ Page({
     });
   },
 
+  stopPropagation: function () {
+    // Prevent overlay click handlers from firing.
+  },
+
   /**
-   * Handle More Actions - Show custom popup
+   * Handle Edit - 跳转到独立编辑页面
+   */
+  handleEdit: function () {
+    wx.navigateTo({
+      url: `/pages/work-order-edit/index?id=${this.data.orderId}`
+    });
+  },
+
+  /**
+   * Handle More - 显示更多操作菜单
    */
   handleMore: function () {
     this.setData({ showMoreActions: true });
@@ -435,14 +592,7 @@ Page({
   },
 
   /**
-   * Stop Propagation
-   */
-  stopPropagation: function () {
-    // 阻止事件冒泡
-  },
-
-  /**
-   * Handle Delete
+   * Handle Delete - 删除工单
    */
   handleDelete: function () {
     this.setData({ showMoreActions: false });
@@ -451,25 +601,41 @@ Page({
       content: '确定要删除此工单吗？删除后无法恢复。',
       confirmText: '删除',
       confirmColor: '#FF3B30',
-      success: (res) => {
+      success: async (res) => {
         if (res.confirm) {
-          wx.showToast({
-            title: '删除功能开发中',
-            icon: 'none'
-          });
+          try {
+            wx.showLoading({ title: '删除中...', mask: true });
+            await workOrderService.deleteWorkOrder(parseInt(this.data.orderId));
+            wx.hideLoading();
+            wx.showToast({
+              title: '删除成功',
+              icon: 'success',
+              duration: 1500
+            });
+            setTimeout(() => {
+              wx.navigateBack();
+            }, 1500);
+          } catch (error) {
+            wx.hideLoading();
+            console.error('[Detail] Delete error:', error);
+            wx.showToast({
+              title: error.message || '删除失败',
+              icon: 'none'
+            });
+          }
         }
       }
     });
   },
 
   /**
-   * Handle Toggle Status - Show status picker
+   * Handle Toggle Status - 显示状态选择器
    */
   handleToggleStatus: function () {
     this.setData({
       showMoreActions: false,
       showStatusPicker: true,
-      selectedStatus: ''
+      selectedStatus: this.data.workOrder?.status || ''
     });
   },
 
@@ -484,123 +650,48 @@ Page({
   },
 
   /**
-   * Select Status
+   * Select Status - 选择新状态并更新
    */
-  selectStatus: function (e) {
-    const status = e.currentTarget.dataset.status;
+  selectStatus: async function (e) {
+    const newStatus = e.currentTarget.dataset.status;
+    const currentStatus = this.data.workOrder?.status;
 
-    // 如果选择的是当前状态，直接关闭弹窗
-    if (status === this.data.workOrder.status) {
-      wx.showToast({
-        title: '已是当前状态',
-        icon: 'none'
-      });
+    if (newStatus === currentStatus) {
+      this.setData({ showStatusPicker: false });
       return;
     }
 
-    // 设置选中状态并直接触发切换
-    this.setData({ selectedStatus: status }, () => {
-      this.submitStatusChange();
-    });
-  },
+    const statusLabel = this.data.availableStatuses.find(s => s.value === newStatus)?.label || newStatus;
 
-  /**
-   * Submit Status Change
-   */
-  submitStatusChange: async function () {
-    const { selectedStatus, workOrder } = this.data;
-
-    // Get status label for display
-    const statusObj = this.data.availableStatuses.find(s => s.value === selectedStatus);
-    const statusLabel = statusObj ? statusObj.label : selectedStatus;
-
-    const currentStatusObj = this.data.availableStatuses.find(s => s.value === workOrder.status);
-    const currentLabel = currentStatusObj ? currentStatusObj.label : workOrder.status;
-
-    // Confirm before changing
     wx.showModal({
       title: '确认切换状态',
-      content: `确定将工单状态从"${currentLabel}"切换为"${statusLabel}"吗？`,
+      content: `确定要将工单状态切换为"${statusLabel}"吗？`,
       success: async (res) => {
         if (res.confirm) {
           try {
-            this.setData({ submittingStatus: true });
-
-            // Call cloud function to update status
+            wx.showLoading({ title: '更新中...', mask: true });
             await workOrderService.updateWorkOrderStatus(
               parseInt(this.data.orderId),
-              selectedStatus,
+              newStatus,
               `手动切换状态为${statusLabel}`
             );
-
-            this.setData({ submittingStatus: false });
-
-            // Success feedback
+            wx.hideLoading();
+            this.setData({ showStatusPicker: false });
             wx.showToast({
-              title: '状态切换成功',
-              icon: 'success',
-              duration: 2000
+              title: '状态已更新',
+              icon: 'success'
             });
-
-            // Close picker and refresh
-            this.setData({
-              showStatusPicker: false,
-              selectedStatus: ''
-            });
-
             // Refresh work order data
             setTimeout(() => {
               this.loadWorkOrder();
             }, 500);
-
           } catch (error) {
-            this.setData({ submittingStatus: false });
-            console.error('[Detail] Status change error:', error);
-
-            wx.showModal({
-              title: '切换失败',
-              content: error.message || '状态切换失败，请重试',
-              showCancel: false
+            wx.hideLoading();
+            console.error('[Detail] Update status error:', error);
+            wx.showToast({
+              title: error.message || '更新失败',
+              icon: 'none'
             });
-          }
-        } else {
-          // User cancelled, reset selected status and close picker
-          this.setData({
-            selectedStatus: '',
-            showStatusPicker: false
-          });
-        }
-      }
-    });
-  },
-
-  /**
-   * Handle Edit - 跳转到独立编辑页面
-   */
-  handleEdit: function () {
-    wx.navigateTo({
-      url: `/pages/work-order-edit/index?id=${this.data.orderId}`
-    });
-  },
-
-  /**
-   * Handle Cancel
-   */
-  handleCancel: function () {
-    wx.showModal({
-      title: '确认取消',
-      content: '确认取消此工单吗？',
-      success: async (res) => {
-        if (res.confirm) {
-          try {
-            await api.patch(`/workorders/${this.data.orderId}/cancel`);
-            app.showSuccess('工单已取消');
-            setTimeout(() => {
-              wx.navigateBack();
-            }, 1500);
-          } catch (error) {
-            console.error('[Detail] Cancel error:', error);
-            app.showError('取消工单失败');
           }
         }
       }
@@ -707,15 +798,10 @@ Page({
                 this.loadWorkOrder();
               }, 500);
 
-              // Navigate to in-progress page after 2 seconds
+              // Navigate to workbench page after 2 seconds
               setTimeout(() => {
-                wx.redirectTo({
-                  url: '/pages/maintenance/inprogress/index',
-                  fail: () => {
-                    wx.navigateTo({
-                      url: '/pages/maintenance/inprogress/index'
-                    });
-                  }
+                wx.switchTab({
+                  url: '/pages/index/index'
                 });
               }, 2000);
 
@@ -763,7 +849,8 @@ Page({
    * Handle Repair Status Change
    */
   onRepairStatusChange: function (e) {
-    this.setData({ repairStatus: e.detail.value });
+    const index = parseInt(e.detail.value, 10);
+    this.setData({ repairStatus: index === 0 ? 'Repaired' : 'Needs Rework' });
   },
 
   /**
@@ -910,22 +997,12 @@ Page({
               repairPhotos: []
             });
 
-            // Refresh work order data - T094
+            // 跳转到工作台页面
             setTimeout(() => {
-              this.loadWorkOrder();
-            }, 500);
-
-            // Navigate to history page after 2 seconds
-            setTimeout(() => {
-              wx.redirectTo({
-                url: '/pages/maintenance/history/index',
-                fail: () => {
-                  wx.navigateTo({
-                    url: '/pages/maintenance/history/index'
-                  });
-                }
+              wx.switchTab({
+                url: '/pages/workbench/index'
               });
-            }, 2000);
+            }, 1500);
 
           } catch (error) {
             this.setData({ submittingRepair: false });
@@ -1051,8 +1128,47 @@ Page({
    */
   handleReject: function () {
     this.setData({
+      showMoreActions: false,
       showReviewForm: true,
       reviewDecision: 'Needs Rework'
+    });
+  },
+
+  /**
+   * Handle Urge Repair - 催维修
+   */
+  handleUrgeRepair: function () {
+    wx.showModal({
+      title: '催维修',
+      content: '确认向维修员发送催促通知吗？',
+      success: (res) => {
+        if (res.confirm) {
+          // TODO: 发送催促通知给维修员
+          wx.showToast({
+            title: '催促通知已发送',
+            icon: 'success'
+          });
+        }
+      }
+    });
+  },
+
+  /**
+   * Handle Urge Review - 催复核
+   */
+  handleUrgeReview: function () {
+    wx.showModal({
+      title: '催复核',
+      content: '确认向物业员工发送催促复核通知吗？',
+      success: (res) => {
+        if (res.confirm) {
+          // TODO: 发送催促通知给物业员工
+          wx.showToast({
+            title: '催促通知已发送',
+            icon: 'success'
+          });
+        }
+      }
     });
   },
 

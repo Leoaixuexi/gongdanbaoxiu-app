@@ -5,6 +5,9 @@
 /* Import Theme Variables */
 @import "/styles/theme.wxss";
 
+/* Import Iconfont */
+@import "/styles/iconfont.wxss";
+
 /* ==================== Global Page Background ==================== */
 page {
   background-color: #F7F7F7;

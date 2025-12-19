@@ -1,5 +1,9 @@
 Component({
   properties: {
+    rowId: {
+      type: String,
+      value: ''
+    },
     label: {
       type: String,
       value: ''
@@ -15,6 +19,12 @@ Component({
     value: {
       type: String,
       value: ''
+    }
+  },
+  methods: {
+    onTap: function () {
+      console.log('[FilterRow] onTap triggered, rowId:', this.properties.rowId);
+      this.triggerEvent('rowtap', { id: this.properties.rowId });
     }
   }
 });

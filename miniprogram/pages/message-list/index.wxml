@@ -10,9 +10,7 @@
       <!-- 标题居中区域 -->
       <view class="title-center">
         <text class="header-title">{{moduleName}}</text>
-        <view class="clear-btn" bindtap="handleMarkAllRead">
-          <view class="clear-svg-icon"></view>
-        </view>
+        <text class="iconfont icon-saoba clear-icon" bindtap="handleMarkAllRead"></text>
       </view>
       <!-- 右侧占位（与返回按钮宽度相同保持标题居中） -->
       <view class="header-right-placeholder"></view>
@@ -20,13 +18,15 @@
   </view>
 
   <!-- 消息列表内容 -->
-  <scroll-view 
-    scroll-y 
-    class="message-scroll" 
+  <scroll-view
+    scroll-y
+    class="message-scroll"
     style="padding-top: {{headerHeight}}px;"
     refresher-enabled="{{true}}"
     refresher-triggered="{{refreshing}}"
     bindrefresherrefresh="onRefresh"
+    enhanced="{{true}}"
+    show-scrollbar="{{false}}"
   >
     <!-- Loading 状态 -->
     <view class="loading-state" wx:if="{{loading}}">

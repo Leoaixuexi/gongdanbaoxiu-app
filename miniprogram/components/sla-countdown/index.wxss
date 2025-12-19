@@ -2,7 +2,7 @@
 
 .sla-countdown {
   background: linear-gradient(135deg, #F5F5F7 0%, #FFFFFF 100%);
-  border-radius: 16rpx;
+  border-radius: 24rpx;
   padding: 24rpx;
   margin: 24rpx 0;
   box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
@@ -35,7 +35,7 @@
   display: flex;
   align-items: center;
   padding: 8rpx 16rpx;
-  border-radius: 20rpx;
+  border-radius: 24rpx;
   background-color: rgba(52, 199, 89, 0.1);
 }
 

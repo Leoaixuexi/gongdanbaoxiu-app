@@ -15,33 +15,36 @@
 .user-card {
   position: relative;
   overflow: hidden;
-  padding: 28rpx 32rpx 32rpx;
-  border-radius: 24rpx;
+  padding: 12rpx 20rpx; /* Extremely compact padding */
+  border-radius: 20rpx; /* Slightly smaller radius */
   background: linear-gradient(135deg, #10b981 0%, #14b8a6 100%);
-  box-shadow: 0 8rpx 24rpx rgba(16, 185, 129, 0.25);
+  display: flex;
+  align-items: center;
+  box-shadow: 0 4rpx 12rpx rgba(16, 185, 129, 0.2);
+  min-height: 100rpx; /* Ultra compact height */
 }
 
 /* 装饰性背景元素 */
 .decoration {
   position: absolute;
   border-radius: 50%;
-  filter: blur(60rpx);
+  filter: blur(50rpx); /* Smaller blur */
   opacity: 0.3;
 }
 
 .decoration-top {
-  top: -80rpx;
-  right: -80rpx;
-  width: 256rpx;
-  height: 256rpx;
+  top: -60rpx;
+  right: -60rpx;
+  width: 180rpx;
+  height: 180rpx;
   background-color: rgba(255, 255, 255, 0.2);
 }
 
 .decoration-bottom {
-  bottom: -60rpx;
-  left: -60rpx;
-  width: 192rpx;
-  height: 192rpx;
+  bottom: -40rpx;
+  left: -40rpx;
+  width: 140rpx;
+  height: 140rpx;
   background-color: rgba(0, 0, 0, 0.15);
 }
 
@@ -50,17 +53,18 @@
   position: relative;
   display: flex;
   align-items: center;
-  gap: 32rpx;
+  gap: 16rpx; /* Tight gap */
   z-index: 2;
 }
 
 .avatar-wrapper {
-  width: 132rpx;
-  height: 132rpx;
+  width: 84rpx; /* Increased from 72rpx */
+  height: 84rpx;
   border-radius: 50%;
-  border: 4rpx solid rgba(255, 255, 255, 0.4);
+  border: 3rpx solid rgba(255, 255, 255, 0.6);
   overflow: hidden;
-  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
 }
 
 .avatar {
@@ -74,15 +78,17 @@
   display: flex;
   flex-direction: column;
   color: #ffffff;
-  padding-left: 12rpx;
+  padding-left: 4rpx;
 }
 
 .user-name {
-  font-size: 36rpx;
-  font-weight: 400;
-  line-height: 1.1;
-  letter-spacing: 0.3rpx;
-  margin-top: -40rpx;
+  font-size: 30rpx; /* Compact font */
+  font-weight: 600;
+  line-height: normal;
+  letter-spacing: 0.5rpx;
+  margin-top: 0;
+  color: #ffffff;
+  text-shadow: 0 1rpx 2rpx rgba(0,0,0,0.05);
 }
 
 /* ==================== 资料卡片 ==================== */

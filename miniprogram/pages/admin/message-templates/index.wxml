@@ -1,0 +1,87 @@
+<!--
+  Message Template Management Page
+  消息模板管理列表页面
+-->
+<view class="template-page">
+  <!-- 模板列表 -->
+  <view class="template-list">
+    <view wx:if="{{loading}}" class="loading-state">
+      <text>加载中...</text>
+    </view>
+
+    <view wx:elif="{{templates.length === 0}}" class="empty-state">
+      <text class="empty-icon">📝</text>
+      <text class="empty-text">暂无消息模板</text>
+      <text class="empty-hint">点击下方按钮创建新模板</text>
+    </view>
+
+    <view wx:else class="list-content">
+      <!-- 按场景分组显示 -->
+      <view wx:for="{{groupedTemplates}}" wx:key="scene" class="scene-group">
+        <view class="scene-header">
+          <text class="scene-title">{{item.sceneName}}</text>
+          <text class="scene-count">{{item.templates.length}} 个模板</text>
+        </view>
+
+        <view
+          wx:for="{{item.templates}}"
+          wx:for-item="template"
+          wx:key="_id"
+          class="template-card"
+        >
+          <view class="card-header">
+            <text class="card-title">{{template.title}}</text>
+            <switch
+              class="status-switch"
+              checked="{{template.enabled}}"
+              color="#0CA77D"
+              bindchange="toggleTemplate"
+              data-id="{{template._id}}"
+              data-enabled="{{template.enabled}}"
+            />
+          </view>
+
+          <view class="card-body">
+            <text class="template-preview">{{template.body_preview}}</text>
+          </view>
+
+          <view class="card-footer">
+            <text class="update-time">更新于 {{template.updated_at_text}}</text>
+            <view class="card-actions">
+              <view class="action-btn" bindtap="editTemplate" data-id="{{template._id}}">
+                编辑
+              </view>
+              <view class="action-btn preview" bindtap="previewTemplate" data-id="{{template._id}}">
+                预览
+              </view>
+              <view class="action-btn danger" bindtap="deleteTemplate" data-id="{{template._id}}">
+                删除
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 新建按钮 -->
+  <view class="fab-button" bindtap="createTemplate">
+    <text class="fab-icon">+</text>
+  </view>
+
+  <!-- 预览弹窗 -->
+  <view class="preview-modal" wx:if="{{showPreview}}" bindtap="closePreview">
+    <view class="preview-container" catchtap>
+      <view class="preview-header">
+        <text class="preview-title">预览效果</text>
+        <view class="close-btn" bindtap="closePreview">×</view>
+      </view>
+      <view class="preview-content">
+        <view class="preview-label">标题</view>
+        <text class="preview-text">{{previewData.title}}</text>
+        <view class="preview-label">内容</view>
+        <text class="preview-text">{{previewData.body}}</text>
+      </view>
+    </view>
+  </view>
+</view>

@@ -12,10 +12,45 @@ cloud.init({
 const db = cloud.database();
 const _ = db.command;
 
+async function getCurrentUserAndPermissions(openid) {
+  const users = db.collection('users');
+  const roles = db.collection('roles');
+
+  const { data: userData } = await users.where({ wechat_openid: openid }).get();
+  const user = userData && userData.length > 0 ? userData[0] : null;
+  if (!user) throw new Error('用户不存在');
+  if (user.active === false) throw new Error('账号已被停用');
+
+  const { data: roleData } = await roles.where({ role_id: user.role_id }).get();
+  const role = roleData && roleData.length > 0 ? roleData[0] : null;
+  const permissions = role?.permissions || {};
+
+  return { user, permissions };
+}
+
+function hasModulePermission(permissions, moduleKey) {
+  const modules = permissions?.modules;
+  if (!modules) return false;
+  if (Array.isArray(modules)) return modules.includes(moduleKey);
+  if (typeof modules === 'object') return modules[moduleKey] === true;
+  return false;
+}
+
 exports.main = async (event, context) => {
   const { startDate, endDate } = event;
 
   try {
+    const wxContext = cloud.getWXContext();
+    const openid = wxContext.OPENID;
+    if (!openid) {
+      return { success: false, error: '无法获取微信身份，请在小程序内操作', data: [] };
+    }
+
+    const { user, permissions } = await getCurrentUserAndPermissions(openid);
+    if (!(user.role_id === 1 || hasModulePermission(permissions, 'view_analytics'))) {
+      return { success: false, error: '无权限查看数据分析', data: [] };
+    }
+
     const start = new Date(startDate);
     start.setHours(0, 0, 0, 0);
 
@@ -33,26 +68,37 @@ exports.main = async (event, context) => {
 
     // 统计每个员工的工单数据
     const rankings = await Promise.all(employees.map(async (employee) => {
+      const submitterUserId = employee.user_id;
+
+      if (!submitterUserId) {
+        return {
+          employeeName: employee.name || employee.username || '未知',
+          employeeId: employee.user_id || employee._openid || 'unknown',
+          totalSubmitted: 0,
+          totalCompleted: 0
+        };
+      }
+
       // 统计该员工提交的总工单数
-      const totalResult = await db.collection('workorders')
+      const totalResult = await db.collection('work_orders')
         .where({
-          submitter_id: employee._openid,
+          'submitter.user_id': submitterUserId,
           created_at: _.gte(start).and(_.lte(end))
         })
         .count();
 
       // 统计该员工提交且已完成的工单数
-      const completedResult = await db.collection('workorders')
+      const completedResult = await db.collection('work_orders')
         .where({
-          submitter_id: employee._openid,
-          status: 'Completed',
+          'submitter.user_id': submitterUserId,
+          status: _.in(['Completed', '已完成']),
           created_at: _.gte(start).and(_.lte(end))
         })
         .count();
 
       return {
         employeeName: employee.name || employee.username || '未知',
-        employeeId: employee._openid,
+        employeeId: employee.user_id,
         totalSubmitted: totalResult.total,
         totalCompleted: completedResult.total
       };

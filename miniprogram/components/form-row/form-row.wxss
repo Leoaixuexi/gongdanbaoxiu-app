@@ -36,13 +36,13 @@
 
 /* 紧凑模式：减少卡片背景高度 */
 .form-row.compact {
-  padding-top: 24rpx;
-  padding-bottom: 24rpx;
+  padding-top: 32rpx;
+  padding-bottom: 32rpx;
 }
 
 .form-row.compact.align-start {
-  padding-top: 28rpx;
-  padding-bottom: 28rpx;
+  padding-top: 36rpx;
+  padding-bottom: 36rpx;
 }
 
 /* 标签区域 */

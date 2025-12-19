@@ -13,17 +13,22 @@
           <view class="icon-search"></view>
           <input
             class="search-input"
-            placeholder="编号/楼层/位置/问题描述"
+            placeholder="编号/位置/问题描述"
             value="{{searchText}}"
             bindinput="onSearchInput"
           />
-          <view class="scan-button-inline" bindtap="handleScan">
-            <view class="icon-scan"></view>
+          <!-- 扫一扫按钮 - 无输入时显示 -->
+          <view wx:if="{{!searchText}}" class="scan-button-inline" bindtap="handleScan">
+            <text class="iconfont icon-saoyisao" style="font-size: 44rpx; color: #10b981;"></text>
+          </view>
+          <!-- 清空按钮 - 有输入时显示 -->
+          <view wx:if="{{searchText}}" class="clear-button-inline" bindtap="clearSearch">
+            <text class="clear-icon">×</text>
           </view>
         </view>
         <view class="icon-buttons">
           <view class="filter-button" bindtap="handleFilter">
-            <view class="icon-filter"></view>
+            <text class="iconfont icon-shaixuan" style="font-size: 40rpx; color: #10b981;"></text>
           </view>
         </view>
       </view>
@@ -63,14 +68,16 @@
 
     <!-- 状态标签 -->
     <view class="status-tabs">
-      <scroll-view scroll-x class="status-scroll" enhanced="{{true}}" show-scrollbar="{{false}}">
+      <scroll-view scroll-x class="status-scroll" enhanced="{{true}}" show-scrollbar="{{false}}" scroll-into-view="{{scrollIntoView}}" scroll-with-animation="{{true}}">
         <view class="status-tabs-inner">
           <view
             wx:for="{{statusButtons}}"
             wx:key="key"
+            id="status-{{item.key}}"
             class="status-tab {{activeStatus === item.key ? 'status-tab-active status-tab-' + item.key : ''}}"
             bindtap="handleStatusChange"
             data-status="{{item.key}}"
+            data-index="{{index}}"
           >
             <text class="status-tab-text {{activeStatus === item.key ? 'status-tab-text-active' : ''}}">{{item.label}}</text>
           </view>
@@ -89,17 +96,20 @@
         bindtap="navigateToDetail"
         data-id="{{item.order_id}}"
       >
-        <!-- 状态标签 - 绝对定位到右上角 -->
-        <view class="status-badge {{item.statusClass}}">
+        <!-- 状态标签 - 绝对定位到右上角（维修员的待接单状态不显示） -->
+        <view wx:if="{{!(isMaintenanceWorker && item.status === 'Pending Repair')}}" class="status-badge {{item.statusClass}}">
           {{item.statusText}}
         </view>
 
-        <!-- 标题: ID 和紧急标签 -->
+        <!-- 标题: ID 和优先级标签 -->
         <view class="ticket-header">
           <view class="ticket-id-row">
-            <text class="ticket-id">{{item.order_id || item.id}}</text>
-            <view wx:if="{{item.priority === 'Emergency'}}" class="urgent-badge">紧急</view>
-            <view wx:elif="{{item.is_overdue}}" class="urgent-badge overdue-badge">超期</view>
+            <text class="ticket-id">{{item.order_number || item.order_id || item.id}}</text>
+            <!-- 优先级标签 - 全部显示 -->
+            <view wx:if="{{item.priority === 'Emergency'}}" class="priority-badge priority-emergency">紧急</view>
+            <view wx:elif="{{item.priority === 'High'}}" class="priority-badge priority-high">高</view>
+            <view wx:elif="{{item.priority === 'Normal'}}" class="priority-badge priority-normal">中</view>
+            <view wx:elif="{{item.priority === 'Low'}}" class="priority-badge priority-low">低</view>
           </view>
         </view>
 
@@ -132,27 +142,33 @@
             </view>
             <view class="metadata-item">
               <view class="icon icon-building"></view>
-              <text class="metadata-text">{{item.fault_type_name || '未分类'}}</text>
+              <text class="metadata-text">{{item.order_category || item.fault_type_name || '未分类'}}</text>
             </view>
           </view>
         </view>
 
-        <!-- 照片列表 -->
-        <view class="photo-list">
-          <view wx:for="{{[0,1,2]}}" wx:key="index" wx:for-item="photoIndex" class="photo-placeholder">
-            <image
-              wx:if="{{item.photos && item.photos[photoIndex]}}"
-              src="{{item.photos[photoIndex]}}"
-              class="photo-image"
-              mode="aspectFill"
-            />
-            <view wx:else class="photo-empty">
-              <text class="photo-label">照片</text>
-              <view class="photo-icon-wrapper">
-                <text class="photo-icon">🖼️</text>
-              </view>
+        <!-- 照片列表 - 有照片才显示，最多3张 -->
+        <view class="photo-list" wx:if="{{item.photos && item.photos.length > 0}}">
+          <block wx:for="{{item.photos}}" wx:key="photoIndex" wx:for-item="photo" wx:for-index="photoIndex" wx:if="{{photoIndex < 3}}">
+            <view class="photo-placeholder">
+              <image
+                src="{{photo}}"
+                class="photo-image"
+                mode="aspectFill"
+                lazy-load="{{true}}"
+              />
             </view>
-          </view>
+          </block>
+        </view>
+
+        <!-- 接单按钮 - 维修员 + 待接单状态 -->
+        <view
+          wx:if="{{isMaintenanceWorker && item.status === 'Pending Repair'}}"
+          class="accept-order-btn"
+          catchtap="handleAcceptOrder"
+          data-order="{{item}}"
+        >
+          接单
         </view>
       </view>
     </block>
@@ -215,10 +231,12 @@
       <scroll-view scroll-y="true" class="filter-body no-scrollbar" enhanced="{{true}}" show-scrollbar="{{false}}">
         <block wx:for="{{filterRows}}" wx:key="id">
           <filter-row
+            row-id="{{item.id}}"
             label="{{item.label}}"
             has-arrow="{{item.hasArrow}}"
             placeholder="{{item.placeholder}}"
             value="{{item.value}}"
+            bindrowtap="onFilterRowTap"
           ></filter-row>
         </block>
         <view class="space"></view>
@@ -226,6 +244,61 @@
       <view class="sheet-footer">
         <button class="btn reset" bindtap="handleReset">重置</button>
         <button class="btn confirm" bindtap="handleConfirm">确定</button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 筛选选择器弹窗 -->
+  <view wx:if="{{isPickerOpen}}" class="modal-overlay" catchtap="closePickerModal">
+    <view class="modal-content picker-modal" catchtap="stopPropagation">
+      <view class="picker-header">
+        <text class="picker-title">{{pickerTitle}}</text>
+      </view>
+      <scroll-view scroll-y class="picker-options">
+        <view
+          wx:for="{{pickerOptions}}"
+          wx:key="index"
+          class="picker-option {{pickerSelectedValue === item ? 'picker-option-active' : ''}}"
+          bindtap="onPickerOptionTap"
+          data-value="{{item}}"
+        >
+          <text>{{item}}</text>
+          <view wx:if="{{pickerSelectedValue === item}}" class="picker-check"></view>
+        </view>
+      </scroll-view>
+      <view class="modal-actions">
+        <view class="modal-button modal-button-cancel" bindtap="closePickerModal">
+          <text class="modal-button-text">取消</text>
+        </view>
+        <view class="modal-button modal-button-confirm" bindtap="confirmPickerSelection">
+          <text class="modal-button-text modal-button-text-white">确定</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 报修人输入弹窗 -->
+  <view wx:if="{{isReporterInputOpen}}" class="modal-overlay" catchtap="closeReporterInput">
+    <view class="modal-content" catchtap="stopPropagation">
+      <view class="picker-header">
+        <text class="picker-title">报修人</text>
+      </view>
+      <view class="input-wrapper">
+        <input
+          class="reporter-input"
+          placeholder="请输入报修人姓名或简拼"
+          value="{{reporterInputValue}}"
+          bindinput="onReporterInput"
+          focus="{{isReporterInputOpen}}"
+        />
+      </view>
+      <view class="modal-actions">
+        <view class="modal-button modal-button-cancel" bindtap="closeReporterInput">
+          <text class="modal-button-text">取消</text>
+        </view>
+        <view class="modal-button modal-button-confirm" bindtap="confirmReporterInput">
+          <text class="modal-button-text modal-button-text-white">确定</text>
+        </view>
       </view>
     </view>
   </view>

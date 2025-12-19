@@ -13,12 +13,25 @@ Component({
           // 重置日志标志，以便新的工单可以输出日志
           this._hasLoggedTimer = false;
 
+          // 判断是否已完成（currentStep === steps.length - 1，即最后一步）
+          const isCompleted = newVal.currentStep === newVal.steps.length - 1;
+
           this.setData({
             steps: newVal.steps,
             currentStep: newVal.currentStep,
-            startTime: newVal.startTime
+            startTime: newVal.startTime,
+            endTime: newVal.endTime || null,
+            isCompleted: isCompleted
           });
-          this.startTimer();
+
+          if (isCompleted && newVal.endTime) {
+            // 已完成状态：计算固定的总用时并显示完成时间
+            this.calculateFinalDuration();
+            this.formatCompletedTime();
+          } else {
+            // 其他状态：启动实时计时器
+            this.startTimer();
+          }
         }
       }
     }
@@ -28,7 +41,10 @@ Component({
     steps: [],
     currentStep: 0,
     startTime: 0,
-    durationStr: ''
+    endTime: null,
+    durationStr: '',
+    isCompleted: false,
+    completedTimeStr: ''
   },
 
   lifetimes: {
@@ -84,15 +100,85 @@ Component({
         this._hasLoggedTimer = true;
       }
 
+      const durationStr = this.formatDuration(diff);
+
+      this.setData({
+        durationStr: durationStr
+      });
+    },
+
+    /**
+     * 计算已完成工单的固定总用时
+     */
+    calculateFinalDuration() {
+      const startTime = this.data.startTime;
+      const endTime = this.data.endTime;
+
+      if (!startTime || !endTime) {
+        this.setData({ durationStr: '0分钟' });
+        return;
+      }
+
+      const diff = Math.max(0, endTime - startTime);
+      const durationStr = this.formatDuration(diff, true); // 传递 isCompleted = true
+
+      this.setData({
+        durationStr: durationStr
+      });
+    },
+
+    /**
+     * 格式化时长
+     * 未完成状态：自动向上叠加显示（只显示有值的单位）
+     * 已完成状态：天数为0时只显示时分秒，否则显示完整格式
+     */
+    formatDuration(diff, isCompleted = false) {
       const days = Math.floor(diff / (1000 * 60 * 60 * 24));
       const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
       const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
       const seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
-      const durationStr = `${days}天${hours}时${minutes}分${seconds}秒`;
+      // 已完成状态：天数为0时只显示时分秒，否则显示完整格式
+      if (isCompleted) {
+        if (days === 0) {
+          return `${hours}时${minutes}分${seconds}秒`;
+        }
+        return `${days}天${hours}时${minutes}分${seconds}秒`;
+      }
+
+      // 未完成状态：自动向上叠加显示
+      if (days > 0) {
+        return `${days}天${hours}时${minutes}分${seconds}秒`;
+      } else if (hours > 0) {
+        return `${hours}时${minutes}分${seconds}秒`;
+      } else if (minutes > 0) {
+        return `${minutes}分${seconds}秒`;
+      } else {
+        return `${seconds}秒`;
+      }
+    },
+
+    /**
+     * 格式化完成时间
+     */
+    formatCompletedTime() {
+      const endTime = this.data.endTime;
+      if (!endTime) {
+        this.setData({ completedTimeStr: '' });
+        return;
+      }
+
+      const date = new Date(endTime);
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const hours = String(date.getHours()).padStart(2, '0');
+      const mins = String(date.getMinutes()).padStart(2, '0');
+
+      const completedTimeStr = `${year}-${month}-${day} ${hours}:${mins}`;
 
       this.setData({
-        durationStr: durationStr
+        completedTimeStr: completedTimeStr
       });
     }
   }

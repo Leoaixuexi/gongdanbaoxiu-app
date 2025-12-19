@@ -1,157 +1,107 @@
 <!--
-  Roles Configuration Page (T151, T157-T158)
-  Manage roles and their permissions
+  Role Management Page
+  角色与权限管理页面
 -->
-<view class="container">
-  <!-- Loading State -->
-  <view wx:if="{{loading}}" class="loading-container">
-    <view class="weui-loadmore">
-      <view class="weui-loading"></view>
-      <view class="weui-loadmore__tips">加载中...</view>
-    </view>
+<view class="role-page">
+  <!-- 页面标题 -->
+  <view class="page-header">
+    <text class="header-title">角色与权限</text>
+    <text class="header-desc">管理系统角色和权限配置</text>
   </view>
 
-  <!-- Roles List -->
-  <scroll-view wx:else scroll-y class="roles-scroll" enhanced="{{true}}" show-scrollbar="{{false}}">
-    <view class="roles-container">
-      <view class="page-header">
-        <text class="page-title">角色权限配置</text>
-        <text class="page-desc">配置各角色的系统访问权限</text>
-      </view>
+  <!-- 加载状态 -->
+  <view wx:if="{{loading}}" class="loading-state">
+    <text>加载中...</text>
+  </view>
 
-      <!-- Role Cards -->
-      <view
-        wx:for="{{roles}}"
-        wx:key="id"
-        class="role-card"
-      >
-        <view class="role-header">
-          <view class="role-info">
-            <text class="role-name">{{item.name}}</text>
-            <view class="user-count-badge">{{item.user_count || 0}} 个用户</view>
-          </view>
-          <view wx:if="{{!isSystemAdmin}}" class="lock-icon">
-            <icon type="safe" size="20" color="#999"/>
-          </view>
-        </view>
-
-        <view class="permissions-section">
-          <view class="section-title">模块权限</view>
-
-          <!-- Submit Work Orders -->
-          <view class="permission-item">
-            <view class="permission-info">
-              <text class="permission-name">提交工单</text>
-              <text class="permission-desc">允许提交维修工单</text>
-            </view>
-            <switch
-              checked="{{item.permissions.submit_work_orders}}"
-              bindchange="onPermissionChange"
-              data-role-id="{{item.id}}"
-              data-permission="submit_work_orders"
-              color="#1aad19"
-              disabled="{{!isSystemAdmin}}"
-            />
-          </view>
-
-          <!-- Review Work Orders -->
-          <view class="permission-item">
-            <view class="permission-info">
-              <text class="permission-name">审核工单</text>
-              <text class="permission-desc">允许审核和分配工单</text>
-            </view>
-            <switch
-              checked="{{item.permissions.review_work_orders}}"
-              bindchange="onPermissionChange"
-              data-role-id="{{item.id}}"
-              data-permission="review_work_orders"
-              color="#1aad19"
-              disabled="{{!isSystemAdmin}}"
-            />
-          </view>
-
-          <!-- View Analytics -->
-          <view class="permission-item">
-            <view class="permission-info">
-              <text class="permission-name">查看分析</text>
-              <text class="permission-desc">允许查看统计分析数据</text>
-            </view>
-            <switch
-              checked="{{item.permissions.view_analytics}}"
-              bindchange="onPermissionChange"
-              data-role-id="{{item.id}}"
-              data-permission="view_analytics"
-              color="#1aad19"
-              disabled="{{!isSystemAdmin}}"
-            />
-          </view>
-
-          <!-- Manage Users -->
-          <view class="permission-item">
-            <view class="permission-info">
-              <text class="permission-name">用户管理</text>
-              <text class="permission-desc">允许管理用户和权限</text>
-            </view>
-            <switch
-              checked="{{item.permissions.manage_users}}"
-              bindchange="onPermissionChange"
-              data-role-id="{{item.id}}"
-              data-permission="manage_users"
-              color="#1aad19"
-              disabled="{{!isSystemAdmin}}"
-            />
-          </view>
-
-          <!-- Configure System -->
-          <view class="permission-item">
-            <view class="permission-info">
-              <text class="permission-name">系统配置</text>
-              <text class="permission-desc">允许配置系统参数</text>
-            </view>
-            <switch
-              checked="{{item.permissions.configure_system}}"
-              bindchange="onPermissionChange"
-              data-role-id="{{item.id}}"
-              data-permission="configure_system"
-              color="#1aad19"
-              disabled="{{!isSystemAdmin}}"
-            />
-          </view>
-        </view>
-      </view>
-
-      <!-- Permission Denied Warning -->
-      <view wx:if="{{!isSystemAdmin}}" class="warning-box">
-        <icon type="warn" size="20" color="#ff9800"/>
-        <text>仅系统管理员可以修改角色权限</text>
-      </view>
-    </view>
-  </scroll-view>
-
-  <!-- Save Button (only for system admin) -->
-  <view wx:if="{{isSystemAdmin && hasChanges}}" class="action-buttons">
-    <button
-      class="weui-btn"
-      type="primary"
-      bindtap="onSave"
-      disabled="{{saving}}"
-      loading="{{saving}}"
+  <!-- 角色列表 -->
+  <view wx:else class="role-list">
+    <view
+      wx:for="{{roles}}"
+      wx:key="role_id"
+      class="role-card"
     >
-      {{saving ? '保存中...' : '保存修改'}}
-    </button>
-  </view>
-</view>
+      <!-- 角色头部 -->
+      <view class="card-header">
+        <view class="role-icon role-{{item.role_id}}">
+          <text>{{item.display_name[0]}}</text>
+        </view>
+        <view class="role-info">
+          <view class="role-name">{{item.display_name}}</view>
+          <view class="role-code">{{item.name}}</view>
+        </view>
+        <view class="role-badge" wx:if="{{item.role_id === 1}}">
+          <text>超级管理员</text>
+        </view>
+      </view>
 
-<!-- Confirmation Modal -->
-<view class="modal-mask" wx:if="{{showConfirm}}" bindtap="onCancelSave">
-  <view class="confirm-modal" catchtap="onModalStopPropagation">
-    <view class="confirm-title">确认保存权限配置?</view>
-    <view class="confirm-content">
-      <text>修改权限后将立即生效，可能影响现有用户的系统访问。确认要保存吗？</text>
+      <!-- 权限概览 -->
+      <view class="permission-overview">
+        <view class="overview-label">权限范围</view>
+        <view class="overview-value">{{item.permissionList}}</view>
+      </view>
+
+      <!-- 权限数量 -->
+      <view class="permission-count">
+        <text class="count-num">{{item.permissionCount}}</text>
+        <text class="count-label">/ {{modules.length}} 个模块</text>
+      </view>
+
+      <!-- 操作按钮 -->
+      <view class="card-actions">
+        <view
+          class="action-btn primary"
+          bindtap="editPermissions"
+          data-role-id="{{item.role_id}}"
+        >
+          <text>编辑权限</text>
+        </view>
+      </view>
     </view>
-    <view class="confirm-actions">
-      <button class="weui-btn cancel-btn" bindtap="onCancelSave">取消</button>
-      <button class="weui-btn" type="primary" bindtap="onConfirmSave">确认保存</button>
+  </view>
+
+  <!-- 权限编辑弹窗 -->
+  <view wx:if="{{showPermissionModal}}" class="modal-overlay" bindtap="closePermissionModal">
+    <view class="modal-content" catchtap="stopPropagation">
+      <!-- 弹窗头部 -->
+      <view class="modal-header">
+        <text class="modal-title">编辑权限 - {{editingRole.display_name}}</text>
+        <view class="modal-close" bindtap="closePermissionModal">
+          <text>×</text>
+        </view>
+      </view>
+
+      <!-- 全选操作 -->
+      <view class="select-all" bindtap="toggleAllPermissions">
+        <text>全选/取消全选</text>
+      </view>
+
+      <!-- 权限列表 -->
+      <scroll-view scroll-y class="permission-list">
+        <view
+          wx:for="{{modules}}"
+          wx:key="key"
+          class="permission-item {{editingPermissions[item.key] ? 'enabled' : ''}}"
+          bindtap="togglePermission"
+          data-key="{{item.key}}"
+        >
+          <view class="permission-info">
+            <text class="permission-name">{{item.name}}</text>
+            <text class="permission-desc">{{item.desc}}</text>
+          </view>
+          <view class="permission-switch">
+            <view class="switch-track {{editingPermissions[item.key] ? 'on' : ''}}">
+              <view class="switch-thumb"></view>
+            </view>
+          </view>
+        </view>
+      </scroll-view>
+
+      <!-- 弹窗底部 -->
+      <view class="modal-footer">
+        <view class="btn-cancel" bindtap="closePermissionModal">取消</view>
+        <view class="btn-confirm" bindtap="savePermissions">保存</view>
+      </view>
     </view>
   </view>
 </view>

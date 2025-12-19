@@ -10,7 +10,7 @@
       <!-- 通知公告卡片 -->
       <view class="category-card" bindtap="navigateToList" data-module="notification">
         <view class="card-icon icon-notification">
-          <view class="svg-icon icon-megaphone"></view>
+          <text class="iconfont icon-tongzhigonggao1" style="font-size: 48rpx; color: #F97316;"></text>
         </view>
         <view class="card-content">
           <text class="card-title">通知公告</text>
@@ -27,7 +27,7 @@
       <!-- 待办事项卡片 -->
       <view class="category-card" bindtap="navigateToList" data-module="workorder">
         <view class="card-icon icon-workorder">
-          <view class="svg-icon icon-check"></view>
+          <text class="iconfont icon-daibanshixiang1" style="font-size: 48rpx; color: #A855F7;"></text>
         </view>
         <view class="card-content">
           <text class="card-title">待办事项</text>
@@ -44,7 +44,7 @@
       <!-- 提醒我的卡片 -->
       <view class="category-card" bindtap="navigateToList" data-module="reminder">
         <view class="card-icon icon-reminder">
-          <view class="svg-icon icon-bell"></view>
+          <text class="iconfont icon-tixingwode" style="font-size: 48rpx; color: #3B82F6;"></text>
         </view>
         <view class="card-content">
           <text class="card-title">提醒我的</text>

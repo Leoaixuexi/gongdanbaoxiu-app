@@ -32,14 +32,6 @@
     <view class="bg-card premium-shadow-sm profile-list">
       <view class="profile-row">
         <view class="profile-row-left">
-          <view class="profile-icon icon-user"></view>
-          <text class="profile-label text-foreground">姓名</text>
-        </view>
-        <text class="profile-value text-muted-foreground">{{userInfo.name}}</text>
-      </view>
-
-      <view class="profile-row border-top">
-        <view class="profile-row-left">
           <view class="profile-icon icon-position"></view>
           <text class="profile-label text-foreground">职位</text>
         </view>

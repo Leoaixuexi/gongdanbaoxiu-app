@@ -194,14 +194,15 @@ Component({
     handleTap() {
       const workOrder = this.data.workOrder;
 
-      if (!workOrder || !workOrder.id) {
+      const workOrderId = workOrder?.order_id || workOrder?.id;
+      if (!workOrderId) {
         console.warn('[WorkOrderCard] No work order ID to emit');
         return;
       }
 
       // Emit tap event with work order ID and data
       this.triggerEvent('tap', {
-        id: workOrder.id,
+        id: workOrderId,
         workOrder: workOrder
       });
     }

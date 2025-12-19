@@ -1,353 +1,259 @@
 /**
- * System Configuration Page (T152)
- * Configure SLA rules, fault types, and system settings
+ * System Config Page
+ * 系统配置页面
  */
 
-const api = require('../../../services/api');
-const { PRIORITIES, PRIORITY_DISPLAY_NAMES } = require('../../../utils/constants');
+const cloudDB = require('../../../services/cloudDatabase');
+const { ROLES, STORAGE_KEYS } = require('../../../utils/constants');
+
+// 配置项定义
+const CONFIG_ITEMS = [
+  {
+    key: 'system_name',
+    name: '系统名称',
+    desc: '显示在小程序首页的系统名称',
+    type: 'text',
+    default: '物业报修系统'
+  },
+  {
+    key: 'contact_phone',
+    name: '客服电话',
+    desc: '用户联系客服的电话号码',
+    type: 'text',
+    default: ''
+  },
+  {
+    key: 'work_order_auto_close_days',
+    name: '工单自动关闭天数',
+    desc: '完成后超过多少天自动关闭',
+    type: 'number',
+    default: 7
+  },
+  {
+    key: 'max_upload_images',
+    name: '最大上传图片数',
+    desc: '每个工单最多上传的图片数量',
+    type: 'number',
+    default: 9
+  },
+  {
+    key: 'enable_notification',
+    name: '启用通知提醒',
+    desc: '是否启用工单状态变更通知',
+    type: 'switch',
+    default: true
+  },
+  {
+    key: 'enable_auto_assign',
+    name: '启用自动派单',
+    desc: '新工单是否自动分配给维修人员',
+    type: 'switch',
+    default: false
+  },
+  {
+    key: 'maintenance_mode',
+    name: '维护模式',
+    desc: '开启后普通用户无法提交工单',
+    type: 'switch',
+    default: false
+  },
+  {
+    key: 'announcement_display_days',
+    name: '公告显示天数',
+    desc: '公告在首页显示的天数',
+    type: 'number',
+    default: 30
+  }
+];
 
 Page({
   data: {
-    slaRules: [],
-    faultTypes: [],
-    systemSettings: {
-      max_concurrent_orders: 5,
-      max_photo_size_mb: 5,
-      notifications_enabled: true
-    },
+    configItems: [],
+    loading: true,
     saving: false,
-    showFaultTypeModal: false,
-    editingFaultType: {
-      id: null,
-      name: ''
-    }
+    hasChanges: false,
+
+    // 编辑中的配置值
+    editingConfig: {}
   },
 
   onLoad() {
-    this.checkPermissions();
+    this.checkAdminPermission();
+  },
+
+  onShow() {
     this.loadConfig();
   },
 
   /**
-   * Check permissions
+   * 检查管理员权限
    */
-  checkPermissions() {
-    const app = getApp();
-    const userInfo = app.globalData.userInfo;
-
-    console.log('[Config] Checking permissions for user:', userInfo);
-
-    // Only system admin (role_id = 1) can access system configuration
-    if (!userInfo || userInfo.role_id !== 1) {
-      wx.showModal({
-        title: '权限不足',
-        content: '您没有权限访问系统配置页面',
-        showCancel: false,
-        success: () => {
-          wx.navigateBack();
-        }
+  checkAdminPermission() {
+    const userInfo = wx.getStorageSync(STORAGE_KEYS.USER_INFO);
+    if (!userInfo || userInfo.role_id !== ROLES.ADMIN) {
+      wx.showToast({
+        title: '无权限访问',
+        icon: 'none'
       });
+      setTimeout(() => {
+        wx.navigateBack();
+      }, 1500);
     }
   },
 
   /**
-   * Load all configuration
+   * 加载配置
    */
   async loadConfig() {
-    wx.showLoading({ title: '加载中...' });
+    this.setData({ loading: true });
 
     try {
-      await Promise.all([
-        this.loadSlaRules(),
-        this.loadFaultTypes(),
-        this.loadSystemSettings()
-      ]);
+      const result = await cloudDB.systemConfig.get();
+      const serverConfig = result.config || {};
 
-      wx.hideLoading();
+      // 合并服务器配置和默认配置
+      const configItems = CONFIG_ITEMS.map(item => {
+        const serverValue = serverConfig[item.key];
+        return {
+          ...item,
+          value: serverValue !== undefined ? serverValue : item.default
+        };
+      });
+
+      // 构建编辑配置对象
+      const editingConfig = {};
+      configItems.forEach(item => {
+        editingConfig[item.key] = item.value;
+      });
+
+      this.setData({
+        configItems,
+        editingConfig,
+        loading: false,
+        hasChanges: false
+      });
     } catch (error) {
-      console.error('Failed to load config:', error);
-      wx.hideLoading();
+      console.error('[Config] Load error:', error);
       wx.showToast({
         title: '加载失败',
         icon: 'none'
       });
+      this.setData({ loading: false });
     }
   },
 
   /**
-   * Load SLA rules
+   * 文本输入变化
    */
-  async loadSlaRules() {
-    try {
-      const response = await api.get('/sla-rules', { hideLoading: true });
-      const slaRules = PRIORITIES.map(priority => {
-        const rule = response.data.find(r => r.priority === priority) || {};
-        return {
-          priority,
-          priority_name: PRIORITY_DISPLAY_NAMES[priority],
-          target_hours: rule.target_hours || 24,
-          escalation_threshold_hours: rule.escalation_threshold_hours || 48
-        };
-      });
+  onInputChange(e) {
+    const { key } = e.currentTarget.dataset;
+    const value = e.detail.value;
 
-      this.setData({ slaRules });
-    } catch (error) {
-      console.error('Failed to load SLA rules:', error);
-    }
+    this.setData({
+      [`editingConfig.${key}`]: value,
+      hasChanges: true
+    });
   },
 
   /**
-   * Load fault types
+   * 数字输入变化
    */
-  async loadFaultTypes() {
-    try {
-      const response = await api.get('/fault-types', { hideLoading: true });
-      this.setData({
-        faultTypes: response.data
-      });
-    } catch (error) {
-      console.error('Failed to load fault types:', error);
-    }
-  },
-
-  /**
-   * Load system settings
-   */
-  async loadSystemSettings() {
-    try {
-      const response = await api.get('/system-settings', { hideLoading: true });
-      this.setData({
-        systemSettings: response.data || this.data.systemSettings
-      });
-    } catch (error) {
-      console.error('Failed to load system settings:', error);
-    }
-  },
-
-  /**
-   * Handle SLA target hours change
-   */
-  onSlaTargetChange(e) {
-    const priority = e.currentTarget.dataset.priority;
+  onNumberChange(e) {
+    const { key } = e.currentTarget.dataset;
     const value = parseInt(e.detail.value) || 0;
 
-    const slaRules = this.data.slaRules.map(rule => {
-      if (rule.priority === priority) {
-        return { ...rule, target_hours: value };
-      }
-      return rule;
-    });
-
-    this.setData({ slaRules });
-  },
-
-  /**
-   * Handle SLA escalation hours change
-   */
-  onSlaEscalationChange(e) {
-    const priority = e.currentTarget.dataset.priority;
-    const value = parseInt(e.detail.value) || 0;
-
-    const slaRules = this.data.slaRules.map(rule => {
-      if (rule.priority === priority) {
-        return { ...rule, escalation_threshold_hours: value };
-      }
-      return rule;
-    });
-
-    this.setData({ slaRules });
-  },
-
-  /**
-   * Handle max concurrent orders change
-   */
-  onMaxOrdersChange(e) {
     this.setData({
-      'systemSettings.max_concurrent_orders': parseInt(e.detail.value) || 5
+      [`editingConfig.${key}`]: value,
+      hasChanges: true
     });
   },
 
   /**
-   * Handle photo size change
+   * 开关切换
    */
-  onPhotoSizeChange(e) {
-    this.setData({
-      'systemSettings.max_photo_size_mb': parseInt(e.detail.value) || 5
-    });
-  },
-
-  /**
-   * Handle notifications toggle
-   */
-  onNotificationsChange(e) {
-    this.setData({
-      'systemSettings.notifications_enabled': e.detail.value
-    });
-  },
-
-  /**
-   * Add fault type
-   */
-  onAddFaultType() {
-    this.setData({
-      showFaultTypeModal: true,
-      editingFaultType: {
-        id: null,
-        name: ''
-      }
-    });
-  },
-
-  /**
-   * Edit fault type
-   */
-  onEditFaultType(e) {
-    const id = e.currentTarget.dataset.id;
-    const faultType = this.data.faultTypes.find(ft => ft.id === id);
+  onSwitchChange(e) {
+    const { key } = e.currentTarget.dataset;
+    const currentValue = this.data.editingConfig[key];
 
     this.setData({
-      showFaultTypeModal: true,
-      editingFaultType: {
-        id: faultType.id,
-        name: faultType.name
-      }
+      [`editingConfig.${key}`]: !currentValue,
+      hasChanges: true
     });
   },
 
   /**
-   * Toggle fault type active status
+   * 保存配置
    */
-  async onToggleFaultType(e) {
-    const id = e.currentTarget.dataset.id;
-    const isActive = e.currentTarget.dataset.active;
-
-    try {
-      await api.patch(`/fault-types/${id}`, {
-        is_active: !isActive
-      });
-
+  async saveConfig() {
+    if (!this.data.hasChanges) {
       wx.showToast({
-        title: isActive ? '已停用' : '已启用',
-        icon: 'success'
-      });
-
-      this.loadFaultTypes();
-
-    } catch (error) {
-      console.error('Failed to toggle fault type:', error);
-      wx.showToast({
-        title: '操作失败',
-        icon: 'none'
-      });
-    }
-  },
-
-  /**
-   * Fault type name input
-   */
-  onFaultTypeNameInput(e) {
-    this.setData({
-      'editingFaultType.name': e.detail.value
-    });
-  },
-
-  /**
-   * Save fault type
-   */
-  async onSaveFaultType() {
-    if (!this.data.editingFaultType.name.trim()) {
-      wx.showToast({
-        title: '请输入类型名称',
+        title: '没有修改',
         icon: 'none'
       });
       return;
     }
 
+    this.setData({ saving: true });
+
     try {
-      if (this.data.editingFaultType.id) {
-        // Update
-        await api.patch(`/fault-types/${this.data.editingFaultType.id}`, {
-          name: this.data.editingFaultType.name.trim()
-        });
-      } else {
-        // Create
-        await api.post('/fault-types', {
-          name: this.data.editingFaultType.name.trim(),
-          is_active: true
-        });
-      }
+      const { editingConfig, configItems } = this.data;
+
+      // 构建配置列表
+      const configs = configItems.map(item => ({
+        key: item.key,
+        value: editingConfig[item.key],
+        description: item.desc
+      }));
+
+      await cloudDB.systemConfig.batchUpdate(configs);
 
       wx.showToast({
         title: '保存成功',
         icon: 'success'
       });
 
-      this.setData({ showFaultTypeModal: false });
-      this.loadFaultTypes();
-
-    } catch (error) {
-      console.error('Failed to save fault type:', error);
-      wx.showToast({
-        title: '保存失败',
-        icon: 'none'
-      });
-    }
-  },
-
-  /**
-   * Close fault type modal
-   */
-  onCloseFaultTypeModal() {
-    this.setData({
-      showFaultTypeModal: false
-    });
-  },
-
-  /**
-   * Stop modal propagation
-   */
-  onModalStopPropagation() {
-    // Prevent tap event from bubbling to mask
-  },
-
-  /**
-   * Save all configuration
-   */
-  async onSave() {
-    this.setData({ saving: true });
-
-    try {
-      // Update SLA rules
-      await Promise.all(
-        this.data.slaRules.map(rule => {
-          return api.post('/sla-rules', {
-            priority: rule.priority,
-            target_hours: rule.target_hours,
-            escalation_threshold_hours: rule.escalation_threshold_hours
-          });
-        })
-      );
-
-      // Update system settings
-      await api.post('/system-settings', this.data.systemSettings);
-
-      wx.showToast({
-        title: '保存成功',
-        icon: 'success',
-        duration: 2000
+      this.setData({
+        saving: false,
+        hasChanges: false
       });
 
-      this.setData({ saving: false });
-
+      // 重新加载
+      this.loadConfig();
     } catch (error) {
-      console.error('Failed to save config:', error);
-      this.setData({ saving: false });
-
+      console.error('[Config] Save error:', error);
       wx.showToast({
         title: error.message || '保存失败',
-        icon: 'none',
-        duration: 2000
+        icon: 'none'
       });
+      this.setData({ saving: false });
     }
+  },
+
+  /**
+   * 重置配置
+   */
+  resetConfig() {
+    wx.showModal({
+      title: '确认重置',
+      content: '确定要将所有配置恢复到默认值吗？',
+      success: (res) => {
+        if (res.confirm) {
+          const editingConfig = {};
+          CONFIG_ITEMS.forEach(item => {
+            editingConfig[item.key] = item.default;
+          });
+
+          this.setData({
+            editingConfig,
+            hasChanges: true
+          });
+
+          wx.showToast({
+            title: '已重置为默认值',
+            icon: 'none'
+          });
+        }
+      }
+    });
   }
 });

@@ -1,8 +1,5 @@
 {
-  "navigationBarTitleText": "角色管理",
-  "navigationBarBackgroundColor": "#14AB80",
-  "navigationBarTextStyle": "white",
-  "enablePullDownRefresh": false,
-  "backgroundColor": "#F7F7F7",
+  "navigationBarTitleText": "角色与权限",
+  "navigationBarBackgroundColor": "#0CA77D",
   "usingComponents": {}
 }

@@ -283,9 +283,16 @@ const hasPermission = async (permission) => {
       return false;
     }
 
-    // Check if permission exists in modules array
-    if (permissions.modules && Array.isArray(permissions.modules)) {
-      return permissions.modules.includes(permission);
+    // Support both formats:
+    // - modules as array: ['manage_users', ...]
+    // - modules as object map: { manage_users: true, ... }
+    if (permissions.modules) {
+      if (Array.isArray(permissions.modules)) {
+        return permissions.modules.includes(permission);
+      }
+      if (typeof permissions.modules === 'object') {
+        return permissions.modules[permission] === true;
+      }
     }
 
     return false;

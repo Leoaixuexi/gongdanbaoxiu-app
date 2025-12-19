@@ -1,328 +1,212 @@
 /**
- * Roles Configuration Page (T151, T157-T158)
- * Manage roles and their permissions
+ * Role Management Page
+ * 角色与权限管理页面
  */
 
-const api = require('../../../services/api');
 const cloudDB = require('../../../services/cloudDatabase');
-const config = require('../../../config/index');
-const { ROLE_DISPLAY_NAMES, ROLES } = require('../../../utils/constants');
+const { ROLES, STORAGE_KEYS } = require('../../../utils/constants');
 
-// Debug: 输出配置
-console.log('========= ROLES PAGE CONFIG =========');
-console.log('config.useCloudDatabase:', config.useCloudDatabase);
-console.log('config object:', config);
-console.log('====================================');
+// 系统模块定义（与云数据库 roles.permissions.modules 保持一致）
+const SYSTEM_MODULES = [
+  { key: 'submit_work_orders', name: '提交工单', desc: '创建/提交报修工单' },
+  { key: 'review_work_orders', name: '审核工单', desc: '验收通过/返工处理' },
+  { key: 'view_analytics', name: '数据分析', desc: '查看统计报表与导出' },
+  { key: 'manage_users', name: '账号管理', desc: '管理系统用户与重置密码' },
+  { key: 'configure_system', name: '系统配置', desc: '管理系统配置项与模板' }
+];
 
 Page({
   data: {
     roles: [],
-    originalRoles: [],
-    loading: false,
-    saving: false,
-    hasChanges: false,
-    isSystemAdmin: false,
-    showConfirm: false
+    loading: true,
+    modules: SYSTEM_MODULES,
+
+    // 编辑权限弹窗
+    showPermissionModal: false,
+    editingRole: null,
+    editingPermissions: {}
   },
 
   onLoad() {
-    this.checkPermissions();
+    this.checkAdminPermission();
+  },
+
+  onShow() {
     this.loadRoles();
   },
 
   onPullDownRefresh() {
-    this.loadRoles();
+    this.loadRoles().then(() => {
+      wx.stopPullDownRefresh();
+    });
   },
 
   /**
-   * Check if user is system admin
+   * 检查管理员权限
    */
-  checkPermissions() {
-    const app = getApp();
-    const userInfo = app.globalData.userInfo;
-
-    console.log('[Roles] Checking permissions for user:', userInfo);
-    console.log('[Roles] User permissions:', userInfo?.permissions);
-    console.log('[Roles] User role_id:', userInfo?.role_id);
-
-    // System admin (role_id = 1) has full access
-    const isSystemAdmin = userInfo && userInfo.role_id === ROLES.ADMIN;
-
-    if (!isSystemAdmin) {
-      wx.showModal({
-        title: '权限不足',
-        content: '您没有权限访问角色配置页面',
-        showCancel: false,
-        success: () => {
-          wx.navigateBack();
-        }
+  checkAdminPermission() {
+    const userInfo = wx.getStorageSync(STORAGE_KEYS.USER_INFO);
+    if (!userInfo || userInfo.role_id !== ROLES.ADMIN) {
+      wx.showToast({
+        title: '无权限访问',
+        icon: 'none'
       });
-      return;
+      setTimeout(() => {
+        wx.navigateBack();
+      }, 1500);
     }
-
-    this.setData({ isSystemAdmin: true });
   },
 
   /**
-   * Load all roles with permissions and user counts
+   * 加载角色列表
    */
   async loadRoles() {
     this.setData({ loading: true });
 
     try {
-      console.log('[Roles] useCloudDatabase:', config.useCloudDatabase);
-      let roles = [];
+      const roles = await cloudDB.roles.list();
 
-      if (config.useCloudDatabase) {
-        // 使用云数据库
-        console.log('[Roles] Using cloud database mode');
-        roles = await cloudDB.roles.list();
-
-        // Get user counts for each role
-        const rolesWithCounts = await Promise.all(
-          roles.map(async (role) => {
-            try {
-              const users = await cloudDB.users.list({ role_id: role.role_id });
-
-              // 转换permissions格式
-              const permissions = role.permissions?.modules || {};
-
-              return {
-                ...role,
-                id: role.role_id,
-                name: ROLE_DISPLAY_NAMES[role.role_id] || role.display_name,
-                user_count: users.length,
-                permissions: {
-                  submit_work_orders: permissions.submit_work_orders || false,
-                  review_work_orders: permissions.review_work_orders || false,
-                  view_analytics: permissions.view_analytics || false,
-                  manage_users: permissions.manage_users || false,
-                  configure_system: permissions.configure_system || false
-                }
-              };
-            } catch (error) {
-              console.error(`Failed to get user count for role ${role.role_id}:`, error);
-              const permissions = role.permissions?.modules || {};
-              return {
-                ...role,
-                id: role.role_id,
-                name: ROLE_DISPLAY_NAMES[role.role_id] || role.display_name,
-                user_count: 0,
-                permissions: {
-                  submit_work_orders: permissions.submit_work_orders || false,
-                  review_work_orders: permissions.review_work_orders || false,
-                  view_analytics: permissions.view_analytics || false,
-                  manage_users: permissions.manage_users || false,
-                  configure_system: permissions.configure_system || false
-                }
-              };
-            }
-          })
-        );
-
-        roles = rolesWithCounts;
-
-      } else {
-        // 使用后端API
-        const response = await api.get('/roles');
-
-        // Get user counts for each role
-        const rolesWithCounts = await Promise.all(
-          response.data.map(async (role) => {
-            try {
-              const users = await api.get('/users', { role_id: role.id });
-              return {
-                ...role,
-                name: ROLE_DISPLAY_NAMES[role.id] || role.name,
-                user_count: users.data.length,
-                permissions: {
-                  submit_work_orders: role.permissions.includes('submit_work_orders'),
-                  review_work_orders: role.permissions.includes('review_work_orders'),
-                  view_analytics: role.permissions.includes('view_analytics'),
-                  manage_users: role.permissions.includes('manage_users'),
-                  configure_system: role.permissions.includes('configure_system')
-                }
-              };
-            } catch (error) {
-              console.error(`Failed to get user count for role ${role.id}:`, error);
-              return {
-                ...role,
-                name: ROLE_DISPLAY_NAMES[role.id] || role.name,
-                user_count: 0,
-                permissions: {
-                  submit_work_orders: role.permissions.includes('submit_work_orders'),
-                  review_work_orders: role.permissions.includes('review_work_orders'),
-                  view_analytics: role.permissions.includes('view_analytics'),
-                  manage_users: role.permissions.includes('manage_users'),
-                  configure_system: role.permissions.includes('configure_system')
-                }
-              };
-            }
-          })
-        );
-
-        roles = rolesWithCounts;
-      }
+      // 处理角色数据
+      const processedRoles = roles.map(role => ({
+        ...role,
+        permissionCount: this.countPermissions(role.permissions),
+        permissionList: this.getPermissionList(role.permissions)
+      }));
 
       this.setData({
-        roles,
-        originalRoles: JSON.parse(JSON.stringify(roles)),
+        roles: processedRoles,
         loading: false
       });
-
-      wx.stopPullDownRefresh();
-
     } catch (error) {
-      console.error('Failed to load roles:', error);
-      this.setData({ loading: false });
-      wx.stopPullDownRefresh();
-
+      console.error('[Roles] Load error:', error);
       wx.showToast({
         title: '加载失败',
+        icon: 'none'
+      });
+      this.setData({ loading: false });
+    }
+  },
+
+  /**
+   * 统计权限数量
+   */
+  countPermissions(permissions) {
+    if (!permissions || !permissions.modules) return 0;
+    return Object.values(permissions.modules).filter(v => v).length;
+  },
+
+  /**
+   * 获取权限列表文本
+   */
+  getPermissionList(permissions) {
+    if (!permissions || !permissions.modules) return '无权限';
+
+    const enabledModules = SYSTEM_MODULES
+      .filter(m => permissions.modules[m.key])
+      .map(m => m.name);
+
+    if (enabledModules.length === 0) return '无权限';
+    if (enabledModules.length === SYSTEM_MODULES.length) return '全部权限';
+    if (enabledModules.length > 3) {
+      return enabledModules.slice(0, 3).join('、') + '等';
+    }
+    return enabledModules.join('、');
+  },
+
+  /**
+   * 打开权限编辑弹窗
+   */
+  editPermissions(e) {
+    const roleId = e.currentTarget.dataset.roleId;
+    const role = this.data.roles.find(r => r.role_id === roleId);
+
+    if (!role) return;
+
+    // 初始化编辑中的权限
+    const editingPermissions = {};
+    SYSTEM_MODULES.forEach(m => {
+      editingPermissions[m.key] = role.permissions?.modules?.[m.key] || false;
+    });
+
+    this.setData({
+      showPermissionModal: true,
+      editingRole: role,
+      editingPermissions
+    });
+  },
+
+  /**
+   * 切换权限
+   */
+  togglePermission(e) {
+    const key = e.currentTarget.dataset.key;
+    const currentValue = this.data.editingPermissions[key];
+
+    this.setData({
+      [`editingPermissions.${key}`]: !currentValue
+    });
+  },
+
+  /**
+   * 全选/取消全选
+   */
+  toggleAllPermissions() {
+    const allEnabled = Object.values(this.data.editingPermissions).every(v => v);
+    const newPermissions = {};
+
+    SYSTEM_MODULES.forEach(m => {
+      newPermissions[m.key] = !allEnabled;
+    });
+
+    this.setData({ editingPermissions: newPermissions });
+  },
+
+  /**
+   * 关闭权限编辑弹窗
+   */
+  closePermissionModal() {
+    this.setData({
+      showPermissionModal: false,
+      editingRole: null,
+      editingPermissions: {}
+    });
+  },
+
+  /**
+   * 保存权限设置
+   */
+  async savePermissions() {
+    const { editingRole, editingPermissions } = this.data;
+
+    if (!editingRole) return;
+
+    try {
+      wx.showLoading({ title: '保存中...' });
+
+      await cloudDB.roles.updatePermissions(editingRole.role_id, editingPermissions);
+
+      wx.hideLoading();
+      wx.showToast({
+        title: '保存成功',
+        icon: 'success'
+      });
+
+      this.closePermissionModal();
+      this.loadRoles();
+    } catch (error) {
+      wx.hideLoading();
+      console.error('[Roles] Save permissions error:', error);
+      wx.showToast({
+        title: error.message || '保存失败',
         icon: 'none'
       });
     }
   },
 
   /**
-   * Handle permission change
+   * 阻止事件冒泡
    */
-  onPermissionChange(e) {
-    if (!this.data.isSystemAdmin) return;
-
-    const { roleId, permission } = e.currentTarget.dataset;
-    const value = e.detail.value;
-
-    const roles = this.data.roles.map(role => {
-      if (role.id === roleId) {
-        return {
-          ...role,
-          permissions: {
-            ...role.permissions,
-            [permission]: value
-          }
-        };
-      }
-      return role;
-    });
-
-    // Check if there are changes
-    const hasChanges = this.checkForChanges(roles);
-
-    this.setData({
-      roles,
-      hasChanges
-    });
-  },
-
-  /**
-   * Check if there are any changes
-   */
-  checkForChanges(roles) {
-    return roles.some((role, index) => {
-      const original = this.data.originalRoles[index];
-      return Object.keys(role.permissions).some(
-        key => role.permissions[key] !== original.permissions[key]
-      );
-    });
-  },
-
-  /**
-   * Show save confirmation
-   */
-  onSave() {
-    this.setData({
-      showConfirm: true
-    });
-  },
-
-  /**
-   * Cancel save
-   */
-  onCancelSave() {
-    this.setData({
-      showConfirm: false
-    });
-  },
-
-  /**
-   * Confirm and save changes
-   */
-  async onConfirmSave() {
-    this.setData({
-      showConfirm: false,
-      saving: true
-    });
-
-    try {
-      if (config.useCloudDatabase) {
-        // 使用云数据库
-        const updatePromises = this.data.roles.map(async (role, index) => {
-          const original = this.data.originalRoles[index];
-          const hasRoleChanges = Object.keys(role.permissions).some(
-            key => role.permissions[key] !== original.permissions[key]
-          );
-
-          if (hasRoleChanges) {
-            // 构建permissions对象
-            const permissions = {};
-            Object.keys(role.permissions).forEach(key => {
-              permissions[key] = role.permissions[key];
-            });
-
-            await cloudDB.roles.updatePermissions(role.role_id, permissions);
-          }
-        });
-
-        await Promise.all(updatePromises);
-
-      } else {
-        // 使用后端API
-        const updatePromises = this.data.roles.map(async (role, index) => {
-          const original = this.data.originalRoles[index];
-          const hasRoleChanges = Object.keys(role.permissions).some(
-            key => role.permissions[key] !== original.permissions[key]
-          );
-
-          if (hasRoleChanges) {
-            // Convert permissions object to array
-            const permissions = Object.keys(role.permissions)
-              .filter(key => role.permissions[key]);
-
-            await api.patch(`/roles/${role.id}`, { permissions });
-          }
-        });
-
-        await Promise.all(updatePromises);
-      }
-
-      wx.showToast({
-        title: '保存成功',
-        icon: 'success',
-        duration: 2000
-      });
-
-      // Reload roles to get fresh data
-      setTimeout(() => {
-        this.loadRoles();
-      }, 2000);
-
-    } catch (error) {
-      console.error('Failed to save roles:', error);
-      this.setData({ saving: false });
-
-      wx.showToast({
-        title: error.message || '保存失败',
-        icon: 'none',
-        duration: 2000
-      });
-    }
-  },
-
-  /**
-   * Stop modal propagation
-   */
-  onModalStopPropagation() {
-    // Prevent tap event from bubbling to mask
+  stopPropagation() {
+    // 空函数，用于阻止点击事件冒泡
   }
 });

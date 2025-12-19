@@ -3,7 +3,7 @@
  * 云数据库服务 - 封装所有云数据库操作
  */
 
-const config = require('../config/index');
+const { STORAGE_KEYS, CLOUD_ENV_ID } = require('../utils/constants');
 
 // 初始化云开发
 if (!wx.cloud) {
@@ -11,12 +11,24 @@ if (!wx.cloud) {
 }
 
 wx.cloud.init({
-  env: 'cloud1-7glfhm4r06e030bd', // 替换为您的云环境ID
+  env: CLOUD_ENV_ID,
   traceUser: true
 });
 
 const db = wx.cloud.database();
 const _ = db.command;
+
+/**
+ * 获取当前用户ID（用于云函数权限验证）
+ */
+function getCurrentUserId() {
+  try {
+    const userInfo = wx.getStorageSync(STORAGE_KEYS.USER_INFO);
+    return userInfo?.user_id || null;
+  } catch (e) {
+    return null;
+  }
+}
 
 /**
  * 云数据库服务类
@@ -36,32 +48,14 @@ class CloudDatabaseService {
      */
     findByCredentials: async (username, password) => {
       try {
-        const { data } = await db.collection('users')
-          .where({
-            username: username
-          })
-          .get();
-
-        if (data.length === 0) {
-          throw new Error('用户不存在');
+        const result = await wx.cloud.callFunction({
+          name: 'userAuth',
+          data: { action: 'passwordLogin', data: { username, password } }
+        });
+        if (!result.result?.success) {
+          throw new Error(result.result?.error || '登录失败');
         }
-
-        const user = data[0];
-
-        // 简单密码验证 (实际项目应使用云函数验证)
-        if (user.password !== password) {
-          throw new Error('密码错误');
-        }
-
-        // 获取角色信息
-        const { data: roles } = await db.collection('roles')
-          .where({ role_id: user.role_id })
-          .get();
-
-        return {
-          ...user,
-          role: roles[0] || null
-        };
+        return result.result;
       } catch (error) {
         console.error('[CloudDB] Find user error:', error);
         throw error;
@@ -73,15 +67,14 @@ class CloudDatabaseService {
      */
     findById: async (userId) => {
       try {
-        const { data } = await db.collection('users')
-          .where({ user_id: userId })
-          .get();
-
-        if (data.length === 0) {
-          throw new Error('用户不存在');
+        const result = await wx.cloud.callFunction({
+          name: 'userAuth',
+          data: { action: 'getUserById', data: { user_id: userId } }
+        });
+        if (!result.result?.success) {
+          throw new Error(result.result?.error || '获取用户失败');
         }
-
-        return data[0];
+        return result.result.user;
       } catch (error) {
         console.error('[CloudDB] Find user by ID error:', error);
         throw error;
@@ -93,32 +86,73 @@ class CloudDatabaseService {
      */
     list: async (filters = {}) => {
       try {
-        let query = db.collection('users');
-
-        // 应用过滤条件
-        if (filters.role_id) {
-          query = query.where({ role_id: parseInt(filters.role_id) });
+        const result = await wx.cloud.callFunction({
+          name: 'userAuth',
+          data: { action: 'listUsers', data: filters }
+        });
+        if (!result.result?.success) {
+          throw new Error(result.result?.error || '获取用户列表失败');
         }
-        if (filters.department) {
-          query = query.where({ department: filters.department });
-        }
-        if (filters.is_active !== undefined) {
-          query = query.where({ active: filters.is_active === 'true' });
-        }
-        if (filters.search) {
-          // 云数据库不支持模糊查询,这里简化处理
-          query = query.where({
-            name: db.RegExp({
-              regexp: filters.search,
-              options: 'i'
-            })
-          });
-        }
-
-        const { data } = await query.get();
-        return data;
+        return result.result.users || [];
       } catch (error) {
         console.error('[CloudDB] List users error:', error);
+        throw error;
+      }
+    },
+
+    /**
+     * 启用用户
+     */
+    enable: async (userId) => {
+      try {
+        const result = await wx.cloud.callFunction({
+          name: 'userAuth',
+          data: { action: 'enableUser', data: { user_id: userId }, current_user_id: getCurrentUserId() }
+        });
+        if (!result.result.success) {
+          throw new Error(result.result.error || '启用用户失败');
+        }
+        return result.result;
+      } catch (error) {
+        console.error('[CloudDB] Enable user error:', error);
+        throw error;
+      }
+    },
+
+    /**
+     * 停用用户
+     */
+    disable: async (userId) => {
+      try {
+        const result = await wx.cloud.callFunction({
+          name: 'userAuth',
+          data: { action: 'disableUser', data: { user_id: userId }, current_user_id: getCurrentUserId() }
+        });
+        if (!result.result.success) {
+          throw new Error(result.result.error || '停用用户失败');
+        }
+        return result.result;
+      } catch (error) {
+        console.error('[CloudDB] Disable user error:', error);
+        throw error;
+      }
+    },
+
+    /**
+     * 重置用户密码
+     */
+    resetPassword: async (userId) => {
+      try {
+        const result = await wx.cloud.callFunction({
+          name: 'userAuth',
+          data: { action: 'resetUserPassword', data: { user_id: userId }, current_user_id: getCurrentUserId() }
+        });
+        if (!result.result.success) {
+          throw new Error(result.result.error || '重置密码失败');
+        }
+        return { newPassword: result.result.default_password };
+      } catch (error) {
+        console.error('[CloudDB] Reset password error:', error);
         throw error;
       }
     }
@@ -133,10 +167,14 @@ class CloudDatabaseService {
      */
     list: async () => {
       try {
-        console.log('[CloudDB] Fetching roles from cloud database...');
-        const { data } = await db.collection('roles').get();
-        console.log('[CloudDB] Got roles:', data.length);
-        return data;
+        const result = await wx.cloud.callFunction({
+          name: 'userAuth',
+          data: { action: 'listRoles' }
+        });
+        if (!result.result?.success) {
+          throw new Error(result.result?.error || '获取角色列表失败');
+        }
+        return result.result.roles || [];
       } catch (error) {
         console.error('[CloudDB] List roles error:', error);
         throw error;
@@ -148,15 +186,12 @@ class CloudDatabaseService {
      */
     findById: async (roleId) => {
       try {
-        const { data } = await db.collection('roles')
-          .where({ role_id: roleId })
-          .get();
-
-        if (data.length === 0) {
+        const roles = await this.roles.list();
+        const role = (roles || []).find(r => r.role_id === roleId);
+        if (!role) {
           throw new Error('角色不存在');
         }
-
-        return data[0];
+        return role;
       } catch (error) {
         console.error('[CloudDB] Find role error:', error);
         throw error;
@@ -168,25 +203,13 @@ class CloudDatabaseService {
      */
     updatePermissions: async (roleId, permissions) => {
       try {
-        const { data } = await db.collection('roles')
-          .where({ role_id: roleId })
-          .get();
-
-        if (data.length === 0) {
-          throw new Error('角色不存在');
+        const result = await wx.cloud.callFunction({
+          name: 'userAuth',
+          data: { action: 'updateRolePermissions', data: { role_id: roleId, permissions } }
+        });
+        if (!result.result?.success) {
+          throw new Error(result.result?.error || '更新角色权限失败');
         }
-
-        await db.collection('roles')
-          .doc(data[0]._id)
-          .update({
-            data: {
-              permissions: {
-                modules: permissions
-              },
-              updated_at: new Date()
-            }
-          });
-
         return true;
       } catch (error) {
         console.error('[CloudDB] Update role permissions error:', error);
@@ -204,10 +227,14 @@ class CloudDatabaseService {
      */
     list: async () => {
       try {
-        const { data } = await db.collection('fault_types')
-          .where({ active: true })
-          .get();
-        return data;
+        const result = await wx.cloud.callFunction({
+          name: 'workOrderManager',
+          data: { action: 'getFaultTypes' }
+        });
+        if (!result.result?.success) {
+          throw new Error(result.result?.error || '获取故障类型失败');
+        }
+        return result.result.fault_types || [];
       } catch (error) {
         console.error('[CloudDB] List fault types error:', error);
         throw error;
@@ -285,6 +312,387 @@ class CloudDatabaseService {
         return true;
       } catch (error) {
         console.error('[CloudDB] Update work order error:', error);
+        throw error;
+      }
+    }
+  };
+
+  /**
+   * 公告管理相关操作
+   */
+  announcements = {
+    /**
+     * 获取公告列表
+     */
+    list: async (filters = {}) => {
+      try {
+        const result = await wx.cloud.callFunction({
+          name: 'userAuth',
+          data: { action: 'listAnnouncements', data: filters, current_user_id: getCurrentUserId() }
+        });
+        if (!result.result.success) {
+          throw new Error(result.result.error || '获取公告列表失败');
+        }
+        return { list: result.result.announcements || [] };
+      } catch (error) {
+        console.error('[CloudDB] List announcements error:', error);
+        throw error;
+      }
+    },
+
+    /**
+     * 获取公告详情
+     */
+    get: async (announcementId) => {
+      try {
+        const result = await wx.cloud.callFunction({
+          name: 'userAuth',
+          data: { action: 'getAnnouncement', data: { announcement_id: announcementId }, current_user_id: getCurrentUserId() }
+        });
+        if (!result.result.success) {
+          throw new Error(result.result.error || '获取公告详情失败');
+        }
+        return result.result.announcement;
+      } catch (error) {
+        console.error('[CloudDB] Get announcement error:', error);
+        throw error;
+      }
+    },
+
+    /**
+     * 创建公告
+     */
+    create: async (data) => {
+      try {
+        const result = await wx.cloud.callFunction({
+          name: 'userAuth',
+          data: { action: 'createAnnouncement', data, current_user_id: getCurrentUserId() }
+        });
+        if (!result.result.success) {
+          throw new Error(result.result.error || '创建公告失败');
+        }
+        return result.result;
+      } catch (error) {
+        console.error('[CloudDB] Create announcement error:', error);
+        throw error;
+      }
+    },
+
+    /**
+     * 更新公告
+     */
+    update: async (announcementId, updateData) => {
+      try {
+        const result = await wx.cloud.callFunction({
+          name: 'userAuth',
+          data: { action: 'updateAnnouncement', data: { announcement_id: announcementId, ...updateData }, current_user_id: getCurrentUserId() }
+        });
+        if (!result.result.success) {
+          throw new Error(result.result.error || '更新公告失败');
+        }
+        return result.result;
+      } catch (error) {
+        console.error('[CloudDB] Update announcement error:', error);
+        throw error;
+      }
+    },
+
+    /**
+     * 发布公告
+     */
+    publish: async (announcementId) => {
+      try {
+        const result = await wx.cloud.callFunction({
+          name: 'userAuth',
+          data: { action: 'publishAnnouncement', data: { announcement_id: announcementId }, current_user_id: getCurrentUserId() }
+        });
+        if (!result.result.success) {
+          throw new Error(result.result.error || '发布公告失败');
+        }
+        return result.result;
+      } catch (error) {
+        console.error('[CloudDB] Publish announcement error:', error);
+        throw error;
+      }
+    },
+
+    /**
+     * 下线公告
+     */
+    offline: async (announcementId) => {
+      try {
+        const result = await wx.cloud.callFunction({
+          name: 'userAuth',
+          data: { action: 'offlineAnnouncement', data: { announcement_id: announcementId }, current_user_id: getCurrentUserId() }
+        });
+        if (!result.result.success) {
+          throw new Error(result.result.error || '下线公告失败');
+        }
+        return result.result;
+      } catch (error) {
+        console.error('[CloudDB] Offline announcement error:', error);
+        throw error;
+      }
+    },
+
+    /**
+     * 删除公告
+     */
+    delete: async (announcementId) => {
+      try {
+        const result = await wx.cloud.callFunction({
+          name: 'userAuth',
+          data: { action: 'deleteAnnouncement', data: { announcement_id: announcementId }, current_user_id: getCurrentUserId() }
+        });
+        if (!result.result.success) {
+          throw new Error(result.result.error || '删除公告失败');
+        }
+        return result.result;
+      } catch (error) {
+        console.error('[CloudDB] Delete announcement error:', error);
+        throw error;
+      }
+    },
+
+    /**
+     * 获取用户可见的公告列表（普通用户使用）
+     */
+    listForUser: async (roleId) => {
+      try {
+        const result = await wx.cloud.callFunction({
+          name: 'userAuth',
+          data: { action: 'listAnnouncements', data: { forUser: true, roleId }, current_user_id: getCurrentUserId() }
+        });
+        if (!result.result.success) {
+          throw new Error(result.result.error || '获取公告列表失败');
+        }
+        return { list: result.result.announcements || [] };
+      } catch (error) {
+        console.error('[CloudDB] List announcements for user error:', error);
+        throw error;
+      }
+    }
+  };
+
+  /**
+   * 消息模板管理相关操作
+   */
+  messageTemplates = {
+    /**
+     * 获取消息模板列表
+     */
+    list: async (filters = {}) => {
+      try {
+        const result = await wx.cloud.callFunction({
+          name: 'userAuth',
+          data: { action: 'listMessageTemplates', data: filters, current_user_id: getCurrentUserId() }
+        });
+        if (!result.result.success) {
+          throw new Error(result.result.error || '获取模板列表失败');
+        }
+        return { list: result.result.templates || [] };
+      } catch (error) {
+        console.error('[CloudDB] List message templates error:', error);
+        throw error;
+      }
+    },
+
+    /**
+     * 获取消息模板详情
+     */
+    get: async (templateId) => {
+      try {
+        const result = await wx.cloud.callFunction({
+          name: 'userAuth',
+          data: { action: 'getMessageTemplate', data: { template_id: templateId }, current_user_id: getCurrentUserId() }
+        });
+        if (!result.result.success) {
+          throw new Error(result.result.error || '获取模板详情失败');
+        }
+        return result.result.template;
+      } catch (error) {
+        console.error('[CloudDB] Get message template error:', error);
+        throw error;
+      }
+    },
+
+    /**
+     * 创建消息模板
+     */
+    create: async (data) => {
+      try {
+        const result = await wx.cloud.callFunction({
+          name: 'userAuth',
+          data: { action: 'createMessageTemplate', data, current_user_id: getCurrentUserId() }
+        });
+        if (!result.result.success) {
+          throw new Error(result.result.error || '创建模板失败');
+        }
+        return result.result;
+      } catch (error) {
+        console.error('[CloudDB] Create message template error:', error);
+        throw error;
+      }
+    },
+
+    /**
+     * 更新消息模板
+     */
+    update: async (templateId, updateData) => {
+      try {
+        const result = await wx.cloud.callFunction({
+          name: 'userAuth',
+          data: { action: 'updateMessageTemplate', data: { template_id: templateId, ...updateData }, current_user_id: getCurrentUserId() }
+        });
+        if (!result.result.success) {
+          throw new Error(result.result.error || '更新模板失败');
+        }
+        return result.result;
+      } catch (error) {
+        console.error('[CloudDB] Update message template error:', error);
+        throw error;
+      }
+    },
+
+    /**
+     * 启用/停用消息模板
+     */
+    toggle: async (templateId, enabled) => {
+      try {
+        const result = await wx.cloud.callFunction({
+          name: 'userAuth',
+          data: { action: 'toggleMessageTemplate', data: { template_id: templateId, enabled }, current_user_id: getCurrentUserId() }
+        });
+        if (!result.result.success) {
+          throw new Error(result.result.error || '切换模板状态失败');
+        }
+        return result.result;
+      } catch (error) {
+        console.error('[CloudDB] Toggle message template error:', error);
+        throw error;
+      }
+    },
+
+    /**
+     * 删除消息模板
+     */
+    delete: async (templateId) => {
+      try {
+        const result = await wx.cloud.callFunction({
+          name: 'userAuth',
+          data: { action: 'deleteMessageTemplate', data: { template_id: templateId }, current_user_id: getCurrentUserId() }
+        });
+        if (!result.result.success) {
+          throw new Error(result.result.error || '删除模板失败');
+        }
+        return result.result;
+      } catch (error) {
+        console.error('[CloudDB] Delete message template error:', error);
+        throw error;
+      }
+    }
+  };
+
+  /**
+   * 审计日志相关操作
+   */
+  auditLogs = {
+    /**
+     * 获取审计日志列表
+     */
+    list: async (filters = {}) => {
+      try {
+        const result = await wx.cloud.callFunction({
+          name: 'userAuth',
+          data: { action: 'listAuditLogs', data: filters, current_user_id: getCurrentUserId() }
+        });
+        if (!result.result.success) {
+          throw new Error(result.result.error || '获取审计日志失败');
+        }
+        return result.result;
+      } catch (error) {
+        console.error('[CloudDB] List audit logs error:', error);
+        throw error;
+      }
+    },
+
+    /**
+     * 获取审计动作类型列表
+     */
+    getActions: async () => {
+      try {
+        const result = await wx.cloud.callFunction({
+          name: 'userAuth',
+          data: { action: 'getAuditLogActions', current_user_id: getCurrentUserId() }
+        });
+        if (!result.result.success) {
+          throw new Error(result.result.error || '获取动作类型失败');
+        }
+        return result.result.actions;
+      } catch (error) {
+        console.error('[CloudDB] Get audit actions error:', error);
+        throw error;
+      }
+    }
+  };
+
+  /**
+   * 系统配置相关操作
+   */
+  systemConfig = {
+    /**
+     * 获取系统配置
+     */
+    get: async () => {
+      try {
+        const result = await wx.cloud.callFunction({
+          name: 'userAuth',
+          data: { action: 'getSystemConfig', current_user_id: getCurrentUserId() }
+        });
+        if (!result.result.success) {
+          throw new Error(result.result.error || '获取系统配置失败');
+        }
+        return result.result;
+      } catch (error) {
+        console.error('[CloudDB] Get system config error:', error);
+        throw error;
+      }
+    },
+
+    /**
+     * 更新单个配置
+     */
+    update: async (key, value, description) => {
+      try {
+        const result = await wx.cloud.callFunction({
+          name: 'userAuth',
+          data: { action: 'updateSystemConfig', data: { key, value, description }, current_user_id: getCurrentUserId() }
+        });
+        if (!result.result.success) {
+          throw new Error(result.result.error || '更新配置失败');
+        }
+        return result.result;
+      } catch (error) {
+        console.error('[CloudDB] Update system config error:', error);
+        throw error;
+      }
+    },
+
+    /**
+     * 批量更新配置
+     */
+    batchUpdate: async (configs) => {
+      try {
+        const result = await wx.cloud.callFunction({
+          name: 'userAuth',
+          data: { action: 'batchUpdateSystemConfig', data: { configs }, current_user_id: getCurrentUserId() }
+        });
+        if (!result.result.success) {
+          throw new Error(result.result.error || '批量更新配置失败');
+        }
+        return result.result;
+      } catch (error) {
+        console.error('[CloudDB] Batch update system config error:', error);
         throw error;
       }
     }

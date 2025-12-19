@@ -1,0 +1,249 @@
+/* Message Template Management Page Styles */
+
+/* 页面容器 */
+.template-page {
+  min-height: 100vh;
+  background-color: #F5F5F5;
+  padding-bottom: calc(120rpx + env(safe-area-inset-bottom));
+}
+
+/* 模板列表 */
+.template-list {
+  padding: 24rpx;
+}
+
+/* 加载状态 */
+.loading-state {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 120rpx 0;
+  color: #9CA3AF;
+  font-size: 28rpx;
+}
+
+/* 空状态 */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 120rpx 0;
+}
+
+.empty-icon {
+  font-size: 96rpx;
+  margin-bottom: 24rpx;
+}
+
+.empty-text {
+  font-size: 32rpx;
+  color: #6B7280;
+  margin-bottom: 12rpx;
+}
+
+.empty-hint {
+  font-size: 26rpx;
+  color: #9CA3AF;
+}
+
+/* 场景分组 */
+.scene-group {
+  margin-bottom: 32rpx;
+}
+
+.scene-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16rpx 8rpx;
+  margin-bottom: 16rpx;
+}
+
+.scene-title {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #1F2937;
+}
+
+.scene-count {
+  font-size: 26rpx;
+  color: #9CA3AF;
+}
+
+/* 模板卡片 */
+.template-card {
+  background: #FFFFFF;
+  border-radius: 24rpx;
+  padding: 32rpx;
+  margin-bottom: 20rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.05);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16rpx;
+}
+
+.card-title {
+  flex: 1;
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #1F2937;
+  margin-right: 16rpx;
+}
+
+.status-switch {
+  transform: scale(0.8);
+}
+
+.card-body {
+  margin-bottom: 20rpx;
+}
+
+.template-preview {
+  font-size: 28rpx;
+  color: #6B7280;
+  line-height: 1.6;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 20rpx;
+  border-top: 1rpx solid #F3F4F6;
+}
+
+.update-time {
+  font-size: 24rpx;
+  color: #9CA3AF;
+}
+
+.card-actions {
+  display: flex;
+  gap: 12rpx;
+}
+
+.action-btn {
+  padding: 12rpx 24rpx;
+  border-radius: 20rpx;
+  font-size: 24rpx;
+  background: #F3F4F6;
+  color: #6B7280;
+}
+
+.action-btn:active {
+  background: #E5E7EB;
+}
+
+.action-btn.preview {
+  background: rgba(12, 167, 125, 0.1);
+  color: #0CA77D;
+}
+
+.action-btn.danger {
+  background: rgba(239, 68, 68, 0.1);
+  color: #EF4444;
+}
+
+/* 浮动按钮 */
+.fab-button {
+  position: fixed;
+  right: 40rpx;
+  bottom: calc(100rpx + env(safe-area-inset-bottom));
+  width: 112rpx;
+  height: 112rpx;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #0CA77D 0%, #10B981 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8rpx 32rpx rgba(12, 167, 125, 0.4);
+  z-index: 100;
+}
+
+.fab-button:active {
+  transform: scale(0.9);
+}
+
+.fab-icon {
+  font-size: 56rpx;
+  color: #FFFFFF;
+  font-weight: 300;
+}
+
+/* 预览弹窗 */
+.preview-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.preview-container {
+  width: 85%;
+  max-width: 600rpx;
+  background: #FFFFFF;
+  border-radius: 24rpx;
+  overflow: hidden;
+}
+
+.preview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 32rpx;
+  border-bottom: 1rpx solid #F3F4F6;
+}
+
+.preview-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #1F2937;
+}
+
+.close-btn {
+  width: 56rpx;
+  height: 56rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40rpx;
+  color: #9CA3AF;
+  background: #F3F4F6;
+  border-radius: 50%;
+}
+
+.preview-content {
+  padding: 32rpx;
+}
+
+.preview-label {
+  font-size: 26rpx;
+  color: #9CA3AF;
+  margin-bottom: 12rpx;
+}
+
+.preview-text {
+  display: block;
+  font-size: 30rpx;
+  color: #1F2937;
+  line-height: 1.6;
+  margin-bottom: 24rpx;
+  padding: 20rpx;
+  background: #F9FAFB;
+  border-radius: 12rpx;
+}

@@ -141,7 +141,7 @@
   width: 100%;
   max-width: 500rpx;
   padding: 60rpx 40rpx;
-  border-radius: 40rpx;
+  border-radius: 24rpx;
   /* 深色渐变背景 + 透明玻璃叠加 - 5色增加层次感 */
   background:
     linear-gradient(135deg,
@@ -201,7 +201,7 @@
     rgba(200, 100, 255, 0.15) 75%,
     rgba(200, 255, 100, 0.2) 100%
   );
-  border-radius: 0 0 50rpx 50rpx;
+  border-radius: 0 0 24rpx 24rpx;
   pointer-events: none;
   opacity: 0.8;
   filter: blur(25rpx);
@@ -256,7 +256,7 @@
   content: '';
   width: 24rpx;
   height: 24rpx;
-  border-radius: 50%;
+  border-radius: 50%; /* 保留圆形 */
   border: 3rpx solid rgba(255, 255, 255, 0.9);
   position: absolute;
   top: 2rpx;
@@ -268,7 +268,7 @@
   width: 32rpx;
   height: 20rpx;
   border: 3rpx solid rgba(255, 255, 255, 0.9);
-  border-radius: 16rpx 16rpx 0 0;
+  border-radius: 24rpx 24rpx 0 0; /* 保留非对称圆角 */
   position: absolute;
   bottom: 0;
   border-bottom: none;
@@ -281,7 +281,7 @@
   width: 24rpx;
   height: 16rpx;
   border: 3rpx solid rgba(255, 255, 255, 0.9);
-  border-radius: 8rpx 8rpx 0 0;
+  border-radius: 24rpx 24rpx 0 0; /* 保留非对称圆角 */
   border-bottom: none;
   position: absolute;
   top: 4rpx;
@@ -305,7 +305,7 @@
   width: 40rpx;
   height: 26rpx;
   border: 3rpx solid rgba(255, 255, 255, 0.9);
-  border-radius: 50%;
+  border-radius: 50%; /* 保留圆形 */
   position: absolute;
   filter: drop-shadow(0 2rpx 4rpx rgba(0, 0, 0, 0.3));
 }
@@ -315,7 +315,7 @@
   width: 14rpx;
   height: 14rpx;
   background: rgba(255, 255, 255, 0.9);
-  border-radius: 50%;
+  border-radius: 50%; /* 保留圆形 */
   position: absolute;
   filter: drop-shadow(0 2rpx 4rpx rgba(0, 0, 0, 0.3));
 }
@@ -326,7 +326,7 @@
   width: 40rpx;
   height: 26rpx;
   border: 3rpx solid rgba(255, 255, 255, 0.9);
-  border-radius: 50%;
+  border-radius: 50%; /* 保留圆形 */
   position: absolute;
   filter: drop-shadow(0 2rpx 4rpx rgba(0, 0, 0, 0.3));
 }
@@ -548,7 +548,7 @@
 /* 测试账号卡片 - 玻璃效果 */
 .test-account-card {
   padding: 24rpx;
-  border-radius: 20rpx;
+  border-radius: 24rpx;
   /* 半透明玻璃背景 */
   background: linear-gradient(135deg,
     rgba(255, 255, 255, 0.12) 0%,

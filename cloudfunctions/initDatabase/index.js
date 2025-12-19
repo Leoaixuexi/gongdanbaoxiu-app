@@ -355,7 +355,18 @@ async function getStats() {
  * 主函数
  */
 exports.main = async (event, context) => {
-  const { action = 'init' } = event;
+  const { action = 'init', adminToken } = event;
+
+  // Safety guard: this function can create/reset core collections.
+  // Require an explicit admin token configured in cloud function env vars.
+  const requiredToken = process.env.DB_ADMIN_TOKEN;
+  const isAuthorized = !!(requiredToken && adminToken && adminToken === requiredToken);
+  if (!isAuthorized) {
+    return {
+      success: false,
+      error: 'Unauthorized: missing or invalid adminToken',
+    };
+  }
 
   console.log(`[InitDatabase] Action: ${action}`);
 

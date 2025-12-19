@@ -1,295 +1,419 @@
 /* pages/editOrder/editOrder.wxss */
 .page-container {
   min-height: 100vh;
-  background: #E9F2F8;
+  background: #F5F5F5;
   padding-bottom: 160rpx;
 }
 
 .main-content {
   padding-top: 140rpx;
   padding-bottom: 80rpx;
-  padding-left: 32rpx;
+  padding-left: 32rpx; /* Aligned with Submit Page */
   padding-right: 32rpx;
   display: flex;
   flex-direction: column;
-  gap: 20rpx;
+  gap: 16rpx; /* Submit Page gap */
   max-width: 1024rpx;
   margin: 0 auto;
 }
 
+/* Individual Card Style for Form Rows */
 .main-content .form-row {
+  background-color: white;
+  border-radius: 16rpx;
+  padding: 12rpx 28rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.06);
   border: none;
-  padding: 40rpx 32rpx;
-  box-shadow: 0 10rpx 24rpx rgba(15, 23, 42, 0.08);
-  border-radius: 24rpx;
-  align-items: flex-start;
+  margin-bottom: 0;
+  align-items: center;
+  min-height: 50rpx;
 }
 
+/* Extra compact for select type rows */
+.main-content .form-row.compact {
+  padding: 8rpx 28rpx;
+  min-height: 40rpx;
+}
+
+.main-content .form-row:last-child {
+  border-bottom: none;
+}
+
+/* Typography alignment */
 .main-content .form-row .label-section {
   width: auto;
-  min-width: 180rpx;
-  font-size: 26rpx;
-  color: #94A3B8;
-  font-weight: 600;
+  min-width: 128rpx;
+  font-size: 30rpx;
+  color: #1F1F1F;
+  font-weight: 500;
 }
 
 .main-content .form-row .content-section {
-  justify-content: flex-start;
+  justify-content: flex-end;
   align-items: center;
-  padding-left: 24rpx;
+  padding-left: 16rpx;
 }
 
 .main-content .form-row .display-text,
 .main-content .form-row .select-text,
 .main-content .form-row .text-input,
 .main-content .form-row .textarea-input {
-  text-align: left;
+  text-align: right;
   font-size: 30rpx;
-  color: #0F172A;
-  font-weight: 500;
+  color: #333333;
+  font-weight: 400;
 }
 
+/* Inputs styling */
 .main-content .form-row .text-input,
 .main-content .form-row .textarea-input {
-  background: #F2F6FA;
-  border-radius: 18rpx;
-  padding: 0 28rpx;
+  background: transparent;
+  border-radius: 0;
+  padding: 0;
   border: none;
   width: 100%;
-  height: 92rpx;
-  line-height: 92rpx;
-  box-sizing: border-box;
+  height: auto;
+  line-height: 1.5;
+  text-align: right;
+}
+
+.main-content .form-row .text-input::placeholder,
+.main-content .form-row .textarea-input::placeholder {
+  color: #CCCCCC;
 }
 
 .main-content .form-row .text-input[disabled],
 .main-content .form-row .textarea-input[disabled],
 .main-content .form-row .display-text {
   background: transparent;
-  font-weight: 600;
+  font-weight: 400;
+  color: #CCCCCC; /* Disabled looking like submit page input disabled */
 }
 
+/* Submit page display text is often just input value styling */
+.main-content .form-row .display-text {
+   color: #333333; 
+}
+
+
+/* Select wrapper */
 .main-content .form-row .select-wrapper {
-  justify-content: flex-start;
-  background: #F2F6FA;
-  border-radius: 18rpx;
-  padding: 0 28rpx;
-  height: 92rpx;
+  justify-content: flex-end;
+  background: transparent;
+  border-radius: 0;
+  padding: 0;
+  height: auto;
 }
 
 .main-content .form-row .select-text {
-  font-weight: 600;
+  font-weight: 400;
 }
 
 .main-content .form-row .select-text.placeholder {
-  color: #B8C1D1;
+  color: #CCCCCC;
 }
 
-.main-content .form-row.align-center,
+/* Layout adjustments */
 .main-content .form-row.align-start {
-  padding-top: 40rpx;
-  padding-bottom: 40rpx;
-  min-height: 140rpx;
+  align-items: flex-start;
+  padding-top: 24rpx;
+  padding-bottom: 24rpx;
+  flex-direction: column; /* Submit page textarea cards are column flex */
+  gap: 24rpx;
 }
 
-/* 照片容器 */
-.photo-container {
-  display: flex;
-  gap: 16rpx;
-  padding: 24rpx 0 12rpx 0;
+.main-content .form-row.align-start .content-section {
   width: 100%;
+  padding-left: 0;
   justify-content: flex-start;
+}
+
+.main-content .form-row.align-start .text-input,
+.main-content .form-row.align-start .textarea-input {
+  text-align: left;
+  min-height: 140rpx;
+  background-color: #FAFAFA;
+  border: 1rpx solid #F0E6D3; /* Submit page style */
+  border-radius: 24rpx;
+  padding: 24rpx;
   box-sizing: border-box;
 }
 
-.photo-container::-webkit-scrollbar {
-  display: none;
+/* Photo Container */
+.photo-container {
+  display: flex;
+  gap: 16rpx;
+  padding: 0;
+  width: 100%;
+  justify-content: center;
+  flex-wrap: nowrap;
 }
 
-/* 照片槽位 */
-.photo-slot {
-  flex-shrink: 0;
-}
-
-.photo-item {
-  position: relative;
-  width: 120rpx;
-  height: 120rpx;
-  flex-shrink: 0;
+/* Photo Items */
+.photo-item, .add-photo-btn {
+  width: 140rpx;
+  height: 140rpx;
+  border-radius: 24rpx;
 }
 
 .photo-image {
   width: 100%;
   height: 100%;
-  background: #f1f5f9;
-  border-radius: 12rpx;
-  overflow: hidden;
-  border: 1rpx solid #e2e8f0;
-  box-shadow: 0 2rpx 6rpx rgba(0, 0, 0, 0.04);
-  transition: transform 0.3s ease;
-  box-sizing: border-box;
-  display: block;
+  background: #F9FAFB;
+  border-radius: 24rpx;
+  border: none;
 }
 
-.photo-image:active {
-  transform: scale(0.95);
-}
-
-/* 删除按钮 */
-.delete-btn {
-  position: absolute;
-  top: 2rpx;
-  right: 2rpx;
-  width: 40rpx;
-  height: 40rpx;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(10rpx);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10;
-  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.2);
-  border: 2rpx solid rgba(255, 255, 255, 0.2);
-  transition: transform 0.2s ease;
-}
-
-.delete-btn:active {
-  transform: scale(0.9);
-}
-
-/* X 图标 */
-.icon-x {
-  width: 20rpx;
-  height: 20rpx;
-  position: relative;
-}
-
-.icon-x::before,
-.icon-x::after {
-  content: '';
-  position: absolute;
-  width: 20rpx;
-  height: 3rpx;
-  background: #ffffff;
-  border-radius: 2rpx;
-  top: 50%;
-  left: 50%;
-}
-
-.icon-x::before {
-  transform: translate(-50%, -50%) rotate(45deg);
-}
-
-.icon-x::after {
-  transform: translate(-50%, -50%) rotate(-45deg);
-}
-
-/* 添加照片按钮 */
 .add-photo-btn {
-  width: 120rpx;
-  height: 120rpx;
-  flex-shrink: 0;
-  border-radius: 12rpx;
-  border: 2rpx dashed rgba(16, 185, 129, 0.2);
-  background: rgba(248, 250, 252, 0.5);
+  border: 2rpx dashed #DDDDDD;
+  background: #F5F5F5;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s ease;
-  box-sizing: border-box;
 }
 
-.add-photo-btn:active {
-  transform: scale(0.98);
-  background: rgba(16, 185, 129, 0.08);
-  border-color: rgba(16, 185, 129, 0.4);
-}
-
-/* Plus 图标 */
-.icon-plus {
-  width: 36rpx;
-  height: 36rpx;
-  position: relative;
-  opacity: 0.5;
-}
-
-.icon-plus::before,
-.icon-plus::after {
-  content: '';
-  position: absolute;
-  background: #10b981;
-  border-radius: 2rpx;
-}
-
-.icon-plus::before {
-  width: 36rpx;
-  height: 4rpx;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-}
-
-.icon-plus::after {
-  width: 4rpx;
-  height: 36rpx;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-}
-
-.add-photo-btn:active .icon-plus {
-  opacity: 0.7;
-}
-
-/* 备注区域 */
+/* Remarks Section Card */
 .remarks-section {
   display: flex;
   flex-direction: column;
   width: 100%;
   background: #ffffff;
-  border-radius: 24rpx;
-  border: 1rpx solid rgba(241, 245, 249, 0.8);
-  padding: 32rpx;
-  box-shadow: 0 4rpx 16rpx -4rpx rgba(0, 0, 0, 0.03);
-  transition: box-shadow 0.3s ease;
+  border-radius: 16rpx;
+  padding: 12rpx 28rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.06);
   box-sizing: border-box;
+  gap: 8rpx; /* Minimal gap */
 }
 
 .remarks-section:hover {
-  box-shadow: 0 8rpx 24rpx -4rpx rgba(0, 0, 0, 0.06);
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.06);
 }
 
 .remarks-label {
-  font-size: 28rpx;
-  color: #64748b;
+  font-size: 30rpx;
+  color: #333333;
   font-weight: 500;
-  letter-spacing: -0.5rpx;
-  margin-bottom: 24rpx;
+  margin-bottom: 0; /* Handled by gap */
 }
 
 .remarks-input {
-  width: 100%;
-  background: #f2f6fa;
-  border: none;
-  border-radius: 20rpx;
-  padding: 28rpx;
+  width: 85%;
+  margin-left: auto;
+  background: #FAFAFA;
+  border: 1rpx solid #F0E6D3; /* Match submit page border */
+  border-radius: 24rpx;
+  padding: 8rpx;
   font-size: 30rpx;
-  color: #1e293b;
+  color: #333;
   outline: none;
   resize: none;
-  min-height: 200rpx;
+  height: 160rpx !important;
   line-height: 1.6;
-  transition: all 0.2s ease;
   box-sizing: border-box;
 }
 
 .remarks-input:focus {
-  background: #ffffff;
-  border-color: rgba(16, 185, 129, 0.5);
-  box-shadow: 0 0 0 6rpx rgba(16, 185, 129, 0.1);
+  background: #FFFFFF;
+  border-color: #10B981;
 }
 
-.remarks-input[placeholder] {
-  color: #cbd5e1;
+/* Remove Card Container */
+.card-container {
+  display: contents;
+}
+
+/* Custom Card Styles (for priority and datetime) */
+.card {
+  background-color: white;
+  border-radius: 16rpx;
+  padding: 24rpx 28rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 72rpx;
+}
+
+.card-label-required {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  flex-shrink: 0;
+}
+
+.card-label-required .star {
+  color: #FF3B30;
+  font-size: 30rpx;
+}
+
+.card-label-required .label {
+  font-size: 30rpx;
+  color: #1F1F1F;
+  font-weight: 500;
+}
+
+/* Priority Row */
+.priority-row {
+  display: flex;
+  gap: 12rpx;
+}
+
+.priority-btn {
+  width: 72rpx;
+  height: 48rpx;
+  background-color: #F5F5F5;
+  border-radius: 8rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.priority-btn.active-green {
+  background-color: #34C759;
+}
+
+.priority-btn.active-yellow {
+  background-color: #FFCC00;
+}
+
+.priority-btn.active-orange {
+  background-color: #FF9500;
+}
+
+.priority-btn.active-red {
+  background-color: #FF3B30;
+}
+
+.priority-text {
+  font-size: 26rpx;
+  color: #666;
+}
+
+.priority-btn.active-green .priority-text,
+.priority-btn.active-yellow .priority-text,
+.priority-btn.active-orange .priority-text,
+.priority-btn.active-red .priority-text {
+  color: white;
+}
+
+/* DateTime Display */
+.datetime-display {
+  display: flex;
+  align-items: center;
+}
+
+.datetime-text {
+  font-size: 30rpx;
+  color: #333;
+}
+
+/* Modal Overlay */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.modal-content {
+  width: 100%;
+  background-color: white;
+  border-radius: 32rpx 32rpx 0 0;
+  padding: 32rpx;
+  animation: slide-up 0.3s ease-out;
+}
+
+@keyframes slide-up {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 48rpx;
+}
+
+.modal-title {
+  font-size: 36rpx;
+  font-weight: 500;
+  color: #333;
+}
+
+.datetime-picker-content {
+  margin-bottom: 64rpx;
+}
+
+.picker-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24rpx 0;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.picker-row:last-child {
+  border-bottom: none;
+}
+
+.picker-label {
+  font-size: 32rpx;
+  color: #333;
+  font-weight: 500;
+}
+
+.datetime-picker-display {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+  padding: 16rpx 24rpx;
+  background-color: #f9fafb;
+  border-radius: 12rpx;
+  margin-left: 32rpx;
+}
+
+.datetime-picker-text {
+  font-size: 30rpx;
+  color: #333;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 32rpx;
+}
+
+.modal-button {
+  flex: 1;
+  height: 88rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 16rpx;
+}
+
+.modal-button-cancel {
+  background-color: white;
+  border: 1rpx solid #DDDDDD;
+}
+
+.modal-button-confirm {
+  background: linear-gradient(to right, #10b981, #14b8a6);
+}
+
+.modal-button-text {
+  font-size: 32rpx;
+  font-weight: 500;
+  color: #666;
+}
+
+.modal-button-text-white {
+  color: white;
 }

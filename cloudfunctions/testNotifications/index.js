@@ -12,7 +12,22 @@ cloud.init({
 const db = cloud.database();
 
 exports.main = async (event, context) => {
-  const { action = 'create', user_id } = event;
+  const { action = 'create', user_id, adminToken } = event;
+
+  // Safety guard: this function creates/deletes notifications data.
+  const requiredToken = process.env.ADMIN_TOKEN;
+  const isAuthorized = !!(
+    process.env.ALLOW_TEST_NOTIFICATIONS === 'true' &&
+    requiredToken &&
+    adminToken &&
+    adminToken === requiredToken
+  );
+  if (!isAuthorized) {
+    return {
+      success: false,
+      error: 'Unauthorized: testNotifications is disabled',
+    };
+  }
 
   try {
     switch (action) {

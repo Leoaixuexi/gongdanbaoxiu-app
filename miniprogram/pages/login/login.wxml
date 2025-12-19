@@ -70,8 +70,8 @@
     </view>
   </view>
 
-  <!-- 测试账号区域 - 独立模块，位于页面底部 -->
-  <view class="test-accounts-section">
+  <!-- 测试账号区域（仅非 release 环境显示） -->
+  <view class="test-accounts-section" wx:if="{{showTestAccounts}}">
     <text class="test-accounts-title">测试账号</text>
     <view class="test-accounts-grid">
       <!-- 系统管理员 -->

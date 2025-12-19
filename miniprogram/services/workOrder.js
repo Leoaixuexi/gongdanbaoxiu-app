@@ -46,7 +46,7 @@ const createWorkOrder = async (orderData) => {
  * @param {Object} filters - 筛选条件
  * @returns {Promise<Array>} 工单列表
  */
-const getWorkOrders = async (filters = {}) => {
+const listWorkOrders = async (filters = {}) => {
   try {
     console.log('[WorkOrder] Getting work orders with filters:', filters);
 
@@ -60,7 +60,7 @@ const getWorkOrders = async (filters = {}) => {
       data: {
         action: 'list',
         data: {
-          user_id: userInfo?.id || userInfo?.user_id, // 传递user_id
+          // 服务端只信任云函数上下文 openid，这里不再传 user_id（避免被篡改越权）
           filters
         }
       }
@@ -70,13 +70,25 @@ const getWorkOrders = async (filters = {}) => {
       throw new Error(result.result?.error || '获取工单列表失败');
     }
 
-    console.log('[WorkOrder] Got orders:', result.result.total);
-    return result.result.orders;
+    const listResult = result.result;
+    console.log('[WorkOrder] Got orders:', listResult.total);
+    return {
+      orders: listResult.orders || [],
+      total: listResult.total || 0,
+      page: listResult.page || 1,
+      limit: listResult.limit || (filters.limit || 100),
+      totalPages: listResult.totalPages || 0,
+    };
 
   } catch (error) {
     console.error('[WorkOrder] Get orders error:', error);
     throw error;
   }
+};
+
+const getWorkOrders = async (filters = {}) => {
+  const { orders } = await listWorkOrders(filters);
+  return orders;
 };
 
 /**
@@ -107,6 +119,38 @@ const getWorkOrderById = async (orderId) => {
 
   } catch (error) {
     console.error('[WorkOrder] Get order error:', error);
+    throw error;
+  }
+};
+
+/**
+ * 根据工单编号获取工单
+ * @param {String} orderNumber - 工单编号
+ * @returns {Promise<Object>} 工单详情
+ */
+const getWorkOrderByNumber = async (orderNumber) => {
+  try {
+    console.log('[WorkOrder] Getting work order by number:', orderNumber);
+
+    const result = await wx.cloud.callFunction({
+      name: 'workOrderManager',
+      data: {
+        action: 'getByNumber',
+        data: {
+          order_number: orderNumber
+        }
+      }
+    });
+
+    if (!result.result || !result.result.success) {
+      throw new Error(result.result?.error || '获取工单失败');
+    }
+
+    console.log('[WorkOrder] Got order by number:', result.result.order);
+    return result.result.order;
+
+  } catch (error) {
+    console.error('[WorkOrder] Get order by number error:', error);
     throw error;
   }
 };
@@ -325,11 +369,87 @@ const reviewWorkOrder = async (orderId, status, reviewNotes) => {
   }
 };
 
+/**
+ * 更新工单信息（仅待维修可编辑）
+ * @param {Number} orderId - 工单ID
+ * @param {Object} updates - 更新字段
+ * @returns {Promise<Object>} 更新结果
+ */
+const updateWorkOrderDetails = async (orderId, updates) => {
+  try {
+    console.log('[WorkOrder] Updating work order details:', orderId, updates);
+
+    wx.showLoading({
+      title: '保存中...',
+      mask: true
+    });
+
+    const result = await wx.cloud.callFunction({
+      name: 'workOrderManager',
+      data: {
+        action: 'updateDetails',
+        data: {
+          order_id: orderId,
+          updates: updates || {}
+        }
+      }
+    });
+
+    wx.hideLoading();
+
+    if (!result.result || !result.result.success) {
+      throw new Error(result.result?.error || '保存失败');
+    }
+
+    return result.result;
+  } catch (error) {
+    wx.hideLoading();
+    console.error('[WorkOrder] Update details error:', error);
+    throw error;
+  }
+};
+
+/**
+ * 删除工单
+ * @param {Number} orderId - 工单ID
+ * @returns {Promise<Object>} 删除结果
+ */
+const deleteWorkOrder = async (orderId) => {
+  try {
+    console.log('[WorkOrder] Deleting work order:', orderId);
+
+    const result = await wx.cloud.callFunction({
+      name: 'workOrderManager',
+      data: {
+        action: 'delete',
+        data: {
+          order_id: orderId
+        }
+      }
+    });
+
+    if (!result.result || !result.result.success) {
+      throw new Error(result.result?.error || '删除工单失败');
+    }
+
+    console.log('[WorkOrder] Work order deleted');
+    return result.result;
+
+  } catch (error) {
+    console.error('[WorkOrder] Delete error:', error);
+    throw error;
+  }
+};
+
 module.exports = {
   createWorkOrder,
   getWorkOrders,
+  listWorkOrders,
   getWorkOrderById,
+  getWorkOrderByNumber,
   updateWorkOrderStatus,
+  updateWorkOrderDetails,
+  deleteWorkOrder,
   getFaultTypes,
   getWorkOrderStats,
   completeRepair,

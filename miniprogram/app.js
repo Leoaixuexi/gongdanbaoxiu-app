@@ -5,7 +5,7 @@
 
 const auth = require('./services/auth');
 const storage = require('./services/storage');
-const { API_BASE_URL } = require('./utils/constants');
+const { API_BASE_URL, CLOUD_ENV_ID } = require('./utils/constants');
 
 App({
   /**
@@ -104,7 +104,7 @@ App({
 
     // Initialize cloud with environment ID
     wx.cloud.init({
-      env: 'cloud1-7glfhm4r06e030bd', // Your cloud environment ID
+      env: CLOUD_ENV_ID,
       traceUser: true
     });
 

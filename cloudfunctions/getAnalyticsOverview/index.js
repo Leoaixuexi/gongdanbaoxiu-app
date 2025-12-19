@@ -12,10 +12,47 @@ cloud.init({
 const db = cloud.database();
 const _ = db.command;
 
+async function getCurrentUserAndPermissions(openid) {
+  const users = db.collection('users');
+  const roles = db.collection('roles');
+
+  const { data: userData } = await users.where({ wechat_openid: openid }).get();
+  const user = userData && userData.length > 0 ? userData[0] : null;
+  if (!user) throw new Error('用户不存在');
+  if (user.active === false) throw new Error('账号已被停用');
+
+  const { data: roleData } = await roles.where({ role_id: user.role_id }).get();
+  const role = roleData && roleData.length > 0 ? roleData[0] : null;
+  const permissions = role?.permissions || {};
+
+  return { user, permissions };
+}
+
+function hasModulePermission(permissions, moduleKey) {
+  const modules = permissions?.modules;
+  if (!modules) return false;
+  if (Array.isArray(modules)) return modules.includes(moduleKey);
+  if (typeof modules === 'object') return modules[moduleKey] === true;
+  return false;
+}
+
 exports.main = async (event, context) => {
   const { startDate, endDate } = event;
 
   try {
+    const wxContext = cloud.getWXContext();
+    const openid = wxContext.OPENID;
+    if (!openid) {
+      return { success: false, error: '无法获取微信身份，请在小程序内操作' };
+    }
+
+    const { user, permissions } = await getCurrentUserAndPermissions(openid);
+    if (!(user.role_id === 1 || hasModulePermission(permissions, 'view_analytics'))) {
+      return { success: false, error: '无权限查看数据分析' };
+    }
+
+    const workOrders = db.collection('work_orders');
+
     const start = new Date(startDate);
     start.setHours(0, 0, 0, 0);
 
@@ -23,35 +60,36 @@ exports.main = async (event, context) => {
     end.setHours(23, 59, 59, 999);
 
     // 1. 总工单数
-    const totalResult = await db.collection('workorders')
+    const totalResult = await workOrders
       .where({
         created_at: _.gte(start).and(_.lte(end))
       })
       .count();
 
     // 2. 已完成工单数
-    const completedResult = await db.collection('workorders')
+    const completedResult = await workOrders
       .where({
-        status: 'Completed',
+        status: _.in(['Completed', '已完成']),
         created_at: _.gte(start).and(_.lte(end))
       })
       .count();
 
     // 3. 进行中工单数（维修中）
-    const inProgressResult = await db.collection('workorders')
+    const inProgressResult = await workOrders
       .where({
-        status: 'In Progress',
+        status: _.in(['In Progress', '维修中']),
         created_at: _.gte(start).and(_.lte(end))
       })
       .count();
 
     // 4. 计算平均完成时长
-    const completedOrders = await db.collection('workorders')
+    const completedOrders = await workOrders
       .where({
-        status: 'Completed',
+        status: _.in(['Completed', '已完成']),
         created_at: _.gte(start).and(_.lte(end)),
         completed_at: _.exists(true)
       })
+      .limit(1000)
       .get();
 
     let avgCompletionTime = 0;

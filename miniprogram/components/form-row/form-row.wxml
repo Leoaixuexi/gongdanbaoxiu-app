@@ -34,7 +34,7 @@
       disabled="{{readOnly}}"
       bindinput="handleInput"
       auto-height
-      maxlength="-1"
+      maxlength="{{maxlength}}"
     />
 
     <!-- 文本/数字输入 -->

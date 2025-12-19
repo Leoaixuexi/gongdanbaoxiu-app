@@ -3,11 +3,18 @@
  * Configuration for WeChat Mini Program
  */
 
-// 判断是否为开发环境
-const isDevelopment = true; // 开发环境设置为true，生产环境设置为false
+// 判断是否为开发环境（基于小程序运行环境）
+let envVersion = 'develop'; // develop | trial | release
+try {
+  const accountInfo = wx.getAccountInfoSync?.();
+  envVersion = accountInfo?.miniProgram?.envVersion || 'develop';
+} catch (e) {
+  // ignore
+}
+const isDevelopment = envVersion !== 'release';
 
-// 数据存储模式配置
-const USE_CLOUD_DATABASE = false; // true: 使用云数据库, false: 使用后端API
+// 数据存储模式配置（上线走云函数+云数据库）
+const USE_CLOUD_DATABASE = true; // true: 使用云数据库, false: 使用后端API
 
 // API基础地址配置 (仅在USE_CLOUD_DATABASE=false时使用)
 const API_CONFIG = {

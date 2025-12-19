@@ -49,4 +49,9 @@
       <text class="duration-text">工单总用时: {{durationStr}}</text>
     </view>
   </view>
+
+  <!-- 完成时间（仅已完成状态显示） -->
+  <view wx:if="{{isCompleted && completedTimeStr}}" class="completed-time-container">
+    <text class="completed-time-text">完成时间: {{completedTimeStr}}</text>
+  </view>
 </view>

@@ -64,6 +64,15 @@ async function getUserById(userId) {
 }
 
 /**
+ * Get user by openid (cloud context)
+ */
+async function getUserByOpenId(openid) {
+  const users = db.collection('users');
+  const { data } = await users.where({ wechat_openid: openid }).get();
+  return data.length > 0 ? data[0] : null;
+}
+
+/**
  * Save notification to database
  */
 async function saveNotification(userId, type, title, message, data = {}) {
@@ -138,6 +147,25 @@ exports.main = async (event, context) => {
   console.log(`[SendNotification] Action: ${action}`);
 
   try {
+    const openid = wxContext.OPENID;
+    if (!openid) {
+      return { success: false, error: '无法获取微信身份，请在小程序内操作' };
+    }
+
+    const currentUser = await getUserByOpenId(openid);
+    if (!currentUser) {
+      return { success: false, error: '用户不存在' };
+    }
+    if (currentUser.active === false) {
+      return { success: false, error: '账号已被停用' };
+    }
+
+    // Admin-only actions (prevents arbitrary users from sending/reading others' notifications)
+    const adminOnlyActions = new Set(['send', 'sendBatch', 'getTemplates']);
+    if (adminOnlyActions.has(action) && currentUser.role_id !== 1) {
+      return { success: false, error: '无权限执行该操作' };
+    }
+
     switch (action) {
       case 'send': {
         // Send single notification
@@ -231,14 +259,8 @@ exports.main = async (event, context) => {
 
       case 'getUserNotifications': {
         // Get user's notifications
-        const { user_id, unread_only = false, limit = 20 } = eventData;
-
-        if (!user_id) {
-          return {
-            success: false,
-            error: 'user_id is required'
-          };
-        }
+        const { unread_only = false, limit = 20 } = eventData;
+        const user_id = currentUser.user_id;
 
         const notifications = db.collection('notifications');
         let query = notifications.where({ user_id });
@@ -249,7 +271,7 @@ exports.main = async (event, context) => {
 
         const { data } = await query
           .orderBy('created_at', 'desc')
-          .limit(limit)
+          .limit(Math.min(Math.max(parseInt(limit, 10) || 20, 1), 100))
           .get();
 
         return {
@@ -262,7 +284,7 @@ exports.main = async (event, context) => {
 
       case 'markAsRead': {
         // Mark notification as read
-        const { notification_id, user_id } = eventData;
+        const { notification_id } = eventData;
 
         if (!notification_id) {
           return {
@@ -273,16 +295,10 @@ exports.main = async (event, context) => {
 
         const notifications = db.collection('notifications');
 
-        // Verify ownership if user_id provided
-        let query = { _id: notification_id };
-        if (user_id) {
-          const { data } = await notifications.where({ _id: notification_id }).get();
-          if (data.length === 0 || data[0].user_id !== user_id) {
-            return {
-              success: false,
-              error: 'Notification not found or access denied'
-            };
-          }
+        // Verify ownership (always use cloud context user)
+        const { data: docData } = await notifications.doc(notification_id).get();
+        if (!docData || docData.user_id !== currentUser.user_id) {
+          return { success: false, error: 'Notification not found or access denied' };
         }
 
         await notifications.doc(notification_id).update({
@@ -300,14 +316,7 @@ exports.main = async (event, context) => {
 
       case 'markAllAsRead': {
         // Mark all user's notifications as read
-        const { user_id } = eventData;
-
-        if (!user_id) {
-          return {
-            success: false,
-            error: 'user_id is required'
-          };
-        }
+        const user_id = currentUser.user_id;
 
         const notifications = db.collection('notifications');
         const { stats } = await notifications
@@ -330,14 +339,7 @@ exports.main = async (event, context) => {
 
       case 'getUnreadCount': {
         // Get user's unread notification count
-        const { user_id } = eventData;
-
-        if (!user_id) {
-          return {
-            success: false,
-            error: 'user_id is required'
-          };
-        }
+        const user_id = currentUser.user_id;
 
         const notifications = db.collection('notifications');
         const { total } = await notifications.where({

@@ -125,7 +125,7 @@
         placeholder="请详细描述遇到的问题，包括故障现象、影响范围等..."
         value="{{description}}"
         bindinput="onDescriptionInput"
-        maxlength="80"
+        maxlength="50"
       />
     </view>
 

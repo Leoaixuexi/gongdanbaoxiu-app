@@ -1,8 +1,7 @@
 {
-  "navigationStyle": "custom",
-  "enablePullDownRefresh": false,
-  "backgroundColor": "#F7F7F7",
-  "usingComponents": {
-    "custom-header": "/components/header/header"
-  }
+  "navigationBarTitleText": "账号管理",
+  "navigationBarBackgroundColor": "#0CA77D",
+  "backgroundColor": "#F5F5F5",
+  "enablePullDownRefresh": true,
+  "usingComponents": {}
 }

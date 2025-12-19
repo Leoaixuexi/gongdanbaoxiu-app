@@ -82,12 +82,12 @@ page {
   --line-height-relaxed: 1.6;
 
   /* ==================== Border Radius ==================== */
-  --radius-sm: 8rpx;
-  --radius-md: 12rpx;
-  --radius-lg: 16rpx;
-  --radius-xl: 20rpx;
+  --radius-sm: 24rpx;
+  --radius-md: 24rpx;
+  --radius-lg: 24rpx;
+  --radius-xl: 24rpx;
   --radius-2xl: 24rpx;
-  --radius-3xl: 32rpx;
+  --radius-3xl: 24rpx;
   --radius-full: 9999rpx;
 
   /* ==================== Transitions ==================== */

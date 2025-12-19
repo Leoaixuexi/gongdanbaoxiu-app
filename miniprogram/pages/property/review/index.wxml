@@ -16,7 +16,7 @@
 
   <!-- Work Orders List -->
   <view class="orders-list" wx:if="{{!loading || workOrders.length > 0}}">
-    <block wx:for="{{workOrders}}" wx:key="id">
+    <block wx:for="{{workOrders}}" wx:key="order_id">
       <view class="order-item-wrapper">
         <work-order-card
           workOrder="{{item}}"

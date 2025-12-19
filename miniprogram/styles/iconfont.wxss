@@ -1,0 +1,142 @@
+/**
+ * iconfont 图标字体
+ * 项目ID: 5090968
+ * 在线链接: //at.alicdn.com/t/c/font_5090968_asys14b3mm6.css
+ */
+
+@font-face {
+  font-family: "iconfont";
+  src: url('https://at.alicdn.com/t/c/font_5090968_asys14b3mm6.woff2?t=1766156093735') format('woff2'),
+       url('https://at.alicdn.com/t/c/font_5090968_asys14b3mm6.woff?t=1766156093735') format('woff'),
+       url('https://at.alicdn.com/t/c/font_5090968_asys14b3mm6.ttf?t=1766156093735') format('truetype');
+}
+
+.iconfont {
+  font-family: "iconfont" !important;
+  font-size: 32rpx;
+  font-style: normal;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ========== 工单详情页面图标 ========== */
+/* 删除 */
+.icon-shanchu:before {
+  content: "\e605";
+}
+
+/* 切换/转派 */
+.icon-qiehuan-04:before {
+  content: "\ec9a";
+}
+
+/* ========== 工作台页面图标 ========== */
+/* 扫一扫 */
+.icon-saoyisao:before {
+  content: "\e62e";
+}
+
+/* 筛选 */
+.icon-shaixuan:before {
+  content: "\e619";
+}
+
+/* ========== 消息页面图标 ========== */
+/* 通知公告 */
+.icon-tongzhigonggao1:before {
+  content: "\e7b0";
+}
+
+/* 待办事项 */
+.icon-daibanshixiang1:before {
+  content: "\e7c2";
+}
+
+/* 提醒我的 */
+.icon-tixingwode:before {
+  content: "\e8e6";
+}
+
+/* ========== 物业经理KPI卡片图标 ========== */
+/* 总工单 */
+.icon-icon_zonggongdan:before {
+  content: "\e842";
+}
+
+/* 已完成 */
+.icon-yiwancheng:before {
+  content: "\e612";
+}
+
+/* 进行中 */
+.icon-jinhangzhong:before {
+  content: "\e68a";
+}
+
+/* 平均时长 */
+.icon-chushenpingjunshichang:before {
+  content: "\e820";
+}
+
+/* ========== 巡检员KPI卡片图标 ========== */
+/* 已完成/完成 */
+.icon-trues:before {
+  content: "\e666";
+}
+
+/* 今日提报 */
+.icon-jinritibao:before {
+  content: "\e600";
+}
+
+/* 维修中 */
+.icon-FM-weixiuzhongxin:before {
+  content: "\e645";
+}
+
+/* 待复核 */
+.icon-daifuhe:before {
+  content: "\e740";
+}
+
+/* ========== 维修员KPI卡片图标 ========== */
+/* 已修复 */
+.icon-yixiufu_huaban:before {
+  content: "\e604";
+}
+
+/* 今日维修/计划实施 */
+.icon-jihuashishi:before {
+  content: "\e7e1";
+}
+
+/* 重修/需重修 */
+.icon-zhongxiu:before {
+  content: "\e72d";
+}
+
+/* 维修中(备用) */
+.icon-weixiuzhong:before {
+  content: "\e601";
+}
+
+/* ========== 数据页面排名图标 ========== */
+/* 金牌 */
+.icon-jinpai:before {
+  content: "\e637";
+}
+
+/* 银牌 */
+.icon-yinpai:before {
+  content: "\e65d";
+}
+
+/* 铜牌 */
+.icon-tongpai:before {
+  content: "\e797";
+}
+
+/* 扫把 */
+.icon-saoba:before {
+  content: "\e606";
+}

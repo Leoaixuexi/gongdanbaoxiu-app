@@ -17,6 +17,26 @@ Page({
     functionResult: ''
   },
 
+  onLoad() {
+    // Safety: do not expose test utilities in release builds
+    try {
+      const accountInfo = wx.getAccountInfoSync?.();
+      const envVersion = accountInfo?.miniProgram?.envVersion || 'develop';
+      if (envVersion === 'release') {
+        wx.showModal({
+          title: '不可用',
+          content: '该页面仅用于开发/测试环境',
+          showCancel: false,
+          success: () => {
+            wx.switchTab({ url: '/pages/index/index' });
+          }
+        });
+      }
+    } catch (e) {
+      // ignore
+    }
+  },
+
   /**
    * 测试云登录（获取openid）
    */

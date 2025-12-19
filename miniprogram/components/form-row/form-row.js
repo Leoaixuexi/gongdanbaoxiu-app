@@ -49,6 +49,11 @@ Component({
     size: {
       type: String,
       value: 'normal'
+    },
+    // 最大长度
+    maxlength: {
+      type: Number,
+      value: -1
     }
   },
 

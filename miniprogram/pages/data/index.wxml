@@ -11,15 +11,12 @@
         <text class="text-base font-bold text-foreground tracking-tight">工单汇总</text>
       </view>
 
-      <view class="card card-backdrop" style="border: none; box-shadow: none; border-radius: 0;">
-        <view style="padding: 8rpx 8rpx;">
-          <view class="grid grid-cols-4 gap-2">
-            <view wx:for="{{stats}}" wx:key="index"
-                  class="stat-card"
-                  style="background-color: {{item.bgClass}};">
-              <text class="text-2xl font-bold" style="color: {{item.color}};">{{item.value}}</text>
-              <text class="text-xs text-muted-foreground font-medium mt-2">{{item.label}}</text>
-            </view>
+      <view class="kpi-grid">
+        <view wx:for="{{stats}}" wx:key="index" class="kpi-card">
+          <text class="kpi-label">{{item.label}}</text>
+          <text class="kpi-value" style="color: {{item.color}};">{{item.value}}</text>
+          <view class="absolute" style="right: {{item.iconRight || '8rpx'}}; top: {{item.iconTop || '8rpx'}};">
+            <text class="iconfont {{item.icon}}" style="font-size: {{item.iconSize || '64rpx'}}; opacity: 0.6; color: {{item.color}};"></text>
           </view>
         </view>
       </view>
@@ -121,9 +118,9 @@
           <view class="p-4 flex items-center gap-3"
                 style="border-bottom: 1rpx solid var(--border);">
             <view style="width: 60rpx; text-align: center; display: flex; align-items: center; justify-content: center;">
-              <image wx:if="{{item.rank == 1}}" src="/images/icons/rank-1.png" style="width: 48rpx; height: 48rpx;" mode="aspectFit"></image>
-              <image wx:elif="{{item.rank == 2}}" src="/images/icons/rank-2.png" style="width: 48rpx; height: 48rpx;" mode="aspectFit"></image>
-              <image wx:elif="{{item.rank == 3}}" src="/images/icons/rank-3.png" style="width: 48rpx; height: 48rpx;" mode="aspectFit"></image>
+              <text wx:if="{{item.rank == 1}}" class="iconfont icon-jinpai" style="font-size: 48rpx; color: #FFD700;"></text>
+              <text wx:elif="{{item.rank == 2}}" class="iconfont icon-yinpai" style="font-size: 48rpx; color: #C0C0C0;"></text>
+              <text wx:elif="{{item.rank == 3}}" class="iconfont icon-tongpai" style="font-size: 48rpx; color: #CD7F32;"></text>
               <text wx:else class="text-base font-bold">{{item.rank}}</text>
             </view>
 
@@ -154,108 +151,198 @@
   </view>
 
   <!-- ========== 物业经理视图 ========== -->
-  <view wx:if="{{isManager}}" class="main px-5" style="padding-top: {{headerHeight + 20}}px;">
-    <!-- 日期范围选择器 -->
-    <view class="manager-date-filter mb-3">
-      <view class="flex gap-2">
-        <view class="date-chip {{timeFilter === 'yesterday' ? 'active' : ''}}"
-              bindtap="onTimeFilterChange" data-filter="yesterday">
-          <text>昨</text>
-        </view>
-        <view class="date-chip {{timeFilter === 'today' ? 'active' : ''}}"
-              bindtap="onTimeFilterChange" data-filter="today">
-          <text>今</text>
-        </view>
-        <view class="date-chip {{timeFilter === 'week' ? 'active' : ''}}"
-              bindtap="onTimeFilterChange" data-filter="week">
-          <text>周</text>
-        </view>
-        <view class="date-chip {{timeFilter === 'month' ? 'active' : ''}}"
-              bindtap="onTimeFilterChange" data-filter="month">
-          <text>月</text>
-        </view>
-        <view class="date-chip {{timeFilter === 'custom' ? 'active' : ''}}"
-              bindtap="onTimeFilterChange" data-filter="custom">
-          <text>📅</text>
-        </view>
-      </view>
-    </view>
-
-    <!-- Tab切换栏 -->
-    <view class="manager-tabs mb-3">
+  <view wx:if="{{isManager}}" class="main px-5" style="padding-top: {{headerHeight}}px;">
+    <!-- Tab切换栏 (Clean Sticky Text) -->
+    <view class="manager-tabs" style="top: {{headerHeight}}px;">
       <view class="tab-item {{activeTab === 'stats' ? 'active' : ''}}"
             bindtap="switchTab" data-tab="stats">
-        <text>数据统计</text>
+        <text>KPI统计</text>
+        <view class="active-indicator" wx:if="{{activeTab === 'stats'}}"></view>
       </view>
       <view class="tab-item {{activeTab === 'charts' ? 'active' : ''}}"
             bindtap="switchTab" data-tab="charts">
         <text>可视化图表</text>
+        <view class="active-indicator" wx:if="{{activeTab === 'charts'}}"></view>
       </view>
     </view>
 
     <!-- Tab 1: 数据统计 -->
     <view wx:if="{{activeTab === 'stats'}}">
+      <!-- 日期范围选择器 -->
+      <view class="manager-date-filter mb-3">
+        <view class="flex gap-2">
+          <view class="date-chip {{timeFilter === 'yesterday' ? 'active' : ''}}"
+                bindtap="onTimeFilterChange" data-filter="yesterday">
+            <text>昨日</text>
+          </view>
+          <view class="date-chip {{timeFilter === 'today' ? 'active' : ''}}"
+                bindtap="onTimeFilterChange" data-filter="today">
+            <text>今日</text>
+          </view>
+          <view class="date-chip {{timeFilter === 'week' ? 'active' : ''}}"
+                bindtap="onTimeFilterChange" data-filter="week">
+            <text>本周</text>
+          </view>
+          <view class="date-chip {{timeFilter === 'month' ? 'active' : ''}}"
+                bindtap="onTimeFilterChange" data-filter="month">
+            <text>本月</text>
+          </view>
+          <view class="date-chip {{timeFilter === 'custom' ? 'active' : ''}}"
+                bindtap="onTimeFilterChange" data-filter="custom">
+            <image src="{{icons.calendar}}" mode="aspectFit" 
+                   style="width: 32rpx; height: 32rpx; {{timeFilter === 'custom' ? 'filter: brightness(0) invert(1);' : 'opacity: 0.5;'}}"></image>
+          </view>
+        </view>
+      </view>
+
       <!-- KPI卡片 -->
       <view class="kpi-grid mb-3">
+        <!-- 总工单数 -->
         <view class="kpi-card" animation="{{card1Anim}}">
-          <text class="kpi-value">{{kpiData.totalOrders}}</text>
           <text class="kpi-label">总工单数</text>
+          <text class="kpi-value" style="color: #10b981;">{{kpiData.totalOrders}}</text>
+          <view class="absolute" style="right: 8rpx; top: 8rpx;">
+             <text class="iconfont icon-icon_zonggongdan" style="font-size: 64rpx; opacity: 0.6; color: #10b981;"></text>
+          </view>
         </view>
+
+        <!-- 已完成 -->
         <view class="kpi-card" animation="{{card2Anim}}">
-          <text class="kpi-value">{{kpiData.completedOrders}}</text>
           <text class="kpi-label">已完成</text>
-          <text class="kpi-subtitle">{{kpiData.completionRate}}%</text>
+          <view class="flex items-baseline gap-2">
+            <text class="kpi-value" style="color: #8B5CF6;">{{kpiData.completedOrders}}</text>
+            <text class="kpi-subtitle">({{kpiData.completionRate}}%)</text>
+          </view>
+          <view class="absolute" style="right: 8rpx; top: 8rpx;">
+             <text class="iconfont icon-yiwancheng" style="font-size: 64rpx; opacity: 0.6; color: #8B5CF6;"></text>
+          </view>
         </view>
+
+        <!-- 进行中 -->
         <view class="kpi-card" animation="{{card3Anim}}">
-          <text class="kpi-value">{{kpiData.inProgressOrders}}</text>
-          <text class="kpi-label">进行中</text>
+           <text class="kpi-label">进行中</text>
+           <text class="kpi-value" style="color: #06B6D4;">{{kpiData.inProgressOrders}}</text>
+           <view class="absolute" style="right: 8rpx; top: 8rpx;">
+             <text class="iconfont icon-jinhangzhong" style="font-size: 64rpx; opacity: 0.6; color: #06B6D4;"></text>
+           </view>
         </view>
+
+        <!-- 平均时长 -->
         <view class="kpi-card" animation="{{card4Anim}}">
-          <text class="kpi-value">{{kpiData.avgCompletionTime}}</text>
           <text class="kpi-label">平均时长(h)</text>
+          <text class="kpi-value" style="color: #F59E0B;">{{kpiData.avgCompletionTime}}</text>
+          <view class="absolute" style="right: 8rpx; top: 8rpx;">
+             <text class="iconfont icon-chushenpingjunshichang" style="font-size: 64rpx; opacity: 0.6; color: #F59E0B;"></text>
+          </view>
         </view>
       </view>
 
       <!-- 员工排名 -->
       <view class="section mb-3">
         <view class="section-title mb-2">
-          <text class="text-base font-bold">员工已完成工单排名</text>
+          <text class="text-base font-bold">完成工单排名</text>
         </view>
         <view class="card card-backdrop">
-          <view wx:for="{{employeeRankings}}" wx:key="employeeId" class="ranking-item">
-            <text class="ranking-name">{{item.employeeName}}</text>
-            <text class="ranking-value">已完成: {{item.totalCompleted}}</text>
+          <view wx:for="{{rankings}}" wx:key="rank">
+            <view class="p-4 flex items-center gap-3"
+                  style="border-bottom: 1rpx solid var(--border);">
+              <view style="width: 60rpx; text-align: center; display: flex; align-items: center; justify-content: center;">
+                <text wx:if="{{item.rank == 1}}" class="iconfont icon-jinpai" style="font-size: 48rpx; color: #FFD700;"></text>
+                <text wx:elif="{{item.rank == 2}}" class="iconfont icon-yinpai" style="font-size: 48rpx; color: #C0C0C0;"></text>
+                <text wx:elif="{{item.rank == 3}}" class="iconfont icon-tongpai" style="font-size: 48rpx; color: #CD7F32;"></text>
+                <text wx:else class="text-base font-bold">{{item.rank}}</text>
+              </view>
+
+              <view class="avatar-sm">
+                <image src="{{item.avatar}}" mode="aspectFill"></image>
+              </view>
+
+              <view class="flex-1 min-w-0 flex items-center gap-2">
+                <text class="text-sm truncate tracking-tight">{{item.name}}</text>
+              </view>
+
+              <view class="text-right">
+                <text class="text-base font-bold text-foreground">{{item.completedOrders}}</text>
+                <text class="text-xs text-muted-foreground ml-1">单</text>
+              </view>
+            </view>
           </view>
         </view>
       </view>
 
-      <!-- 责任方排名 -->
-      <view class="section mb-3">
-        <view class="section-title mb-2">
-          <text class="text-base font-bold">责任方已修复工单排名</text>
-        </view>
-        <view class="card card-backdrop">
-          <view wx:for="{{responsiblePartyRankings}}" wx:key="responsibleParty" class="ranking-item">
-            <text class="ranking-name">{{item.responsibleParty}}</text>
-            <text class="ranking-value">{{item.completedCount}}单 ({{item.percentage}}%)</text>
-          </view>
-        </view>
-      </view>
     </view>
 
     <!-- Tab 2: 可视化图表 -->
     <view wx:if="{{activeTab === 'charts'}}">
-      <!-- 工单状态环形图 -->
+      <!-- 日期范围选择器 -->
+      <view class="manager-date-filter mb-3">
+        <view class="flex gap-2">
+          <view class="date-chip {{timeFilter === 'yesterday' ? 'active' : ''}}"
+                bindtap="onTimeFilterChange" data-filter="yesterday">
+            <text>昨日</text>
+          </view>
+          <view class="date-chip {{timeFilter === 'today' ? 'active' : ''}}"
+                bindtap="onTimeFilterChange" data-filter="today">
+            <text>今日</text>
+          </view>
+          <view class="date-chip {{timeFilter === 'week' ? 'active' : ''}}"
+                bindtap="onTimeFilterChange" data-filter="week">
+            <text>本周</text>
+          </view>
+          <view class="date-chip {{timeFilter === 'month' ? 'active' : ''}}"
+                bindtap="onTimeFilterChange" data-filter="month">
+            <text>本月</text>
+          </view>
+          <view class="date-chip {{timeFilter === 'custom' ? 'active' : ''}}"
+                bindtap="onTimeFilterChange" data-filter="custom">
+            <image src="{{icons.calendar}}" mode="aspectFit" 
+                   style="width: 32rpx; height: 32rpx; {{timeFilter === 'custom' ? 'filter: brightness(0) invert(1);' : 'opacity: 0.5;'}}"></image>
+          </view>
+        </view>
+      </view>
+
+      <!-- 1. 工单状态环形图 -->
       <view class="section mb-3">
         <view class="section-title mb-2">
-          <text class="text-base font-bold">工单处理进度</text>
+          <text class="text-base font-bold">工单状态</text>
         </view>
+        <view class="chart-divider"></view>
         <view class="chart-container">
           <ec-canvas id="statusChart" canvas-id="statusChart" ec="{{ ecStatus }}" class="chart-canvas"></ec-canvas>
         </view>
       </view>
 
-      <!-- 楼层分布柱状图 -->
+      <!-- 2. 一周工单趋势折线图 -->
+      <view class="section mb-3">
+        <view class="section-title mb-2">
+          <text class="text-base font-bold">一周工单趋势</text>
+        </view>
+        <view class="chart-container">
+          <ec-canvas id="trendChart" canvas-id="trendChart" ec="{{ ecTrend }}" class="chart-canvas"></ec-canvas>
+        </view>
+      </view>
+
+      <!-- 3. 故障类型饼图 -->
+      <view class="section mb-3">
+        <view class="section-title mb-2">
+          <text class="text-base font-bold">故障类型</text>
+        </view>
+        <view class="chart-container">
+          <ec-canvas id="categoryChart" canvas-id="categoryChart" ec="{{ ecCategory }}" class="chart-canvas"></ec-canvas>
+        </view>
+      </view>
+
+      <!-- 4. 责任方饼图 -->
+      <view class="section mb-3">
+        <view class="section-title mb-2">
+          <text class="text-base font-bold">责任方</text>
+        </view>
+        <view class="chart-container">
+          <ec-canvas id="responsibleChart" canvas-id="responsibleChart" ec="{{ ecResponsible }}" class="chart-canvas"></ec-canvas>
+        </view>
+      </view>
+
+      <!-- 5. 楼层分布柱状图 -->
       <view class="section mb-3">
         <view class="section-title mb-2">
           <text class="text-base font-bold">楼层分布</text>
@@ -264,14 +351,32 @@
           <ec-canvas id="floorChart" canvas-id="floorChart" ec="{{ ecFloor }}" class="chart-canvas"></ec-canvas>
         </view>
       </view>
+    </view>
+  </view>
 
-      <!-- 位置分布柱状图 -->
-      <view class="section mb-3">
-        <view class="section-title mb-2">
-          <text class="text-base font-bold">位置分布</text>
+  <!-- 日期选择弹窗 -->
+  <view wx:if="{{showDatePicker}}" class="modal-overlay" catchtap="closeDatePicker">
+    <view class="modal-content" catchtap="stopPropagation">
+      <view class="date-picker-content">
+        <picker mode="date" value="{{customStartDate}}" bindchange="onCustomStartDateChange">
+          <view class="date-display">
+            <text class="date-text">{{customStartDate || '请选择开始日期'}}</text>
+          </view>
+        </picker>
+        <text class="date-separator">至</text>
+        <picker mode="date" value="{{customEndDate}}" bindchange="onCustomEndDateChange">
+          <view class="date-display">
+            <text class="date-text">{{customEndDate || '请选择结束日期'}}</text>
+          </view>
+        </picker>
+      </view>
+
+      <view class="modal-actions">
+        <view class="modal-button modal-button-cancel" bindtap="cancelDatePicker">
+          <text class="modal-button-text">取消</text>
         </view>
-        <view class="chart-container">
-          <ec-canvas id="locationChart" canvas-id="locationChart" ec="{{ ecLocation }}" class="chart-canvas"></ec-canvas>
+        <view class="modal-button modal-button-confirm" bindtap="confirmDatePicker">
+          <text class="modal-button-text modal-button-text-white">确定</text>
         </view>
       </view>
     </view>

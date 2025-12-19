@@ -4,7 +4,7 @@
  */
 
 const app = getApp();
-const api = require('../../../services/api');
+const workOrderService = require('../../../services/workOrder');
 const auth = require('../../../services/auth');
 const { DEFAULT_PAGE_SIZE } = require('../../../utils/constants');
 const { formatDateTime } = require('../../../utils/formatter');
@@ -113,21 +113,15 @@ Page({
         throw new Error('User info not available');
       }
 
-      // Query parameters
-      const params = {
+      const response = await workOrderService.listWorkOrders({
         status: 'Repaired',
-        submitted_by: userInfo.id,
         page: this.data.page,
-        limit: this.data.pageSize,
-        sort_by: 'repaired_at',
-        sort_order: 'DESC'
-      };
+        limit: this.data.pageSize
+      });
 
-      const response = await api.get('/workorders', params);
-      
-      const workOrders = response.data || response.workorders || [];
+      const workOrders = response.orders || [];
       const total = response.total || 0;
-      const hasMore = workOrders.length >= this.data.pageSize;
+      const hasMore = response.totalPages ? response.page < response.totalPages : workOrders.length >= this.data.pageSize;
 
       // Process work orders
       const processed = workOrders.map(order => this.processWorkOrder(order));

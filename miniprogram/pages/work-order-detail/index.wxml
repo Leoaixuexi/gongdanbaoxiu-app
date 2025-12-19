@@ -23,11 +23,9 @@
     <view class="tab-nav">
       <view class="tab-item {{activeTab === 'info' ? 'tab-item-active' : ''}}" bindtap="switchTab" data-tab="info">
         <text class="tab-text {{activeTab === 'info' ? 'tab-text-active' : ''}}">工单信息</text>
-        <view class="tab-indicator" wx:if="{{activeTab === 'info'}}"></view>
       </view>
       <view class="tab-item {{activeTab === 'service' ? 'tab-item-active' : ''}}" bindtap="switchTab" data-tab="service">
         <text class="tab-text {{activeTab === 'service' ? 'tab-text-active' : ''}}">工单进度</text>
-        <view class="tab-indicator" wx:if="{{activeTab === 'service'}}"></view>
       </view>
     </view>
 
@@ -121,32 +119,68 @@
     </view>
 
     <!-- 底部操作按钮 (仅在工单信息Tab显示) -->
-    <view class="bottom-actions" wx:if="{{activeTab === 'info'}}">
-      <!-- 更多操作按钮 - 所有状态都显示 -->
+        <view class="bottom-actions" wx:if="{{activeTab === 'info' && showActions}}">
+      <!-- 三个点按钮 -->
       <button
-        wx:if="{{canShowMore}}"
+        wx:if="{{showThreeDots}}"
         class="action-button action-button-more"
         bindtap="handleMore"
       >
         <text class="more-icon">⋯</text>
       </button>
 
-      <!-- 修改按钮 - 只在"已提报"状态显示 -->
+      <!-- 修改按钮 - 物业人员 + 已提报状态 -->
       <button
-        wx:if="{{canEdit}}"
+        wx:if="{{showEditBtn}}"
         class="action-button action-button-edit"
         bindtap="handleEdit"
       >
         <text class="action-button-text">修改</text>
       </button>
 
-      <!-- 接单按钮 - 维修员专用 -->
+      <!-- 接单按钮 - 维修员 + 待接单状态 -->
       <button
-        wx:if="{{canAcceptOrder}}"
+        wx:if="{{showAcceptBtn}}"
         class="action-button action-button-accept"
         bindtap="handleAcceptOrder"
       >
         <text class="action-button-text">接单</text>
+      </button>
+
+      <!-- 确认修复按钮 - 维修员 + 维修中/需重修状态 -->
+      <button
+        wx:if="{{showConfirmRepairBtn}}"
+        class="action-button action-button-success"
+        bindtap="handleUpdate"
+      >
+        <text class="action-button-text">确认修复</text>
+      </button>
+
+      <!-- 催维修按钮 - 物业人员 + 维修中/需重修状态 -->
+      <button
+        wx:if="{{showUrgeRepairBtn}}"
+        class="action-button action-button-urge"
+        bindtap="handleUrgeRepair"
+      >
+        <text class="action-button-text">催维修</text>
+      </button>
+
+      <!-- 催复核按钮 - 维修员/物业经理 + 已修复状态 -->
+      <button
+        wx:if="{{showUrgeReviewBtn}}"
+        class="action-button action-button-urge"
+        bindtap="handleUrgeReview"
+      >
+        <text class="action-button-text">催复核</text>
+      </button>
+
+      <!-- 已复核按钮 - 物业员工(提交者) + 已修复状态 -->
+      <button
+        wx:if="{{showReviewedBtn}}"
+        class="action-button action-button-approve"
+        bindtap="handleApprove"
+      >
+        <text class="action-button-text">已复核</text>
       </button>
     </view>
   </block>
@@ -294,17 +328,19 @@
   <!-- 更多操作弹窗 -->
   <view class="more-actions-overlay" wx:if="{{showMoreActions}}" catchtap="closeMoreActions">
     <view class="more-actions-content" catchtap="stopPropagation">
-      <view class="more-action-item" bindtap="handleDelete">
-        <view class="more-action-icon delete-icon">
-          <image class="delete-icon-img" src="/images/删除.png" mode="aspectFit" />
-        </view>
+      <!-- 删除 - 物业人员可见 -->
+      <view wx:if="{{showDeleteInMenu}}" class="more-action-item" bindtap="handleDelete">
+        <view class="more-action-icon delete-icon">🗑️</view>
         <text class="more-action-label">删除</text>
       </view>
-      <view class="more-action-item" bindtap="handleToggleStatus">
-        <view class="more-action-icon toggle-icon">
-          <image class="toggle-icon-img" src="/images/开关.png" mode="aspectFit" />
-        </view>
-        <text class="more-action-label">切换状态</text>
+      <!-- 需重修 - 物业员工(提交者) + 已修复状态 -->
+      <view wx:if="{{showNeedsReworkInMenu}}" class="more-action-item" bindtap="handleReject">
+        <view class="more-action-icon rework-icon">🔄</view>
+        <text class="more-action-label">需重修</text>
+      </view>
+      <!-- 空白卡片提示 -->
+      <view wx:if="{{showEmptyMenu && !showDeleteInMenu && !showNeedsReworkInMenu}}" class="more-action-empty">
+        <text class="more-action-empty-text">暂无可用操作</text>
       </view>
     </view>
   </view>
@@ -312,16 +348,11 @@
   <!-- 切换状态弹窗 -->
   <view class="modal-overlay" wx:if="{{showStatusPicker}}" catchtap="closeStatusPicker">
     <view class="modal-container status-picker-container" catchtap="stopPropagation">
-      <!-- 顶部横条 -->
-      <view class="modal-handle"></view>
-
       <view class="modal-header">
         <text class="modal-title">请选择工单状态</text>
         <view class="modal-close" bindtap="closeStatusPicker">×</view>
       </view>
-
       <view class="modal-body">
-        <!-- 状态选择列表 -->
         <view class="status-list">
           <view
             wx:for="{{availableStatuses}}"
@@ -337,5 +368,5 @@
       </view>
     </view>
   </view>
-
 </view>
+

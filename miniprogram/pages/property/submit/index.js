@@ -132,16 +132,26 @@ Page({
   handleScan: function () {
     wx.scanCode({
       success: (res) => {
-        const scannedCode = `${Date.now()}`.slice(-10);
-        this.setData({ orderNumber: scannedCode });
-        wx.showToast({
-          title: '扫码成功',
-          icon: 'success'
-        });
+        console.log('[Submit] Scan result:', res);
+        // 使用扫描到的二维码内容
+        const scannedCode = res.result || '';
+        if (scannedCode) {
+          this.setData({ orderNumber: scannedCode });
+          wx.showToast({
+            title: '扫码成功',
+            icon: 'success'
+          });
+        } else {
+          wx.showToast({
+            title: '未识别到内容',
+            icon: 'none'
+          });
+        }
       },
-      fail: () => {
+      fail: (err) => {
+        console.log('[Submit] Scan failed:', err);
         wx.showToast({
-          title: '扫码失败',
+          title: '扫码取消',
           icon: 'none'
         });
       }
@@ -272,11 +282,6 @@ Page({
 
     if (!description || description.trim() === '') {
       wx.showToast({ title: '请输入问题描述', icon: 'none' });
-      return false;
-    }
-
-    if (description.trim().length < 10) {
-      wx.showToast({ title: '问题描述至少需要10个字符', icon: 'none' });
       return false;
     }
 

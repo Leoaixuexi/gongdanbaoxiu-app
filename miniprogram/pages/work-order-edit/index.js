@@ -1,32 +1,44 @@
-// pages/editOrder/editOrder.js
+// pages/work-order-edit/index.js (Cloud Database Version)
+const app = getApp();
+const workOrderService = require('../../services/workOrder');
+const auth = require('../../services/auth');
+
 Page({
   data: {
     orderId: null, // 工单ID
     headerHeight: 80, // Header 总高度，初始默认值
+    loading: true,
     formData: {
-      id: '1',
-      orderCode: 'WO20251120005',
-      floor: 'B1',
-      location: '地下停车场C区',
-      category: '未知',
-      responsible: '未知',
-      priority: '普通',
-      reportTime: '2023-10-27 14:30',
-      description: '地下停车场C区多盏照明灯不亮,光线昏暗',
-      status: 'Pending Repair',
-      reporter: '测试员工',
-      images: [
-        'https://placehold.co/352x352/f1f5f9/94a3b8?text=Image+1',
-        'https://placehold.co/352x352/f1f5f9/94a3b8?text=Image+2'
-      ],
+      orderCode: '',
+      floor: '',
+      location: '',
+      category: '',
+      responsible: '',
+      priority: '',
+      reportTime: '',
+      description: '',
+      status: '',
+      reporter: '',
+      images: [],
       remarks: ''
     },
     // 照片显示数组（固定3个位置）
     photoSlots: ['', '', ''],
     // 选择器选项
-    categoryOptions: ['照明', '水电', '空调', '电梯', '其他'],
-    responsibleOptions: ['物业', '业主', '第三方', '未知'],
-    priorityOptions: ['紧急', '高', '普通', '低']
+    categoryOptions: ['电梯维修', '水电维修', '消防维修', '空调维修', '其他'],
+    responsibleOptions: ['物业公司', '业主', '第三方'],
+    priorityOptions: [
+      { key: 'Low', label: '低', color: 'green' },
+      { key: 'Normal', label: '中', color: 'yellow' },
+      { key: 'High', label: '高', color: 'orange' },
+      { key: 'Emergency', label: '紧急', color: 'red' }
+    ],
+    selectedPriority: '',
+    // 日期时间选择器
+    isDateTimePickerOpen: false,
+    tempDate: '',
+    tempTime: '',
+    displayDateTime: ''
   },
 
   onLoad(options) {
@@ -43,14 +55,89 @@ Page({
 
     // 获取工单ID
     if (options.id) {
+      this.setData({ orderId: options.id });
+      this.checkAuthAndLoad();
+    } else {
+      wx.showToast({ title: '工单ID无效', icon: 'none' });
+      setTimeout(() => wx.navigateBack(), 1200);
+    }
+  },
+
+  async checkAuthAndLoad() {
+    try {
+      const isAuth = await auth.isAuthenticated();
+      if (!isAuth) {
+        wx.showToast({ title: '请先登录', icon: 'none' });
+        setTimeout(() => {
+          wx.redirectTo({ url: '/pages/login/login' });
+        }, 1200);
+        return;
+      }
+      await this.loadWorkOrder();
+    } catch (error) {
+      console.error('[Edit] Auth check error:', error);
+      await this.loadWorkOrder();
+    }
+  },
+
+  formatDateTime(dateValue) {
+    if (!dateValue) return '';
+    const d = new Date(dateValue);
+    if (Number.isNaN(d.getTime())) return '';
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    const hh = String(d.getHours()).padStart(2, '0');
+    const min = String(d.getMinutes()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd} ${hh}:${min}`;
+  },
+
+  async loadWorkOrder() {
+    try {
+      this.setData({ loading: true });
+      const order = await workOrderService.getWorkOrderById(this.data.orderId);
+
+      const statusTextMap = {
+        'Pending Repair': '待维修',
+        'In Progress': '维修中',
+        'Repaired': '已维修',
+        'Needs Rework': '需返工',
+        'Completed': '已完成',
+      };
+
+      const reportTime = this.formatDateTime(order.report_time || order.created_at);
+      const photos = Array.isArray(order.photos) ? order.photos.slice(0, 3) : [];
+
       this.setData({
-        orderId: options.id,
-        'formData.id': options.id
+        loading: false,
+        formData: {
+          orderCode: order.order_number || '',
+          floor: order.floor || '',
+          location: order.location || '',
+          category: order.order_category || '',
+          responsible: order.responsible_party || '',
+          priority: order.priority || '',
+          reportTime,
+          description: order.description || '',
+          status: statusTextMap[order.status] || order.status || '',
+          reporter: order.submitter?.name || order.submitter_name || '',
+          images: photos,
+          remarks: order.remark || ''
+        },
+        selectedPriority: order.priority || ''
+      });
+
+      this.updatePhotoSlots();
+    } catch (error) {
+      console.error('[Edit] Load work order error:', error);
+      this.setData({ loading: false });
+      wx.showModal({
+        title: '加载失败',
+        content: error.message || '加载工单失败',
+        showCancel: false,
+        success: () => wx.navigateBack()
       });
     }
-
-    // 初始化照片槽位
-    this.updatePhotoSlots();
   },
 
   // 更新照片槽位显示
@@ -122,17 +209,69 @@ Page({
     });
   },
 
-  // 优先级选择
-  handlePrioritySelect() {
-    wx.showActionSheet({
-      itemList: this.data.priorityOptions,
-      success: (res) => {
-        this.setData({
-          'formData.priority': this.data.priorityOptions[res.tapIndex]
-        });
-      }
+  // 优先级按钮点击
+  onPrioritySelect(e) {
+    const key = e.currentTarget.dataset.key;
+    this.setData({
+      selectedPriority: key,
+      'formData.priority': key
     });
   },
+
+  // 显示日期时间选择器
+  showDateTimePicker() {
+    // 解析当前报修时间
+    const reportTime = this.data.formData.reportTime || '';
+    let tempDate = '';
+    let tempTime = '';
+    if (reportTime) {
+      const parts = reportTime.split(' ');
+      tempDate = parts[0] || '';
+      tempTime = parts[1] || '';
+    }
+    this.setData({
+      isDateTimePickerOpen: true,
+      tempDate: tempDate,
+      tempTime: tempTime
+    });
+  },
+
+  // 关闭日期时间选择器
+  closeDateTimePicker() {
+    this.setData({ isDateTimePickerOpen: false });
+  },
+
+  // 临时日期变化
+  onTempDateChange(e) {
+    this.setData({ tempDate: e.detail.value });
+  },
+
+  // 临时时间变化
+  onTempTimeChange(e) {
+    this.setData({ tempTime: e.detail.value });
+  },
+
+  // 取消日期时间选择
+  cancelDateTimePicker() {
+    this.setData({ isDateTimePickerOpen: false });
+  },
+
+  // 确认日期时间选择
+  confirmDateTimePicker() {
+    const { tempDate, tempTime } = this.data;
+    if (tempDate && tempTime) {
+      this.setData({
+        'formData.reportTime': `${tempDate} ${tempTime}`,
+        displayDateTime: tempDate,
+        isDateTimePickerOpen: false
+      });
+    } else {
+      wx.showToast({ title: '请选择完整时间', icon: 'none' });
+    }
+  },
+
+  // 阻止事件冒泡
+  stopPropagation() { },
 
   // 添加图片
   handleAddImage(e) {
@@ -191,65 +330,87 @@ Page({
 
   // 保存
   handleSave() {
-    // 验证必填项
-    if (this.data.formData.images.length === 0) {
-      wx.showToast({
-        title: '请上传现场照片',
-        icon: 'none'
-      });
-      return;
-    }
+    const { formData } = this.data;
 
-    wx.showLoading({
-      title: '保存中...'
-    });
+    const floor = (formData.floor || '').trim();
+    const location = (formData.location || '').trim();
+    const category = (formData.category || '').trim();
+    const responsible = (formData.responsible || '').trim();
+    const priority = (formData.priority || '').trim();
+    const description = (formData.description || '').trim();
+    const reportTime = (formData.reportTime || '').trim();
+    const remarks = (formData.remarks || '').trim();
+    const images = Array.isArray(formData.images) ? formData.images.filter(Boolean).slice(0, 3) : [];
 
-    // 模拟保存
-    setTimeout(() => {
-      wx.hideLoading();
-      wx.showToast({
-        title: '保存成功',
-        icon: 'success',
-        duration: 1500
-      });
+    if (!floor) return wx.showToast({ title: '请填写楼层', icon: 'none' });
+    if (!location) return wx.showToast({ title: '请填写具体位置', icon: 'none' });
+    if (!category) return wx.showToast({ title: '请选择工单类别', icon: 'none' });
+    if (!responsible) return wx.showToast({ title: '请选择责任方', icon: 'none' });
+    if (!priority) return wx.showToast({ title: '请选择优先级', icon: 'none' });
+    if (!reportTime || !reportTime.includes(' ')) return wx.showToast({ title: '请选择报修时间', icon: 'none' });
+    if (!description) return wx.showToast({ title: '请填写问题描述', icon: 'none' });
+    if (images.length === 0) return wx.showToast({ title: '请至少上传一张现场照片', icon: 'none' });
 
-      console.log('保存的数据:', this.data.formData);
+    wx.showModal({
+      title: '确认保存',
+      content: '确定保存本次修改吗？',
+      success: async (res) => {
+        if (!res.confirm) return;
 
-      // 保存成功后跳转到工单详情页面
-      setTimeout(() => {
-        const orderId = this.data.orderId || this.data.formData.id;
-        if (orderId) {
-          wx.redirectTo({
-            url: `/pages/work-order-detail/index?id=${orderId}`,
-            fail: () => {
-              // 如果redirectTo失败，尝试navigateTo
-              wx.navigateTo({
-                url: `/pages/work-order-detail/index?id=${orderId}`,
-                fail: () => {
-                  // 如果都失败了，就返回上一页
-                  wx.navigateBack({
-                    fail: () => {
-                      wx.switchTab({
-                        url: '/pages/index/index'
-                      });
-                    }
-                  });
-                }
-              });
+        try {
+          wx.showLoading({ title: '保存中...', mask: true });
+
+          const uploadedPhotoUrls = [];
+          for (let i = 0; i < images.length; i++) {
+            const filePath = images[i];
+            if (typeof filePath === 'string' && filePath.startsWith('cloud://')) {
+              uploadedPhotoUrls.push(filePath);
+              continue;
             }
+
+            const cloudPath = `work-orders/${this.data.orderId}/edit-${Date.now()}-${i}.jpg`;
+            const uploadResult = await wx.cloud.uploadFile({
+              cloudPath,
+              filePath
+            });
+            uploadedPhotoUrls.push(uploadResult.fileID);
+          }
+
+          const [reportDate, reportClock] = reportTime.split(' ');
+
+          await workOrderService.updateWorkOrderDetails(parseInt(this.data.orderId, 10), {
+            floor,
+            location,
+            order_category: category,
+            responsible_party: responsible,
+            priority,
+            report_date: reportDate,
+            report_time: reportClock,
+            description,
+            photos: uploadedPhotoUrls,
+            remark: remarks
           });
-        } else {
-          // 没有工单ID，返回上一页
-          wx.navigateBack({
-            fail: () => {
-              wx.switchTab({
-                url: '/pages/index/index'
-              });
-            }
+
+          wx.hideLoading();
+          wx.showToast({ title: '保存成功', icon: 'success' });
+
+          setTimeout(() => {
+            wx.redirectTo({
+              url: `/pages/work-order-detail/index?id=${this.data.orderId}`,
+              fail: () => wx.navigateBack()
+            });
+          }, 600);
+        } catch (error) {
+          wx.hideLoading();
+          console.error('[Edit] Save error:', error);
+          wx.showModal({
+            title: '保存失败',
+            content: error.message || '保存失败，请重试',
+            showCancel: false
           });
         }
-      }, 1500);
-    }, 1000);
+      }
+    });
   },
 
   // 取消

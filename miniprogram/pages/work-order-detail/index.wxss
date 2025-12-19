@@ -47,97 +47,76 @@
 /* ==================== Header ==================== */
 .header {
   background: linear-gradient(to right, #10b981, #14b8a6);
-  padding: 32rpx 32rpx 40rpx;
+  padding: 32rpx 32rpx 24rpx;
   box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
 }
 
-/* ==================== Tab Navigation ==================== */
-/* ==================== Tab Navigation (Capsule Style) ==================== */
+/* ==================== Tab Navigation (Modern Text Style) ==================== */
 .tab-nav {
-  background-color: #FFFFFF;
-  border-radius: 60rpx;
+  position: sticky;
+  top: 0;
+  z-index: 50;
   display: flex;
-  padding: 0;
-  margin: 12rpx 32rpx 0;
-  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
-  border: 1rpx solid #F3F4F6;
-  position: relative;
-  overflow: hidden;
+  justify-content: space-around;
+  align-items: center;
+  padding: 0 40rpx 0 40rpx;
+  margin: 0 0 4rpx 0;
+  background-color: transparent; /* Seamless blend */
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
 }
 
 .tab-item {
-  flex: 1;
-  text-align: center;
-  padding: 24rpx 0;
   position: relative;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 16rpx 32rpx;
+  text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  z-index: 1;
-  background-color: #FFFFFF;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: transparent;
 }
 
-/* Active State for Left Tab (Index 0) */
-.tab-item:first-child.tab-item-active {
-  background: linear-gradient(90deg, #E0F2FE 0%, #ECFDF5 100%);
-  border-radius: 60rpx 60rpx 60rpx 0; /* Asymmetric curve */
-  z-index: 2;
-}
-
-/* Active State for Right Tab (Index 1) */
+.tab-item:first-child.tab-item-active,
 .tab-item:last-child.tab-item-active {
-  background: linear-gradient(90deg, #ECFDF5 0%, #E0F2FE 100%);
-  border-radius: 60rpx 60rpx 0 60rpx; /* Asymmetric curve */
-  z-index: 2;
+  background: transparent;
+  border-radius: 0;
 }
 
 .tab-item:active {
-  opacity: 0.9;
+  transform: scale(0.98);
+  opacity: 1;
 }
 
 .tab-text {
-  font-size: 28rpx;
+  font-size: 30rpx;
   font-weight: 500;
-  color: #6B7280;
-  position: relative;
-  z-index: 3;
-  line-height: 1;
+  color: #9CA3AF; /* Gray for inactive */
   transition: all 0.3s;
 }
 
+.tab-item-active .tab-text,
 .tab-text-active {
-  color: #059669;
-  font-weight: bold;
-  font-size: 30rpx;
+  color: #374151; /* Softer dark gray */
+  font-weight: 600; /* Reduced weight */
+  font-size: 32rpx; /* Slightly larger */
+  transform: scale(1.05);
 }
 
-/* Curve Highlight (Bottom Indicator) */
+/* Custom indicator removed to match Data page style (text only) 
+   or we can keep a very subtle dot if needed, but per request implies matching exactly.
+   Data page has active-indicator display: none.
+*/
 .tab-indicator {
-  position: absolute;
-  bottom: 0;
-  width: 50%;
-  height: 8rpx;
-  background: transparent; 
-  /* The image shows the background itself acts as the highlighter. 
-     We can keep a subtle bottom indicator if needed, or rely on the background shape.
-     Let's add a colorful bottom border to the active item instead of a separate indicator.
-  */
-  display: none; 
+  display: none;
 }
 
-/* Add bottom curve via pseudo-element on active item */
 .tab-item-active::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 20%;
-  width: 60%;
-  height: 6rpx;
-  background: linear-gradient(90deg, #34D399, #10B981);
-  border-radius: 100rpx 100rpx 0 0;
+  content: none;
 }
+
 
 /* ==================== Content Area ==================== */
 .content-area {
@@ -149,25 +128,26 @@
 .info-content {
   width: 100%;
   box-sizing: border-box;
-  padding: 4rpx 24rpx 24rpx 24rpx;
+  padding: 16rpx 40rpx 40rpx 40rpx;
   padding-bottom: 220rpx;
 }
 
 .info-card {
   background-color: white;
-  border-radius: 20rpx;
+  border-radius: 24rpx;
   overflow: hidden;
-  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.08);
   box-sizing: border-box;
   width: 100%;
+  border: 1rpx solid rgba(0, 0, 0, 0.04);
 }
 
 .info-row {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  padding: 16rpx 24rpx;
-  border-bottom: 1rpx solid #F9FAFB;
+  padding: 24rpx 28rpx;
+  border-bottom: 1rpx solid #E5E7EB;
   transition: background-color 0.2s;
   box-sizing: border-box;
   width: 100%;
@@ -179,16 +159,17 @@
 
 .info-label {
   font-size: 28rpx;
-  color: #9CA3AF;
+  color: #6B7280;
   flex-shrink: 0;
-  min-width: 140rpx;
-  margin-right: 16rpx;
+  min-width: 130rpx;
+  margin-right: 20rpx;
+  letter-spacing: 0.5rpx;
 }
 
 .info-value {
   font-size: 28rpx;
-  color: #1F2937;
-  font-weight: 500;
+  color: #4B5563;
+  font-weight: 600;
   text-align: right;
   line-height: 1.6;
   flex: 1;
@@ -230,7 +211,7 @@
 .photo-item-inline {
   width: 120rpx;
   height: 120rpx;
-  border-radius: 8rpx;
+  border-radius: 24rpx;
   overflow: hidden;
   background-color: #F3F4F6;
   flex-shrink: 0;
@@ -239,7 +220,7 @@
 .info-badge {
   background-color: #FFF7ED;
   border: 1rpx solid #FED7AA;
-  border-radius: 8rpx;
+  border-radius: 24rpx;
   padding: 4rpx 16rpx;
 }
 
@@ -263,16 +244,17 @@
 
 .remark-label {
   font-size: 28rpx;
-  color: #9CA3AF;
-  min-width: 140rpx;
+  color: #6B7280;
+  min-width: 130rpx;
   flex-shrink: 0;
   margin-right: 24rpx;
+  letter-spacing: 0.5rpx;
 }
 
 .remark-box {
   background-color: #F9FAFB;
   border: 1rpx solid #E5E7EB;
-  border-radius: 16rpx;
+  border-radius: 24rpx;
   padding: 24rpx;
   min-height: 120rpx;
   line-height: 1.6;
@@ -288,9 +270,10 @@
 
 .remark-text {
   font-size: 28rpx;
-  color: #1F2937;
+  color: #4B5563;
   white-space: pre-wrap;
   word-break: break-word;
+  font-weight: 500;
 }
 
 .remark-placeholder {
@@ -301,7 +284,7 @@
 /* ==================== Photo Section ==================== */
 .photo-section {
   background-color: white;
-  border-radius: 20rpx;
+  border-radius: 24rpx;
   padding: 32rpx;
   margin-top: 32rpx;
   box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
@@ -311,7 +294,7 @@
   font-size: 32rpx;
   font-weight: 600;
   color: #1F2937;
-  margin-bottom: 24rpx;
+  margin-bottom: 32rpx;
 }
 
 .photo-grid {
@@ -323,7 +306,7 @@
 .photo-item {
   width: 100%;
   aspect-ratio: 1;
-  border-radius: 12rpx;
+  border-radius: 24rpx;
   overflow: hidden;
   background-color: #F3F4F6;
   transition: all 0.2s;
@@ -349,16 +332,9 @@
 }
 
 .timeline-item {
-  display: flex;
-  gap: 24rpx;
   margin-bottom: 0;
-  position: relative;
-  padding: 32rpx 32rpx;
-  background-color: white;
-}
-
-.timeline-item:not(:last-child) {
-  border-bottom: 1rpx solid #F3F4F6;
+  padding: 0;
+  background-color: transparent;
 }
 
 .timeline-dot-wrapper {
@@ -536,9 +512,10 @@
 }
 
 .action-button-success {
-  background: linear-gradient(135deg, #34C759 0%, #30D158 100%);
+  background: linear-gradient(to right, #10b981, #14b8a6);
   color: white;
-  box-shadow: 0 8rpx 16rpx rgba(52, 199, 89, 0.2);
+  box-shadow: 0 8rpx 16rpx rgba(12, 167, 125, 0.2);
+  min-width: 500rpx;
 }
 
 .action-button-approve {
@@ -551,6 +528,14 @@
   background: linear-gradient(135deg, #FF3B30 0%, #FF453A 100%);
   color: white;
   box-shadow: 0 4rpx 12rpx rgba(255, 59, 48, 0.3);
+}
+
+/* 催维修/催复核按钮 - 橙色风格 */
+.action-button-urge {
+  background: linear-gradient(to right, #f97316, #ea580c);
+  color: white;
+  box-shadow: 0 8rpx 16rpx rgba(249, 115, 22, 0.25);
+  min-width: 500rpx;
 }
 
 .action-button-text {
@@ -758,7 +743,7 @@
 
 .form-picker {
   background-color: #F3F4F6;
-  border-radius: 12rpx;
+  border-radius: 24rpx;
   padding: 24rpx 32rpx;
   transition: all 0.2s;
 }
@@ -778,7 +763,7 @@
   min-height: 240rpx;
   padding: 24rpx 32rpx;
   background-color: #F3F4F6;
-  border-radius: 12rpx;
+  border-radius: 24rpx;
   font-size: 32rpx;
   color: #1F2937;
   box-sizing: border-box;
@@ -804,7 +789,7 @@
   position: relative;
   width: 200rpx;
   height: 200rpx;
-  border-radius: 12rpx;
+  border-radius: 24rpx;
   overflow: hidden;
 }
 
@@ -840,7 +825,7 @@
   width: 200rpx;
   height: 200rpx;
   border: 3rpx dashed rgba(12, 167, 125, 0.3);
-  border-radius: 12rpx;
+  border-radius: 24rpx;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -875,7 +860,7 @@
 /* ==================== Review Decision ==================== */
 .review-decision {
   padding: 32rpx;
-  border-radius: 12rpx;
+  border-radius: 24rpx;
   font-size: 32rpx;
   font-weight: 600;
   text-align: center;
@@ -900,7 +885,7 @@
   align-items: flex-start;
   padding: 32rpx;
   background: linear-gradient(135deg, rgba(255, 149, 0, 0.08) 0%, rgba(255, 159, 10, 0.05) 100%);
-  border-radius: 12rpx;
+  border-radius: 24rpx;
   border-left: 6rpx solid #FF9500;
   margin-top: 32rpx;
 }
@@ -961,7 +946,7 @@
   justify-content: center;
   gap: 6rpx;
   background-color: #F3F4F6;
-  border-radius: 35rpx;
+  border-radius: 24rpx;
   padding: 24rpx;
   width: 140rpx;
   height: 140rpx;
@@ -974,9 +959,9 @@
 }
 
 .more-action-icon {
-  width: 80rpx;
-  height: 80rpx;
-  border-radius: 12rpx;
+  width: 56rpx;
+  height: 56rpx;
+  border-radius: 24rpx;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -984,11 +969,15 @@
 }
 
 .delete-icon {
-  background-color: transparent;
+  background-color: #FEE2E2;
 }
 
 .toggle-icon {
-  background-color: transparent;
+  background-color: #D1FAE5;
+}
+
+.rework-icon {
+  background-color: #FEF3C7;
 }
 
 .icon-text {
@@ -1128,7 +1117,7 @@
   height: 88rpx;
   padding: 0 24rpx;
   background-color: #F3F4F6;
-  border-radius: 12rpx;
+  border-radius: 24rpx;
   font-size: 28rpx;
   color: #1F2937;
   box-sizing: border-box;
@@ -1139,7 +1128,7 @@
   height: 88rpx;
   padding: 0 24rpx;
   background-color: #F3F4F6;
-  border-radius: 12rpx;
+  border-radius: 24rpx;
   display: flex;
   align-items: center;
 }
@@ -1158,7 +1147,7 @@
   min-height: 180rpx;
   padding: 24rpx;
   background-color: #F3F4F6;
-  border-radius: 12rpx;
+  border-radius: 24rpx;
   font-size: 28rpx;
   color: #1F2937;
   box-sizing: border-box;
@@ -1174,7 +1163,7 @@
   flex: 1;
   height: 72rpx;
   background-color: #F3F4F6;
-  border-radius: 12rpx;
+  border-radius: 24rpx;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1220,7 +1209,7 @@
   position: relative;
   width: 100%;
   height: 100%;
-  border-radius: 12rpx;
+  border-radius: 24rpx;
   overflow: hidden;
 }
 
@@ -1251,7 +1240,7 @@
   width: 100%;
   height: 100%;
   border: 3rpx dashed rgba(12, 167, 125, 0.3);
-  border-radius: 12rpx;
+  border-radius: 24rpx;
   display: flex;
   align-items: center;
   justify-content: center;

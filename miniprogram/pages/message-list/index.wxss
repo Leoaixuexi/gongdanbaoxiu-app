@@ -57,13 +57,12 @@
   margin-left: 8rpx;
 }
 
-/* 标题居中区域 - 重新设计 */
+/* 标题居中区域 */
 .title-center {
   display: flex;
   align-items: center;
   justify-content: center;
   flex: 1;
-  transform: translateX(-16rpx); /* 视觉从中心微调以平衡返回按钮 */
 }
 
 /* 标题 */
@@ -75,36 +74,18 @@
   text-shadow: 0 2rpx 4rpx rgba(0,0,0,0.05);
 }
 
-/* 清除按钮 - 悬浮胶囊样式 */
-.clear-btn {
-  position: absolute; /* 绝对定位在右侧，不影响标题居中 */
-  right: 32rpx;
-  height: 60rpx;
-  width: 60rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 20rpx; /* 方圆形 */
-  background-color: rgba(255, 255, 255, 0.15); /* 磨砂玻璃 */
-  backdrop-filter: blur(8rpx);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+/* 清除按钮 - 简洁图标样式 */
+.clear-icon {
+  font-size: 36rpx;
+  color: #ffffff;
+  margin-left: 16rpx;
+  opacity: 0.9;
+  transition: all 0.2s;
 }
 
-.clear-btn:active {
-  transform: scale(0.92);
-  background-color: rgba(255, 255, 255, 0.25);
-}
-
-/* 清除 SVG 图标 */
-.clear-svg-icon {
-  width: 32rpx;
-  height: 32rpx;
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center;
-  /* 精致的清洁刷图标 */
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23FFFFFF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 2a1 1 0 0 1 1 1v5h.5a2 2 0 0 1 2 2v2H8.5v-2a2 2 0 0 1 2-2h.5V3a1 1 0 0 1 1-1z'/%3E%3Cpath d='M8 12c-2.5 0-4 1.5-4 4 0 3 2 6 8 6s8-3 8-6c0-2.5-1.5-4-4-4'/%3E%3Cpath d='M8 12h8'/%3E%3C/svg%3E");
+.clear-icon:active {
+  opacity: 0.6;
+  transform: scale(0.9);
 }
 
 /* 右侧占位 - 已不再需要，因为使用了绝对定位，但保留以防万一 */
@@ -272,8 +253,8 @@
 
 .message-title {
   font-size: 30rpx;
-  color: #1F2937;
-  font-weight: 600; /* 统一为粗体 */
+  color: #374151; /* 调暗标题颜色 */
+  font-weight: 600;
   line-height: 1.4;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -284,7 +265,7 @@
 }
 
 .title-unread {
-  color: #111827; /* 未读仅颜色加深 */
+  color: #1F2937; /* 未读颜色也调暗 */
 }
 
 .message-desc {
@@ -302,7 +283,7 @@
 /* 时间显示 - 纯文本样式 */
 .message-time {
   align-self: flex-start;
-  font-size: 20rpx;
+  font-size: 26rpx;
   color: #9CA3AF; /* 浅灰文字 */
   background-color: transparent; /* 移除背景色 */
   padding: 0; /* 移除内边距 */

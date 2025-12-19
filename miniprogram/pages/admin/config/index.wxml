@@ -1,181 +1,93 @@
 <!--
-  System Configuration Page (T152)
-  Configure SLA rules, fault types, and system settings
+  Config Page
+  系统配置页面
 -->
-<view class="container">
-  <scroll-view scroll-y class="config-scroll" enhanced="{{true}}" show-scrollbar="{{false}}">
-    <view class="config-container">
-      <!-- SLA Rules Section -->
-      <view class="config-section">
-        <view class="section-header">
-          <text class="section-title">SLA规则配置</text>
-          <text class="section-desc">设置不同优先级的响应时限</text>
-        </view>
-
-        <view
-          wx:for="{{slaRules}}"
-          wx:key="priority"
-          class="config-item"
-        >
-          <view class="config-label">
-            <text class="label-text">{{item.priority_name}}</text>
-            <text class="label-desc">目标完成时间和升级阈值</text>
-          </view>
-          <view class="config-inputs">
-            <view class="input-group">
-              <text class="input-label">目标时间</text>
-              <input
-                class="weui-input"
-                type="number"
-                value="{{item.target_hours}}"
-                bindinput="onSlaTargetChange"
-                data-priority="{{item.priority}}"
-              />
-              <text class="input-unit">小时</text>
-            </view>
-            <view class="input-group">
-              <text class="input-label">升级阈值</text>
-              <input
-                class="weui-input"
-                type="number"
-                value="{{item.escalation_threshold_hours}}"
-                bindinput="onSlaEscalationChange"
-                data-priority="{{item.priority}}"
-              />
-              <text class="input-unit">小时</text>
-            </view>
-          </view>
-        </view>
-      </view>
-
-      <!-- Fault Types Section -->
-      <view class="config-section">
-        <view class="section-header">
-          <text class="section-title">故障类型管理</text>
-          <text class="section-desc">配置可用的故障类型</text>
-        </view>
-
-        <view
-          wx:for="{{faultTypes}}"
-          wx:key="id"
-          class="fault-type-item"
-        >
-          <view class="fault-type-info">
-            <text class="fault-type-name">{{item.name}}</text>
-            <text class="fault-type-status {{item.is_active ? 'active' : 'inactive'}}">
-              {{item.is_active ? '启用' : '停用'}}
-            </text>
-          </view>
-          <view class="fault-type-actions">
-            <button class="mini-btn" size="mini" bindtap="onEditFaultType" data-id="{{item.id}}">
-              编辑
-            </button>
-            <button
-              class="mini-btn {{item.is_active ? 'warn' : 'primary'}}"
-              size="mini"
-              bindtap="onToggleFaultType"
-              data-id="{{item.id}}"
-              data-active="{{item.is_active}}"
-            >
-              {{item.is_active ? '停用' : '启用'}}
-            </button>
-          </view>
-        </view>
-
-        <button class="weui-btn add-btn" type="default" size="mini" bindtap="onAddFaultType">
-          + 添加故障类型
-        </button>
-      </view>
-
-      <!-- System Settings Section -->
-      <view class="config-section">
-        <view class="section-header">
-          <text class="section-title">系统设置</text>
-          <text class="section-desc">配置系统运行参数</text>
-        </view>
-
-        <view class="config-item">
-          <view class="config-label">
-            <text class="label-text">并发工单上限</text>
-            <text class="label-desc">维修人员同时处理的最大工单数</text>
-          </view>
-          <view class="config-input-row">
-            <input
-              class="weui-input"
-              type="number"
-              value="{{systemSettings.max_concurrent_orders}}"
-              bindinput="onMaxOrdersChange"
-            />
-            <text class="input-unit">个</text>
-          </view>
-        </view>
-
-        <view class="config-item">
-          <view class="config-label">
-            <text class="label-text">照片大小限制</text>
-            <text class="label-desc">单张照片最大文件大小</text>
-          </view>
-          <view class="config-input-row">
-            <input
-              class="weui-input"
-              type="number"
-              value="{{systemSettings.max_photo_size_mb}}"
-              bindinput="onPhotoSizeChange"
-            />
-            <text class="input-unit">MB</text>
-          </view>
-        </view>
-
-        <view class="config-item">
-          <view class="config-label">
-            <text class="label-text">通知推送</text>
-            <text class="label-desc">启用系统通知推送功能</text>
-          </view>
-          <switch
-            checked="{{systemSettings.notifications_enabled}}"
-            bindchange="onNotificationsChange"
-            color="#1aad19"
-          />
-        </view>
-      </view>
-    </view>
-  </scroll-view>
-
-  <!-- Save Button -->
-  <view class="action-buttons">
-    <button
-      class="weui-btn"
-      type="primary"
-      bindtap="onSave"
-      disabled="{{saving}}"
-      loading="{{saving}}"
-    >
-      {{saving ? '保存中...' : '保存配置'}}
-    </button>
+<view class="config-page">
+  <!-- 页面标题 -->
+  <view class="page-header">
+    <text class="header-title">系统配置</text>
+    <text class="header-desc">配置系统参数和功能开关</text>
   </view>
-</view>
 
-<!-- Fault Type Edit Modal -->
-<view class="modal-mask" wx:if="{{showFaultTypeModal}}" bindtap="onCloseFaultTypeModal">
-  <view class="modal-container" catchtap="onModalStopPropagation">
-    <view class="modal-header">
-      <text class="modal-title">{{editingFaultType.id ? '编辑' : '添加'}}故障类型</text>
-      <icon type="close" size="20" bindtap="onCloseFaultTypeModal"/>
+  <!-- 加载状态 -->
+  <view wx:if="{{loading}}" class="loading-state">
+    <text>加载中...</text>
+  </view>
+
+  <!-- 配置列表 -->
+  <view wx:else class="config-content">
+    <view class="config-list">
+      <block wx:for="{{configItems}}" wx:key="key">
+        <!-- 文本输入 -->
+        <view wx:if="{{item.type === 'text'}}" class="config-item">
+          <view class="config-info">
+            <text class="config-name">{{item.name}}</text>
+            <text class="config-desc">{{item.desc}}</text>
+          </view>
+          <view class="config-control">
+            <input
+              type="text"
+              class="config-input"
+              value="{{editingConfig[item.key]}}"
+              placeholder="请输入"
+              data-key="{{item.key}}"
+              bindinput="onInputChange"
+            />
+          </view>
+        </view>
+
+        <!-- 数字输入 -->
+        <view wx:elif="{{item.type === 'number'}}" class="config-item">
+          <view class="config-info">
+            <text class="config-name">{{item.name}}</text>
+            <text class="config-desc">{{item.desc}}</text>
+          </view>
+          <view class="config-control">
+            <input
+              type="number"
+              class="config-input number"
+              value="{{editingConfig[item.key]}}"
+              placeholder="0"
+              data-key="{{item.key}}"
+              bindinput="onNumberChange"
+            />
+          </view>
+        </view>
+
+        <!-- 开关 -->
+        <view wx:elif="{{item.type === 'switch'}}" class="config-item">
+          <view class="config-info">
+            <text class="config-name">{{item.name}}</text>
+            <text class="config-desc">{{item.desc}}</text>
+          </view>
+          <view class="config-control">
+            <view
+              class="config-switch"
+              bindtap="onSwitchChange"
+              data-key="{{item.key}}"
+            >
+              <view class="switch-track {{editingConfig[item.key] ? 'on' : ''}}">
+                <view class="switch-thumb"></view>
+              </view>
+            </view>
+          </view>
+        </view>
+      </block>
     </view>
-    <view class="modal-content">
-      <view class="form-field">
-        <text class="field-label">类型名称</text>
-        <input
-          class="weui-input"
-          placeholder="请输入故障类型名称"
-          value="{{editingFaultType.name}}"
-          bindinput="onFaultTypeNameInput"
-        />
+
+    <!-- 操作按钮 -->
+    <view class="action-bar">
+      <view class="btn-reset" bindtap="resetConfig">
+        <text>恢复默认</text>
+      </view>
+      <view class="btn-save {{hasChanges ? 'active' : ''}}" bindtap="saveConfig">
+        <text>{{saving ? '保存中...' : '保存配置'}}</text>
       </view>
     </view>
-    <view class="modal-actions">
-      <button class="weui-btn cancel-btn" bindtap="onCloseFaultTypeModal">取消</button>
-      <button class="weui-btn" type="primary" bindtap="onSaveFaultType">保存</button>
+
+    <!-- 修改提示 -->
+    <view wx:if="{{hasChanges}}" class="change-tip">
+      <text>有未保存的修改</text>
     </view>
   </view>
 </view>

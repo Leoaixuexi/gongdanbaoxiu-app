@@ -11,7 +11,7 @@
   <!-- 标题: ID 和紧急标签 -->
   <view class="ticket-header">
     <view class="ticket-id-row">
-      <text class="ticket-id">{{workOrder.order_number || workOrder.id}}</text>
+      <text class="ticket-id">{{workOrder.order_number || workOrder.order_id || workOrder.id}}</text>
       <view wx:if="{{isUrgent}}" class="urgent-badge">紧急</view>
       <!-- SLA 超期标签 -->
       <view wx:if="{{showSLABadge && !isUrgent}}" class="sla-badge-inline sla-{{slaColorClass}}">
@@ -55,21 +55,17 @@
     </view>
   </view>
 
-  <!-- 照片列表 -->
-  <view class="photo-list">
-    <view wx:for="{{[0,1,2]}}" wx:key="index" class="photo-placeholder">
-      <image
-        wx:if="{{workOrder.photos && workOrder.photos[index]}}"
-        src="{{workOrder.photos[index]}}"
-        class="photo-image"
-        mode="aspectFill"
-      />
-      <view wx:else class="photo-empty">
-        <text class="photo-label">照片</text>
-        <view class="photo-icon-wrapper">
-          <text class="photo-icon">🖼️</text>
-        </view>
+  <!-- 照片列表 - 有照片才显示，最多3张 -->
+  <view class="photo-list" wx:if="{{workOrder.photos && workOrder.photos.length > 0}}">
+    <block wx:for="{{workOrder.photos}}" wx:key="index" wx:if="{{index < 3}}">
+      <view class="photo-placeholder">
+        <image
+          src="{{item}}"
+          class="photo-image"
+          mode="aspectFill"
+          lazy-load="{{true}}"
+        />
       </view>
-    </view>
+    </block>
   </view>
 </view>

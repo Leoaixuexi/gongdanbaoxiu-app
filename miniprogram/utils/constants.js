@@ -113,6 +113,10 @@ const DELIVERY_STATUS_COLORS = {
 const config = require('../config/index');
 const API_BASE_URL = config.baseURL;
 
+// WeChat Cloud Environment ID
+// Keep this consistent with the Cloud Environment you deploy to.
+const CLOUD_ENV_ID = 'cloud1-7glfhm4r06e030bd';
+
 // Maximum Values
 const MAX_PHOTOS_PER_ORDER = 9;
 const MAX_PHOTO_SIZE_MB = 5;
@@ -152,6 +156,77 @@ const IMAGE_QUALITY = 80;
 const DEFAULT_PAGE_SIZE = 20;
 const MAX_PAGE_SIZE = 100;
 
+// ============ 管理员后台常量 ============
+
+// 公告状态
+const ANNOUNCEMENT_STATUS = {
+  DRAFT: 'draft',           // 草稿
+  PUBLISHED: 'published',   // 已发布
+  OFFLINE: 'offline'        // 已下线
+};
+
+// 公告状态显示名称
+const ANNOUNCEMENT_STATUS_NAMES = {
+  'draft': '草稿',
+  'published': '已发布',
+  'offline': '已下线'
+};
+
+// 消息模板场景
+const MESSAGE_SCENES = {
+  ORDER_CREATED: 'order_created',           // 工单创建
+  ORDER_STATUS_CHANGED: 'order_status_changed', // 状态变更
+  ORDER_REMINDER: 'order_reminder',         // 催办提醒
+  ANNOUNCEMENT: 'announcement'              // 公告通知
+};
+
+// 消息模板场景名称
+const MESSAGE_SCENE_NAMES = {
+  'order_created': '工单创建通知',
+  'order_status_changed': '工单状态更新',
+  'order_reminder': '工单催办提醒',
+  'announcement': '公告发布通知'
+};
+
+// 消息模板可用变量（按场景）
+const MESSAGE_TEMPLATE_VARIABLES = {
+  'order_created': [
+    { key: 'order_id', name: '工单编号' },
+    { key: 'description', name: '问题描述' },
+    { key: 'location', name: '位置' },
+    { key: 'submitter_name', name: '提交人' },
+    { key: 'created_at', name: '创建时间' }
+  ],
+  'order_status_changed': [
+    { key: 'order_id', name: '工单编号' },
+    { key: 'old_status', name: '原状态' },
+    { key: 'new_status', name: '新状态' },
+    { key: 'operator_name', name: '操作人' },
+    { key: 'changed_at', name: '变更时间' }
+  ],
+  'order_reminder': [
+    { key: 'order_id', name: '工单编号' },
+    { key: 'description', name: '问题描述' },
+    { key: 'status', name: '当前状态' },
+    { key: 'created_at', name: '创建时间' },
+    { key: 'days_pending', name: '待处理天数' }
+  ],
+  'announcement': [
+    { key: 'title', name: '公告标题' },
+    { key: 'publish_time', name: '发布时间' }
+  ]
+};
+
+// 管理模块列表
+const ADMIN_MODULES = [
+  { key: 'users', name: '账号管理', icon: 'user', path: '/pages/admin/users/index' },
+  { key: 'roles', name: '角色与权限', icon: 'role', path: '/pages/admin/roles/index' },
+  { key: 'config', name: '系统配置', icon: 'config', path: '/pages/admin/config/index' },
+  { key: 'announcements', name: '公告管理', icon: 'announcement', path: '/pages/admin/announcements/index' },
+  { key: 'templates', name: '消息模板', icon: 'template', path: '/pages/admin/message-templates/index' },
+  { key: 'audit', name: '审计日志', icon: 'audit', path: '/pages/admin/audit-logs/index' }
+];
+
 module.exports = {
   WORK_ORDER_STATUSES,
   PRIORITIES,
@@ -167,6 +242,7 @@ module.exports = {
   DELIVERY_STATUS_DISPLAY_NAMES,
   DELIVERY_STATUS_COLORS,
   API_BASE_URL,
+  CLOUD_ENV_ID,
   MAX_PHOTOS_PER_ORDER,
   MAX_PHOTO_SIZE_MB,
   MAX_CONCURRENT_ORDERS_PER_TECHNICIAN,
@@ -176,4 +252,11 @@ module.exports = {
   IMAGE_QUALITY,
   DEFAULT_PAGE_SIZE,
   MAX_PAGE_SIZE,
+  // 管理员后台常量
+  ANNOUNCEMENT_STATUS,
+  ANNOUNCEMENT_STATUS_NAMES,
+  MESSAGE_SCENES,
+  MESSAGE_SCENE_NAMES,
+  MESSAGE_TEMPLATE_VARIABLES,
+  ADMIN_MODULES
 };
