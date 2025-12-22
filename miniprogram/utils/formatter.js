@@ -34,7 +34,7 @@ const formatDate = (date, format = 'YYYY-MM-DD') => {
 };
 
 const formatTime = (date) => formatDate(date, 'HH:mm:ss');
-const formatDateTime = (date) => formatDate(date, 'YYYY-MM-DD HH:mm:ss');
+const formatDateTime = (date) => formatDate(date, 'YYYY-MM-DD    HH:mm:ss');
 
 const formatRelativeTime = (date) => {
   try {

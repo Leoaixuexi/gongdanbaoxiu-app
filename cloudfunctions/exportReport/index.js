@@ -27,7 +27,6 @@ const STATUS_MAP = {
   '已修复': 'Repaired',
   '已维修': 'Repaired',
   'Repaired': 'Repaired',
-  '需重修': 'Needs Rework',
   '需返工': 'Needs Rework',
   'Needs Rework': 'Needs Rework',
   '已完成': 'Completed',

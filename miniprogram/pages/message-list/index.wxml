@@ -72,8 +72,11 @@
           
           <!-- 消息内容 -->
           <view class="message-content">
-            <!-- 标题 -->
-            <text class="message-title {{item.isRead ? '' : 'title-unread'}}">{{item.title}}</text>
+            <!-- 标题 - 工单编号显示绿色 -->
+            <view class="message-title-row">
+              <text class="message-title {{item.isRead ? '' : 'title-unread'}}">{{item.titlePrefix}}</text>
+              <text class="message-order-number">{{item.orderNumber}}</text>
+            </view>
             <!-- 描述文本 -->
             <text class="message-desc">{{item.content}}</text>
             <!-- 时间 - 显示在底部 -->

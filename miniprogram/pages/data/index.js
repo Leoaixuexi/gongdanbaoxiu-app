@@ -33,7 +33,7 @@ Page({
     activeTab: 'stats',  // 'stats' | 'charts'
 
     // 时间过滤
-    timeFilter: 'today',  // 'yesterday' | 'today' | 'week' | 'month' | 'custom'
+    timeFilter: 'all',  // 'all' | 'yesterday' | 'today' | 'week' | 'month' | 'custom'
     startDate: '',
     endDate: '',
     showDatePicker: false,
@@ -205,7 +205,7 @@ Page({
         },
         {
           key: 'rework',
-          label: '需重修',
+          label: '需返工',
           status: 'Needs Rework',
           bgClass: '#ffedd5',
           color: '#ea580c',
@@ -342,12 +342,11 @@ Page({
   initManagerView() {
     console.log('[Manager] Initializing manager view');
 
-    // 初始化日期范围为"今天"
-    const { startDate, endDate } = dateUtils.getDateRange('today');
+    // 初始化日期范围为"全部"
     this.setData({
-      startDate: dateUtils.formatDate(startDate),
-      endDate: dateUtils.formatDate(endDate),
-      timeFilter: 'today'
+      startDate: '',
+      endDate: '',
+      timeFilter: 'all'
     });
 
     // 加载所有数据
@@ -361,14 +360,12 @@ Page({
     const tab = e.currentTarget.dataset.tab;
     if (tab === this.data.activeTab) return; // 相同tab不处理
 
-    // 重置筛选条件为"今天"
-    const { startDate, endDate } = dateUtils.getDateRange('today');
-
+    // 重置筛选条件为"全部"
     this.setData({
       activeTab: tab,
-      timeFilter: 'today',
-      startDate: dateUtils.formatDate(startDate),
-      endDate: dateUtils.formatDate(endDate),
+      timeFilter: 'all',
+      startDate: '',
+      endDate: '',
       chartsInitialized: false  // 重置图表初始化状态
     });
 
@@ -388,6 +385,14 @@ Page({
         showDatePicker: true,
         timeFilter: 'custom'
       });
+    } else if (filter === 'all') {
+      // 全部：不限制日期
+      this.setData({
+        timeFilter: 'all',
+        startDate: '',
+        endDate: ''
+      });
+      this.fetchAllManagerData();
     } else {
       const { startDate, endDate } = dateUtils.getDateRange(filter);
       this.setData({
@@ -534,13 +539,16 @@ Page({
       };
 
       // 转换员工排名数据为统一的 rankings 格式
-      const rankings = (employeeRes.result?.data || []).map((item, index) => ({
-        rank: index + 1,
-        name: item.employeeName,
-        completedOrders: item.totalCompleted,
-        avatar: '/images/icons/default-avatar.png',
-        isCurrentUser: false
-      }));
+      // 过滤掉完成工单数为0的员工，只显示有完成工单的排名
+      const rankings = (employeeRes.result?.data || [])
+        .filter(item => item.totalCompleted > 0)
+        .map((item, index) => ({
+          rank: index + 1,
+          name: item.employeeName,
+          completedOrders: item.totalCompleted,
+          avatar: '/images/icons/default-avatar.png',
+          isCurrentUser: false
+        }));
 
       // 更新数据
       this.setData({
@@ -705,7 +713,7 @@ Page({
       });
       canvas.setChart(chart);
 
-      const option = chartUtils.getPieChartOption(this.data.responsibleChartData || [], '责任方');
+      const option = chartUtils.getSolidPieChartOption(this.data.responsibleChartData || [], '责任方');
       chart.setOption(option);
 
       return chart;

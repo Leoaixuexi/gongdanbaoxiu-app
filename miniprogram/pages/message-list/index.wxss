@@ -242,6 +242,15 @@
   transition: opacity 0.3s;
 }
 
+/* 红点显示/隐藏状态 */
+.dot-visible {
+  opacity: 1;
+}
+
+.dot-hidden {
+  opacity: 0;
+}
+
 /* 消息内容区域 */
 .message-content {
   flex: 1;
@@ -251,17 +260,27 @@
   gap: 8rpx; /* 减小内部行间距 */
 }
 
+/* 标题行 - 包含前缀和工单编号 */
+.message-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+}
+
 .message-title {
   font-size: 30rpx;
   color: #374151; /* 调暗标题颜色 */
   font-weight: 600;
   line-height: 1.4;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: -webkit-box;
-  -webkit-line-clamp: 1;
-  -webkit-box-orient: vertical;
   letter-spacing: 0.5rpx;
+}
+
+/* 工单编号 - 绿色 */
+.message-order-number {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #10b981;
+  line-height: 1.4;
 }
 
 .title-unread {

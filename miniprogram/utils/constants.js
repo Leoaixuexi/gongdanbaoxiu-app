@@ -14,9 +14,7 @@ const WORK_ORDER_STATUSES = [
 
 // Work Order Priority Levels (mirrors backend)
 const PRIORITIES = [
-  'Low',
   'Normal',
-  'High',
   'Emergency',
 ];
 
@@ -62,9 +60,7 @@ const STATUS_DISPLAY_NAMES = {
 
 // Priority Display Names (Chinese)
 const PRIORITY_DISPLAY_NAMES = {
-  'Low': '低',
   'Normal': '普通',
-  'High': '高',
   'Emergency': '紧急',
 };
 
@@ -87,10 +83,8 @@ const STATUS_COLORS = {
 
 // Priority Colors for UI badges/tags
 const PRIORITY_COLORS = {
-  'Low': '#9e9e9e',               // Grey
-  'Normal': '#2196f3',            // Blue
-  'High': '#ff9800',              // Orange
-  'Emergency': '#f44336',         // Red
+  'Normal': '#4caf50',              // Green
+  'Emergency': '#f44336',           // Red
 };
 
 // Delivery Status Display Names (Chinese)

@@ -15,9 +15,7 @@ Page({
     location: '',
     description: '',
     priorityOptions: [
-      { key: 'Low', label: '低', color: 'green' },
-      { key: 'Normal', label: '中', color: 'yellow' },
-      { key: 'High', label: '高', color: 'orange' },
+      { key: 'Normal', label: '普通', color: 'green' },
       { key: 'Emergency', label: '紧急', color: 'red' }
     ],
     selectedPriority: '',

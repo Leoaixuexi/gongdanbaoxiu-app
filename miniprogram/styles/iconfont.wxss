@@ -6,9 +6,9 @@
 
 @font-face {
   font-family: "iconfont";
-  src: url('https://at.alicdn.com/t/c/font_5090968_asys14b3mm6.woff2?t=1766156093735') format('woff2'),
-       url('https://at.alicdn.com/t/c/font_5090968_asys14b3mm6.woff?t=1766156093735') format('woff'),
-       url('https://at.alicdn.com/t/c/font_5090968_asys14b3mm6.ttf?t=1766156093735') format('truetype');
+  src: url('https://at.alicdn.com/t/c/font_5090968_i5hfy9pvg8.woff2?t=1766413188191') format('woff2'),
+       url('https://at.alicdn.com/t/c/font_5090968_i5hfy9pvg8.woff?t=1766413188191') format('woff'),
+       url('https://at.alicdn.com/t/c/font_5090968_i5hfy9pvg8.ttf?t=1766413188191') format('truetype');
 }
 
 .iconfont {
@@ -20,9 +20,14 @@
 }
 
 /* ========== 工单详情页面图标 ========== */
-/* 删除 */
+/* 删除（旧版本） */
 .icon-shanchu:before {
   content: "\e605";
+}
+
+/* 删除（新版本） */
+.icon-shanchu1:before {
+  content: "\e613";
 }
 
 /* 切换/转派 */
@@ -110,7 +115,7 @@
   content: "\e7e1";
 }
 
-/* 重修/需重修 */
+/* 重修/需返工 */
 .icon-zhongxiu:before {
   content: "\e72d";
 }
@@ -121,17 +126,32 @@
 }
 
 /* ========== 数据页面排名图标 ========== */
-/* 金牌 */
+/* 第一名 */
+.icon-diyiming:before {
+  content: "\e69d";
+}
+
+/* 第二名 */
+.icon-dierming:before {
+  content: "\e61c";
+}
+
+/* 第三名 */
+.icon-disanming:before {
+  content: "\e608";
+}
+
+/* 金牌（旧版本） */
 .icon-jinpai:before {
   content: "\e637";
 }
 
-/* 银牌 */
+/* 银牌（旧版本） */
 .icon-yinpai:before {
   content: "\e65d";
 }
 
-/* 铜牌 */
+/* 铜牌（旧版本） */
 .icon-tongpai:before {
   content: "\e797";
 }

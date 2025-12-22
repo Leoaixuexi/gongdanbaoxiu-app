@@ -52,12 +52,15 @@ exports.main = async (event, context) => {
       return { success: false, error: '无权限查看数据分析' };
     }
 
-    // 转换日期字符串为Date对象
-    const start = new Date(startDate);
-    start.setHours(0, 0, 0, 0);
-
-    const end = new Date(endDate);
-    end.setHours(23, 59, 59, 999);
+    // 处理日期参数 - 为空时查询所有数据
+    let matchCondition = {};
+    if (startDate && endDate) {
+      const start = new Date(startDate);
+      start.setHours(0, 0, 0, 0);
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59, 999);
+      matchCondition = { created_at: _.gte(start).and(_.lte(end)) };
+    }
 
     const normalizeStatus = (status) => {
       const map = {
@@ -69,7 +72,6 @@ exports.main = async (event, context) => {
         '已修复': 'Repaired',
         '已维修': 'Repaired',
         'Repaired': 'Repaired',
-        '需重修': 'Needs Rework',
         '需返工': 'Needs Rework',
         'Needs Rework': 'Needs Rework',
         '已完成': 'Completed',
@@ -81,9 +83,7 @@ exports.main = async (event, context) => {
     // 使用聚合管道统计各状态工单数量
     const result = await db.collection('work_orders')
       .aggregate()
-      .match({
-        created_at: _.gte(start).and(_.lte(end))
-      })
+      .match(matchCondition)
       .group({
         _id: '$status',
         count: $.sum(1)
@@ -103,7 +103,7 @@ exports.main = async (event, context) => {
       'In Progress': '维修中',
       // 云端没有单独的“待复核”状态：Repaired 即待复核
       'Repaired': '待复核',
-      'Needs Rework': '需重修',
+      'Needs Rework': '需返工',
       'Completed': '已完成'
     };
 
@@ -114,7 +114,7 @@ exports.main = async (event, context) => {
     }));
 
     // 确保所有状态都有数据（即使为0）
-    const allStatuses = ['已提报', '维修中', '待复核', '需重修', '已完成'];
+    const allStatuses = ['已提报', '维修中', '待复核', '需返工', '已完成'];
     const filledData = allStatuses.map(status => {
       const found = data.find(d => d.name === status);
       return found || { name: status, value: 0 };

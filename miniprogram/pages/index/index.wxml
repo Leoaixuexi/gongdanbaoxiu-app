@@ -105,11 +105,8 @@
         <view class="ticket-header">
           <view class="ticket-id-row">
             <text class="ticket-id">{{item.order_number || item.order_id || item.id}}</text>
-            <!-- 优先级标签 - 全部显示 -->
+            <!-- 优先级标签 - 只显示紧急 -->
             <view wx:if="{{item.priority === 'Emergency'}}" class="priority-badge priority-emergency">紧急</view>
-            <view wx:elif="{{item.priority === 'High'}}" class="priority-badge priority-high">高</view>
-            <view wx:elif="{{item.priority === 'Normal'}}" class="priority-badge priority-normal">中</view>
-            <view wx:elif="{{item.priority === 'Low'}}" class="priority-badge priority-low">低</view>
           </view>
         </view>
 

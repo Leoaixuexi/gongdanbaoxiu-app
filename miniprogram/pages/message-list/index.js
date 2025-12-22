@@ -5,6 +5,7 @@
  */
 
 const cloudDB = require('../../services/cloudDatabase');
+const notificationService = require('../../services/notification');
 const { STORAGE_KEYS } = require('../../utils/constants');
 
 Page({
@@ -63,11 +64,56 @@ Page({
 
         messages = (result.list || []).map(item => ({
           id: item._id,
-          title: item.title,
+          titlePrefix: item.title,
+          orderNumber: '',
           content: this.stripHtml(item.content || ''),
           timeText: this.formatDate(item.publish_time || item.created_at),
           isRead: false // 可后续扩展已读状态
         }));
+      } else if (this.data.moduleId === 'workorder') {
+        // 从云端获取工单通知列表
+        const result = await notificationService.getUserNotifications(false, 50);
+
+        if (result && result.success && result.notifications) {
+          // 筛选出工单相关的通知 - 排除提醒类
+          messages = result.notifications
+            .filter(notif => {
+              return notif.type && (
+                notif.type.includes('work_order') ||
+                notif.type.includes('order_')
+              ) && !notif.type.startsWith('urge_');  // 关键：排除提醒类
+            })
+            .map(notif => ({
+              id: notif._id,
+              notificationId: notif._id, // 保存通知ID用于标记已读
+              titlePrefix: '工单编号 ',
+              orderNumber: notif.data?.order_number || '',
+              content: notif.message,
+              timeText: this.formatDate(notif.sent_at),
+              isRead: notif.read || false,
+              orderId: notif.data?.order_id // 工单ID用于跳转
+            }));
+        }
+      } else if (this.data.moduleId === 'reminder') {
+        // 新增：提醒我的模块
+        const result = await notificationService.getUserNotifications(false, 50);
+
+        if (result && result.success && result.notifications) {
+          messages = result.notifications
+            .filter(notif => notif.type && notif.type.startsWith('urge_'))
+            .map(notif => ({
+              id: notif._id,
+              notificationId: notif._id,
+              titlePrefix: '工单编号 ',
+              orderNumber: notif.data?.order_number || '',
+              content: notif.message,
+              timeText: this.formatDate(notif.sent_at),
+              isRead: notif.read || false,
+              orderId: notif.data?.order_id,
+              reminderType: notif.data?.reminder_type,
+              triggeredBy: notif.data?.triggered_by?.name
+            }));
+        }
       } else {
         // 其他模块使用模拟数据
         await this.delay(500);
@@ -125,17 +171,17 @@ Page({
   getMockMessages(moduleId) {
     const mockDataMap = {
       'workorder': [
-        { id: '1', title: '办公楼一层空调维修', content: '一层大厅空调制热效果差，需要检修。工单编号：WO20240115001', timeText: '2025-12-08 19:30', isRead: false },
-        { id: '2', title: '会议室投影仪故障', content: '302会议室投影仪无法正常开机，请尽快处理。工单编号：WO20240115002', timeText: '2025-12-08 17:00', isRead: false },
-        { id: '3', title: '电梯年度检验', content: 'A栋电梯需进行年度安全检验，请安排技术人员配合。工单编号：WO20240114001', timeText: '2025-12-08 13:20', isRead: false },
-        { id: '4', title: '消防设备巡检', content: '本月消防设备巡检任务已分配，请于本周内完成。工单编号：WO20240113001', timeText: '2025-12-07 10:30', isRead: false },
-        { id: '5', title: '门禁系统升级', content: '门禁系统软件升级，需配合进行现场调试。工单编号：WO20240112001', timeText: '2025-12-07 08:45', isRead: false }
+        { id: '1', titlePrefix: '工单编号 ', orderNumber: 'WO20240115001', content: '一层大厅空调制热效果差，需要检修。', timeText: '2025-12-08 19:30', isRead: false },
+        { id: '2', titlePrefix: '工单编号 ', orderNumber: 'WO20240115002', content: '302会议室投影仪无法正常开机，请尽快处理。', timeText: '2025-12-08 17:00', isRead: false },
+        { id: '3', titlePrefix: '工单编号 ', orderNumber: 'WO20240114001', content: 'A栋电梯需进行年度安全检验，请安排技术人员配合。', timeText: '2025-12-08 13:20', isRead: false },
+        { id: '4', titlePrefix: '工单编号 ', orderNumber: 'WO20240113001', content: '本月消防设备巡检任务已分配，请于本周内完成。', timeText: '2025-12-07 10:30', isRead: false },
+        { id: '5', titlePrefix: '工单编号 ', orderNumber: 'WO20240112001', content: '门禁系统软件升级，需配合进行现场调试。', timeText: '2025-12-07 08:45', isRead: false }
       ],
       'reminder': [
-        { id: '1', title: '检查安全通道', content: '请检查B栋安全通道是否畅通，确保无杂物堆放。', timeText: '2025-12-07 15:00', isRead: false },
-        { id: '2', title: '设备保养提醒', content: '中央空调系统已到保养周期，请联系供应商安排保养。', timeText: '2025-12-06 11:20', isRead: true },
-        { id: '3', title: '合同到期提醒', content: '保洁服务合同将于下月15日到期，请及时处理续约事宜。', timeText: '2025-12-05 09:00', isRead: true },
-        { id: '4', title: '缴费提醒', content: '本月物业费缴纳截止日期为25日，请及时通知业主。', timeText: '2025-12-04 14:30', isRead: true }
+        { id: '1', titlePrefix: '工单编号 ', orderNumber: 'WO20240115001', content: '请检查B栋安全通道是否畅通，确保无杂物堆放。', timeText: '2025-12-07 15:00', isRead: false },
+        { id: '2', titlePrefix: '工单编号 ', orderNumber: 'WO20240115002', content: '中央空调系统已到保养周期，请联系供应商安排保养。', timeText: '2025-12-06 11:20', isRead: true },
+        { id: '3', titlePrefix: '工单编号 ', orderNumber: 'WO20240114001', content: '保洁服务合同将于下月15日到期，请及时处理续约事宜。', timeText: '2025-12-05 09:00', isRead: true },
+        { id: '4', titlePrefix: '工单编号 ', orderNumber: 'WO20240113001', content: '本月物业费缴纳截止日期为25日，请及时通知业主。', timeText: '2025-12-04 14:30', isRead: true }
       ]
     };
 
@@ -222,12 +268,32 @@ Page({
    */
   handleDelete(e) {
     const messageId = e.currentTarget.dataset.id;
+    const message = this.data.messages.find(m => m.id === messageId);
 
     wx.showModal({
       title: '确认删除',
       content: '确定要删除这条消息吗？',
-      success: (res) => {
+      success: async (res) => {
         if (res.confirm) {
+          // 对于工单通知和提醒通知，调用云端删除
+          if ((this.data.moduleId === 'workorder' || this.data.moduleId === 'reminder') && message?.notificationId) {
+            try {
+              wx.showLoading({ title: '删除中...', mask: true });
+              await notificationService.deleteNotification(message.notificationId);
+              wx.hideLoading();
+            } catch (error) {
+              wx.hideLoading();
+              console.error('[Message List] Delete error:', error);
+              wx.showToast({
+                title: '删除失败',
+                icon: 'error',
+                duration: 2000
+              });
+              return;
+            }
+          }
+
+          // 更新本地列表
           const messages = this.data.messages.filter(m => m.id !== messageId);
           this.setData({ messages });
           this.currentSwipedIndex = -1;
@@ -260,7 +326,12 @@ Page({
     wx.showLoading({ title: '处理中...', mask: true });
 
     try {
-      await this.delay(500);
+      // 对于工单通知，调用真实API标记所有为已读
+      if (this.data.moduleId === 'workorder') {
+        await notificationService.markAllAsRead();
+      } else {
+        await this.delay(500);
+      }
 
       const messages = this.data.messages.map(m => ({
         ...m,
@@ -312,6 +383,15 @@ Page({
 
     // 标记为已读
     if (!message.isRead) {
+      // 对于工单通知和提醒通知，调用真实API标记为已读
+      if ((this.data.moduleId === 'workorder' || this.data.moduleId === 'reminder') && message.notificationId) {
+        try {
+          await notificationService.markAsRead(message.notificationId);
+        } catch (error) {
+          console.error('[Message List] Mark as read error:', error);
+        }
+      }
+
       const messages = this.data.messages.map(m => {
         if (m.id === messageId) {
           return { ...m, isRead: true };
@@ -322,7 +402,16 @@ Page({
     }
 
     // 根据模块类型跳转
-    if (this.data.moduleId === 'workorder') {
+    if (this.data.moduleId === 'workorder' || this.data.moduleId === 'reminder') {
+      // 如果消息中有工单ID，直接跳转
+      if (message.orderId) {
+        wx.navigateTo({
+          url: `/pages/work-order-detail/index?id=${message.orderId}`
+        });
+        return;
+      }
+
+      // 兼容旧格式：从内容中提取工单编号
       const match = message.content.match(/WO\d+/);
       if (match) {
         wx.navigateTo({

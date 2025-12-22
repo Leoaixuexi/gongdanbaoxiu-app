@@ -105,46 +105,54 @@
         </view>
 
         <view class="flex items-center gap-1">
-          <image src="/images/icons/chevron-left.svg" class="icon-xs"></image>
+          <text class="arrow-icon">‹</text>
           <view class="badge" style="background-color: #f5f5f5; padding: 8rpx 24rpx;">
             <text class="text-xs font-semibold">10月</text>
           </view>
-          <image src="/images/icons/chevron-right.svg" class="icon-xs"></image>
+          <text class="arrow-icon">›</text>
         </view>
       </view>
 
       <view class="card card-backdrop">
-        <view wx:for="{{rankings}}" wx:key="rank">
-          <view class="p-4 flex items-center gap-3"
-                style="border-bottom: 1rpx solid var(--border);">
-            <view style="width: 60rpx; text-align: center; display: flex; align-items: center; justify-content: center;">
-              <text wx:if="{{item.rank == 1}}" class="iconfont icon-jinpai" style="font-size: 48rpx; color: #FFD700;"></text>
-              <text wx:elif="{{item.rank == 2}}" class="iconfont icon-yinpai" style="font-size: 48rpx; color: #C0C0C0;"></text>
-              <text wx:elif="{{item.rank == 3}}" class="iconfont icon-tongpai" style="font-size: 48rpx; color: #CD7F32;"></text>
-              <text wx:else class="text-base font-bold">{{item.rank}}</text>
-            </view>
+        <!-- 有排名数据时显示列表 -->
+        <block wx:if="{{rankings.length > 0}}">
+          <view wx:for="{{rankings}}" wx:key="rank">
+            <view class="p-4 flex items-center gap-3"
+                  style="border-bottom: 1rpx solid var(--border);">
+              <view style="width: 60rpx; text-align: center; display: flex; align-items: center; justify-content: center;">
+                <text wx:if="{{item.rank == 1}}" class="iconfont icon-jinpai" style="font-size: 48rpx; color: #FFD700;"></text>
+                <text wx:elif="{{item.rank == 2}}" class="iconfont icon-yinpai" style="font-size: 48rpx; color: #C0C0C0;"></text>
+                <text wx:elif="{{item.rank == 3}}" class="iconfont icon-tongpai" style="font-size: 48rpx; color: #CD7F32;"></text>
+                <text wx:else class="text-base font-bold">{{item.rank}}</text>
+              </view>
 
-            <view class="avatar-sm {{item.isCurrentUser && item.rank != 3 ? 'current-user-avatar' : ''}}">
-              <image src="{{item.avatar}}" mode="aspectFill"></image>
-            </view>
+              <view class="avatar-placeholder {{item.isCurrentUser && item.rank != 3 ? 'current-user-avatar' : ''}}">
+                <text>{{item.name[0] || '?'}}</text>
+              </view>
 
-            <view class="flex-1 min-w-0 flex items-center gap-2">
-              <text class="text-sm truncate tracking-tight {{item.isCurrentUser && item.rank != 3 ? 'text-primary' : ''}}">{{item.name}}</text>
-              <view wx:if="{{item.isCurrentUser && item.rank != 3}}" class="badge badge-primary" style="height: 40rpx; padding: 0 16rpx;">
-                <text class="text-xs">我</text>
+              <view class="flex-1 min-w-0 flex items-center gap-2">
+                <text class="text-sm truncate tracking-tight {{item.isCurrentUser && item.rank != 3 ? 'text-primary' : ''}}">{{item.name}}</text>
+                <view wx:if="{{item.isCurrentUser && item.rank != 3}}" class="badge badge-primary" style="height: 40rpx; padding: 0 16rpx;">
+                  <text class="text-xs">我</text>
+                </view>
+              </view>
+
+              <view class="text-right">
+                <text class="text-base font-bold text-foreground">{{item.completedOrders}}</text>
+                <text class="text-xs text-muted-foreground ml-1">单</text>
               </view>
             </view>
-
-            <view class="text-right">
-              <text class="text-base font-bold text-foreground">{{item.completedOrders}}</text>
-              <text class="text-xs text-muted-foreground ml-1">单</text>
-            </view>
           </view>
-        </view>
 
-        <!-- 查看全部 -->
-        <view class="view-all-button" bindtap="viewAllRankings">
-          <text class="text-base font-semibold">查看全部</text>
+          <!-- 查看全部 -->
+          <view class="view-all-button" bindtap="viewAllRankings">
+            <text class="text-base font-semibold">查看全部</text>
+          </view>
+        </block>
+        <!-- 无排名数据时显示缺省图 -->
+        <view wx:else class="empty-ranking">
+          <view class="empty-ranking-icon">📊</view>
+          <text class="empty-ranking-text">暂无工单排名</text>
         </view>
       </view>
     </view>
@@ -170,7 +178,11 @@
     <view wx:if="{{activeTab === 'stats'}}">
       <!-- 日期范围选择器 -->
       <view class="manager-date-filter mb-3">
-        <view class="flex gap-2">
+        <view class="flex gap-1 justify-center">
+          <view class="date-chip {{timeFilter === 'all' ? 'active' : ''}}"
+                bindtap="onTimeFilterChange" data-filter="all">
+            <text>全部</text>
+          </view>
           <view class="date-chip {{timeFilter === 'yesterday' ? 'active' : ''}}"
                 bindtap="onTimeFilterChange" data-filter="yesterday">
             <text>昨日</text>
@@ -189,8 +201,8 @@
           </view>
           <view class="date-chip {{timeFilter === 'custom' ? 'active' : ''}}"
                 bindtap="onTimeFilterChange" data-filter="custom">
-            <image src="{{icons.calendar}}" mode="aspectFit" 
-                   style="width: 32rpx; height: 32rpx; {{timeFilter === 'custom' ? 'filter: brightness(0) invert(1);' : 'opacity: 0.5;'}}"></image>
+            <image src="{{icons.calendar}}" mode="aspectFit"
+                   style="width: 28rpx; height: 28rpx; {{timeFilter === 'custom' ? 'filter: brightness(0) invert(1);' : 'opacity: 0.5;'}}"></image>
           </view>
         </view>
       </view>
@@ -243,29 +255,37 @@
           <text class="text-base font-bold">完成工单排名</text>
         </view>
         <view class="card card-backdrop">
-          <view wx:for="{{rankings}}" wx:key="rank">
-            <view class="p-4 flex items-center gap-3"
-                  style="border-bottom: 1rpx solid var(--border);">
-              <view style="width: 60rpx; text-align: center; display: flex; align-items: center; justify-content: center;">
-                <text wx:if="{{item.rank == 1}}" class="iconfont icon-jinpai" style="font-size: 48rpx; color: #FFD700;"></text>
-                <text wx:elif="{{item.rank == 2}}" class="iconfont icon-yinpai" style="font-size: 48rpx; color: #C0C0C0;"></text>
-                <text wx:elif="{{item.rank == 3}}" class="iconfont icon-tongpai" style="font-size: 48rpx; color: #CD7F32;"></text>
-                <text wx:else class="text-base font-bold">{{item.rank}}</text>
-              </view>
+          <!-- 有排名数据时显示列表 -->
+          <block wx:if="{{rankings.length > 0}}">
+            <view wx:for="{{rankings}}" wx:key="rank">
+              <view class="p-4 flex items-center gap-3"
+                    style="border-bottom: 1rpx solid var(--border);">
+                <view style="width: 60rpx; text-align: center; display: flex; align-items: center; justify-content: center;">
+                  <text wx:if="{{item.rank == 1}}" class="iconfont icon-jinpai" style="font-size: 48rpx; color: #FFD700;"></text>
+                  <text wx:elif="{{item.rank == 2}}" class="iconfont icon-yinpai" style="font-size: 48rpx; color: #C0C0C0;"></text>
+                  <text wx:elif="{{item.rank == 3}}" class="iconfont icon-tongpai" style="font-size: 48rpx; color: #CD7F32;"></text>
+                  <text wx:else class="text-base font-bold">{{item.rank}}</text>
+                </view>
 
-              <view class="avatar-sm">
-                <image src="{{item.avatar}}" mode="aspectFill"></image>
-              </view>
+                <view class="avatar-placeholder">
+                  <text>{{item.name[0] || '?'}}</text>
+                </view>
 
-              <view class="flex-1 min-w-0 flex items-center gap-2">
-                <text class="text-sm truncate tracking-tight">{{item.name}}</text>
-              </view>
+                <view class="flex-1 min-w-0 flex items-center gap-2">
+                  <text class="text-sm truncate tracking-tight">{{item.name}}</text>
+                </view>
 
-              <view class="text-right">
-                <text class="text-base font-bold text-foreground">{{item.completedOrders}}</text>
-                <text class="text-xs text-muted-foreground ml-1">单</text>
+                <view class="text-right">
+                  <text class="text-base font-bold text-foreground">{{item.completedOrders}}</text>
+                  <text class="text-xs text-muted-foreground ml-1">单</text>
+                </view>
               </view>
             </view>
+          </block>
+          <!-- 无排名数据时显示缺省图 -->
+          <view wx:else class="empty-ranking">
+            <view class="empty-ranking-icon">📊</view>
+            <text class="empty-ranking-text">暂无工单排名</text>
           </view>
         </view>
       </view>
@@ -276,7 +296,11 @@
     <view wx:if="{{activeTab === 'charts'}}">
       <!-- 日期范围选择器 -->
       <view class="manager-date-filter mb-3">
-        <view class="flex gap-2">
+        <view class="flex gap-1 justify-center">
+          <view class="date-chip {{timeFilter === 'all' ? 'active' : ''}}"
+                bindtap="onTimeFilterChange" data-filter="all">
+            <text>全部</text>
+          </view>
           <view class="date-chip {{timeFilter === 'yesterday' ? 'active' : ''}}"
                 bindtap="onTimeFilterChange" data-filter="yesterday">
             <text>昨日</text>
@@ -295,8 +319,8 @@
           </view>
           <view class="date-chip {{timeFilter === 'custom' ? 'active' : ''}}"
                 bindtap="onTimeFilterChange" data-filter="custom">
-            <image src="{{icons.calendar}}" mode="aspectFit" 
-                   style="width: 32rpx; height: 32rpx; {{timeFilter === 'custom' ? 'filter: brightness(0) invert(1);' : 'opacity: 0.5;'}}"></image>
+            <image src="{{icons.calendar}}" mode="aspectFit"
+                   style="width: 28rpx; height: 28rpx; {{timeFilter === 'custom' ? 'filter: brightness(0) invert(1);' : 'opacity: 0.5;'}}"></image>
           </view>
         </view>
       </view>

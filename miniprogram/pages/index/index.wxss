@@ -270,7 +270,7 @@
   font-weight: 600;
 }
 
-/* 需重修状态 - 浅灰色背景+深灰色字体 */
+/* 需返工状态 - 浅灰色背景+深灰色字体 */
 .status-tab-rework {
   background: #e2e8f0;
 }
@@ -822,7 +822,7 @@
   box-shadow: 0 2px 8px rgba(220, 38, 38, 0.2);
 }
 
-/* 需重修状态 - 浅灰色背景+深灰色字体 */
+/* 需返工状态 - 浅灰色背景+深灰色字体 */
 .status-rework {
   background-color: #e2e8f0;
   color: #334155;
@@ -898,25 +898,11 @@
   box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
 }
 
-/* 高 - 橙色 */
-.priority-high {
-  background-color: #F97316;
-  color: #ffffff;
-  box-shadow: 0 2px 8px rgba(249, 115, 22, 0.3);
-}
-
-/* 中/普通 - 蓝色 */
+/* 普通 - 绿色 */
 .priority-normal {
-  background-color: #3B82F6;
+  background-color: #22C55E;
   color: #ffffff;
-  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
-}
-
-/* 低 - 灰色 */
-.priority-low {
-  background-color: #9CA3AF;
-  color: #ffffff;
-  box-shadow: 0 2px 8px rgba(156, 163, 175, 0.3);
+  box-shadow: 0 2px 8px rgba(34, 197, 94, 0.3);
 }
 
 /* 描述框 */

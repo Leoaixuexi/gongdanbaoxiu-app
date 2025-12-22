@@ -6,17 +6,26 @@
 const api = require('../../../services/api');
 const { PRIORITY_DISPLAY_NAMES, PRIORITY_COLORS } = require('../../../utils/constants');
 const { formatDate } = require('../../../utils/formatter');
+const dateUtils = require('../../../utils/dateUtils');
 
 Page({
   data: {
     // Active tab
     activeTab: 0,
 
+    // 时间过滤
+    timeFilter: 'all',  // 'all' | 'yesterday' | 'today' | 'week' | 'month' | 'custom'
+
     // Date range filter
     dateRange: {
       startDate: '',
       endDate: ''
     },
+
+    // 自定义日期选择器
+    showDatePicker: false,
+    customStartDate: '',
+    customEndDate: '',
 
     // Chart data
     categoryData: [],          // T132: Bar chart data
@@ -34,10 +43,10 @@ Page({
     showExport: false,
     exporting: false,
     exportReportTypes: [
-      { label: '�ȥh', value: 'overview' },
-      { label: '���h', value: 'trends' },
-      { label: '{+�h', value: 'by_category' },
-      { label: '�/X�H', value: 'technician_performance' }
+      { label: '�ȥh', value: 'overview' },
+      { label: '���h', value: 'trends' },
+      { label: '{+�h', value: 'by_category' },
+      { label: '�/X�H', value: 'technician_performance' }
     ],
     exportFormats: [
       { label: 'Excel (.xlsx)', value: 'excel' },
@@ -69,22 +78,15 @@ Page({
   },
 
   /**
-   * Initialize default date range (last 30 days)
+   * Initialize default date range (全部)
    */
   initializeDateRange() {
-    const endDate = new Date();
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() - 30);
-
-    const dateRange = {
-      startDate: formatDate(startDate, 'YYYY-MM-DD'),
-      endDate: formatDate(endDate, 'YYYY-MM-DD')
-    };
-
+    // 默认为"全部"，不限制日期
     this.setData({
-      dateRange,
-      'exportConfig.startDate': dateRange.startDate,
-      'exportConfig.endDate': dateRange.endDate
+      dateRange: { startDate: '', endDate: '' },
+      timeFilter: 'all',
+      'exportConfig.startDate': '',
+      'exportConfig.endDate': ''
     });
   },
 
@@ -104,7 +106,7 @@ Page({
     } catch (error) {
       console.error('[Analytics] Error loading data:', error);
       wx.showToast({
-        title: '�}pn1%',
+        title: '�}pn1%',
         icon: 'none'
       });
     }
@@ -290,6 +292,102 @@ Page({
   },
 
   /**
+   * 时间过滤器切换
+   */
+  onTimeFilterChange(e) {
+    const filter = e.currentTarget.dataset.filter;
+
+    if (filter === 'custom') {
+      // 显示日期选择器
+      this.setData({
+        showDatePicker: true,
+        timeFilter: 'custom'
+      });
+    } else if (filter === 'all') {
+      // 全部：不限制日期
+      this.setData({
+        timeFilter: 'all',
+        dateRange: { startDate: '', endDate: '' },
+        'exportConfig.startDate': '',
+        'exportConfig.endDate': ''
+      });
+      this.loadAllData();
+    } else {
+      const { startDate, endDate } = dateUtils.getDateRange(filter);
+      const formattedStartDate = startDate ? dateUtils.formatDate(startDate) : '';
+      const formattedEndDate = endDate ? dateUtils.formatDate(endDate) : '';
+      this.setData({
+        timeFilter: filter,
+        dateRange: { startDate: formattedStartDate, endDate: formattedEndDate },
+        'exportConfig.startDate': formattedStartDate,
+        'exportConfig.endDate': formattedEndDate
+      });
+      this.loadAllData();
+    }
+  },
+
+  /**
+   * 自定义日期选择 - 开始日期变化
+   */
+  onCustomStartDateChange(e) {
+    this.setData({
+      customStartDate: e.detail.value
+    });
+  },
+
+  /**
+   * 自定义日期选择 - 结束日期变化
+   */
+  onCustomEndDateChange(e) {
+    this.setData({
+      customEndDate: e.detail.value
+    });
+  },
+
+  /**
+   * 确认自定义日期
+   */
+  confirmDatePicker() {
+    const { customStartDate, customEndDate } = this.data;
+    if (!customStartDate || !customEndDate) {
+      wx.showToast({ title: '请选择开始和结束日期', icon: 'none' });
+      return;
+    }
+    this.setData({
+      timeFilter: 'custom',
+      dateRange: { startDate: customStartDate, endDate: customEndDate },
+      'exportConfig.startDate': customStartDate,
+      'exportConfig.endDate': customEndDate,
+      showDatePicker: false
+    });
+    this.loadAllData();
+  },
+
+  /**
+   * 取消日期选择器
+   */
+  cancelDatePicker() {
+    this.setData({
+      showDatePicker: false,
+      timeFilter: this.data.dateRange.startDate ? 'custom' : 'all'
+    });
+  },
+
+  /**
+   * 关闭日期选择器
+   */
+  closeDatePicker() {
+    this.cancelDatePicker();
+  },
+
+  /**
+   * 阻止冒泡
+   */
+  stopPropagation() {
+    // Prevent event bubbling
+  },
+
+  /**
    * Apply date range filter
    */
   async handleApplyDateRange() {
@@ -305,7 +403,7 @@ Page({
     await this.loadAllData();
 
     wx.showToast({
-      title: '�����',
+      title: '�����',
       icon: 'success',
       duration: 1500
     });
@@ -423,7 +521,7 @@ Page({
 
       if (response && response.data && response.data.fileUrl) {
         wx.showToast({
-          title: '���',
+          title: '���',
           icon: 'success',
           duration: 2000
         });
@@ -438,7 +536,7 @@ Page({
                 success: (saveRes) => {
                   console.log('[Analytics] File saved:', saveRes.savedFilePath);
                   wx.showToast({
-                    title: '����X',
+                    title: '����X',
                     icon: 'success'
                   });
                 }
@@ -449,12 +547,12 @@ Page({
 
         this.hideExportModal();
       } else {
-        throw new Error('��1%');
+        throw new Error('��1%');
       }
     } catch (error) {
       console.error('[Analytics] Export error:', error);
       wx.showToast({
-        title: error.message || '��1%',
+        title: error.message || '��1%',
         icon: 'none'
       });
     } finally {

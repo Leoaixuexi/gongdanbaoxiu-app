@@ -282,14 +282,12 @@ const getWorkOrderStats = async () => {
 /**
  * 完成维修
  * @param {Number} orderId - 工单ID
- * @param {String} status - 状态（'Repaired' 或 'Needs Rework'）
- * @param {String} completionNotes - 完成备注
- * @param {Array} repairPhotos - 维修照片数组
+ * @param {String} completionNotes - 完成描述（选填）
  * @returns {Promise<Object>} 更新结果
  */
-const completeRepair = async (orderId, status, completionNotes, repairPhotos) => {
+const completeRepair = async (orderId, completionNotes) => {
   try {
-    console.log('[WorkOrder] Completing repair:', orderId, status);
+    console.log('[WorkOrder] Completing repair:', orderId);
 
     wx.showLoading({
       title: '提交中...',
@@ -302,9 +300,7 @@ const completeRepair = async (orderId, status, completionNotes, repairPhotos) =>
         action: 'completeRepair',
         data: {
           order_id: orderId,
-          status,
-          completion_notes: completionNotes,
-          repair_photos: repairPhotos
+          completion_notes: completionNotes
         }
       }
     });

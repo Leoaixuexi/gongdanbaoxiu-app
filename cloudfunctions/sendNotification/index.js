@@ -353,11 +353,38 @@ exports.main = async (event, context) => {
         };
       }
 
+      case 'deleteNotification': {
+        // Delete a notification
+        const { notification_id } = eventData;
+
+        if (!notification_id) {
+          return {
+            success: false,
+            error: 'notification_id is required'
+          };
+        }
+
+        const notifications = db.collection('notifications');
+
+        // Verify ownership
+        const { data: docData } = await notifications.doc(notification_id).get();
+        if (!docData || docData.user_id !== currentUser.user_id) {
+          return { success: false, error: 'Notification not found or access denied' };
+        }
+
+        await notifications.doc(notification_id).remove();
+
+        return {
+          success: true,
+          message: 'Notification deleted'
+        };
+      }
+
       default:
         return {
           success: false,
           error: `Unknown action: ${action}`,
-          available_actions: ['send', 'sendBatch', 'getTemplates', 'getUserNotifications', 'markAsRead', 'markAllAsRead', 'getUnreadCount']
+          available_actions: ['send', 'sendBatch', 'getTemplates', 'getUserNotifications', 'markAsRead', 'markAllAsRead', 'getUnreadCount', 'deleteNotification']
         };
     }
   } catch (error) {

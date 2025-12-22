@@ -14,7 +14,8 @@ Page({
     loading: true,
     searchText: '',
     activeTab: '', // '', today, week, month, date - 默认未选中
-    activeStatus: 'reported', // reported, maintenance, review, completed - 默认显示已提报
+    activeStatus: '', // 默认为空，onShow 时设置
+    isNavigatingToSubPage: false, // 标记是否导航到子页面
     isDatePickerOpen: false,
     startDate: '',
     endDate: '',
@@ -91,6 +92,14 @@ Page({
       });
     }
 
+    // 判断是否从子页面返回
+    const isBackFromSubPage = this.data.isNavigatingToSubPage;
+    console.log('[Index] isBackFromSubPage:', isBackFromSubPage);
+    // 重置标记
+    if (isBackFromSubPage) {
+      this.setData({ isNavigatingToSubPage: false });
+    }
+
     // 获取用户角色信息
     try {
       const userInfo = await auth.getCurrentUser();
@@ -103,12 +112,19 @@ Page({
         const statusButtons = this.getStatusButtonsByRole(isPropertyStaff, isMaintenanceWorker, isManager);
 
         // 根据角色设置默认状态
-        let defaultStatus = 'reported';
+        let defaultStatus = 'all';  // 经理默认为"全部"
         if (isMaintenanceWorker) {
-          defaultStatus = 'pending_accept';
-        } else if (isManager) {
-          defaultStatus = 'all';  // 物业经理默认显示全部
+          defaultStatus = 'pending_accept';  // 维修员默认为"待接单"
+        } else if (isPropertyStaff) {
+          defaultStatus = 'reported';  // 物业员工默认为"已提报"
         }
+
+        // 判断是否需要重置状态
+        // - 首次加载（currentStatus 为空）：重置为"全部"
+        // - 从子页面返回（isBackFromSubPage）：保持当前状态
+        // - tab 切换或其他情况：重置为"全部"
+        const currentStatus = this.data.activeStatus;
+        const shouldResetToDefault = !currentStatus || !isBackFromSubPage;
 
         this.setData({
           userRole: userInfo.role_id,
@@ -119,8 +135,9 @@ Page({
           isManager,
           statusButtons,
           activeTab: '',
-          activeStatus: defaultStatus,
-          scrollIntoView: 'status-' + defaultStatus
+          // 首次加载或从 tab 切换回来时，重置为"全部"；否则保持用户选择的状态
+          activeStatus: shouldResetToDefault ? defaultStatus : currentStatus,
+          scrollIntoView: shouldResetToDefault ? ('status-' + defaultStatus) : ('status-' + currentStatus)
         });
 
         console.log('[Index] User role:', {
@@ -151,7 +168,7 @@ Page({
         { key: 'repaired', label: '已修复', status: 'Repaired' },
         // 云函数没有单独的 "Pending Review" 状态：已修复即待复核
         { key: 'review', label: '待复核', status: 'Repaired' },
-        { key: 'rework', label: '需重修', status: 'Needs Rework' },
+        { key: 'rework', label: '需返工', status: 'Needs Rework' },
         { key: 'completed', label: '已完成', status: 'Completed' }
       ];
     } else if (isPropertyStaff) {
@@ -160,6 +177,7 @@ Page({
         { key: 'reported', label: '已提报', status: 'Pending Repair' },
         { key: 'maintenance', label: '维修中', status: 'In Progress' },
         { key: 'review', label: '待复核', status: 'Repaired' },
+        { key: 'rework', label: '需返工', status: 'Needs Rework' },
         { key: 'completed', label: '已完成', status: 'Completed' }
       ];
     } else if (isMaintenanceWorker) {
@@ -168,7 +186,7 @@ Page({
         { key: 'pending_accept', label: '待接单', status: 'Pending Repair' },
         { key: 'maintenance', label: '维修中', status: 'In Progress' },
         { key: 'repaired', label: '已修复', status: 'Repaired' },
-        { key: 'rework', label: '需重修', status: 'Needs Rework' },
+        { key: 'rework', label: '需返工', status: 'Needs Rework' },
         { key: 'completed', label: '已完成', status: 'Completed' }
       ];
     }
@@ -364,6 +382,19 @@ Page({
         const orderDate = createdAt.$date ? new Date(createdAt.$date) : new Date(createdAt);
         return orderDate >= monthAgo;
       });
+    } else if (activeTab === 'date' && startDate && endDate) {
+      // 自定义日期范围筛选
+      const start = new Date(startDate);
+      start.setHours(0, 0, 0, 0);
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59, 999);
+
+      return orders.filter(order => {
+        const createdAt = order.created_at;
+        if (!createdAt) return false;
+        const orderDate = createdAt.$date ? new Date(createdAt.$date) : new Date(createdAt);
+        return orderDate >= start && orderDate <= end;
+      });
     }
 
     return orders;
@@ -475,7 +506,7 @@ Page({
         'In Progress': '维修中',
         'Repaired': '已修复',
         'Pending Review': '待复核',
-        'Needs Rework': '需重修',
+        'Needs Rework': '需返工',
         'Completed': '已完成'
       };
     } else if (isMaintenanceWorker) {
@@ -484,7 +515,7 @@ Page({
         'Pending Repair': '待接单',
         'In Progress': '维修中',
         'Repaired': '已修复',
-        'Needs Rework': '需重修',
+        'Needs Rework': '需返工',
         'Completed': '已完成'
       };
     } else {
@@ -493,7 +524,7 @@ Page({
         'Pending Repair': '已提报',
         'In Progress': '维修中',
         'Repaired': '待复核',
-        'Needs Rework': '需重修',
+        'Needs Rework': '需返工',
         'Completed': '已完成'
       };
     }
@@ -615,6 +646,8 @@ Page({
       wx.hideLoading();
 
       if (result && result.order_id) {
+        // 标记正在导航到子页面
+        this.setData({ isNavigatingToSubPage: true });
         // 找到工单，跳转到详情页
         wx.navigateTo({
           url: `/pages/work-order-detail/index?id=${result.order_id}`
@@ -859,6 +892,13 @@ Page({
       activeStatus: status,
       scrollIntoView: scrollTarget
     });
+
+    // 切换状态后，工单列表滚动到顶部
+    wx.pageScrollTo({
+      scrollTop: 0,
+      duration: 200
+    });
+
     this.loadWorkOrders();
   },
 
@@ -906,6 +946,17 @@ Page({
       return;
     }
 
+    // 验证结束日期不能小于开始日期
+    const start = new Date(this.data.startDate);
+    const end = new Date(this.data.endDate);
+    if (end < start) {
+      wx.showToast({
+        title: '结束日期不能早于开始日期',
+        icon: 'none'
+      });
+      return;
+    }
+
     this.setData({
       isDatePickerOpen: false
     });
@@ -927,6 +978,9 @@ Page({
       return;
     }
 
+    // 标记正在导航到子页面
+    this.setData({ isNavigatingToSubPage: true });
+
     wx.navigateTo({
       url: `/pages/work-order-detail/index?id=${id}`
     });
@@ -936,6 +990,9 @@ Page({
    * Navigate to New Order
    */
   navigateToNewOrder: function () {
+    // 标记正在导航到子页面
+    this.setData({ isNavigatingToSubPage: true });
+
     wx.navigateTo({
       url: '/pages/property/submit/index'
     });

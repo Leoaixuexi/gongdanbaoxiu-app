@@ -11,13 +11,12 @@
 function getRingChartOption(data) {
   const total = data.reduce((sum, item) => sum + item.value, 0);
 
-  // 状态颜色映射：使用更现代、饱和度稍低的配色
+  // 状态颜色映射：按云函数返回顺序 ['已提报', '维修中', '待复核', '需返工', '已完成']
   const statusColors = [
-    '#3B82F6', // Blue (待维修)
+    '#3B82F6', // Blue (已提报)
     '#06B6D4', // Cyan (维修中)
-    '#8B5CF6', // Violet (已修复)
     '#F59E0B', // Amber (待复核)
-    '#F43F5E', // Rose (需重修)
+    '#F43F5E', // Rose (需返工)
     '#10B981'  // Emerald (已完成)
   ];
 
@@ -99,27 +98,24 @@ function getRingChartOption(data) {
  */
 function getLineChartOption(dates, submittedData, completedData) {
   return {
-    color: ['#3B82F6', '#10B981'],
+    color: ['#FFAD0C', '#10B981'],
     tooltip: {
       trigger: 'axis',
-      backgroundColor: 'rgba(255, 255, 255, 0.9)',
-      borderColor: '#e5e7eb',
-      textStyle: { color: '#1f2937' },
-      axisPointer: {
-        type: 'line',
-        lineStyle: {
-          color: '#9ca3af',
-          width: 1,
-          type: 'dashed'
-        }
-      }
+      backgroundColor: '#fff',
+      borderColor: '#fff',
+      borderWidth: 1
     },
     legend: {
       data: ['已提报', '已完成'],
       top: 0,
-      icon: 'circle',
+      icon: 'roundRect',
+      itemWidth: 24,
+      itemHeight: 14,
       itemGap: 24,
-      textStyle: { color: '#6b7280' }
+      textStyle: {
+        color: '#333',
+        fontSize: 12
+      }
     },
     grid: {
       left: '2%',
@@ -170,21 +166,7 @@ function getLineChartOption(dates, submittedData, completedData) {
         showSymbol: false,
         symbolSize: 8,
         lineStyle: {
-          width: 3,
-          shadowColor: 'rgba(59, 130, 246, 0.2)',
-          shadowBlur: 8,
-          shadowOffsetY: 8
-        },
-        areaStyle: {
-          color: {
-            type: 'linear',
-            x: 0, y: 0, x2: 0, y2: 1,
-            colorStops: [{
-              offset: 0, color: 'rgba(59, 130, 246, 0.2)'
-            }, {
-              offset: 1, color: 'rgba(59, 130, 246, 0)'
-            }]
-          }
+          width: 3
         }
       },
       {
@@ -195,21 +177,7 @@ function getLineChartOption(dates, submittedData, completedData) {
         showSymbol: false,
         symbolSize: 8,
         lineStyle: {
-          width: 3,
-          shadowColor: 'rgba(16, 185, 129, 0.2)',
-          shadowBlur: 8,
-          shadowOffsetY: 8
-        },
-        areaStyle: {
-          color: {
-            type: 'linear',
-            x: 0, y: 0, x2: 0, y2: 1,
-            colorStops: [{
-              offset: 0, color: 'rgba(16, 185, 129, 0.2)'
-            }, {
-              offset: 1, color: 'rgba(16, 185, 129, 0)'
-            }]
-          }
+          width: 3
         }
       }
     ]
@@ -227,44 +195,115 @@ function getPieChartOption(data, title = '') {
     color: ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6'],
     tooltip: {
       trigger: 'item',
-      backgroundColor: 'rgba(255, 255, 255, 0.9)',
-      borderColor: '#e5e7eb',
-      textStyle: { color: '#1f2937' },
+      backgroundColor: '#ffffff',
+      borderColor: 'transparent',
+      borderWidth: 0,
+      padding: [8, 12],
+      textStyle: {
+        color: '#1f2937',
+        fontSize: 12
+      },
       formatter: '{b}: {c} ({d}%)'
     },
     legend: {
-      orient: 'vertical',
-      right: 0,
-      top: 'center',
-      icon: 'circle',
-      itemWidth: 8,
-      itemHeight: 8,
-      textStyle: { color: '#6b7280', fontSize: 12 },
+      orient: 'horizontal',
+      top: 10,
+      left: 0,
+      itemWidth: 24,
+      itemHeight: 14,
+      itemGap: 12,
+      textStyle: {
+        fontSize: 12,
+        color: '#333'
+      },
       data: data.map(item => item.name)
     },
     series: [{
       name: title,
       type: 'pie',
-      radius: ['40%', '70%'], // Donut style looks more modern
-      center: ['35%', '50%'],
+      radius: ['35%', '58%'],
+      center: ['50%', '62%'],
+      avoidLabelOverlap: true,
       itemStyle: {
         borderRadius: 8,
         borderColor: '#fff',
         borderWidth: 2
       },
-      data: data,
-      emphasis: {
-        scale: true,
-        scaleSize: 5,
-        itemStyle: {
-          shadowBlur: 20,
-          shadowOffsetX: 0,
-          shadowColor: 'rgba(0, 0, 0, 0.1)'
-        }
+      label: {
+        show: true,
+        position: 'outside',
+        formatter: '{b}: {c}',
+        fontSize: 13,
+        color: '#333'
+      },
+      labelLine: {
+        show: true,
+        length: 8,
+        length2: 12
+      },
+      data: data
+    }]
+  };
+}
+
+/**
+ * 获取实心饼图配置（责任方分布）
+ * @param {Array} data - 数据数组 [{name: '业主', value: 10}, ...]
+ * @param {string} title - 图表标题
+ * @returns {Object} ECharts option 配置
+ */
+function getSolidPieChartOption(data, title = '') {
+  return {
+    color: ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#06B6D4'],
+    tooltip: {
+      trigger: 'item',
+      backgroundColor: '#ffffff',
+      borderColor: 'transparent',
+      borderWidth: 0,
+      padding: [8, 12],
+      textStyle: {
+        color: '#1f2937',
+        fontSize: 12
+      },
+      formatter: '{b}: {c} ({d}%)'
+    },
+    legend: {
+      orient: 'horizontal',
+      top: 10,
+      left: 0,
+      itemWidth: 24,
+      itemHeight: 14,
+      itemGap: 12,
+      textStyle: {
+        fontSize: 12,
+        color: '#333'
+      },
+      data: data.map(item => item.name)
+    },
+    series: [{
+      name: title,
+      type: 'pie',
+      radius: '65%',
+      center: ['50%', '58%'],
+      avoidLabelOverlap: true,
+      itemStyle: {
+        borderRadius: 8,
+        borderColor: '#fff',
+        borderWidth: 2
       },
       label: {
-        show: false // Clean look, rely on legend/tooltip
-      }
+        show: true,
+        position: 'outside',
+        formatter: '{b}: {c}',
+        fontSize: 13,
+        color: '#333'
+      },
+      labelLine: {
+        show: true,
+        length: 8,
+        length2: 12
+      },
+      data: data
     }]
   };
 }
@@ -281,9 +320,15 @@ function getBarChartOption(categories, data, title = '') {
     color: ['#3B82F6'],
     tooltip: {
       trigger: 'axis',
-      backgroundColor: 'rgba(255, 255, 255, 0.9)',
-      borderColor: '#e5e7eb',
+      backgroundColor: '#fff',
+      borderColor: '#fff',
+      borderWidth: 1,
       textStyle: { color: '#1f2937' },
+      formatter: function (params) {
+        // 只显示"楼层：数量"格式
+        const item = params[0];
+        return item.name + '：' + item.value;
+      },
       axisPointer: {
         type: 'shadow',
         shadowStyle: { color: 'rgba(243, 244, 246, 0.5)' }
@@ -368,6 +413,7 @@ module.exports = {
   getRingChartOption,
   getLineChartOption,
   getPieChartOption,
+  getSolidPieChartOption,
   getBarChartOption,
   initChart
 };

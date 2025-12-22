@@ -53,32 +53,34 @@ exports.main = async (event, context) => {
 
     const workOrders = db.collection('work_orders');
 
-    const start = new Date(startDate);
-    start.setHours(0, 0, 0, 0);
-
-    const end = new Date(endDate);
-    end.setHours(23, 59, 59, 999);
+    // 处理日期参数 - 为空时查询所有数据
+    let dateCondition = {};
+    if (startDate && endDate) {
+      const start = new Date(startDate);
+      start.setHours(0, 0, 0, 0);
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59, 999);
+      dateCondition = { created_at: _.gte(start).and(_.lte(end)) };
+    }
 
     // 1. 总工单数
     const totalResult = await workOrders
-      .where({
-        created_at: _.gte(start).and(_.lte(end))
-      })
+      .where(dateCondition)
       .count();
 
     // 2. 已完成工单数
     const completedResult = await workOrders
       .where({
         status: _.in(['Completed', '已完成']),
-        created_at: _.gte(start).and(_.lte(end))
+        ...dateCondition
       })
       .count();
 
-    // 3. 进行中工单数（维修中）
+    // 3. 进行中工单数（除已完成外的所有状态）
     const inProgressResult = await workOrders
       .where({
-        status: _.in(['In Progress', '维修中']),
-        created_at: _.gte(start).and(_.lte(end))
+        status: _.nin(['Completed', '已完成']),
+        ...dateCondition
       })
       .count();
 
@@ -86,8 +88,8 @@ exports.main = async (event, context) => {
     const completedOrders = await workOrders
       .where({
         status: _.in(['Completed', '已完成']),
-        created_at: _.gte(start).and(_.lte(end)),
-        completed_at: _.exists(true)
+        completed_at: _.exists(true),
+        ...dateCondition
       })
       .limit(1000)
       .get();

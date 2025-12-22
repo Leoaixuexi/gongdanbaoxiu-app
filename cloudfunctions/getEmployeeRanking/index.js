@@ -51,11 +51,15 @@ exports.main = async (event, context) => {
       return { success: false, error: '无权限查看数据分析', data: [] };
     }
 
-    const start = new Date(startDate);
-    start.setHours(0, 0, 0, 0);
-
-    const end = new Date(endDate);
-    end.setHours(23, 59, 59, 999);
+    // 处理日期参数 - 为空时查询所有数据
+    let dateCondition = {};
+    if (startDate && endDate) {
+      const start = new Date(startDate);
+      start.setHours(0, 0, 0, 0);
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59, 999);
+      dateCondition = { created_at: _.gte(start).and(_.lte(end)) };
+    }
 
     // 查询物业员工（role_id=4）的用户
     const usersResult = await db.collection('users')
@@ -83,7 +87,7 @@ exports.main = async (event, context) => {
       const totalResult = await db.collection('work_orders')
         .where({
           'submitter.user_id': submitterUserId,
-          created_at: _.gte(start).and(_.lte(end))
+          ...dateCondition
         })
         .count();
 
@@ -92,7 +96,7 @@ exports.main = async (event, context) => {
         .where({
           'submitter.user_id': submitterUserId,
           status: _.in(['Completed', '已完成']),
-          created_at: _.gte(start).and(_.lte(end))
+          ...dateCondition
         })
         .count();
 

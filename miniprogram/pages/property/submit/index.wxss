@@ -106,18 +106,29 @@
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
-/* 扫描图标 */
-.scan-icon {
-  width: 48rpx;
-  height: 48rpx;
+/* 工单编号输入框 - 有值时 */
+.order-number-input.has-value {
+  color: #333 !important;
+  text-align: right;
+}
+
+/* 工单编号 placeholder 样式 */
+.order-number-placeholder {
+  color: #CCCCCC !important;
+}
+
+/* 通用 placeholder 样式 */
+.custom-placeholder {
+  color: #CCCCCC !important;
+}
+
+/* 扫一扫按钮 */
+.scan-button-inline {
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.scan-icon-img {
-  width: 40rpx;
-  height: 40rpx;
+  padding: 0 8rpx;
+  flex-shrink: 0;
 }
 
 /* 选择器 */
@@ -157,7 +168,7 @@ picker {
 /* 优先级按钮行 - 水平布局 */
 .priority-row {
   display: flex;
-  gap: 12rpx;
+  gap: 32rpx;
 }
 
 .priority-btn {
@@ -348,7 +359,7 @@ picker {
   height: 88rpx;
   background-color: white;
   border: 1rpx solid #DDDDDD;
-  border-radius: 12rpx;
+  border-radius: 24rpx;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -363,7 +374,7 @@ picker {
   flex: 1;
   height: 88rpx;
   background: linear-gradient(to right, #10b981, #14b8a6);
-  border-radius: 12rpx;
+  border-radius: 24rpx;
   display: flex;
   align-items: center;
   justify-content: center;

@@ -9,29 +9,34 @@
     </button>
   </view>
 
-  <!-- Date Range Selector -->
-  <view class="date-selector">
-    <view class="date-item">
-      <text class="date-label">开始日期</text>
-      <picker mode="date" value="{{dateRange.startDate}}" bindchange="handleStartDateChange">
-        <view class="date-picker">
-          <text>{{dateRange.startDate || '选择日期'}}</text>
-          <text class="icon-arrow">▼</text>
-        </view>
-      </picker>
+  <!-- 日期范围选择器 -->
+  <view class="manager-date-filter">
+    <view class="date-chip-row">
+      <view class="date-chip {{timeFilter === 'all' ? 'active' : ''}}"
+            bindtap="onTimeFilterChange" data-filter="all">
+        <text>全部</text>
+      </view>
+      <view class="date-chip {{timeFilter === 'yesterday' ? 'active' : ''}}"
+            bindtap="onTimeFilterChange" data-filter="yesterday">
+        <text>昨日</text>
+      </view>
+      <view class="date-chip {{timeFilter === 'today' ? 'active' : ''}}"
+            bindtap="onTimeFilterChange" data-filter="today">
+        <text>今日</text>
+      </view>
+      <view class="date-chip {{timeFilter === 'week' ? 'active' : ''}}"
+            bindtap="onTimeFilterChange" data-filter="week">
+        <text>本周</text>
+      </view>
+      <view class="date-chip {{timeFilter === 'month' ? 'active' : ''}}"
+            bindtap="onTimeFilterChange" data-filter="month">
+        <text>本月</text>
+      </view>
+      <view class="date-chip {{timeFilter === 'custom' ? 'active' : ''}}"
+            bindtap="onTimeFilterChange" data-filter="custom">
+        <text>📅</text>
+      </view>
     </view>
-
-    <view class="date-item">
-      <text class="date-label">结束日期</text>
-      <picker mode="date" value="{{dateRange.endDate}}" bindchange="handleEndDateChange">
-        <view class="date-picker">
-          <text>{{dateRange.endDate || '选择日期'}}</text>
-          <text class="icon-arrow">▼</text>
-        </view>
-      </picker>
-    </view>
-
-    <button class="btn-apply-date" bindtap="handleApplyDateRange">应用</button>
   </view>
 
   <!-- Charts Section with Tabs -->
@@ -292,6 +297,32 @@
         <button class="btn-modal-confirm" bindtap="handleExport" disabled="{{exporting}}">
           {{exporting ? '导出中...' : '确认导出'}}
         </button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 自定义日期选择弹窗 -->
+  <view wx:if="{{showDatePicker}}" class="modal-overlay" catchtap="closeDatePicker">
+    <view class="modal-content date-picker-modal" catchtap="stopPropagation">
+      <view class="modal-header">
+        <text class="modal-title">选择日期范围</text>
+      </view>
+      <view class="date-picker-content">
+        <picker mode="date" value="{{customStartDate}}" bindchange="onCustomStartDateChange">
+          <view class="date-display">
+            <text class="date-text">{{customStartDate || '请选择开始日期'}}</text>
+          </view>
+        </picker>
+        <text class="date-separator">至</text>
+        <picker mode="date" value="{{customEndDate}}" bindchange="onCustomEndDateChange">
+          <view class="date-display">
+            <text class="date-text">{{customEndDate || '请选择结束日期'}}</text>
+          </view>
+        </picker>
+      </view>
+      <view class="modal-footer">
+        <button class="btn-modal-cancel" bindtap="cancelDatePicker">取消</button>
+        <button class="btn-modal-confirm" bindtap="confirmDatePicker">确定</button>
       </view>
     </view>
   </view>

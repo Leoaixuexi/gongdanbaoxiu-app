@@ -22,7 +22,6 @@ const STATUS_MAP = {
   '已修复': 'Repaired',
   '已维修': 'Repaired',
   'Repaired': 'Repaired',
-  '需重修': 'Needs Rework',
   '需返工': 'Needs Rework',
   'Needs Rework': 'Needs Rework',
   '已完成': 'Completed',
@@ -155,6 +154,55 @@ async function createNotification(userId, type, title, message, data = {}) {
   } catch (error) {
     console.error('[CreateNotification] Error:', error);
   }
+}
+
+/**
+ * 批量创建通知
+ */
+async function createBatchNotifications(userIds, type, title, message, data = {}) {
+  if (!userIds || userIds.length === 0) return;
+
+  const notifications = db.collection('notifications');
+
+  try {
+    // 获取所有用户信息
+    const users = await db.collection('users')
+      .where({
+        user_id: _.in(userIds)
+      })
+      .get();
+
+    if (!users.data || users.data.length === 0) return;
+
+    // 批量创建通知
+    const promises = users.data.map(user =>
+      notifications.add({
+        data: {
+          user_id: user.user_id,
+          _openid: user.wechat_openid,
+          type,
+          title,
+          message,
+          data,
+          read: false,
+          sent_at: new Date(),
+          read_at: null,
+          created_at: new Date()
+        }
+      })
+    );
+
+    await Promise.all(promises);
+  } catch (error) {
+    console.error('[CreateBatchNotifications] Error:', error);
+  }
+}
+
+/**
+ * 格式化通知消息内容
+ */
+function formatNotificationMessage(floor, location, description, suffix) {
+  return `${floor} ${location} ${description} ${suffix}`;
 }
 
 /**
@@ -426,6 +474,39 @@ async function createWorkOrder(openid, orderData) {
     }
   );
 
+  // 场景1：如果责任方为"物业公司"，通知所有物业公司部门的用户
+  if (orderData.responsible_party === '物业公司') {
+    const propertyUsers = await db.collection('users')
+      .where({
+        department: '物业公司',
+        active: true
+      })
+      .get();
+
+    if (propertyUsers.data && propertyUsers.data.length > 0) {
+      const userIds = propertyUsers.data.map(user => user.user_id);
+      const notificationMessage = formatNotificationMessage(
+        orderData.floor,
+        orderData.location,
+        orderData.description,
+        '请确认并安排维修'
+      );
+
+      await createBatchNotifications(
+        userIds,
+        'work_order_new',
+        `${orderNumber}：请确认并安排维修`,
+        notificationMessage,
+        {
+          order_id: orderId,
+          order_number: orderNumber,
+          floor: orderData.floor,
+          location: orderData.location
+        }
+      );
+    }
+  }
+
   return {
     ...newOrder,
     _id: result._id
@@ -678,7 +759,7 @@ function normalizePhotoUrls(value, maxLen = 9) {
   return urls.slice(0, maxLen);
 }
 
-async function completeRepair(openid, orderId, status, completionNotes, repairPhotos) {
+async function completeRepair(openid, orderId, completionNotes) {
   const workOrders = db.collection('work_orders');
   const user = await getUserByOpenId(openid);
 
@@ -702,18 +783,17 @@ async function completeRepair(openid, orderId, status, completionNotes, repairPh
 
   const order = orders[0];
   const oldStatus = normalizeStatus(order.status);
-  const targetStatus = normalizeStatus(status);
+  const targetStatus = 'Repaired'; // 固定为已修复状态
   const notes = normalizeNotes(completionNotes);
-  const photos = normalizePhotoUrls(repairPhotos);
 
   // 权限检查：只有分配的维修员可以完成维修
   if (user.role_id !== 3 || order.assigned_technician.user_id !== user.user_id) {
     throw new Error('只有分配的维修员可以完成维修');
   }
 
-  // 状态检查：只有"维修中"或"需重修"的工单可以完成
+  // 状态检查：只有"维修中"或"需返工"的工单可以完成
   if (oldStatus !== 'In Progress' && oldStatus !== 'Needs Rework') {
-    throw new Error('只有维修中或需重修的工单可以完成');
+    throw new Error('只有维修中或需返工的工单可以完成');
   }
 
   // 准备更新数据
@@ -721,40 +801,35 @@ async function completeRepair(openid, orderId, status, completionNotes, repairPh
     status: targetStatus,
     updated_at: new Date(),
     completion_notes: notes || null,
-    repair_photos: photos,
+    repaired_at: new Date(),
     status_history: _.push(addStatusHistory(oldStatus, targetStatus, user, notes))
   };
-
-  // 根据状态设置时间
-  if (targetStatus === 'Repaired') {
-    updateData.repaired_at = new Date();
-  } else if (targetStatus === 'Needs Rework') {
-    if (!notes) {
-      throw new Error('返工时必须填写维修说明');
-    }
-    updateData.rework_count = _.inc(1);
-  } else {
-    throw new Error('维修完成状态不正确');
-  }
 
   // 更新工单
   await workOrders.doc(order._id).update({
     data: updateData
   });
 
-  // 发送通知给提交者
-  if (targetStatus === 'Repaired') {
-    await createNotification(
-      order.submitter.user_id,
-      'order_repaired',
-      '工单维修完成',
-      `工单 ${order.order_number} 已维修完成，请验收`,
-      {
-        order_id: numericOrderId,
-        order_number: order.order_number
-      }
-    );
-  }
+  // 场景2：发送通知给提交者
+  const notificationMessage = formatNotificationMessage(
+    order.floor,
+    order.location,
+    order.description,
+    '维修完成，请到场复核'
+  );
+
+  await createNotification(
+    order.submitter.user_id,
+    'order_repaired',
+    order.order_number,
+    notificationMessage,
+    {
+      order_id: numericOrderId,
+      order_number: order.order_number,
+      floor: order.floor,
+      location: order.location
+    }
+  );
 
   return {
     order_id: numericOrderId,
@@ -824,9 +899,7 @@ async function reviewOrder(openid, orderId, status, reviewNotes) {
     });
     updateData.total_duration_seconds = duration.totalSeconds;
   } else if (targetStatus === 'Needs Rework') {
-    if (!notes) {
-      throw new Error('返工时必须填写审核意见');
-    }
+    // 返工原因是非必填的
     updateData.rework_count = _.inc(1);
   } else {
     throw new Error('审核状态不正确');
@@ -839,35 +912,236 @@ async function reviewOrder(openid, orderId, status, reviewNotes) {
 
   // 发送通知
   if (targetStatus === 'Completed') {
-    // 通知维修员工单已完成
-    await createNotification(
-      order.assigned_technician.user_id,
-      'order_completed',
-      '工单验收通过',
-      `工单 ${order.order_number} 验收通过，已完成`,
-      {
-        order_id: numericOrderId,
-        order_number: order.order_number
-      }
-    );
+    // 场景3：复核通过，通知所有物业公司部门的用户
+    const propertyUsers = await db.collection('users')
+      .where({ department: '物业公司', active: true })
+      .get();
+
+    if (propertyUsers.data && propertyUsers.data.length > 0) {
+      const userIds = propertyUsers.data.map(user => user.user_id);
+      const notificationMessage = formatNotificationMessage(
+        order.floor,
+        order.location,
+        order.description,
+        '复核通过，辛苦了！'
+      );
+
+      await createBatchNotifications(
+        userIds,
+        'order_reviewed_pass',
+        order.order_number,
+        notificationMessage,
+        {
+          order_id: numericOrderId,
+          order_number: order.order_number,
+          floor: order.floor,
+          location: order.location
+        }
+      );
+    }
   } else if (targetStatus === 'Needs Rework') {
-    // 通知维修员需要返工
-    await createNotification(
-      order.assigned_technician.user_id,
-      'order_rework',
-      '工单需要返工',
-      `工单 ${order.order_number} 验收不通过，需要返工`,
-      {
-        order_id: numericOrderId,
-        order_number: order.order_number
-      }
-    );
+    // 场景4：需要返工，通知所有物业公司部门的用户
+    const propertyUsers = await db.collection('users')
+      .where({ department: '物业公司', active: true })
+      .get();
+
+    if (propertyUsers.data && propertyUsers.data.length > 0) {
+      const userIds = propertyUsers.data.map(user => user.user_id);
+      const reworkReason = notes || '无';
+      const notificationMessage = formatNotificationMessage(
+        order.floor,
+        order.location,
+        order.description,
+        `现场复核未通过，请返工，返工说明：${reworkReason}`
+      );
+
+      await createBatchNotifications(
+        userIds,
+        'order_needs_rework',
+        order.order_number,
+        notificationMessage,
+        {
+          order_id: numericOrderId,
+          order_number: order.order_number,
+          floor: order.floor,
+          location: order.location,
+          rework_notes: reworkReason
+        }
+      );
+    }
   }
 
   return {
     order_id: numericOrderId,
     old_status: oldStatus,
     new_status: targetStatus
+  };
+}
+
+/**
+ * 催维修 - 催促维修员尽快维修
+ * @param {string} openid - 微信openid
+ * @param {number} orderId - 工单ID
+ * @returns {Promise<Object>} 催促结果
+ */
+async function urgeRepair(openid, orderId) {
+  const workOrders = db.collection('work_orders');
+
+  // 1. 权限校验：物业人员（role_id 2或4）或管理员(1)
+  const user = await getUserByOpenId(openid);
+  if (!user) {
+    throw new Error('用户不存在');
+  }
+  if (![1, 2, 4].includes(user.role_id)) {
+    throw new Error('无权限催促维修');
+  }
+
+  // 2. 获取工单
+  const { data: orders } = await workOrders.where({ order_id: orderId }).get();
+  if (orders.length === 0) {
+    throw new Error('工单不存在');
+  }
+  const order = orders[0];
+
+  // 3. 状态校验：维修中 或 需返工
+  const status = normalizeStatus(order.status);
+  if (!['In Progress', 'Needs Rework'].includes(status)) {
+    throw new Error('工单状态不允许催维修');
+  }
+
+  // 检查是否有分配的维修员
+  if (!order.assigned_technician || !order.assigned_technician.user_id) {
+    throw new Error('工单尚未分配维修员');
+  }
+
+  // 4. 频控检查：查询20分钟内是否已发送过
+  const twentyMinutesAgo = new Date(Date.now() - 20 * 60 * 1000);
+  const { data: existingReminders } = await db.collection('notifications')
+    .where({
+      'data.order_id': orderId,
+      'data.reminder_type': 'urge_repair',
+      user_id: order.assigned_technician.user_id,
+      sent_at: _.gte(twentyMinutesAgo)
+    })
+    .limit(1)
+    .get();
+
+  if (existingReminders.length > 0) {
+    return {
+      throttled: true,
+      message: '已发送过催促，请20分钟后再试'
+    };
+  }
+
+  // 5. 创建提醒通知
+  const title = `工单编号 ${order.order_number}`;
+  const message = `${order.floor} ${order.location}${order.description}，需要尽快维修。`;
+
+  await createNotification(
+    order.assigned_technician.user_id,
+    'urge_repair',
+    title,
+    message,
+    {
+      order_id: orderId,
+      order_number: order.order_number,
+      floor: order.floor,
+      location: order.location,
+      fault_type: order.description,
+      reminder_type: 'urge_repair',
+      triggered_by: {
+        user_id: user.user_id,
+        name: user.name
+      }
+    }
+  );
+
+  return {
+    throttled: false,
+    message: '催促通知已发送'
+  };
+}
+
+/**
+ * 催复核 - 催促提交者尽快复核
+ * @param {string} openid - 微信openid
+ * @param {number} orderId - 工单ID
+ * @returns {Promise<Object>} 催促结果
+ */
+async function urgeReview(openid, orderId) {
+  const workOrders = db.collection('work_orders');
+
+  // 1. 权限校验：维修员(3)、物业经理(2)或管理员(1)
+  const user = await getUserByOpenId(openid);
+  if (!user) {
+    throw new Error('用户不存在');
+  }
+  if (![1, 2, 3].includes(user.role_id)) {
+    throw new Error('无权限催促复核');
+  }
+
+  // 2. 获取工单并校验状态
+  const { data: orders } = await workOrders.where({ order_id: orderId }).get();
+  if (orders.length === 0) {
+    throw new Error('工单不存在');
+  }
+  const order = orders[0];
+
+  const status = normalizeStatus(order.status);
+  if (status !== 'Repaired') {
+    throw new Error('工单状态不允许催复核');
+  }
+
+  // 检查是否有提交者信息
+  if (!order.submitter || !order.submitter.user_id) {
+    throw new Error('工单提交者信息不完整');
+  }
+
+  // 3. 频控检查：查询20分钟内是否已发送过
+  const twentyMinutesAgo = new Date(Date.now() - 20 * 60 * 1000);
+  const { data: existingReminders } = await db.collection('notifications')
+    .where({
+      'data.order_id': orderId,
+      'data.reminder_type': 'urge_review',
+      user_id: order.submitter.user_id,
+      sent_at: _.gte(twentyMinutesAgo)
+    })
+    .limit(1)
+    .get();
+
+  if (existingReminders.length > 0) {
+    return {
+      throttled: true,
+      message: '已发送过催促，请20分钟后再试'
+    };
+  }
+
+  // 4. 创建提醒通知
+  const title = `工单编号 ${order.order_number}`;
+  const message = `${order.floor} ${order.location}${order.description}，已修复，请尽快复核。`;
+
+  await createNotification(
+    order.submitter.user_id,
+    'urge_review',
+    title,
+    message,
+    {
+      order_id: orderId,
+      order_number: order.order_number,
+      floor: order.floor,
+      location: order.location,
+      fault_type: order.description,
+      reminder_type: 'urge_review',
+      triggered_by: {
+        user_id: user.user_id,
+        name: user.name
+      }
+    }
+  );
+
+  return {
+    throttled: false,
+    message: '催促通知已发送'
   };
 }
 
@@ -1021,9 +1295,7 @@ exports.main = async (event, context) => {
         const completeResult = await completeRepair(
           openid,
           data.order_id,
-          data.status,
-          data.completion_notes,
-          data.repair_photos
+          data.completion_notes
         );
         return {
           success: true,
@@ -1081,11 +1353,23 @@ exports.main = async (event, context) => {
           };
         }
 
+      case 'urgeRepair':
+        {
+          const result = await urgeRepair(wxContext.OPENID, data.order_id);
+          return { success: true, ...result };
+        }
+
+      case 'urgeReview':
+        {
+          const result = await urgeReview(wxContext.OPENID, data.order_id);
+          return { success: true, ...result };
+        }
+
       default:
         return {
           success: false,
           error: `未知操作: ${action}`,
-          available_actions: ['create', 'updateStatus', 'updateDetails', 'list', 'getById', 'getFaultTypes', 'completeRepair', 'reviewOrder']
+          available_actions: ['create', 'updateStatus', 'updateDetails', 'list', 'getById', 'getFaultTypes', 'completeRepair', 'reviewOrder', 'urgeRepair', 'urgeReview']
         };
     }
 

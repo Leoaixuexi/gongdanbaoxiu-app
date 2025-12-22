@@ -52,19 +52,20 @@ exports.main = async (event, context) => {
       return { success: false, error: '无权限查看数据分析', data: [] };
     }
 
-    const start = new Date(startDate);
-    start.setHours(0, 0, 0, 0);
-
-    const end = new Date(endDate);
-    end.setHours(23, 59, 59, 999);
+    // 处理日期参数 - 为空时查询所有数据
+    let matchCondition = { status: _.in(['Completed', '已完成']) };
+    if (startDate && endDate) {
+      const start = new Date(startDate);
+      start.setHours(0, 0, 0, 0);
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59, 999);
+      matchCondition.created_at = _.gte(start).and(_.lte(end));
+    }
 
     // 聚合统计各责任方已完成工单数量
     const result = await db.collection('work_orders')
       .aggregate()
-      .match({
-        status: _.in(['Completed', '已完成']),
-        created_at: _.gte(start).and(_.lte(end))
-      })
+      .match(matchCondition)
       .group({
         _id: '$responsible_party',
         count: $.sum(1)

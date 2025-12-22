@@ -48,17 +48,20 @@ exports.main = async (event, context) => {
       return { success: false, error: '无权限查看数据分析', data: { categories: [], reported: [], completed: [] } };
     }
 
-    // 解析日期
-    const start = new Date(startDate);
-    start.setHours(0, 0, 0, 0);
-    const end = new Date(endDate);
-    end.setHours(23, 59, 59, 999);
+    // 处理日期参数 - 为空时查询所有数据
+    let whereCondition = {};
+    let start, end;
+    if (startDate && endDate) {
+      start = new Date(startDate);
+      start.setHours(0, 0, 0, 0);
+      end = new Date(endDate);
+      end.setHours(23, 59, 59, 999);
+      whereCondition = { created_at: _.gte(start).and(_.lte(end)) };
+    }
 
-    // 获取日期范围内的所有工单
+    // 获取工单数据
     const { data: orders } = await db.collection('work_orders')
-      .where({
-        created_at: _.gte(start).and(_.lte(end))
-      })
+      .where(whereCondition)
       .field({
         created_at: true,
         completed_at: true,
@@ -66,6 +69,22 @@ exports.main = async (event, context) => {
       })
       .limit(1000)
       .get();
+
+    // 如果没有指定日期范围，从数据中获取日期范围
+    if (!startDate || !endDate) {
+      if (orders.length === 0) {
+        return {
+          success: true,
+          data: { categories: [], reported: [], completed: [] }
+        };
+      }
+      // 找出最早和最晚的日期
+      const dates = orders.map(o => new Date(o.created_at));
+      start = new Date(Math.min(...dates));
+      end = new Date(Math.max(...dates));
+      start.setHours(0, 0, 0, 0);
+      end.setHours(23, 59, 59, 999);
+    }
 
     // 生成日期列表
     const dates = [];

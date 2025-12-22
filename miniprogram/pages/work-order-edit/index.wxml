@@ -1,67 +1,87 @@
-<!-- pages/editOrder/editOrder.wxml -->
-<view class="page-container">
-  <!-- 自定义Header -->
+<!--修改工单页面 - 提交页面风格-->
+<view class="submit-container">
+  <!-- 自定义导航栏 -->
   <custom-header title="编辑工单" />
 
-  <!-- 主内容区域 -->
-  <view class="main-content" style="padding-top: calc({{headerHeight}}px + 32rpx);">
-
+  <!-- 表单卡片列表 -->
+  <view class="form-cards" style="padding-top: calc({{headerHeight}}px + 24rpx);">
     <!-- 工单编号 -->
-    <form-row
-      label="工单编号"
-      value="{{formData.orderCode}}"
-      type="display"
-      size="compact"
-      required="{{true}}"
-    />
+    <view class="card">
+      <view class="card-label-required">
+        <text class="star">*</text>
+        <text class="label">工单编号</text>
+      </view>
+      <view class="card-right">
+        <input
+          class="card-input order-number-input has-value"
+          value="{{formData.orderCode}}"
+          disabled="{{true}}"
+        />
+      </view>
+    </view>
 
     <!-- 楼层 -->
-    <form-row
-      label="楼层"
-      value="{{formData.floor}}"
-      type="text"
-      size="compact"
-      bind:change="handleFloorChange"
-      required="{{true}}"
-    />
+    <view class="card">
+      <view class="card-label-required">
+        <text class="star">*</text>
+        <text class="label">楼层</text>
+      </view>
+      <input
+        class="card-input"
+        placeholder="请填写"
+        placeholder-class="custom-placeholder"
+        value="{{formData.floor}}"
+        bindinput="handleFloorChange"
+      />
+    </view>
 
     <!-- 具体位置 -->
-    <form-row
-      label="具体位置"
-      value="{{formData.location}}"
-      type="text"
-      size="compact"
-      bind:change="handleLocationChange"
-      required="{{true}}"
-    />
+    <view class="card">
+      <view class="card-label-required">
+        <text class="star">*</text>
+        <text class="label">具体位置</text>
+      </view>
+      <input
+        class="card-input"
+        placeholder="请填写"
+        placeholder-class="custom-placeholder"
+        value="{{formData.location}}"
+        bindinput="handleLocationChange"
+      />
+    </view>
 
     <!-- 工单类别 -->
-    <form-row
-      label="工单类别"
-      value="{{formData.category}}"
-      type="select"
-      size="compact"
-      bind:selectclick="handleCategorySelect"
-      required="{{true}}"
-    />
+    <view class="card" bindtap="handleCategorySelect">
+      <view class="card-label-required">
+        <text class="star">*</text>
+        <text class="label">工单类别</text>
+      </view>
+      <view class="card-picker">
+        <text class="picker-text {{formData.category ? '' : 'placeholder'}}">
+          {{formData.category || '请选择'}}
+        </text>
+      </view>
+    </view>
 
     <!-- 责任方 -->
-    <form-row
-      label="责任方"
-      value="{{formData.responsible}}"
-      type="select"
-      size="compact"
-      bind:selectclick="handleResponsibleSelect"
-      required="{{true}}"
-    />
+    <view class="card" bindtap="handleResponsibleSelect">
+      <view class="card-label-required">
+        <text class="star">*</text>
+        <text class="label">责任方</text>
+      </view>
+      <view class="card-picker">
+        <text class="picker-text {{formData.responsible ? '' : 'placeholder'}}">
+          {{formData.responsible || '请选择'}}
+        </text>
+      </view>
+    </view>
 
     <!-- 优先级 -->
-    <form-row
-      label="优先级"
-      size="compact"
-      required="{{true}}"
-      hasSlot="{{true}}"
-    >
+    <view class="card">
+      <view class="card-label-required">
+        <text class="star">*</text>
+        <text class="label">优先级</text>
+      </view>
       <view class="priority-row">
         <view
           wx:for="{{priorityOptions}}"
@@ -73,107 +93,106 @@
           <text class="priority-text">{{item.label}}</text>
         </view>
       </view>
-    </form-row>
+    </view>
 
-    <!-- 报修时间 -->
-    <form-row
-      label="报修时间"
-      size="compact"
-      required="{{true}}"
-      hasSlot="{{true}}"
-    >
+    <!-- 日期时间 -->
+    <view class="card">
+      <view class="card-label-required">
+        <text class="star">*</text>
+        <text class="label">报修时间</text>
+      </view>
       <view class="datetime-display" bindtap="showDateTimePicker">
         <text class="datetime-text">{{formData.reportTime}}</text>
       </view>
-    </form-row>
+    </view>
 
-    <!-- 工单状态 -->
-    <form-row
-      label="工单状态"
-      value="{{formData.status}}"
-      type="display"
-      size="compact"
-      required="{{true}}"
-    />
+    <!-- 工单状态 (只读显示) -->
+    <view class="card">
+      <view class="card-label-required">
+        <text class="star">*</text>
+        <text class="label">工单状态</text>
+      </view>
+      <view class="card-right">
+        <text class="card-display-text">{{formData.status}}</text>
+      </view>
+    </view>
 
-    <!-- 报修人 -->
-    <form-row
-      label="报修人"
-      value="{{formData.reporter}}"
-      type="display"
-      size="compact"
-      required="{{true}}"
-    />
+    <!-- 报修人 (只读显示) -->
+    <view class="card">
+      <view class="card-label-required">
+        <text class="star">*</text>
+        <text class="label">报修人</text>
+      </view>
+      <view class="card-right">
+        <text class="card-display-text">{{formData.reporter}}</text>
+      </view>
+    </view>
 
     <!-- 问题描述 -->
-    <form-row
-      label="问题描述"
-      value="{{formData.description}}"
-      type="textarea"
-      align="start"
-      bind:change="handleDescriptionChange"
-      required="{{true}}"
-      maxlength="50"
-    />
-
-    <!-- 现场照片 -->
-    <form-row
-      label="现场照片"
-      align="start"
-      required="{{true}}"
-      hasSlot="{{true}}"
-    >
-      <view class="photo-container">
-        <!-- 固定3个照片槽位 -->
-        <block wx:for="{{photoSlots}}" wx:key="index">
-          <view class="photo-slot">
-            <!-- 如果有照片则显示照片 -->
-            <block wx:if="{{item}}">
-              <view class="photo-item">
-                <image
-                  class="photo-image"
-                  src="{{item}}"
-                  mode="aspectFill"
-                  bindtap="handlePreviewImage"
-                  data-index="{{index}}"
-                />
-                <!-- 删除按钮 -->
-                <view class="delete-btn" bindtap="handleRemoveImage" data-index="{{index}}">
-                  <view class="icon-x"></view>
-                </view>
-              </view>
-            </block>
-            <!-- 如果没有照片则显示添加按钮 -->
-            <block wx:else>
-              <view
-                class="add-photo-btn"
-                bindtap="handleAddImage"
-                data-index="{{index}}"
-              >
-                <view class="icon-plus"></view>
-              </view>
-            </block>
-          </view>
-        </block>
+    <view class="card card-textarea">
+      <view class="card-label-required">
+        <text class="star">*</text>
+        <text class="label">问题描述</text>
       </view>
-    </form-row>
-
-    <!-- 备注 -->
-    <view class="remarks-section">
-      <view class="remarks-label">备注</view>
       <textarea
-        class="remarks-input"
-        placeholder="请填写备注信息(非必填)"
-        value="{{formData.remarks}}"
-        bindinput="handleRemarksChange"
-        maxlength="-1"
+        class="textarea-box"
+        placeholder="请详细描述遇到的问题..."
+        placeholder-class="custom-placeholder"
+        value="{{formData.description}}"
+        bindinput="handleDescriptionChange"
+        maxlength="50"
       />
     </view>
 
+    <!-- 现场照片 -->
+    <view class="card card-photos">
+      <view class="photos-header">
+        <view class="card-label-required">
+          <text class="star">*</text>
+          <text class="label">现场照片</text>
+        </view>
+        <text class="photos-tip">最多3张</text>
+      </view>
+      <view class="photos-row">
+        <view wx:for="{{photoSlots}}" wx:key="index" class="photo-box">
+          <view wx:if="{{item}}" class="photo-preview">
+            <image class="photo-img" src="{{item}}" mode="aspectFill" bindtap="handlePreviewImage" data-index="{{index}}" />
+            <view class="photo-del" bindtap="handleRemoveImage" data-index="{{index}}">
+              <text class="del-text">×</text>
+            </view>
+          </view>
+          <view wx:else class="photo-add" bindtap="handleAddImage" data-index="{{index}}">
+            <text class="add-plus">+</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 备注 -->
+    <view class="card card-textarea">
+      <view class="card-label-wrapper">
+        <text class="label">备注</text>
+      </view>
+      <textarea
+        class="textarea-box textarea-box-remark"
+        placeholder="请填写备注信息（非必填）"
+        placeholder-class="custom-placeholder"
+        value="{{formData.remarks}}"
+        bindinput="handleRemarksChange"
+        maxlength="30"
+      />
+    </view>
   </view>
 
-  <!-- 底部操作栏 -->
-  <custom-footer bind:save="handleSave" bind:cancel="handleCancel" />
+  <!-- 底部按钮 -->
+  <view class="bottom-btns">
+    <view class="btn-cancel" bindtap="handleCancel">
+      <text class="btn-cancel-text">取消</text>
+    </view>
+    <view class="btn-submit" bindtap="handleSave">
+      <text class="btn-submit-text">保存修改</text>
+    </view>
+  </view>
 
   <!-- 日期时间选择弹窗 -->
   <view wx:if="{{isDateTimePickerOpen}}" class="modal-overlay" catchtap="closeDateTimePicker">

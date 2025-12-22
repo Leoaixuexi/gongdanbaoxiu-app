@@ -11,15 +11,17 @@
         <text class="star">*</text>
         <text class="label">工单编号</text>
       </view>
-      <view class="card-right" bindtap="handleScan">
+      <view class="card-right">
         <input
-          class="card-input"
+          class="card-input order-number-input {{orderNumber ? 'has-value' : ''}}"
           placeholder="扫码自动生成"
+          placeholder-class="order-number-placeholder"
           value="{{orderNumber}}"
           disabled="{{true}}"
         />
-        <view class="scan-icon">
-          <image class="scan-icon-img" src="/images/scan.png" mode="aspectFit" />
+        <!-- 扫一扫按钮 - 无工单编号时显示 -->
+        <view wx:if="{{!orderNumber}}" class="scan-button-inline" bindtap="handleScan" catchtap="handleScan">
+          <text class="iconfont icon-saoyisao" style="font-size: 44rpx; color: #CCCCCC;"></text>
         </view>
       </view>
     </view>
@@ -48,6 +50,7 @@
       <input
         class="card-input"
         placeholder="请填写"
+        placeholder-class="custom-placeholder"
         value="{{location}}"
         bindinput="onLocationInput"
       />
@@ -123,6 +126,7 @@
       <textarea
         class="textarea-box"
         placeholder="请详细描述遇到的问题，包括故障现象、影响范围等..."
+        placeholder-class="custom-placeholder"
         value="{{description}}"
         bindinput="onDescriptionInput"
         maxlength="50"
@@ -161,6 +165,7 @@
       <textarea
         class="textarea-box textarea-box-remark"
         placeholder="请填写备注信息（非必填）"
+        placeholder-class="custom-placeholder"
         value="{{remark}}"
         bindinput="onRemarkInput"
         maxlength="30"

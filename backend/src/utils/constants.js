@@ -20,9 +20,7 @@ const WORK_ORDER_STATUSES = [
  * Maps to the priority field in work_orders table
  */
 const PRIORITIES = [
-  'Low',
   'Normal',
-  'High',
   'Emergency',
 ];
 

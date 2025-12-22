@@ -18,7 +18,7 @@ const getUserNotifications = async (unreadOnly = false, limit = 20) => {
       data: {
         action: 'getUserNotifications',
         data: {
-          user_id: wx.getStorageSync('user_info')?.id,
+          user_id: wx.getStorageSync('user_info')?.user_id,
           unread_only: unreadOnly,
           limit
         }
@@ -53,7 +53,7 @@ const markAsRead = async (notificationId) => {
         action: 'markAsRead',
         data: {
           notification_id: notificationId,
-          user_id: wx.getStorageSync('user_info')?.id
+          user_id: wx.getStorageSync('user_info')?.user_id
         }
       }
     });
@@ -83,7 +83,7 @@ const markAllAsRead = async () => {
       data: {
         action: 'markAllAsRead',
         data: {
-          user_id: wx.getStorageSync('user_info')?.id
+          user_id: wx.getStorageSync('user_info')?.user_id
         }
       }
     });
@@ -111,7 +111,7 @@ const getUnreadCount = async () => {
       data: {
         action: 'getUnreadCount',
         data: {
-          user_id: wx.getStorageSync('user_info')?.id
+          user_id: wx.getStorageSync('user_info')?.user_id
         }
       }
     });
@@ -168,10 +168,42 @@ const sendNotification = async (userId, type, title, message, data = {}) => {
   }
 };
 
+/**
+ * 删除通知
+ * @param {String} notificationId - 通知ID
+ * @returns {Promise<Object>} 操作结果
+ */
+const deleteNotification = async (notificationId) => {
+  try {
+    console.log('[Notification] Deleting notification:', notificationId);
+
+    const result = await wx.cloud.callFunction({
+      name: 'sendNotification',
+      data: {
+        action: 'deleteNotification',
+        data: {
+          notification_id: notificationId
+        }
+      }
+    });
+
+    if (!result.result || !result.result.success) {
+      throw new Error(result.result?.error || '删除失败');
+    }
+
+    return result.result;
+
+  } catch (error) {
+    console.error('[Notification] Delete notification error:', error);
+    throw error;
+  }
+};
+
 module.exports = {
   getUserNotifications,
   markAsRead,
   markAllAsRead,
   getUnreadCount,
-  sendNotification
+  sendNotification,
+  deleteNotification
 };

@@ -13,6 +13,12 @@ function getDateRange(filterType) {
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
   switch (filterType) {
+    case 'all':
+      return {
+        startDate: null,
+        endDate: null
+      };
+
     case 'yesterday':
       const yesterday = new Date(today);
       yesterday.setDate(yesterday.getDate() - 1);
