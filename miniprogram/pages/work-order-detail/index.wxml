@@ -200,62 +200,18 @@
       </view>
 
       <view class="modal-body">
-        <!-- 维修结果选择器 -->
+        <!-- 完成描述 -->
         <view class="form-group">
-          <view class="form-label required">维修结果</view>
-          <picker
-            class="form-picker"
-            mode="selector"
-            range="{{['已维修', '需返工']}}"
-            value="{{repairStatus === 'Repaired' ? 0 : 1}}"
-            bindchange="onRepairStatusChange"
-          >
-            <view class="picker-value">
-              {{repairStatus === 'Repaired' ? '已维修' : '需返工'}}
-            </view>
-          </picker>
-        </view>
-
-        <!-- 完成说明 -->
-        <view class="form-group">
-          <view class="form-label {{repairStatus === 'Needs Rework' ? 'required' : ''}}">
-            完成说明
-          </view>
+          <view class="form-label">完成描述</view>
           <textarea
             class="form-textarea"
-            placeholder="{{repairStatus === 'Needs Rework' ? '请填写返工说明(必填)' : '请填写完成说明(选填)'}}"
+            placeholder="请填写完成描述（选填）"
             value="{{completionNotes}}"
             bindinput="onNotesInput"
             maxlength="500"
             auto-height
           />
           <view class="form-hint">{{completionNotes.length}}/500</view>
-        </view>
-
-        <!-- 维修照片上传 -->
-        <view class="form-group">
-          <view class="form-label">维修照片</view>
-          <view class="photo-uploader">
-            <!-- 已上传照片 -->
-            <block wx:for="{{repairPhotos}}" wx:key="index">
-              <view class="upload-photo-item">
-                <image class="upload-photo" src="{{item}}" mode="aspectFill" />
-                <view class="upload-photo-remove" bindtap="removeRepairPhoto" data-index="{{index}}">×</view>
-              </view>
-            </block>
-
-            <!-- 上传按钮 -->
-            <view
-              wx:if="{{repairPhotos.length < 9}}"
-              class="upload-btn {{uploadingPhotos ? 'uploading' : ''}}"
-              bindtap="chooseRepairPhotos"
-            >
-              <text class="upload-icon" wx:if="{{!uploadingPhotos}}">📷</text>
-              <view class="weui-loading" wx:if="{{uploadingPhotos}}"></view>
-              <text class="upload-text">{{uploadingPhotos ? '上传中' : '添加照片'}}</text>
-            </view>
-          </view>
-          <view class="form-hint">最多上传9张照片</view>
         </view>
       </view>
 
@@ -264,7 +220,7 @@
         <button
           class="modal-btn confirm"
           bindtap="submitRepairCompletion"
-          disabled="{{submittingRepair || uploadingPhotos}}"
+          disabled="{{submittingRepair}}"
         >
           {{submittingRepair ? '提交中...' : '确认提交'}}
         </button>
@@ -330,7 +286,9 @@
     <view class="more-actions-content" catchtap="stopPropagation">
       <!-- 删除 - 物业人员可见 -->
       <view wx:if="{{showDeleteInMenu}}" class="more-action-item" bindtap="handleDelete">
-        <view class="more-action-icon delete-icon">🗑️</view>
+        <view class="more-action-icon delete-icon">
+          <text class="iconfont icon-shanchu1"></text>
+        </view>
         <text class="more-action-label">删除</text>
       </view>
       <!-- 需重修 - 物业员工(提交者) + 已修复状态 -->

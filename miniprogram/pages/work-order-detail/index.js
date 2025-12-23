@@ -67,10 +67,7 @@ Page({
     showEmptyMenu: false, // 菜单显示空白卡片
     // Repair completion form - T091-T092
     showRepairForm: false,
-    repairStatus: 'Repaired',
     completionNotes: '',
-    repairPhotos: [],
-    uploadingPhotos: false,
     submittingRepair: false,
     // Review form - T107
     showReviewForm: false,
@@ -846,87 +843,10 @@ Page({
   },
 
   /**
-   * Handle Repair Status Change
-   */
-  onRepairStatusChange: function (e) {
-    const index = parseInt(e.detail.value, 10);
-    this.setData({ repairStatus: index === 0 ? 'Repaired' : 'Needs Rework' });
-  },
-
-  /**
    * Handle Completion Notes Input
    */
   onNotesInput: function (e) {
     this.setData({ completionNotes: e.detail.value });
-  },
-
-  /**
-   * Choose Repair Photos
-   */
-  chooseRepairPhotos: function () {
-    const maxPhotos = 9;
-    const currentCount = this.data.repairPhotos.length;
-
-    if (currentCount >= maxPhotos) {
-      wx.showToast({
-        title: `最多上传${maxPhotos}张照片`,
-        icon: 'none'
-      });
-      return;
-    }
-
-    wx.chooseImage({
-      count: maxPhotos - currentCount,
-      sizeType: ['compressed'],
-      sourceType: ['camera', 'album'],
-      success: async (res) => {
-        const tempFilePaths = res.tempFilePaths;
-
-        this.setData({ uploadingPhotos: true });
-
-        try {
-          const uploadedUrls = [];
-
-          for (const filePath of tempFilePaths) {
-            // Upload to cloud storage
-            const cloudPath = `work-orders/${this.data.orderId}/repair-${Date.now()}-${Math.random().toString(36).slice(2)}.jpg`;
-            const uploadResult = await wx.cloud.uploadFile({
-              cloudPath,
-              filePath
-            });
-            uploadedUrls.push(uploadResult.fileID);
-          }
-
-          this.setData({
-            repairPhotos: [...this.data.repairPhotos, ...uploadedUrls],
-            uploadingPhotos: false
-          });
-
-          wx.showToast({
-            title: '照片上传成功',
-            icon: 'success'
-          });
-
-        } catch (error) {
-          console.error('[Detail] Upload photos error:', error);
-          this.setData({ uploadingPhotos: false });
-          wx.showToast({
-            title: '照片上传失败',
-            icon: 'none'
-          });
-        }
-      }
-    });
-  },
-
-  /**
-   * Remove Repair Photo
-   */
-  removeRepairPhoto: function (e) {
-    const index = e.currentTarget.dataset.index;
-    const photos = this.data.repairPhotos;
-    photos.splice(index, 1);
-    this.setData({ repairPhotos: photos });
   },
 
   /**
@@ -935,9 +855,7 @@ Page({
   cancelRepairForm: function () {
     this.setData({
       showRepairForm: false,
-      repairStatus: 'Repaired',
-      completionNotes: '',
-      repairPhotos: []
+      completionNotes: ''
     });
   },
 
@@ -945,87 +863,56 @@ Page({
    * Submit Repair Completion - T091-T092-T093 (Cloud Database Version)
    */
   submitRepairCompletion: async function () {
-    // Validate form
-    if (this.data.repairStatus === 'Needs Rework' && !this.data.completionNotes.trim()) {
-      wx.showModal({
-        title: '请填写返工说明',
-        content: '选择"需返工"时必须填写返工说明',
-        showCancel: false
-      });
-      return;
-    }
+    try {
+      this.setData({ submittingRepair: true });
 
-    // Check if photos are still uploading
-    if (this.data.uploadingPhotos) {
+      // Call cloud function to complete repair (固定状态为 Repaired)
+      await workOrderService.completeRepair(
+        parseInt(this.data.orderId),
+        this.data.completionNotes.trim()
+      );
+
+      this.setData({ submittingRepair: false });
+
+      // Success feedback
       wx.showToast({
-        title: '照片上传中，请稍候',
-        icon: 'none'
+        title: '提交成功',
+        icon: 'success',
+        duration: 2000
       });
-      return;
-    }
 
-    wx.showModal({
-      title: '确认提交',
-      content: `确认将工单状态更新为"${this.data.repairStatus === 'Repaired' ? '已维修' : '需返工'}"吗？`,
-      success: async (res) => {
-        if (res.confirm) {
-          try {
-            this.setData({ submittingRepair: true });
+      // Reset form
+      this.setData({
+        showRepairForm: false,
+        completionNotes: ''
+      });
 
-            // Call cloud function to complete repair
-            await workOrderService.completeRepair(
-              parseInt(this.data.orderId),
-              this.data.repairStatus,
-              this.data.completionNotes.trim(),
-              this.data.repairPhotos
-            );
+      // 跳转到工作台页面
+      setTimeout(() => {
+        wx.switchTab({
+          url: '/pages/workbench/index'
+        });
+      }, 1500);
 
-            this.setData({ submittingRepair: false });
+    } catch (error) {
+      this.setData({ submittingRepair: false });
+      console.error('[Detail] Submit repair error:', error);
 
-            // Success feedback - T093
-            wx.showToast({
-              title: '提交成功',
-              icon: 'success',
-              duration: 2000
-            });
-
-            // Reset form
-            this.setData({
-              showRepairForm: false,
-              repairStatus: 'Repaired',
-              completionNotes: '',
-              repairPhotos: []
-            });
-
-            // 跳转到工作台页面
-            setTimeout(() => {
-              wx.switchTab({
-                url: '/pages/workbench/index'
-              });
-            }, 1500);
-
-          } catch (error) {
-            this.setData({ submittingRepair: false });
-            console.error('[Detail] Submit repair error:', error);
-
-            // Error feedback - T093
-            const errorMsg = error.message || '提交失败，请重试';
-            wx.showModal({
-              title: '提交失败',
-              content: errorMsg,
-              showCancel: true,
-              cancelText: '取消',
-              confirmText: '重试',
-              success: (retryRes) => {
-                if (retryRes.confirm) {
-                  this.submitRepairCompletion();
-                }
-              }
-            });
+      // Error feedback
+      const errorMsg = error.message || '提交失败，请重试';
+      wx.showModal({
+        title: '提交失败',
+        content: errorMsg,
+        showCancel: true,
+        cancelText: '取消',
+        confirmText: '重试',
+        success: (retryRes) => {
+          if (retryRes.confirm) {
+            this.submitRepairCompletion();
           }
         }
-      }
-    });
+      });
+    }
   },
 
   /**

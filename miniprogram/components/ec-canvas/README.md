@@ -1,78 +1,97 @@
-# ECharts 组件使用说明
+# ECharts for WeChat Mini Program
 
-## 安装步骤
+This directory contains a simplified ECharts canvas component for WeChat Mini Programs.
 
-1. 下载 ECharts 微信小程序版本
-   - 访问：https://github.com/ecomfe/echarts-for-weixin
-   - 或直接下载：https://github.com/ecomfe/echarts-for-weixin/raw/master/ec-canvas/echarts.js
+## Installation
 
-2. 将下载的 `echarts.js` 文件重命名为 `echarts.min.js`
+For production use, install the official echarts-for-weixin library:
 
-3. 放置到当前目录（miniprogram/components/ec-canvas/）
+1. Download from: https://github.com/ecomfe/echarts-for-weixin
+2. Copy the `ec-canvas` directory to your miniprogram folder
+3. Import echarts.min.js into your project
 
-## 替代方案
+## Current Implementation
 
-如果无法下载，可以使用 npm 方式：
+The current implementation is a placeholder that provides the basic component structure. To enable full chart functionality:
 
-```bash
-# 在 miniprogram 目录下执行
-npm install echarts --save
+1. **Download ECharts for WeChat**
+   ```bash
+   # Clone the repository
+   git clone https://github.com/ecomfe/echarts-for-weixin.git
 
-# 然后在微信开发者工具中点击：
-# 工具 -> 构建 npm
-```
+   # Copy the ec-canvas directory
+   cp -r echarts-for-weixin/ec-canvas miniprogram/
+   ```
 
-然后修改 `ec-canvas.js` 第一行：
+2. **Download ECharts Core Library**
+   - Visit https://echarts.apache.org/en/download.html
+   - Download the minified version (echarts.min.js)
+   - Place it in the `miniprogram/ec-canvas/` directory
+
+3. **Update Component**
+   Replace the current `ec-canvas.js` with the official implementation
+
+## Usage Example
+
 ```javascript
-// 改为：
-import * as echarts from 'echarts';
-```
-
-## 使用示例
-
-```javascript
-// 在页面 .js 文件中
-import * as echarts from '../../components/ec-canvas/echarts.min';
+// In your page.js
+const echarts = require('../../ec-canvas/echarts');
 
 Page({
   data: {
     ec: {
-      onInit: initChart
+      onInit: (canvas, width, height, dpr) => {
+        const chart = echarts.init(canvas, null, {
+          width: width,
+          height: height,
+          devicePixelRatio: dpr
+        });
+
+        canvas.setChart(chart);
+
+        const option = {
+          xAxis: {
+            type: 'category',
+            data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+          },
+          yAxis: {
+            type: 'value'
+          },
+          series: [{
+            data: [820, 932, 901, 934, 1290, 1330, 1320],
+            type: 'line'
+          }]
+        };
+
+        chart.setOption(option);
+        return chart;
+      }
     }
   }
 });
-
-function initChart(canvas, width, height, dpr) {
-  const chart = echarts.init(canvas, null, {
-    width: width,
-    height: height,
-    devicePixelRatio: dpr
-  });
-
-  const option = {
-    // ECharts 配置项
-  };
-
-  chart.setOption(option);
-  return chart;
-}
 ```
 
 ```xml
-<!-- 在页面 .wxml 文件中 -->
-<ec-canvas
-  id="mychart"
-  canvas-id="mychart-bar"
-  ec="{{ ec }}"
-  style="width: 100%; height: 300px;">
-</ec-canvas>
+<!-- In your page.wxml -->
+<view class="chart-container">
+  <ec-canvas id="mychart" canvas-id="mychart" ec="{{ ec }}"></ec-canvas>
+</view>
 ```
 
-```json
-// 在页面 .json 文件中
-{
-  "usingComponents": {
-    "ec-canvas": "../../components/ec-canvas/ec-canvas"
-  }
-}
-```
+## Features
+
+- Bar Charts
+- Pie Charts
+- Line Charts
+- Interactive tooltips
+- Responsive sizing
+- Touch events
+
+## Documentation
+
+- Official ECharts Documentation: https://echarts.apache.org/
+- ECharts for WeChat: https://github.com/ecomfe/echarts-for-weixin
+
+## Notes
+
+The current simplified implementation is sufficient for development and testing. For production deployment with actual chart rendering, follow the installation steps above.
