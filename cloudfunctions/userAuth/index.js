@@ -104,7 +104,7 @@ async function createUser(openid, userInfo = {}) {
   const users = db.collection('users');
   const roles = db.collection('roles');
 
-  // 获取默认角色（物业员工）
+  // 获取默认角色（办美员工）
   const { data: roleData } = await roles.where({
     role_id: 4
   }).get();

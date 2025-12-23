@@ -1,4 +1,6 @@
 // pages/password/password.js
+const auth = require('../../services/auth');
+
 Page({
   data: {
     statusBarHeight: 20,
@@ -65,7 +67,7 @@ Page({
   },
 
   // 提交
-  handleSubmit() {
+  async handleSubmit() {
     const { oldPassword, newPassword, confirmPassword } = this.data
 
     if (!oldPassword || !newPassword || !confirmPassword) {
@@ -83,16 +85,29 @@ Page({
       return
     }
 
-    wx.showToast({
-      title: '修改成功',
-      icon: 'success',
-      duration: 1500,
-      success: () => {
+    wx.showLoading({ title: '提交中...' })
+
+    try {
+      const result = await auth.changePassword(oldPassword, newPassword)
+      wx.hideLoading()
+
+      if (result.success) {
+        wx.showToast({
+          title: '修改成功',
+          icon: 'success',
+          duration: 1500
+        })
         setTimeout(() => {
           wx.navigateBack()
         }, 1500)
+      } else {
+        this.setData({ error: result.error || '修改失败' })
       }
-    })
+    } catch (error) {
+      wx.hideLoading()
+      console.error('修改密码失败:', error)
+      this.setData({ error: error.message || '修改失败，请重试' })
+    }
   },
 
   // 取消

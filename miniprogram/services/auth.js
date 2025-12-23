@@ -303,6 +303,40 @@ const hasPermission = async (permission) => {
 };
 
 /**
+ * Change password
+ * @param {string} oldPassword - Current password
+ * @param {string} newPassword - New password
+ * @returns {Promise<object>} Result
+ */
+const changePassword = async (oldPassword, newPassword) => {
+  try {
+    console.log('[Auth] Changing password...');
+
+    const result = await wx.cloud.callFunction({
+      name: 'userAuth',
+      data: {
+        action: 'changePassword',
+        data: {
+          old_password: oldPassword,
+          new_password: newPassword
+        }
+      }
+    });
+
+    console.log('[Auth] Change password result:', result);
+
+    if (!result.result) {
+      throw new Error('修改密码失败');
+    }
+
+    return result.result;
+  } catch (error) {
+    console.error('[Auth] Error changing password:', error);
+    throw error;
+  }
+};
+
+/**
  * Refresh user info from backend
  * @returns {Promise<object>} Updated user info
  */
@@ -338,5 +372,6 @@ module.exports = {
   updateUserInfo,
   getUserPermissions,
   hasPermission,
+  changePassword,
   refreshUserInfo
 };

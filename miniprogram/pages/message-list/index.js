@@ -86,7 +86,7 @@ Page({
             .map(notif => ({
               id: notif._id,
               notificationId: notif._id, // 保存通知ID用于标记已读
-              titlePrefix: '工单编号 ',
+              titlePrefix: '',
               orderNumber: notif.data?.order_number || '',
               content: notif.message,
               timeText: this.formatDate(notif.sent_at),
@@ -104,7 +104,7 @@ Page({
             .map(notif => ({
               id: notif._id,
               notificationId: notif._id,
-              titlePrefix: '工单编号 ',
+              titlePrefix: '',
               orderNumber: notif.data?.order_number || '',
               content: notif.message,
               timeText: this.formatDate(notif.sent_at),

@@ -1,0 +1,167 @@
+<!--
+  User Management Page
+  账号管理列表页面 - 增强版
+-->
+<view class="user-page">
+  <!-- 搜索和筛选栏 -->
+  <view class="filter-bar">
+    <!-- 搜索框 -->
+    <view class="search-box">
+      <text class="search-icon">🔍</text>
+      <input
+        class="search-input"
+        placeholder="搜索用户名或姓名"
+        value="{{searchKeyword}}"
+        bindinput="onSearchInput"
+        bindconfirm="onSearch"
+      />
+      <view wx:if="{{searchKeyword}}" class="clear-icon" bindtap="clearSearch">×</view>
+    </view>
+
+    <!-- 筛选按钮 -->
+    <view class="filter-btn" bindtap="toggleFilter">
+      <text>筛选</text>
+      <text class="filter-badge" wx:if="{{hasFilter}}">·</text>
+    </view>
+  </view>
+
+  <!-- 筛选面板 -->
+  <view class="filter-panel {{showFilter ? 'show' : ''}}">
+    <!-- 角色筛选 -->
+    <view class="filter-group">
+      <view class="filter-label">角色</view>
+      <view class="filter-options">
+        <view
+          class="filter-option {{filterRole === '' ? 'active' : ''}}"
+          bindtap="filterByRole"
+          data-role=""
+        >全部</view>
+        <view
+          wx:for="{{roleOptions}}"
+          wx:key="value"
+          class="filter-option {{filterRole === item.value ? 'active' : ''}}"
+          bindtap="filterByRole"
+          data-role="{{item.value}}"
+        >{{item.label}}</view>
+      </view>
+    </view>
+
+    <!-- 状态筛选 -->
+    <view class="filter-group">
+      <view class="filter-label">状态</view>
+      <view class="filter-options">
+        <view
+          class="filter-option {{filterStatus === '' ? 'active' : ''}}"
+          bindtap="filterByStatus"
+          data-status=""
+        >全部</view>
+        <view
+          class="filter-option {{filterStatus === 'active' ? 'active' : ''}}"
+          bindtap="filterByStatus"
+          data-status="active"
+        >启用</view>
+        <view
+          class="filter-option {{filterStatus === 'inactive' ? 'active' : ''}}"
+          bindtap="filterByStatus"
+          data-status="inactive"
+        >停用</view>
+      </view>
+    </view>
+
+    <!-- 重置按钮 -->
+    <view class="filter-actions">
+      <view class="reset-btn" bindtap="resetFilter">重置筛选</view>
+    </view>
+  </view>
+
+  <!-- 用户列表 -->
+  <view class="user-list">
+    <view wx:if="{{loading}}" class="loading-state">
+      <text>加载中...</text>
+    </view>
+
+    <view wx:elif="{{users.length === 0}}" class="empty-state">
+      <text class="empty-icon">👤</text>
+      <text class="empty-text">暂无用户</text>
+    </view>
+
+    <view wx:else class="list-content">
+      <view
+        wx:for="{{users}}"
+        wx:key="_id"
+        class="user-card {{item.active === false ? 'disabled' : ''}}"
+      >
+        <view class="card-header">
+          <view class="user-avatar">
+            <text>{{item.name[0] || '?'}}</text>
+          </view>
+          <view class="user-info">
+            <view class="user-name">
+              <text>{{item.name}}</text>
+              <view class="status-tag {{item.active === false ? 'inactive' : 'active'}}">
+                {{item.active === false ? '已停用' : '正常'}}
+              </view>
+            </view>
+            <text class="user-username">@{{item.username}}</text>
+          </view>
+        </view>
+
+        <view class="card-body">
+          <view class="info-row">
+            <text class="info-label">角色：</text>
+            <text class="info-value">{{item.roleName}}</text>
+          </view>
+          <view class="info-row" wx:if="{{item.department}}">
+            <text class="info-label">部门：</text>
+            <text class="info-value">{{item.department}}</text>
+          </view>
+          <view class="info-row" wx:if="{{item.contact_phone}}">
+            <text class="info-label">电话：</text>
+            <text class="info-value">{{item.contact_phone}}</text>
+          </view>
+        </view>
+
+        <view class="card-actions">
+          <view class="action-btn" bindtap="editUser" data-id="{{item._id}}" data-user-id="{{item.user_id}}">
+            编辑
+          </view>
+          <view
+            wx:if="{{item.active !== false && !item.isCurrentUser}}"
+            class="action-btn warn"
+            bindtap="disableUser"
+            data-id="{{item._id}}"
+            data-user-id="{{item.user_id}}"
+            data-name="{{item.name}}"
+          >
+            停用
+          </view>
+          <view
+            wx:if="{{item.active === false}}"
+            class="action-btn primary"
+            bindtap="enableUser"
+            data-id="{{item._id}}"
+            data-user-id="{{item.user_id}}"
+            data-name="{{item.name}}"
+          >
+            启用
+          </view>
+          <view
+            wx:if="{{!item.isCurrentUser}}"
+            class="action-btn"
+            bindtap="resetPassword"
+            data-id="{{item._id}}"
+            data-user-id="{{item.user_id}}"
+            data-name="{{item.name}}"
+          >
+            重置密码
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 新建按钮 -->
+  <view class="fab-button" bindtap="addUser">
+    <text class="fab-icon">+</text>
+  </view>
+</view>

@@ -1,0 +1,104 @@
+<!--
+  Admin Dashboard Page
+  管理台首页 - 卡片入口式导航
+-->
+<view class="dashboard-page">
+  <!-- 页面标题 -->
+  <view class="page-header">
+    <text class="welcome-text">管理控制台</text>
+    <text class="user-name">{{userName}}</text>
+  </view>
+
+  <!-- 功能模块卡片列表 -->
+  <view class="module-grid">
+    <!-- 账号管理 -->
+    <view class="module-card" bindtap="navigateTo" data-path="/pages/admin/users/index">
+      <view class="card-icon icon-users">
+        <text class="iconfont icon-user"></text>
+      </view>
+      <view class="card-info">
+        <text class="card-title">账号管理</text>
+        <text class="card-desc">用户账号与权限管理</text>
+      </view>
+      <view class="card-arrow">
+        <text class="iconfont icon-arrow-right"></text>
+      </view>
+    </view>
+
+    <!-- 角色与权限 -->
+    <view class="module-card" bindtap="navigateTo" data-path="/pages/admin/roles/index">
+      <view class="card-icon icon-roles">
+        <text class="iconfont icon-role"></text>
+      </view>
+      <view class="card-info">
+        <text class="card-title">角色与权限</text>
+        <text class="card-desc">角色权限配置</text>
+      </view>
+      <view class="card-arrow">
+        <text class="iconfont icon-arrow-right"></text>
+      </view>
+    </view>
+
+    <!-- 系统配置 -->
+    <view class="module-card" bindtap="navigateTo" data-path="/pages/admin/config/index">
+      <view class="card-icon icon-config">
+        <text class="iconfont icon-setting"></text>
+      </view>
+      <view class="card-info">
+        <text class="card-title">系统配置</text>
+        <text class="card-desc">SLA规则与系统参数</text>
+      </view>
+      <view class="card-arrow">
+        <text class="iconfont icon-arrow-right"></text>
+      </view>
+    </view>
+
+    <!-- 公告管理 -->
+    <view class="module-card" bindtap="navigateTo" data-path="/pages/admin/announcements/index">
+      <view class="card-icon icon-announcements">
+        <text class="iconfont icon-announcement"></text>
+      </view>
+      <view class="card-info">
+        <text class="card-title">公告管理</text>
+        <text class="card-desc">发布与管理公告</text>
+      </view>
+      <view class="card-arrow">
+        <text class="iconfont icon-arrow-right"></text>
+      </view>
+    </view>
+
+    <!-- 消息模板 -->
+    <view class="module-card" bindtap="navigateTo" data-path="/pages/admin/message-templates/index">
+      <view class="card-icon icon-templates">
+        <text class="iconfont icon-template"></text>
+      </view>
+      <view class="card-info">
+        <text class="card-title">消息模板</text>
+        <text class="card-desc">通知消息模板配置</text>
+      </view>
+      <view class="card-arrow">
+        <text class="iconfont icon-arrow-right"></text>
+      </view>
+    </view>
+
+    <!-- 审计日志 -->
+    <view class="module-card" bindtap="navigateTo" data-path="/pages/admin/audit-logs/index">
+      <view class="card-icon icon-audit">
+        <text class="iconfont icon-audit"></text>
+      </view>
+      <view class="card-info">
+        <text class="card-title">审计日志</text>
+        <text class="card-desc">系统操作记录查询</text>
+      </view>
+      <view class="card-arrow">
+        <text class="iconfont icon-arrow-right"></text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 底部退出登录按钮 -->
+  <view class="logout-section" bindtap="handleLogout">
+    <text class="iconfont icon-logout"></text>
+    <text class="logout-text">退出登录</text>
+  </view>
+</view>

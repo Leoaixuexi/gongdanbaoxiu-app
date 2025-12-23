@@ -6,7 +6,7 @@ Page({
   data: {
     userInfo: {
       name: '张伟',
-      position: '物业员工',
+      position: '办美员工',
       department: '物业管理部',
       avatar: 'https://placehold.co/200x200/10b981/ffffff?text=ZW',
       phone: '177******35'

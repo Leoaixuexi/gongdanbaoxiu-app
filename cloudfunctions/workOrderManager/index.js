@@ -104,7 +104,7 @@ const ORDER_CATEGORIES = ['电梯维修', '水电维修', '消防维修', '空�
 /**
  * 责任方选项
  */
-const RESPONSIBLE_PARTIES = ['物业公司', '业主', '第三方'];
+const RESPONSIBLE_PARTIES = ['信泰物业', '业主', '第三方'];
 
 /**
  * 自动分配维修员
@@ -474,11 +474,11 @@ async function createWorkOrder(openid, orderData) {
     }
   );
 
-  // 场景1：如果责任方为"物业公司"，通知所有物业公司部门的用户
-  if (orderData.responsible_party === '物业公司') {
+  // 场景1：如果责任方为"信泰物业"，通知所有信泰物业部门的用户
+  if (orderData.responsible_party === '信泰物业') {
     const propertyUsers = await db.collection('users')
       .where({
-        department: '物业公司',
+        department: '信泰物业',
         active: true
       })
       .get();
@@ -553,7 +553,7 @@ async function updateOrderStatus(openid, orderId, newStatus, notes = '') {
     throw new Error('权限不足');
   }
 
-  // 物业经理可以手动切换任意状态，维修员只能接单/开始维修
+  // 行政经理可以手动切换任意状态，维修员只能接单/开始维修
   if (!isAdmin && !isManager) {
     // 维修员只允许"接单/开始维修"类操作
     const allowedFrom = new Set(['Pending Repair', 'Needs Rework']);
@@ -707,10 +707,10 @@ async function getWorkOrders(openid, filters = {}) {
     // 维修员只能看到分配给自己的工单
     conditions['assigned_technician.user_id'] = user.user_id;
   } else if (user.role_id === 4) {
-    // 物业员工只能看到自己提交的工单
+    // 办美员工只能看到自己提交的工单
     conditions['submitter.user_id'] = user.user_id;
   }
-  // 管理员和物业经理可以看到所有工单
+  // 管理员和行政经理可以看到所有工单
 
   // 应用过滤条件（兼容老数据中文状态）
   if (filters.status) {
@@ -912,9 +912,9 @@ async function reviewOrder(openid, orderId, status, reviewNotes) {
 
   // 发送通知
   if (targetStatus === 'Completed') {
-    // 场景3：复核通过，通知所有物业公司部门的用户
+    // 场景3：复核通过，通知所有信泰物业部门的用户
     const propertyUsers = await db.collection('users')
-      .where({ department: '物业公司', active: true })
+      .where({ department: '信泰物业', active: true })
       .get();
 
     if (propertyUsers.data && propertyUsers.data.length > 0) {
@@ -940,9 +940,9 @@ async function reviewOrder(openid, orderId, status, reviewNotes) {
       );
     }
   } else if (targetStatus === 'Needs Rework') {
-    // 场景4：需要返工，通知所有物业公司部门的用户
+    // 场景4：需要返工，通知所有信泰物业部门的用户
     const propertyUsers = await db.collection('users')
-      .where({ department: '物业公司', active: true })
+      .where({ department: '信泰物业', active: true })
       .get();
 
     if (propertyUsers.data && propertyUsers.data.length > 0) {
@@ -1071,7 +1071,7 @@ async function urgeRepair(openid, orderId) {
 async function urgeReview(openid, orderId) {
   const workOrders = db.collection('work_orders');
 
-  // 1. 权限校验：维修员(3)、物业经理(2)或管理员(1)
+  // 1. 权限校验：维修员(3)、行政经理(2)或管理员(1)
   const user = await getUserByOpenId(openid);
   if (!user) {
     throw new Error('用户不存在');
@@ -1212,7 +1212,7 @@ exports.main = async (event, context) => {
 
           const order = orderData[0];
 
-          // 访问控制：提交者 / 负责人 / 管理员 / 物业经理可查看
+          // 访问控制：提交者 / 负责人 / 管理员 / 行政经理可查看
           const canView =
             currentUser.role_id === 1 ||
             currentUser.role_id === 2 ||
@@ -1249,7 +1249,7 @@ exports.main = async (event, context) => {
 
           const order = orderData[0];
 
-          // 访问控制：提交者 / 负责人 / 管理员 / 物业经理可查看
+          // 访问控制：提交者 / 负责人 / 管理员 / 行政经理可查看
           const canView =
             currentUser.role_id === 1 ||
             currentUser.role_id === 2 ||
@@ -1318,13 +1318,13 @@ exports.main = async (event, context) => {
 
       case 'delete':
         {
-          // 只有物业经理可以删除工单
+          // 只有行政经理可以删除工单
           const deleteUser = await getUserByOpenId(openid);
           if (!deleteUser) {
             return { success: false, error: '用户未注册' };
           }
-          if (deleteUser.role_id !== 2) { // 2 = 物业经理
-            return { success: false, error: '只有物业经理才能删除工单' };
+          if (deleteUser.role_id !== 2) { // 2 = 行政经理
+            return { success: false, error: '只有行政经理才能删除工单' };
           }
 
           const workOrders = db.collection('work_orders');

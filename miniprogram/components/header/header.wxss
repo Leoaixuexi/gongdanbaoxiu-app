@@ -15,13 +15,15 @@
   height: 88rpx;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   padding: 0 32rpx;
+  position: relative;
 }
 
 /* 左侧区域 */
 .header-left {
-  width: 25%;
+  position: absolute;
+  left: 32rpx;
   display: flex;
   align-items: center;
 }
@@ -49,7 +51,6 @@
 
 /* 中间标题区域 */
 .header-center {
-  flex: 1;
   text-align: center;
 }
 
@@ -62,7 +63,8 @@
 
 /* 右侧菜单区域 */
 .header-right {
-  width: 25%;
+  position: absolute;
+  right: 32rpx;
   display: flex;
   align-items: center;
   justify-content: flex-end;

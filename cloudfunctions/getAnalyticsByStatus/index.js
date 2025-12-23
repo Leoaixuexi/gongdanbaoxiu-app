@@ -1,6 +1,6 @@
 /**
  * 获取工单状态分布数据（用于环形图）
- * 物业经理数据分析 - Tab2 可视化图表
+ * 行政经理数据分析 - Tab2 可视化图表
  */
 
 const cloud = require('wx-server-sdk');

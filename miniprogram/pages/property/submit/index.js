@@ -19,7 +19,7 @@ Page({
       { key: 'Emergency', label: '紧急', color: 'red' }
     ],
     selectedPriority: '',
-    responsibleParties: ['请选择责任方', '物业公司', '业主', '第三方'],
+    responsibleParties: ['请选择责任方', '信泰物业', '业主', '第三方'],
     responsiblePartyIndex: 0,
     orderCategories: ['请选择工单类别', '电梯维修', '水电维修', '消防维修', '空调维修', '其他'],
     orderCategoryIndex: 0,
@@ -129,11 +129,33 @@ Page({
    */
   handleScan: function () {
     wx.scanCode({
-      success: (res) => {
+      success: async (res) => {
         console.log('[Submit] Scan result:', res);
         // 使用扫描到的二维码内容
         const scannedCode = res.result || '';
         if (scannedCode) {
+          // 检查工单编号是否已存在
+          try {
+            wx.showLoading({ title: '检查中...', mask: true });
+            const existingOrder = await workOrderService.getWorkOrderByNumber(scannedCode);
+            wx.hideLoading();
+
+            if (existingOrder) {
+              // 工单编号已存在，弹窗警告
+              wx.showModal({
+                title: '编号重复',
+                content: `工单编号 "${scannedCode}" 已被使用，请更换二维码重新扫描。`,
+                showCancel: false,
+                confirmText: '知道了'
+              });
+              return;
+            }
+          } catch (error) {
+            wx.hideLoading();
+            // 如果查询出错（如工单不存在），继续使用该编号
+            console.log('[Submit] Order number check:', error.message);
+          }
+
           this.setData({ orderNumber: scannedCode });
           wx.showToast({
             title: '扫码成功',

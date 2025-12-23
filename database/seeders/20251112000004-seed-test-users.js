@@ -13,7 +13,7 @@ module.exports = {
         name: '系统管理员',
         role_id: 1, // System Admin
         contact_phone: '13800000001',
-        department: '管理部',
+        department: '行政部',
         supervisor_id: null,
         active: true,
         created_at: new Date(),
@@ -27,7 +27,7 @@ module.exports = {
         name: '物业经理',
         role_id: 2, // Property Manager
         contact_phone: '13800000002',
-        department: '物业部',
+        department: '信泰物业',
         supervisor_id: 1, // Reports to System Admin
         active: true,
         created_at: new Date(),
@@ -41,7 +41,7 @@ module.exports = {
         name: '维修员',
         role_id: 3, // Maintenance Worker
         contact_phone: '13800000003',
-        department: '维修部',
+        department: '工程总包',
         supervisor_id: 2, // Reports to Property Manager
         active: true,
         created_at: new Date(),
@@ -55,7 +55,7 @@ module.exports = {
         name: '物业员工',
         role_id: 4, // Property Staff
         contact_phone: '13800000004',
-        department: '物业部',
+        department: '信泰物业',
         supervisor_id: 2, // Reports to Property Manager
         active: true,
         created_at: new Date(),

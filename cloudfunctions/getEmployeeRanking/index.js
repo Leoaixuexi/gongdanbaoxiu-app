@@ -1,6 +1,6 @@
 /**
  * 获取员工已完成工单排名
- * 物业经理数据分析 - Tab1 数据统计
+ * 行政经理数据分析 - Tab1 数据统计
  */
 
 const cloud = require('wx-server-sdk');
@@ -61,10 +61,10 @@ exports.main = async (event, context) => {
       dateCondition = { created_at: _.gte(start).and(_.lte(end)) };
     }
 
-    // 查询物业员工（role_id=4）的用户
+    // 查询办美员工（role_id=4）的用户
     const usersResult = await db.collection('users')
       .where({
-        role_id: 4  // 物业员工
+        role_id: 4  // 办美员工
       })
       .get();
 

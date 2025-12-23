@@ -3,7 +3,7 @@
   <!-- 自定义导航栏 -->
   <custom-header title="数据" showBack="{{false}}" />
 
-  <!-- ========== 物业员工/维修员视图 ========== -->
+  <!-- ========== 办美员工/维修员视图 ========== -->
   <view wx:if="{{!isManager}}" class="main px-5" style="padding-top: {{headerHeight + 20}}px;">
     <!-- 工单汇总 -->
     <view class="section mb-3">
@@ -97,7 +97,7 @@
       </view>
     </view>
 
-    <!-- 月度排名 - 只对物业员工显示 -->
+    <!-- 月度排名 - 只对办美员工显示 -->
     <view wx:if="{{isPropertyStaff}}" class="section mb-3">
       <view class="flex items-center justify-between mb-3">
         <view class="flex items-center gap-2">
@@ -158,7 +158,7 @@
     </view>
   </view>
 
-  <!-- ========== 物业经理视图 ========== -->
+  <!-- ========== 行政经理视图 ========== -->
   <view wx:if="{{isManager}}" class="main px-5" style="padding-top: {{headerHeight}}px;">
     <!-- Tab切换栏 (Clean Sticky Text) -->
     <view class="manager-tabs" style="top: {{headerHeight}}px;">

@@ -4,6 +4,6 @@
   "backgroundColor": "#F7F7F7",
   "usingComponents": {
     "custom-header": "/components/header/header",
-    "ec-canvas": "/components/ec-canvas/ec-canvas"
+    "ec-canvas": "../../components/ec-canvas/ec-canvas"
   }
 }

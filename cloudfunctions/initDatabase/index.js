@@ -34,7 +34,7 @@ function hashPassword(password) {
   return `${salt}:${hash}`;
 }
 
-// 角色初始数据（4个角色：系统管理员、物业经理、维修员、物业员工）
+// 角色初始数据（4个角色：系统管理员、行政经理、维修员、办美员工）
 const ROLES_DATA = [
   {
     role_id: 1,
@@ -55,7 +55,7 @@ const ROLES_DATA = [
   {
     role_id: 2,
     name: 'Property Manager',
-    display_name: '物业经理',
+    display_name: '行政经理',
     permissions: {
       modules: {
         submit_work_orders: true,
@@ -87,7 +87,7 @@ const ROLES_DATA = [
   {
     role_id: 4,
     name: 'Property Staff',
-    display_name: '物业员工',
+    display_name: '办美员工',
     permissions: {
       modules: {
         submit_work_orders: true,
@@ -267,7 +267,7 @@ async function createTestUsers() {
       role_id: 1,
       role: { name: 'admin', display_name: '系统管理员' },
       contact_phone: '13800138001',
-      department: '管理部',
+      department: '行政部',
       supervisor_id: null,
       active: true,
       created_at: new Date(),
@@ -281,9 +281,9 @@ async function createTestUsers() {
       wechat_openid: 'test_manager_openid',
       name: '测试经理',
       role_id: 2,
-      role: { name: 'property_manager', display_name: '物业经理' },
+      role: { name: 'property_manager', display_name: '行政经理' },
       contact_phone: '13800138002',
-      department: '物业部',
+      department: '信泰物业',
       supervisor_id: 1,
       active: true,
       created_at: new Date(),
@@ -299,7 +299,7 @@ async function createTestUsers() {
       role_id: 3,
       role: { name: 'maintenance_staff', display_name: '维修员' },
       contact_phone: '13800138003',
-      department: '维修部',
+      department: '工程总包',
       supervisor_id: 2,
       active: true,
       created_at: new Date(),
@@ -313,9 +313,9 @@ async function createTestUsers() {
       wechat_openid: 'test_staff_openid',
       name: '测试员工',
       role_id: 4,
-      role: { name: 'property_staff', display_name: '物业员工' },
+      role: { name: 'property_staff', display_name: '办美员工' },
       contact_phone: '13800138004',
-      department: '物业部',
+      department: '信泰物业',
       supervisor_id: 2,
       active: true,
       created_at: new Date(),
@@ -349,6 +349,69 @@ async function getStats() {
   }
 
   return stats;
+}
+
+/**
+ * 迁移部门字段
+ * 物业公司/物业部 → 信泰物业
+ * 维修部 → 工程总包
+ * 管理部 → 行政部
+ */
+async function migrateDepartments() {
+  const users = db.collection('users');
+  const results = {
+    propertyCompany: 0,
+    propertyDept: 0,
+    maintenanceDept: 0,
+    adminDept: 0
+  };
+
+  // 1. 物业公司 → 信泰物业
+  const propertyCompanyUsers = await users.where({ department: '物业公司' }).get();
+  for (const user of propertyCompanyUsers.data) {
+    await users.doc(user._id).update({ data: { department: '信泰物业' } });
+    results.propertyCompany++;
+  }
+
+  // 2. 物业部 → 信泰物业
+  const propertyDeptUsers = await users.where({ department: '物业部' }).get();
+  for (const user of propertyDeptUsers.data) {
+    await users.doc(user._id).update({ data: { department: '信泰物业' } });
+    results.propertyDept++;
+  }
+
+  // 3. 维修部 → 工程总包
+  const maintenanceDeptUsers = await users.where({ department: '维修部' }).get();
+  for (const user of maintenanceDeptUsers.data) {
+    await users.doc(user._id).update({ data: { department: '工程总包' } });
+    results.maintenanceDept++;
+  }
+
+  // 4. 管理部 → 行政部
+  const adminDeptUsers = await users.where({ department: '管理部' }).get();
+  for (const user of adminDeptUsers.data) {
+    await users.doc(user._id).update({ data: { department: '行政部' } });
+    results.adminDept++;
+  }
+
+  return results;
+}
+
+/**
+ * 迁移工单责任方字段
+ * 物业公司 → 信泰物业
+ */
+async function migrateResponsibleParty() {
+  const workOrders = db.collection('work_orders');
+  let count = 0;
+
+  const orders = await workOrders.where({ responsible_party: '物业公司' }).get();
+  for (const order of orders.data) {
+    await workOrders.doc(order._id).update({ data: { responsible_party: '信泰物业' } });
+    count++;
+  }
+
+  return { updated: count };
 }
 
 /**
@@ -428,11 +491,26 @@ exports.main = async (event, context) => {
           message: '数据库已重置并重新初始化'
         };
 
+      case 'migrate_departments':
+        // 迁移部门和责任方字段
+        const deptMigration = await migrateDepartments();
+        const partyMigration = await migrateResponsibleParty();
+
+        return {
+          success: true,
+          action: 'migrate_departments',
+          results: {
+            departments: deptMigration,
+            responsible_party: partyMigration
+          },
+          message: '部门字段迁移完成'
+        };
+
       default:
         return {
           success: false,
           error: `未知操作: ${action}`,
-          available_actions: ['init', 'reset', 'stats', 'reset_and_init']
+          available_actions: ['init', 'reset', 'stats', 'reset_and_init', 'migrate_departments']
         };
     }
 

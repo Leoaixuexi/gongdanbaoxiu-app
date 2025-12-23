@@ -1,0 +1,101 @@
+<!--
+  Announcement Management Page
+  公告管理列表页面
+-->
+<view class="announcement-page">
+  <!-- 筛选栏 -->
+  <view class="filter-bar">
+    <view class="filter-tabs">
+      <view
+        class="filter-tab {{currentStatus === '' ? 'active' : ''}}"
+        bindtap="filterByStatus"
+        data-status=""
+      >全部</view>
+      <view
+        class="filter-tab {{currentStatus === 'draft' ? 'active' : ''}}"
+        bindtap="filterByStatus"
+        data-status="draft"
+      >草稿</view>
+      <view
+        class="filter-tab {{currentStatus === 'published' ? 'active' : ''}}"
+        bindtap="filterByStatus"
+        data-status="published"
+      >已发布</view>
+      <view
+        class="filter-tab {{currentStatus === 'offline' ? 'active' : ''}}"
+        bindtap="filterByStatus"
+        data-status="offline"
+      >已下线</view>
+    </view>
+  </view>
+
+  <!-- 公告列表 -->
+  <view class="announcement-list">
+    <view wx:if="{{loading}}" class="loading-state">
+      <text>加载中...</text>
+    </view>
+
+    <view wx:elif="{{announcements.length === 0}}" class="empty-state">
+      <text class="empty-icon">📋</text>
+      <text class="empty-text">暂无公告</text>
+      <text class="empty-hint">点击下方按钮创建新公告</text>
+    </view>
+
+    <view wx:else class="list-content">
+      <view
+        wx:for="{{announcements}}"
+        wx:key="_id"
+        class="announcement-card"
+        bindtap="viewDetail"
+        data-id="{{item._id}}"
+      >
+        <view class="card-header">
+          <text class="card-title">{{item.title}}</text>
+          <view class="status-badge status-{{item.status}}">
+            {{statusNames[item.status]}}
+          </view>
+        </view>
+
+        <view class="card-meta">
+          <text class="meta-item">可见角色: {{item.visibleRolesText || '全部'}}</text>
+          <text class="meta-item">{{item.created_at_text}}</text>
+        </view>
+
+        <view class="card-actions">
+          <view class="action-btn" catchtap="editAnnouncement" data-id="{{item._id}}">
+            <text>编辑</text>
+          </view>
+          <view
+            wx:if="{{item.status === 'draft'}}"
+            class="action-btn primary"
+            catchtap="publishAnnouncement"
+            data-id="{{item._id}}"
+          >
+            <text>发布</text>
+          </view>
+          <view
+            wx:if="{{item.status === 'published'}}"
+            class="action-btn warn"
+            catchtap="offlineAnnouncement"
+            data-id="{{item._id}}"
+          >
+            <text>下线</text>
+          </view>
+          <view
+            wx:if="{{item.status !== 'published'}}"
+            class="action-btn danger"
+            catchtap="deleteAnnouncement"
+            data-id="{{item._id}}"
+          >
+            <text>删除</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 新建按钮 -->
+  <view class="fab-button" bindtap="createAnnouncement">
+    <text class="fab-icon">+</text>
+  </view>
+</view>

@@ -45,7 +45,7 @@ Page({
     // 自定义导航栏高度
     headerHeight: 0,
     // 用户角色信息
-    userRole: null, // 2=物业经理, 3=维修员, 4=物业员工
+    userRole: null, // 2=行政经理, 3=维修员, 4=办美员工
     userDepartment: null,
     userId: null,
     isPropertyStaff: false,
@@ -116,7 +116,7 @@ Page({
         if (isMaintenanceWorker) {
           defaultStatus = 'pending_accept';  // 维修员默认为"待接单"
         } else if (isPropertyStaff) {
-          defaultStatus = 'reported';  // 物业员工默认为"已提报"
+          defaultStatus = 'reported';  // 办美员工默认为"已提报"
         }
 
         // 判断是否需要重置状态
@@ -160,7 +160,7 @@ Page({
    */
   getStatusButtonsByRole: function (isPropertyStaff, isMaintenanceWorker, isManager) {
     if (isManager) {
-      // 物业经理状态按钮
+      // 行政经理状态按钮
       return [
         { key: 'all', label: '全部', status: null },
         { key: 'reported', label: '已提报', status: 'Pending Repair' },
@@ -172,7 +172,7 @@ Page({
         { key: 'completed', label: '已完成', status: 'Completed' }
       ];
     } else if (isPropertyStaff) {
-      // 物业员工状态按钮
+      // 办美员工状态按钮
       return [
         { key: 'reported', label: '已提报', status: 'Pending Repair' },
         { key: 'maintenance', label: '维修中', status: 'In Progress' },
@@ -320,18 +320,18 @@ Page({
 
   /**
    * Filter orders by user role
-   * 物业经理：看到所有工单
-   * 物业员工：只看自己提报的工单
+   * 行政经理：看到所有工单
+   * 办美员工：只看自己提报的工单
    * 维修员：只看责任方=自己部门的工单
    */
   filterByUserRole: function (orders) {
     const { isPropertyStaff, isMaintenanceWorker, isManager, userId, userDepartment } = this.data;
 
     if (isManager) {
-      // 物业经理：显示所有工单
+      // 行政经理：显示所有工单
       return orders;
     } else if (isPropertyStaff && userId) {
-      // 物业员工：只显示自己提报的工单
+      // 办美员工：只显示自己提报的工单
       return orders.filter(order => {
         return order.submitter && order.submitter.user_id === userId;
       });
@@ -500,7 +500,7 @@ Page({
     let statusTextMap;
 
     if (isManager) {
-      // 物业经理视角的状态文本
+      // 行政经理视角的状态文本
       statusTextMap = {
         'Pending Repair': '已提报',
         'In Progress': '维修中',
@@ -519,7 +519,7 @@ Page({
         'Completed': '已完成'
       };
     } else {
-      // 物业员工视角的状态文本
+      // 办美员工视角的状态文本
       statusTextMap = {
         'Pending Repair': '已提报',
         'In Progress': '维修中',
@@ -532,7 +532,7 @@ Page({
     // 根据角色设置不同的状态样式类
     let statusClassMap;
     if (isManager || isMaintenanceWorker) {
-      // 物业经理和维修员：Repaired 显示为"已修复"样式
+      // 行政经理和维修员：Repaired 显示为"已修复"样式
       statusClassMap = {
         'Pending Repair': 'status-reported',
         'In Progress': 'status-maintenance',
@@ -542,7 +542,7 @@ Page({
         'Completed': 'status-completed'
       };
     } else {
-      // 物业员工：Repaired 显示为"待复核"样式
+      // 办美员工：Repaired 显示为"待复核"样式
       statusClassMap = {
         'Pending Repair': 'status-reported',
         'In Progress': 'status-maintenance',

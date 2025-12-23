@@ -26,7 +26,7 @@ Page({
     photoSlots: ['', '', ''],
     // 选择器选项
     categoryOptions: ['电梯维修', '水电维修', '消防维修', '空调维修', '其他'],
-    responsibleOptions: ['物业公司', '业主', '第三方'],
+    responsibleOptions: ['信泰物业', '业主', '第三方'],
     priorityOptions: [
       { key: 'Normal', label: '普通', color: 'green' },
       { key: 'Emergency', label: '紧急', color: 'red' }

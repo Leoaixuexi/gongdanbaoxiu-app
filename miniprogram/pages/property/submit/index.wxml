@@ -11,7 +11,7 @@
         <text class="star">*</text>
         <text class="label">工单编号</text>
       </view>
-      <view class="card-right">
+      <view class="card-right" bindtap="{{!orderNumber ? 'handleScan' : ''}}">
         <input
           class="card-input order-number-input {{orderNumber ? 'has-value' : ''}}"
           placeholder="扫码自动生成"
@@ -20,7 +20,7 @@
           disabled="{{true}}"
         />
         <!-- 扫一扫按钮 - 无工单编号时显示 -->
-        <view wx:if="{{!orderNumber}}" class="scan-button-inline" bindtap="handleScan" catchtap="handleScan">
+        <view wx:if="{{!orderNumber}}" class="scan-button-inline">
           <text class="iconfont icon-saoyisao" style="font-size: 44rpx; color: #CCCCCC;"></text>
         </view>
       </view>

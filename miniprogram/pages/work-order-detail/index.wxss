@@ -199,6 +199,25 @@
   text-align: right;
 }
 
+/* 日期时间显示 */
+.info-value-datetime {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4rpx;
+}
+
+.datetime-date {
+  font-size: 28rpx;
+  color: #4B5563;
+  font-weight: 600;
+}
+
+.datetime-time {
+  font-size: 24rpx;
+  color: #9CA3AF;
+}
+
 /* 内联照片网格 */
 .photo-grid-inline {
   display: flex;
@@ -530,6 +549,22 @@
   box-shadow: 0 4rpx 12rpx rgba(255, 59, 48, 0.3);
 }
 
+/* 已复核按钮 - 与修改按钮渐变色一致 */
+.action-button-reviewed {
+  background: linear-gradient(to right, #10b981, #14b8a6);
+  color: white;
+  box-shadow: 0 8rpx 16rpx rgba(12, 167, 125, 0.2);
+}
+
+/* 需返工按钮 - 橙色渐变 */
+.action-button-rework {
+  background: linear-gradient(to right, #f97316, #ea580c);
+  color: white;
+  box-shadow: 0 8rpx 16rpx rgba(249, 115, 22, 0.2);
+  padding: 0 32rpx;
+  max-width: 180rpx;
+}
+
 /* 催维修/催复核按钮 - 橙色风格 */
 .action-button-urge {
   background: linear-gradient(to right, #f97316, #ea580c);
@@ -703,6 +738,29 @@
   background: linear-gradient(to right, #10b981, #14b8a6);
   color: white;
   box-shadow: 0 8rpx 24rpx rgba(12, 167, 125, 0.3);
+}
+
+/* 绿色渐变确认按钮 */
+.modal-btn-success {
+  background: linear-gradient(to right, #10b981, #14b8a6);
+  color: white;
+  box-shadow: 0 8rpx 24rpx rgba(12, 167, 125, 0.3);
+}
+
+/* 橙色渐变返工按钮 */
+.modal-btn-rework {
+  background: linear-gradient(to right, #f97316, #ea580c);
+  color: white;
+  box-shadow: 0 8rpx 24rpx rgba(249, 115, 22, 0.3);
+}
+
+/* 简化版弹窗容器 - 无标题栏 */
+.modal-container-simple {
+  padding-top: 0;
+}
+
+.modal-container-simple .modal-body {
+  padding-top: 32rpx;
 }
 
 .modal-btn.approve {

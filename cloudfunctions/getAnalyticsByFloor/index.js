@@ -1,6 +1,6 @@
 /**
  * 获取楼层分布数据（用于柱状图）
- * 物业经理数据分析 - Tab2 可视化图表
+ * 行政经理数据分析 - Tab2 可视化图表
  */
 
 const cloud = require('wx-server-sdk');

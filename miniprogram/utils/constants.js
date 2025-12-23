@@ -21,9 +21,9 @@ const PRIORITIES = [
 // System Roles (mirrors cloud database)
 const ROLES = {
   ADMIN: 1,                  // 系统管理员
-  PROPERTY_MANAGER: 2,       // 物业经理
+  PROPERTY_MANAGER: 2,       // 行政经理
   MAINTENANCE_STAFF: 3,      // 维修员
-  PROPERTY_STAFF: 4,         // 物业员工
+  PROPERTY_STAFF: 4,         // 办美员工
 };
 
 // Notification Types (mirrors backend)
@@ -67,9 +67,9 @@ const PRIORITY_DISPLAY_NAMES = {
 // Role Display Names (Chinese) - matches cloud database
 const ROLE_DISPLAY_NAMES = {
   1: '系统管理员',
-  2: '物业经理',
+  2: '行政经理',
   3: '维修员',
-  4: '物业员工',
+  4: '办美员工',
 };
 
 // Status Colors for UI badges/tags

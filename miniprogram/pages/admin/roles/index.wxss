@@ -1,0 +1,345 @@
+/* Role Management Page Styles */
+
+/* 页面容器 */
+.role-page {
+  min-height: 100vh;
+  background-color: #F5F5F5;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* 页面标题 */
+.page-header {
+  padding: 40rpx 32rpx 32rpx;
+  background: linear-gradient(135deg, #0CA77D 0%, #10B981 100%);
+}
+
+.header-title {
+  display: block;
+  font-size: 40rpx;
+  font-weight: 600;
+  color: #FFFFFF;
+  margin-bottom: 8rpx;
+}
+
+.header-desc {
+  font-size: 26rpx;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* 加载状态 */
+.loading-state {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 120rpx 0;
+  color: #9CA3AF;
+  font-size: 28rpx;
+}
+
+/* 角色列表 */
+.role-list {
+  padding: 24rpx;
+}
+
+/* 角色卡片 */
+.role-card {
+  background: #FFFFFF;
+  border-radius: 24rpx;
+  padding: 32rpx;
+  margin-bottom: 24rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.05);
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 24rpx;
+}
+
+.role-icon {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 20rpx;
+}
+
+.role-icon text {
+  font-size: 32rpx;
+  color: #FFFFFF;
+  font-weight: 600;
+}
+
+/* 不同角色不同颜色 */
+.role-icon.role-1 {
+  background: linear-gradient(135deg, #EF4444 0%, #F87171 100%);
+}
+
+.role-icon.role-2 {
+  background: linear-gradient(135deg, #0CA77D 0%, #10B981 100%);
+}
+
+.role-icon.role-3 {
+  background: linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%);
+}
+
+.role-icon.role-4 {
+  background: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%);
+}
+
+.role-info {
+  flex: 1;
+}
+
+.role-name {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #1F2937;
+  margin-bottom: 4rpx;
+}
+
+.role-code {
+  font-size: 24rpx;
+  color: #9CA3AF;
+}
+
+.role-badge {
+  padding: 8rpx 16rpx;
+  background: rgba(239, 68, 68, 0.1);
+  border-radius: 16rpx;
+}
+
+.role-badge text {
+  font-size: 22rpx;
+  color: #EF4444;
+  font-weight: 500;
+}
+
+/* 权限概览 */
+.permission-overview {
+  padding: 20rpx 0;
+  border-top: 1rpx solid #F3F4F6;
+  border-bottom: 1rpx solid #F3F4F6;
+  margin-bottom: 20rpx;
+}
+
+.overview-label {
+  font-size: 24rpx;
+  color: #9CA3AF;
+  margin-bottom: 8rpx;
+}
+
+.overview-value {
+  font-size: 28rpx;
+  color: #374151;
+}
+
+/* 权限数量 */
+.permission-count {
+  display: flex;
+  align-items: baseline;
+  margin-bottom: 20rpx;
+}
+
+.count-num {
+  font-size: 48rpx;
+  font-weight: 600;
+  color: #0CA77D;
+}
+
+.count-label {
+  font-size: 26rpx;
+  color: #9CA3AF;
+  margin-left: 8rpx;
+}
+
+/* 操作按钮 */
+.card-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.action-btn {
+  padding: 16rpx 32rpx;
+  border-radius: 24rpx;
+  font-size: 28rpx;
+}
+
+.action-btn.primary {
+  background: linear-gradient(135deg, #0CA77D 0%, #10B981 100%);
+  color: #FFFFFF;
+}
+
+.action-btn.primary:active {
+  opacity: 0.9;
+}
+
+/* 弹窗 */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: flex-end;
+  z-index: 1000;
+}
+
+.modal-content {
+  width: 100%;
+  max-height: 80vh;
+  background: #FFFFFF;
+  border-radius: 32rpx 32rpx 0 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 32rpx;
+  border-bottom: 1rpx solid #F3F4F6;
+}
+
+.modal-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #1F2937;
+}
+
+.modal-close {
+  width: 56rpx;
+  height: 56rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #F3F4F6;
+  border-radius: 50%;
+}
+
+.modal-close text {
+  font-size: 40rpx;
+  color: #6B7280;
+  line-height: 1;
+}
+
+/* 全选 */
+.select-all {
+  padding: 20rpx 32rpx;
+  border-bottom: 1rpx solid #F3F4F6;
+}
+
+.select-all text {
+  font-size: 26rpx;
+  color: #0CA77D;
+}
+
+/* 权限列表 */
+.permission-list {
+  flex: 1;
+  max-height: 50vh;
+  padding: 0 32rpx;
+}
+
+.permission-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24rpx 0;
+  border-bottom: 1rpx solid #F3F4F6;
+}
+
+.permission-item:last-child {
+  border-bottom: none;
+}
+
+.permission-info {
+  flex: 1;
+}
+
+.permission-name {
+  display: block;
+  font-size: 30rpx;
+  color: #1F2937;
+  margin-bottom: 4rpx;
+}
+
+.permission-desc {
+  font-size: 24rpx;
+  color: #9CA3AF;
+}
+
+/* 开关样式 */
+.permission-switch {
+  margin-left: 20rpx;
+}
+
+.switch-track {
+  width: 88rpx;
+  height: 48rpx;
+  background: #E5E7EB;
+  border-radius: 24rpx;
+  position: relative;
+  transition: background 0.2s;
+}
+
+.switch-track.on {
+  background: #0CA77D;
+}
+
+.switch-thumb {
+  width: 40rpx;
+  height: 40rpx;
+  background: #FFFFFF;
+  border-radius: 50%;
+  position: absolute;
+  top: 4rpx;
+  left: 4rpx;
+  transition: left 0.2s;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.15);
+}
+
+.switch-track.on .switch-thumb {
+  left: 44rpx;
+}
+
+/* 弹窗底部 */
+.modal-footer {
+  display: flex;
+  padding: 24rpx 32rpx;
+  padding-bottom: calc(24rpx + env(safe-area-inset-bottom));
+  border-top: 1rpx solid #F3F4F6;
+  gap: 24rpx;
+}
+
+.btn-cancel,
+.btn-confirm {
+  flex: 1;
+  height: 88rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 24rpx;
+  font-size: 32rpx;
+  font-weight: 500;
+}
+
+.btn-cancel {
+  background: #F3F4F6;
+  color: #6B7280;
+}
+
+.btn-confirm {
+  background: linear-gradient(135deg, #0CA77D 0%, #10B981 100%);
+  color: #FFFFFF;
+}
+
+.btn-cancel:active,
+.btn-confirm:active {
+  opacity: 0.9;
+}

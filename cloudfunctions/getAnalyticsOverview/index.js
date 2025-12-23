@@ -1,6 +1,6 @@
 /**
  * 获取全局分析概览数据（KPI指标）
- * 物业经理数据分析 - Tab1 数据统计
+ * 行政经理数据分析 - Tab1 数据统计
  */
 
 const cloud = require('wx-server-sdk');

@@ -79,9 +79,9 @@
         <text class="test-account-role">系统管理员</text>
       </view>
 
-      <!-- 物业经理 -->
+      <!-- 行政经理 -->
       <view class="test-account-card" bindtap="fillTestAccount" data-username="manager" data-password="manager123">
-        <text class="test-account-role">物业经理</text>
+        <text class="test-account-role">行政经理</text>
       </view>
 
       <!-- 维修员 -->
@@ -89,9 +89,9 @@
         <text class="test-account-role">维修员</text>
       </view>
 
-      <!-- 巡检员 -->
+      <!-- 办美员工 -->
       <view class="test-account-card" bindtap="fillTestAccount" data-username="staff" data-password="staff123">
-        <text class="test-account-role">巡检员</text>
+        <text class="test-account-role">办美员工</text>
       </view>
     </view>
   </view>

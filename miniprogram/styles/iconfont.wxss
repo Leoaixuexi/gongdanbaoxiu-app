@@ -62,7 +62,7 @@
   content: "\e8e6";
 }
 
-/* ========== 物业经理KPI卡片图标 ========== */
+/* ========== 行政经理KPI卡片图标 ========== */
 /* 总工单 */
 .icon-icon_zonggongdan:before {
   content: "\e842";

@@ -1,0 +1,93 @@
+<!--
+  Config Page
+  系统配置页面
+-->
+<view class="config-page">
+  <!-- 页面标题 -->
+  <view class="page-header">
+    <text class="header-title">系统配置</text>
+    <text class="header-desc">配置系统参数和功能开关</text>
+  </view>
+
+  <!-- 加载状态 -->
+  <view wx:if="{{loading}}" class="loading-state">
+    <text>加载中...</text>
+  </view>
+
+  <!-- 配置列表 -->
+  <view wx:else class="config-content">
+    <view class="config-list">
+      <block wx:for="{{configItems}}" wx:key="key">
+        <!-- 文本输入 -->
+        <view wx:if="{{item.type === 'text'}}" class="config-item">
+          <view class="config-info">
+            <text class="config-name">{{item.name}}</text>
+            <text class="config-desc">{{item.desc}}</text>
+          </view>
+          <view class="config-control">
+            <input
+              type="text"
+              class="config-input"
+              value="{{editingConfig[item.key]}}"
+              placeholder="请输入"
+              data-key="{{item.key}}"
+              bindinput="onInputChange"
+            />
+          </view>
+        </view>
+
+        <!-- 数字输入 -->
+        <view wx:elif="{{item.type === 'number'}}" class="config-item">
+          <view class="config-info">
+            <text class="config-name">{{item.name}}</text>
+            <text class="config-desc">{{item.desc}}</text>
+          </view>
+          <view class="config-control">
+            <input
+              type="number"
+              class="config-input number"
+              value="{{editingConfig[item.key]}}"
+              placeholder="0"
+              data-key="{{item.key}}"
+              bindinput="onNumberChange"
+            />
+          </view>
+        </view>
+
+        <!-- 开关 -->
+        <view wx:elif="{{item.type === 'switch'}}" class="config-item">
+          <view class="config-info">
+            <text class="config-name">{{item.name}}</text>
+            <text class="config-desc">{{item.desc}}</text>
+          </view>
+          <view class="config-control">
+            <view
+              class="config-switch"
+              bindtap="onSwitchChange"
+              data-key="{{item.key}}"
+            >
+              <view class="switch-track {{editingConfig[item.key] ? 'on' : ''}}">
+                <view class="switch-thumb"></view>
+              </view>
+            </view>
+          </view>
+        </view>
+      </block>
+    </view>
+
+    <!-- 操作按钮 -->
+    <view class="action-bar">
+      <view class="btn-reset" bindtap="resetConfig">
+        <text>恢复默认</text>
+      </view>
+      <view class="btn-save {{hasChanges ? 'active' : ''}}" bindtap="saveConfig">
+        <text>{{saving ? '保存中...' : '保存配置'}}</text>
+      </view>
+    </view>
+
+    <!-- 修改提示 -->
+    <view wx:if="{{hasChanges}}" class="change-tip">
+      <text>有未保存的修改</text>
+    </view>
+  </view>
+</view>

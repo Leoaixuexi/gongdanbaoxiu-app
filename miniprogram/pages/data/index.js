@@ -13,7 +13,7 @@ import * as echarts from '../../components/ec-canvas/echarts';
 
 Page({
   data: {
-    // 工单统计（物业员工/维修员使用）
+    // 工单统计（办美员工/维修员使用）
     stats: [],
     // 月度排名
     rankings: [],
@@ -25,10 +25,10 @@ Page({
     userId: null,
     isPropertyStaff: false,
     isMaintenanceWorker: false,
-    isManager: false,  // 物业经理
+    isManager: false,  // 行政经理
     loading: true,
 
-    // ========== 物业经理专用数据 ==========
+    // ========== 行政经理专用数据 ==========
     // Tab切换
     activeTab: 'stats',  // 'stats' | 'charts'
 
@@ -104,7 +104,7 @@ Page({
       if (userInfo) {
         const isPropertyStaff = userInfo.role_id === 4;
         const isMaintenanceWorker = userInfo.role_id === 3;
-        const isManager = userInfo.role_id === 2;  // 物业经理
+        const isManager = userInfo.role_id === 2;  // 行政经理
 
         this.setData({
           userRole: userInfo.role_id,
@@ -125,10 +125,10 @@ Page({
 
         // 根据角色加载不同的数据
         if (isManager) {
-          // 物业经理：初始化全局分析视图
+          // 行政经理：初始化全局分析视图
           this.initManagerView();
         } else {
-          // 物业员工/维修员：加载个人统计数据
+          // 办美员工/维修员：加载个人统计数据
           await this.loadStatistics();
         }
       }
@@ -143,7 +143,7 @@ Page({
    */
   getStatsConfigByRole(isPropertyStaff, isMaintenanceWorker) {
     if (isPropertyStaff) {
-      // 物业员工统计配置
+      // 办美员工统计配置
       return [
         {
           key: 'today_reported',
@@ -242,7 +242,7 @@ Page({
       // 根据角色过滤工单
       let myOrders = [];
       if (isPropertyStaff && userId) {
-        // 物业员工：只看自己提报的工单
+        // 办美员工：只看自己提报的工单
         myOrders = allOrders.filter(order =>
           order.submitter && order.submitter.user_id === userId
         );
@@ -334,10 +334,10 @@ Page({
     // });
   },
 
-  // ========== 物业经理专用方法 ==========
+  // ========== 行政经理专用方法 ==========
 
   /**
-   * 初始化物业经理视图
+   * 初始化行政经理视图
    */
   initManagerView() {
     console.log('[Manager] Initializing manager view');
@@ -475,7 +475,7 @@ Page({
   },
 
   /**
-   * 加载所有物业经理数据
+   * 加载所有行政经理数据
    */
   async fetchAllManagerData() {
     wx.showLoading({ title: '加载中...' });

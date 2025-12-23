@@ -1,6 +1,6 @@
 /**
  * 获取责任方已修复工单排名
- * 物业经理数据分析 - Tab1 数据统计
+ * 行政经理数据分析 - Tab1 数据统计
  */
 
 const cloud = require('wx-server-sdk');

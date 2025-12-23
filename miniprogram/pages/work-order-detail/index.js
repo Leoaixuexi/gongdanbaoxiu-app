@@ -17,6 +17,8 @@ Page({
     priorityDisplay: '',
     createdTime: '',
     reportTime: '',
+    reportDate: '',
+    reportTimeOnly: '',
     assignedTime: '',
     // Tab state
     activeTab: 'info',
@@ -166,7 +168,7 @@ Page({
       console.log('[Detail] Current user:', userInfo);
 
       // Determine user permissions
-      // 物业经理和物业员工（巡检员）享有相同的按钮权限
+      // 行政经理和办美员工享有相同的按钮权限
       const isPropertyStaff = userInfo.role_id === ROLES.PROPERTY_STAFF || userInfo.role_id === ROLES.PROPERTY_MANAGER;
       const isMaintenanceWorker = userInfo.role_id === ROLES.MAINTENANCE_STAFF;
 
@@ -184,7 +186,7 @@ Page({
       });
 
       // 修改按钮：只在"已提报"状态显示
-      // 物业经理可操作所有工单，巡检员只能操作自己提交的
+      // 行政经理可操作所有工单，办美员工只能操作自己提交的
       // 注意：userInfo.id 和 submitter.user_id 需要统一比较
       const currentUserId = userInfo.id || userInfo.user_id;
       const submitterUserId = workOrder.submitter?.user_id;
@@ -268,7 +270,7 @@ Page({
           showUrgeReviewBtn = true;
           showDeleteInMenu = true;
         } else if (isPropertyStaff && isSubmitter) {
-          // 物业员工（提交者）- 待复核
+          // 办美员工（提交者）- 待复核
           showThreeDots = true;
           showReviewedBtn = true;
           showDeleteInMenu = true;
@@ -366,10 +368,20 @@ Page({
     const createdTime = formatDateTime(order.created_at);
     this.setData({ createdTime });
 
-    // Report time (故障发生时间)
+    // Report time (故障发生时间) - 拆分为日期和时间
     if (order.report_time) {
       const reportTime = formatDateTime(order.report_time);
-      this.setData({ reportTime });
+      const reportDate = new Date(order.report_time);
+      const year = reportDate.getFullYear();
+      const month = String(reportDate.getMonth() + 1).padStart(2, '0');
+      const day = String(reportDate.getDate()).padStart(2, '0');
+      const hour = String(reportDate.getHours()).padStart(2, '0');
+      const minute = String(reportDate.getMinutes()).padStart(2, '0');
+      this.setData({
+        reportTime,
+        reportDate: `${year}-${month}-${day}`,
+        reportTimeOnly: `${hour}:${minute}`
+      });
     }
 
     // Assigned time
@@ -424,8 +436,9 @@ Page({
 
       // Convert status_history to timeline data format
       timelineData = order.status_history.map((item, index) => {
-        // 处理描述文字，去掉"工单创建"字样
-        let description = item.notes || '无';
+        // 处理描述文字
+        let description = item.notes || '';
+        // 去掉"工单创建"字样
         if (description === '工单创建') {
           description = '';
         }
@@ -1001,12 +1014,72 @@ Page({
   },
 
   /**
-   * Handle Approve - T106-T107
+   * Handle Approve - 已复核确认
    */
   handleApprove: function () {
-    this.setData({
-      showReviewForm: true,
-      reviewDecision: 'Completed'
+    wx.showModal({
+      title: '确认复核',
+      content: '是否确认该故障已修复？',
+      confirmText: '确认',
+      cancelText: '取消',
+      success: async (res) => {
+        if (res.confirm) {
+          try {
+            wx.showLoading({ title: '提交中...', mask: true });
+
+            // 调用复核接口，批准工单（不需要审核意见）
+            await workOrderService.reviewWorkOrder(
+              parseInt(this.data.orderId),
+              'Completed',
+              '' // 空的审核意见
+            );
+
+            wx.hideLoading();
+
+            // 成功反馈
+            wx.showToast({
+              title: '复核成功',
+              icon: 'success',
+              duration: 2000
+            });
+
+            // 刷新工单数据
+            setTimeout(() => {
+              this.loadWorkOrder();
+            }, 500);
+
+            // 2秒后返回
+            setTimeout(() => {
+              wx.navigateBack({
+                fail: () => {
+                  wx.switchTab({
+                    url: '/pages/index/index'
+                  });
+                }
+              });
+            }, 2000);
+
+          } catch (error) {
+            wx.hideLoading();
+            console.error('[Detail] Approve error:', error);
+
+            // 错误反馈
+            const errorMsg = error.message || '提交失败，请重试';
+            wx.showModal({
+              title: '提交失败',
+              content: errorMsg,
+              showCancel: true,
+              cancelText: '取消',
+              confirmText: '重试',
+              success: (retryRes) => {
+                if (retryRes.confirm) {
+                  this.handleApprove();
+                }
+              }
+            });
+          }
+        }
+      }
     });
   },
 
@@ -1024,39 +1097,95 @@ Page({
   /**
    * Handle Urge Repair - 催维修
    */
-  handleUrgeRepair: function () {
-    wx.showModal({
-      title: '催维修',
-      content: '确认向维修员发送催促通知吗？',
-      success: (res) => {
-        if (res.confirm) {
-          // TODO: 发送催促通知给维修员
-          wx.showToast({
-            title: '催促通知已发送',
-            icon: 'success'
-          });
+  handleUrgeRepair: async function () {
+    try {
+      wx.showLoading({ title: '发送中...', mask: true });
+
+      const result = await wx.cloud.callFunction({
+        name: 'workOrderManager',
+        data: {
+          action: 'urgeRepair',
+          data: { order_id: parseInt(this.data.orderId) }
         }
+      });
+
+      wx.hideLoading();
+
+      if (!result.result?.success) {
+        throw new Error(result.result?.error || '发送失败');
       }
-    });
+
+      // 检查是否被频控
+      if (result.result.throttled) {
+        wx.showModal({
+          title: '提示',
+          content: result.result.message,
+          showCancel: false
+        });
+        return;
+      }
+
+      // 成功
+      wx.showToast({
+        title: '催促通知已发送',
+        icon: 'success',
+        duration: 2000
+      });
+
+    } catch (error) {
+      wx.hideLoading();
+      console.error('[Detail] Urge repair error:', error);
+      wx.showToast({
+        title: error.message || '发送失败',
+        icon: 'none'
+      });
+    }
   },
 
   /**
    * Handle Urge Review - 催复核
    */
-  handleUrgeReview: function () {
-    wx.showModal({
-      title: '催复核',
-      content: '确认向物业员工发送催促复核通知吗？',
-      success: (res) => {
-        if (res.confirm) {
-          // TODO: 发送催促通知给物业员工
-          wx.showToast({
-            title: '催促通知已发送',
-            icon: 'success'
-          });
+  handleUrgeReview: async function () {
+    try {
+      wx.showLoading({ title: '发送中...', mask: true });
+
+      const result = await wx.cloud.callFunction({
+        name: 'workOrderManager',
+        data: {
+          action: 'urgeReview',
+          data: { order_id: parseInt(this.data.orderId) }
         }
+      });
+
+      wx.hideLoading();
+
+      if (!result.result?.success) {
+        throw new Error(result.result?.error || '发送失败');
       }
-    });
+
+      if (result.result.throttled) {
+        wx.showModal({
+          title: '提示',
+          content: result.result.message,
+          showCancel: false
+        });
+        return;
+      }
+
+      wx.showToast({
+        title: '催促通知已发送',
+        icon: 'success',
+        duration: 2000
+      });
+
+    } catch (error) {
+      wx.hideLoading();
+      console.error('[Detail] Urge review error:', error);
+      wx.showToast({
+        title: error.message || '发送失败',
+        icon: 'none'
+      });
+    }
   },
 
   /**
@@ -1078,62 +1207,47 @@ Page({
   },
 
   /**
-   * Submit Review - T107-T108 (Cloud Database Version)
+   * Submit Review - 提交需返工
    */
   submitReview: async function () {
-    // Validate notes required if rejecting
-    if (this.data.reviewDecision === 'Needs Rework' && !this.data.reviewNotes.trim()) {
-      wx.showModal({
-        title: '请填写审核意见',
-        content: '拒绝工单时必须填写审核意见说明原因',
-        showCancel: false
-      });
-      return;
-    }
-
-    // Show confirmation
-    const actionText = this.data.reviewDecision === 'Completed' ? '批准' : '拒绝';
-    const confirmText = this.data.reviewDecision === 'Completed'
-      ? '确认批准此工单吗？工单将标记为已完成。'
-      : '确认拒绝此工单吗？工单将退回给维修人员返工。';
-
+    // 确认对话框
     wx.showModal({
-      title: `确认${actionText}`,
-      content: confirmText,
+      title: '确认需返工',
+      content: '确认将此工单退回给维修人员返工吗？',
       success: async (res) => {
         if (res.confirm) {
           try {
             this.setData({ submittingReview: true });
 
-            // T108 - Call cloud function to review order
+            // 调用复核接口，标记为需返工
             await workOrderService.reviewWorkOrder(
               parseInt(this.data.orderId),
-              this.data.reviewDecision,
-              this.data.reviewNotes.trim()
+              'Needs Rework',
+              this.data.reviewNotes.trim() // 允许空字符串
             );
 
             this.setData({ submittingReview: false });
 
-            // Success feedback - T108
+            // 成功反馈
             wx.showToast({
-              title: `${actionText}成功`,
+              title: '已退回返工',
               icon: 'success',
               duration: 2000
             });
 
-            // Reset form
+            // 重置表单
             this.setData({
               showReviewForm: false,
               reviewDecision: '',
               reviewNotes: ''
             });
 
-            // Refresh work order data - T108
+            // 刷新工单数据
             setTimeout(() => {
               this.loadWorkOrder();
             }, 500);
 
-            // Navigate to review list after 2 seconds - T108
+            // 2秒后返回
             setTimeout(() => {
               wx.navigateBack({
                 fail: () => {
@@ -1148,7 +1262,7 @@ Page({
             this.setData({ submittingReview: false });
             console.error('[Detail] Submit review error:', error);
 
-            // Error feedback with retry - T108
+            // 错误反馈
             const errorMsg = error.message || '提交失败，请重试';
             wx.showModal({
               title: '提交失败',

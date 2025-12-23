@@ -1,0 +1,91 @@
+<!--
+  Audit Logs Page
+  审计日志页面
+-->
+<view class="audit-page">
+  <!-- 页面标题 -->
+  <view class="page-header">
+    <text class="header-title">审计日志</text>
+    <text class="header-desc">查看系统操作记录</text>
+  </view>
+
+  <!-- 筛选栏 -->
+  <view class="filter-bar">
+    <view class="filter-btn {{selectedAction ? 'active' : ''}}" bindtap="toggleFilter">
+      <text>{{selectedActionLabel}}</text>
+      <text class="arrow">▼</text>
+    </view>
+    <view wx:if="{{selectedAction}}" class="clear-btn" bindtap="clearFilter">
+      <text>清除</text>
+    </view>
+    <view class="total-count">
+      <text>共 {{total}} 条</text>
+    </view>
+  </view>
+
+  <!-- 筛选下拉面板 -->
+  <view wx:if="{{showFilter}}" class="filter-dropdown" catchtap="stopPropagation">
+    <view class="filter-mask" bindtap="toggleFilter"></view>
+    <view class="filter-panel">
+      <view
+        wx:for="{{actions}}"
+        wx:key="value"
+        class="filter-item {{selectedAction === item.value ? 'selected' : ''}}"
+        bindtap="selectAction"
+        data-value="{{item.value}}"
+        data-label="{{item.label}}"
+      >
+        <text>{{item.label}}</text>
+        <text wx:if="{{selectedAction === item.value}}" class="check">✓</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 加载状态 -->
+  <view wx:if="{{loading}}" class="loading-state">
+    <text>加载中...</text>
+  </view>
+
+  <!-- 空状态 -->
+  <view wx:elif="{{logs.length === 0}}" class="empty-state">
+    <view class="empty-icon">📋</view>
+    <text class="empty-text">暂无审计日志</text>
+  </view>
+
+  <!-- 日志列表 -->
+  <view wx:else class="log-list">
+    <view
+      wx:for="{{logs}}"
+      wx:key="_id"
+      class="log-item"
+      bindtap="viewDetail"
+      data-log="{{item}}"
+    >
+      <view class="log-icon">
+        <text>{{item.actionLabel[0]}}</text>
+      </view>
+      <view class="log-content">
+        <view class="log-header">
+          <text class="log-action">{{item.actionLabel}}</text>
+          <text class="log-time">{{item.timeText}}</text>
+        </view>
+        <view class="log-meta">
+          <text class="log-user">{{item.user_name || '系统'}}</text>
+          <text wx:if="{{item.resource_type}}" class="log-resource">{{item.resource_type}}</text>
+        </view>
+      </view>
+      <view class="log-arrow">
+        <text>›</text>
+      </view>
+    </view>
+
+    <!-- 加载更多 -->
+    <view wx:if="{{loadingMore}}" class="loading-more">
+      <text>加载中...</text>
+    </view>
+
+    <view wx:elif="{{!hasMore}}" class="no-more">
+      <text>没有更多了</text>
+    </view>
+  </view>
+</view>

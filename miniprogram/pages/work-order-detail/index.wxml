@@ -60,7 +60,10 @@
           </view>
           <view class="info-row">
             <text class="info-label">报修时间</text>
-            <text class="info-value">{{reportTime}}</text>
+            <view class="info-value-datetime">
+              <text class="datetime-date">{{reportDate}}</text>
+              <text class="datetime-time">{{reportTimeOnly}}</text>
+            </view>
           </view>
           <view class="info-row">
             <text class="info-label">问题描述</text>
@@ -86,10 +89,6 @@
           </view>
 
           <!-- 系统信息区域 -->
-          <view class="info-row">
-            <text class="info-label">工单状态</text>
-            <text class="info-value status-value">{{workOrder.status_text || statusTextMap[workOrder.status] || workOrder.status}}</text>
-          </view>
           <view class="info-row">
             <text class="info-label">报修人</text>
             <text class="info-value">{{workOrder.submitter.name || workOrder.submitter_name || '未知'}}</text>
@@ -165,7 +164,7 @@
         <text class="action-button-text">催维修</text>
       </button>
 
-      <!-- 催复核按钮 - 维修员/物业经理 + 已修复状态 -->
+      <!-- 催复核按钮 - 维修员/行政经理 + 已修复状态 -->
       <button
         wx:if="{{showUrgeReviewBtn}}"
         class="action-button action-button-urge"
@@ -174,10 +173,19 @@
         <text class="action-button-text">催复核</text>
       </button>
 
-      <!-- 已复核按钮 - 物业员工(提交者) + 已修复状态 -->
+      <!-- 需返工按钮 - 办美员工(提交者) + 已修复状态 -->
+      <button
+        wx:if="{{showNeedsReworkInMenu}}"
+        class="action-button action-button-rework"
+        bindtap="handleReject"
+      >
+        <text class="action-button-text">需返工</text>
+      </button>
+
+      <!-- 已复核按钮 - 办美员工(提交者) + 已修复状态 -->
       <button
         wx:if="{{showReviewedBtn}}"
-        class="action-button action-button-approve"
+        class="action-button action-button-reviewed"
         bindtap="handleApprove"
       >
         <text class="action-button-text">已复核</text>
@@ -193,12 +201,7 @@
 
   <!-- 维修完成表单弹窗 -->
   <view class="modal-overlay" wx:if="{{showRepairForm}}" catchtap="cancelRepairForm">
-    <view class="modal-container" catchtap="stopPropagation">
-      <view class="modal-header">
-        <text class="modal-title">完成维修</text>
-        <view class="modal-close" bindtap="cancelRepairForm">×</view>
-      </view>
-
+    <view class="modal-container modal-container-simple" catchtap="stopPropagation">
       <view class="modal-body">
         <!-- 完成描述 -->
         <view class="form-group">
@@ -208,17 +211,17 @@
             placeholder="请填写完成描述（选填）"
             value="{{completionNotes}}"
             bindinput="onNotesInput"
-            maxlength="500"
+            maxlength="30"
             auto-height
           />
-          <view class="form-hint">{{completionNotes.length}}/500</view>
+          <view class="form-hint">{{completionNotes.length}}/30</view>
         </view>
       </view>
 
       <view class="modal-footer">
         <button class="modal-btn cancel" bindtap="cancelRepairForm">取消</button>
         <button
-          class="modal-btn confirm"
+          class="modal-btn modal-btn-success"
           bindtap="submitRepairCompletion"
           disabled="{{submittingRepair}}"
         >
@@ -228,54 +231,33 @@
     </view>
   </view>
 
-  <!-- 审核表单弹窗 -->
+  <!-- 需返工表单弹窗 -->
   <view class="modal-overlay" wx:if="{{showReviewForm}}" catchtap="cancelReviewForm">
-    <view class="modal-container" catchtap="stopPropagation">
-      <view class="modal-header">
-        <text class="modal-title">{{reviewDecision === 'Completed' ? '批准工单' : '拒绝工单'}}</text>
-        <view class="modal-close" bindtap="cancelReviewForm">×</view>
-      </view>
-
+    <view class="modal-container modal-container-simple" catchtap="stopPropagation">
       <view class="modal-body">
-        <!-- 审核结果显示 -->
+        <!-- 需返工原因 -->
         <view class="form-group">
-          <view class="form-label">审核结果</view>
-          <view class="review-decision {{reviewDecision === 'Completed' ? 'approved' : 'rejected'}}">
-            {{reviewDecision === 'Completed' ? '✓ 批准通过' : '✕ 需要返工'}}
-          </view>
-        </view>
-
-        <!-- 审核意见 -->
-        <view class="form-group">
-          <view class="form-label {{reviewDecision === 'Needs Rework' ? 'required' : ''}}">
-            审核意见
-          </view>
+          <view class="form-label">需返工原因</view>
           <textarea
             class="form-textarea"
-            placeholder="{{reviewDecision === 'Needs Rework' ? '请填写拒绝原因(必填)' : '请填写审核意见(选填)'}}"
+            placeholder="请填写需返工原因(选填)"
             value="{{reviewNotes}}"
             bindinput="onReviewNotesInput"
-            maxlength="500"
+            maxlength="30"
             auto-height
           />
-          <view class="form-hint">{{reviewNotes.length}}/500</view>
-        </view>
-
-        <!-- 拒绝警告 -->
-        <view class="review-warning" wx:if="{{reviewDecision === 'Needs Rework'}}">
-          <text class="warning-icon">⚠️</text>
-          <text class="warning-text">拒绝后工单将退回给维修人员返工</text>
+          <view class="form-hint">{{reviewNotes.length}}/30</view>
         </view>
       </view>
 
       <view class="modal-footer">
         <button class="modal-btn cancel" bindtap="cancelReviewForm">取消</button>
         <button
-          class="modal-btn {{reviewDecision === 'Completed' ? 'approve' : 'reject'}}"
+          class="modal-btn modal-btn-rework"
           bindtap="submitReview"
           disabled="{{submittingReview}}"
         >
-          {{submittingReview ? '提交中...' : (reviewDecision === 'Completed' ? '确认批准' : '确认拒绝')}}
+          {{submittingReview ? '提交中...' : '确认'}}
         </button>
       </view>
     </view>
@@ -291,13 +273,8 @@
         </view>
         <text class="more-action-label">删除</text>
       </view>
-      <!-- 需重修 - 物业员工(提交者) + 已修复状态 -->
-      <view wx:if="{{showNeedsReworkInMenu}}" class="more-action-item" bindtap="handleReject">
-        <view class="more-action-icon rework-icon">🔄</view>
-        <text class="more-action-label">需重修</text>
-      </view>
       <!-- 空白卡片提示 -->
-      <view wx:if="{{showEmptyMenu && !showDeleteInMenu && !showNeedsReworkInMenu}}" class="more-action-empty">
+      <view wx:if="{{showEmptyMenu && !showDeleteInMenu}}" class="more-action-empty">
         <text class="more-action-empty-text">暂无可用操作</text>
       </view>
     </view>
