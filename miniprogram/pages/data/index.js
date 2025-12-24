@@ -20,7 +20,6 @@ Page({
     // 月度排名的年月选择
     rankingYear: new Date().getFullYear(),
     rankingMonth: new Date().getMonth() + 1,  // 1-12
-    showMonthPicker: false,
     // 自定义导航栏高度
     headerHeight: 0,
     // 用户角色信息
@@ -388,36 +387,16 @@ Page({
   },
 
   /**
-   * 显示月份选择器
+   * 月份选择变化（picker直接选择）
    */
-  showMonthPickerDialog() {
-    this.setData({ showMonthPicker: true });
-  },
-
-  /**
-   * 关闭月份选择器
-   */
-  closeMonthPicker() {
-    this.setData({ showMonthPicker: false });
-  },
-
-  /**
-   * 月份选择变化
-   */
-  onMonthChange(e) {
+  onMonthPickerChange(e) {
     const value = e.detail.value; // 格式: "YYYY-MM"
     const [year, month] = value.split('-');
     this.setData({
       rankingYear: parseInt(year),
       rankingMonth: parseInt(month)
     });
-  },
-
-  /**
-   * 确认月份选择
-   */
-  confirmMonthPicker() {
-    this.setData({ showMonthPicker: false });
+    // 立即加载新月份的排名数据
     this.loadRankings();
   },
 
