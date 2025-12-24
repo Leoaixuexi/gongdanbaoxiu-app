@@ -17,6 +17,10 @@ Page({
     stats: [],
     // 月度排名
     rankings: [],
+    // 月度排名的年月选择
+    rankingYear: new Date().getFullYear(),
+    rankingMonth: new Date().getMonth() + 1,  // 1-12
+    showMonthPicker: false,
     // 自定义导航栏高度
     headerHeight: 0,
     // 用户角色信息
@@ -130,6 +134,11 @@ Page({
         } else {
           // 办美员工/维修员：加载个人统计数据
           await this.loadStatistics();
+
+          // 如果是办美员工，加载月度排名
+          if (isPropertyStaff) {
+            await this.loadRankings();
+          }
         }
       }
     } catch (error) {
@@ -346,6 +355,114 @@ Page({
     // wx.navigateTo({
     //   url: '/pages/rankings/index'
     // });
+  },
+
+  // ========== 月度排名月份切换方法 ==========
+
+  /**
+   * 上一个月
+   */
+  prevMonth() {
+    let { rankingYear, rankingMonth } = this.data;
+    rankingMonth--;
+    if (rankingMonth < 1) {
+      rankingMonth = 12;
+      rankingYear--;
+    }
+    this.setData({ rankingYear, rankingMonth });
+    this.loadRankings();
+  },
+
+  /**
+   * 下一个月
+   */
+  nextMonth() {
+    let { rankingYear, rankingMonth } = this.data;
+    rankingMonth++;
+    if (rankingMonth > 12) {
+      rankingMonth = 1;
+      rankingYear++;
+    }
+    this.setData({ rankingYear, rankingMonth });
+    this.loadRankings();
+  },
+
+  /**
+   * 显示月份选择器
+   */
+  showMonthPickerDialog() {
+    this.setData({ showMonthPicker: true });
+  },
+
+  /**
+   * 关闭月份选择器
+   */
+  closeMonthPicker() {
+    this.setData({ showMonthPicker: false });
+  },
+
+  /**
+   * 月份选择变化
+   */
+  onMonthChange(e) {
+    const value = e.detail.value; // 格式: "YYYY-MM"
+    const [year, month] = value.split('-');
+    this.setData({
+      rankingYear: parseInt(year),
+      rankingMonth: parseInt(month)
+    });
+  },
+
+  /**
+   * 确认月份选择
+   */
+  confirmMonthPicker() {
+    this.setData({ showMonthPicker: false });
+    this.loadRankings();
+  },
+
+  /**
+   * 加载指定月份的排名数据
+   */
+  async loadRankings() {
+    try {
+      const { rankingYear, rankingMonth, userId } = this.data;
+
+      // 计算月份的开始和结束日期
+      const startDate = `${rankingYear}-${String(rankingMonth).padStart(2, '0')}-01`;
+      const lastDay = new Date(rankingYear, rankingMonth, 0).getDate();
+      const endDate = `${rankingYear}-${String(rankingMonth).padStart(2, '0')}-${lastDay}`;
+
+      console.log('[Data] Loading rankings for:', { rankingYear, rankingMonth, startDate, endDate });
+
+      // 调用云函数获取员工排名
+      const res = await wx.cloud.callFunction({
+        name: 'getEmployeeRanking',
+        data: { startDate, endDate }
+      });
+
+      if (res.result && res.result.success) {
+        // 转换排名数据，标记当前用户
+        const rankings = (res.result.data || [])
+          .filter(item => item.totalCompleted > 0)
+          .map((item, index) => ({
+            rank: index + 1,
+            name: item.employeeName,
+            completedOrders: item.totalCompleted,
+            avatar: '/images/icons/default-avatar.png',
+            isCurrentUser: item.employeeId === userId
+          }));
+
+        this.setData({ rankings });
+        console.log('[Data] Rankings loaded:', rankings.length);
+      } else {
+        console.error('[Data] Load rankings failed:', res.result);
+        this.setData({ rankings: [] });
+      }
+    } catch (error) {
+      console.error('[Data] Load rankings error:', error);
+      this.setData({ rankings: [] });
+    }
   },
 
   // ========== 行政经理专用方法 ==========

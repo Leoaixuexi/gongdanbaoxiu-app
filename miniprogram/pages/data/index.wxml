@@ -61,11 +61,11 @@
         </view>
 
         <view class="flex items-center gap-1">
-          <text class="arrow-icon">‹</text>
-          <view class="badge" style="background-color: #f5f5f5; padding: 8rpx 24rpx;">
-            <text class="text-xs font-semibold">10月</text>
+          <text class="arrow-icon" bindtap="prevMonth">‹</text>
+          <view class="badge" style="background-color: #f5f5f5; padding: 8rpx 24rpx;" bindtap="showMonthPickerDialog">
+            <text class="text-xs font-semibold">{{rankingMonth}}月</text>
           </view>
-          <text class="arrow-icon">›</text>
+          <text class="arrow-icon" bindtap="nextMonth">›</text>
         </view>
       </view>
 
@@ -341,6 +341,28 @@
             <image class="chart-empty-icon" src="/images/tabbar/03.png" mode="aspectFit"></image>
             <text class="chart-empty-text">暂无数据</text>
           </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 月份选择弹窗 -->
+  <view wx:if="{{showMonthPicker}}" class="modal-overlay" catchtap="closeMonthPicker">
+    <view class="modal-content" catchtap="stopPropagation">
+      <view class="date-picker-content">
+        <picker mode="date" fields="month" value="{{rankingYear}}-{{rankingMonth < 10 ? '0' + rankingMonth : rankingMonth}}" bindchange="onMonthChange">
+          <view class="date-display">
+            <text class="date-text">{{rankingYear}}年{{rankingMonth}}月</text>
+          </view>
+        </picker>
+      </view>
+
+      <view class="modal-actions">
+        <view class="modal-button modal-button-cancel" bindtap="closeMonthPicker">
+          <text class="modal-button-text">取消</text>
+        </view>
+        <view class="modal-button modal-button-confirm" bindtap="confirmMonthPicker">
+          <text class="modal-button-text modal-button-text-white">确定</text>
         </view>
       </view>
     </view>
