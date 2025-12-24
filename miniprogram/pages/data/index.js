@@ -17,7 +17,7 @@ Page({
     stats: [],
     // KPI统计数据（办美员工使用，与行政经理格式一致）
     staffKpiData: {
-      totalOrders: 0,          // 总工单数
+      totalOrders: 0,          // 提报工单数
       completedOrders: 0,      // 已完成数
       completionRate: 0,       // 完成率百分比
       inProgressOrders: 0,     // 进行中数
@@ -336,7 +336,7 @@ Page({
 
       // ========== 计算KPI统计数据（办美员工使用） ==========
 
-      // 1. 总工单数
+      // 1. 提报工单数
       const totalOrders = myOrders.length;
 
       // 2. 已完成工单数
