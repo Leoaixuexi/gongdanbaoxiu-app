@@ -180,12 +180,8 @@
 
     <!-- Empty State -->
     <view class="empty-state" wx:if="{{!loading && workOrders.length === 0}}">
-      <text class="empty-icon">📋</text>
+      <image class="empty-icon" src="/images/tabbar/02.png" mode="aspectFit"></image>
       <text class="empty-text">暂无工单记录</text>
-      <!-- 提交工单按钮 - 只对办美员工显示 -->
-      <view wx:if="{{isPropertyStaff}}" class="empty-btn" bindtap="navigateToNewOrder">
-        <text class="empty-btn-text">提交工单</text>
-      </view>
     </view>
   </view>
 

@@ -11,7 +11,7 @@
 /* ==================== Global Page Background ==================== */
 page {
   background-color: #F7F7F7;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: var(--font-family);
 }
 
 /* ==================== Hide Scrollbar ==================== */

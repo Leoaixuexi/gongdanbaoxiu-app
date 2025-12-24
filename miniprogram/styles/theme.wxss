@@ -58,7 +58,7 @@ page {
   --spacing-3xl: 64rpx;
 
   /* ==================== Typography ==================== */
-  --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-family: 'PingFang SC', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif;
 
   /* Font Sizes */
   --font-size-xs: 22rpx;

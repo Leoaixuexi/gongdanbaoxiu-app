@@ -151,8 +151,8 @@
         </block>
         <!-- 无排名数据时显示缺省图 -->
         <view wx:else class="empty-ranking">
-          <view class="empty-ranking-icon">📊</view>
-          <text class="empty-ranking-text">暂无工单排名</text>
+          <image class="empty-ranking-icon" src="/images/tabbar/03.png" mode="aspectFit"></image>
+          <text class="empty-ranking-text">暂无排名</text>
         </view>
       </view>
     </view>
@@ -284,8 +284,8 @@
           </block>
           <!-- 无排名数据时显示缺省图 -->
           <view wx:else class="empty-ranking">
-            <view class="empty-ranking-icon">📊</view>
-            <text class="empty-ranking-text">暂无工单排名</text>
+            <image class="empty-ranking-icon" src="/images/tabbar/03.png" mode="aspectFit"></image>
+            <text class="empty-ranking-text">暂无排名</text>
           </view>
         </view>
       </view>
@@ -347,12 +347,16 @@
       </view>
 
       <!-- 3. 故障类型饼图 -->
-      <view class="section mb-3">
+<view class="section mb-3">
         <view class="section-title mb-2">
           <text class="text-base font-bold">故障类型</text>
         </view>
         <view class="chart-container">
-          <ec-canvas id="categoryChart" canvas-id="categoryChart" ec="{{ ecCategory }}" class="chart-canvas"></ec-canvas>
+          <ec-canvas wx:if="{{categoryChartData.length > 0}}" id="categoryChart" canvas-id="categoryChart" ec="{{ ecCategory }}" class="chart-canvas"></ec-canvas>
+          <view wx:else class="chart-empty-state">
+            <image class="chart-empty-icon" src="/images/tabbar/03.png" mode="aspectFit"></image>
+            <text class="chart-empty-text">暂无数据</text>
+          </view>
         </view>
       </view>
 
@@ -362,7 +366,11 @@
           <text class="text-base font-bold">责任方</text>
         </view>
         <view class="chart-container">
-          <ec-canvas id="responsibleChart" canvas-id="responsibleChart" ec="{{ ecResponsible }}" class="chart-canvas"></ec-canvas>
+          <ec-canvas wx:if="{{responsibleChartData.length > 0}}" id="responsibleChart" canvas-id="responsibleChart" ec="{{ ecResponsible }}" class="chart-canvas"></ec-canvas>
+          <view wx:else class="chart-empty-state">
+            <image class="chart-empty-icon" src="/images/tabbar/03.png" mode="aspectFit"></image>
+            <text class="chart-empty-text">暂无数据</text>
+          </view>
         </view>
       </view>
 
@@ -372,7 +380,11 @@
           <text class="text-base font-bold">楼层分布</text>
         </view>
         <view class="chart-container">
-          <ec-canvas id="floorChart" canvas-id="floorChart" ec="{{ ecFloor }}" class="chart-canvas"></ec-canvas>
+          <ec-canvas wx:if="{{floorChartData.categories && floorChartData.categories.length > 0}}" id="floorChart" canvas-id="floorChart" ec="{{ ecFloor }}" class="chart-canvas"></ec-canvas>
+          <view wx:else class="chart-empty-state">
+            <image class="chart-empty-icon" src="/images/tabbar/03.png" mode="aspectFit"></image>
+            <text class="chart-empty-text">暂无数据</text>
+          </view>
         </view>
       </view>
     </view>

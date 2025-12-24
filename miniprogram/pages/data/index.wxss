@@ -819,12 +819,12 @@ page {
   align-items: center;
   justify-content: center;
   padding: 80rpx 32rpx;
-  gap: 24rpx;
+  gap: 10rpx;
 }
 
 .empty-ranking-icon {
-  font-size: 100rpx;
-  opacity: 0.4;
+  width: 200rpx;
+  height: 200rpx;
 }
 
 .empty-ranking-text {
@@ -855,4 +855,26 @@ page {
   color: #ffffff;
   font-size: 32rpx;
   font-weight: 600;
+}
+
+/* ========== 图表空状态样式 ========== */
+.chart-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 120rpx 32rpx;
+  gap: 24rpx;
+  min-height: 400rpx;
+}
+
+.chart-empty-icon {
+  width: 200rpx;
+  height: 200rpx;
+}
+
+.chart-empty-text {
+  font-size: 28rpx;
+  color: #9ca3af;
+  font-weight: 500;
 }
