@@ -46,8 +46,9 @@ exports.main = async (event, context) => {
       return { success: false, error: '无法获取微信身份，请在小程序内操作', data: [] };
     }
 
+    // 权限检查：行政经理、办美员工或拥有view_analytics权限的用户可以查看
     const { user, permissions } = await getCurrentUserAndPermissions(openid);
-    if (!(user.role_id === 1 || hasModulePermission(permissions, 'view_analytics'))) {
+    if (!(user.role_id === 1 || user.role_id === 4 || hasModulePermission(permissions, 'view_analytics'))) {
       return { success: false, error: '无权限查看数据分析', data: [] };
     }
 
