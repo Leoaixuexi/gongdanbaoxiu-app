@@ -488,6 +488,7 @@ Page({
    */
   onTimeFilterChange(e) {
     const filter = e.currentTarget.dataset.filter;
+    const { isManager } = this.data;
 
     if (filter === 'custom') {
       // 显示日期选择器并立即设置 timeFilter 以激活样式
@@ -502,7 +503,12 @@ Page({
         startDate: '',
         endDate: ''
       });
-      this.fetchAllManagerData();
+      // 根据角色加载对应数据
+      if (isManager) {
+        this.fetchAllManagerData();
+      } else {
+        this.loadStatistics(); // 办美员工/维修员：重新加载工单汇总
+      }
     } else {
       const { startDate, endDate } = dateUtils.getDateRange(filter);
       this.setData({
@@ -511,8 +517,12 @@ Page({
         endDate: dateUtils.formatDate(endDate)
       });
 
-      // 重新加载数据
-      this.fetchAllManagerData();
+      // 根据角色加载对应数据
+      if (isManager) {
+        this.fetchAllManagerData();
+      } else {
+        this.loadStatistics(); // 办美员工/维修员：重新加载工单汇总
+      }
     }
   },
 
@@ -580,8 +590,13 @@ Page({
       showDatePicker: false
     });
 
-    // 重新加载数据
-    this.fetchAllManagerData();
+    // 根据角色加载对应数据
+    const { isManager } = this.data;
+    if (isManager) {
+      this.fetchAllManagerData();
+    } else {
+      this.loadStatistics(); // 办美员工/维修员：重新加载工单汇总
+    }
   },
 
   /**
