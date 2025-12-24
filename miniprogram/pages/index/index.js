@@ -6,6 +6,7 @@
 const app = getApp();
 const workOrderService = require('../../services/workOrder');
 const auth = require('../../services/auth');
+const dictionary = require('../../services/dictionary');
 const { formatRelativeTime } = require('../../utils/formatter');
 
 Page({
@@ -25,7 +26,7 @@ Page({
       { id: "floor", label: "楼层", hasArrow: true, value: '', placeholder: '' },
       { id: "owner", label: "责任方", hasArrow: true, value: '', placeholder: '' },
       { id: "category", label: "工单类别", hasArrow: true, value: '', placeholder: '' },
-      { id: "reporter", label: "报修人", placeholder: "人名/简拼", value: '', hasArrow: false },
+      { id: "reporter", label: "报修人", hasArrow: true, value: '', placeholder: '' },
       { id: "priority", label: "优先级", hasArrow: true, value: '', placeholder: '' }
     ],
     // 筛选选择器弹窗
@@ -41,6 +42,7 @@ Page({
     floorOptions: [],
     ownerOptions: [],
     categoryOptions: [],
+    reporterOptions: [],
     priorityOptions: ['普通', '紧急'],
     // 自定义导航栏高度
     headerHeight: 0,
@@ -71,6 +73,38 @@ Page({
       headerHeight: Math.ceil(statusBarHeight + navBarHeight)
     });
     this.checkAuth();
+    this.loadDictionaries();
+  },
+
+  /**
+   * 加载字典数据（楼层、责任方、工单类别、报修人）
+   */
+  loadDictionaries: async function () {
+    try {
+      // 并行获取字典数据和办美员工列表
+      const [floors, categories, parties, staffResult] = await Promise.all([
+        dictionary.getOptions('floor'),
+        dictionary.getOptions('order_category'),
+        dictionary.getOptions('responsible_party'),
+        wx.cloud.callFunction({
+          name: 'userAuth',
+          data: { action: 'getPropertyStaffList' }
+        })
+      ]);
+
+      const reporters = staffResult.result?.success ? staffResult.result.data : [];
+
+      console.log('[Index] Dictionaries loaded:', { floors, categories, parties, reporters });
+
+      this.setData({
+        floorOptions: floors.length > 0 ? floors : this.data.floorOptions,
+        categoryOptions: categories.length > 0 ? categories : this.data.categoryOptions,
+        ownerOptions: parties.length > 0 ? parties : this.data.ownerOptions,
+        reporterOptions: reporters.length > 0 ? reporters : this.data.reporterOptions
+      });
+    } catch (error) {
+      console.error('[Index] Load dictionaries error:', error);
+    }
   },
 
   /**
@@ -111,6 +145,9 @@ Page({
         // 根据角色配置状态按钮
         const statusButtons = this.getStatusButtonsByRole(isPropertyStaff, isMaintenanceWorker, isManager);
 
+        // 根据角色配置筛选行
+        const filterRows = this.getFilterRowsByRole(isManager, isMaintenanceWorker);
+
         // 根据角色设置默认状态
         let defaultStatus = 'all';  // 经理默认为"全部"
         if (isMaintenanceWorker) {
@@ -134,6 +171,7 @@ Page({
           isMaintenanceWorker,
           isManager,
           statusButtons,
+          filterRows,
           activeTab: '',
           // 首次加载或从 tab 切换回来时，重置为"全部"；否则保持用户选择的状态
           activeStatus: shouldResetToDefault ? defaultStatus : currentStatus,
@@ -194,6 +232,34 @@ Page({
   },
 
   /**
+   * 根据角色获取筛选行配置
+   * - 行政经理：显示所有筛选字段（楼层、责任方、工单类别、报修人、优先级）
+   * - 办美员工：显示楼层、责任方、工单类别、优先级（隐藏报修人）
+   * - 维修员：显示楼层、工单类别、优先级（隐藏责任方、报修人）
+   */
+  getFilterRowsByRole: function (isManager, isMaintenanceWorker) {
+    const rows = [
+      { id: "floor", label: "楼层", hasArrow: true, value: '', placeholder: '' }
+    ];
+
+    // 维修员隐藏责任方筛选
+    if (!isMaintenanceWorker) {
+      rows.push({ id: "owner", label: "责任方", hasArrow: true, value: '', placeholder: '' });
+    }
+
+    rows.push({ id: "category", label: "工单类别", hasArrow: true, value: '', placeholder: '' });
+
+    // 只有行政经理显示报修人筛选
+    if (isManager) {
+      rows.push({ id: "reporter", label: "报修人", hasArrow: true, value: '', placeholder: '' });
+    }
+
+    rows.push({ id: "priority", label: "优先级", hasArrow: true, value: '', placeholder: '' });
+
+    return rows;
+  },
+
+  /**
    * Pull down to refresh
    */
   onPullDownRefresh: function () {
@@ -242,21 +308,6 @@ Page({
           order_number: allOrders[0].order_number,
           order_category: allOrders[0].order_category,
           report_time: allOrders[0].report_time
-        });
-      }
-
-      // Extract unique filter options from all orders (only on first load or when empty)
-      if (this.data.floorOptions.length === 0 || this.data.ownerOptions.length === 0 || this.data.categoryOptions.length === 0) {
-        const floors = [...new Set(allOrders.map(o => o.floor).filter(Boolean))].sort();
-        const owners = [...new Set(allOrders.map(o => o.responsible_party).filter(Boolean))].sort();
-        const categories = [...new Set(allOrders.map(o => o.fault_type_name).filter(Boolean))].sort();
-
-        console.log('[Index] Filter options loaded:', { floors, owners, categories });
-
-        this.setData({
-          floorOptions: floors,
-          ownerOptions: owners,
-          categoryOptions: categories
         });
       }
 
@@ -431,7 +482,7 @@ Page({
     const floorFilter = filterRows.find(r => r.id === 'floor')?.value;
     const ownerFilter = filterRows.find(r => r.id === 'owner')?.value;
     const categoryFilter = filterRows.find(r => r.id === 'category')?.value;
-    const reporterFilter = filterRows.find(r => r.id === 'reporter')?.value?.toLowerCase();
+    const reporterFilter = filterRows.find(r => r.id === 'reporter')?.value;
     const priorityFilter = filterRows.find(r => r.id === 'priority')?.value;
 
     console.log('[Index] Advanced filter criteria:', { floorFilter, ownerFilter, categoryFilter, reporterFilter, priorityFilter });
@@ -457,12 +508,9 @@ Page({
         return false;
       }
 
-      // Reporter (submitter name) filter - partial match
-      if (reporterFilter) {
-        const submitterName = (order.submitter?.name || '').toLowerCase();
-        if (!submitterName.includes(reporterFilter)) {
-          return false;
-        }
+      // Reporter (submitter name) filter - exact match
+      if (reporterFilter && order.submitter?.name !== reporterFilter) {
+        return false;
       }
 
       // Priority filter
@@ -731,49 +779,44 @@ Page({
     const row = this.data.filterRows.find(r => r.id === id);
     if (!row) return;
 
-    console.log('[Index] Filter row tap:', id, 'floorOptions:', this.data.floorOptions, 'ownerOptions:', this.data.ownerOptions, 'categoryOptions:', this.data.categoryOptions);
+    console.log('[Index] Filter row tap:', id, 'floorOptions:', this.data.floorOptions, 'ownerOptions:', this.data.ownerOptions, 'categoryOptions:', this.data.categoryOptions, 'reporterOptions:', this.data.reporterOptions);
 
-    if (id === 'reporter') {
-      // 报修人使用文本输入
-      this.setData({
-        isReporterInputOpen: true,
-        reporterInputValue: row.value || ''
-      });
-    } else {
-      // 其他使用选择器
-      let options = [];
-      let title = row.label;
+    // 所有筛选项都使用选择器
+    let options = [];
+    let title = row.label;
 
-      switch (id) {
-        case 'floor':
-          options = this.data.floorOptions;
-          break;
-        case 'owner':
-          options = this.data.ownerOptions;
-          break;
-        case 'category':
-          options = this.data.categoryOptions;
-          break;
-        case 'priority':
-          options = this.data.priorityOptions;
-          break;
-      }
-
-      console.log('[Index] Picker options for', id, ':', options);
-
-      if (options.length === 0) {
-        wx.showToast({ title: '暂无可选项', icon: 'none' });
-        return;
-      }
-
-      this.setData({
-        isPickerOpen: true,
-        pickerTitle: title,
-        pickerOptions: options,
-        pickerSelectedValue: row.value || '',
-        currentPickerId: id
-      });
+    switch (id) {
+      case 'floor':
+        options = this.data.floorOptions;
+        break;
+      case 'owner':
+        options = this.data.ownerOptions;
+        break;
+      case 'category':
+        options = this.data.categoryOptions;
+        break;
+      case 'reporter':
+        options = this.data.reporterOptions;
+        break;
+      case 'priority':
+        options = this.data.priorityOptions;
+        break;
     }
+
+    console.log('[Index] Picker options for', id, ':', options);
+
+    if (options.length === 0) {
+      wx.showToast({ title: '暂无可选项', icon: 'none' });
+      return;
+    }
+
+    this.setData({
+      isPickerOpen: true,
+      pickerTitle: title,
+      pickerOptions: options,
+      pickerSelectedValue: row.value || '',
+      currentPickerId: id
+    });
   },
 
   /**

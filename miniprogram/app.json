@@ -24,7 +24,9 @@
     "pages/admin/announcements/index",
     "pages/admin/announcements/edit/index",
     "pages/admin/message-templates/index",
-    "pages/admin/message-templates/edit/index"
+    "pages/admin/message-templates/edit/index",
+    "pages/admin/dict/index",
+    "pages/admin/dict/items"
   ],
   "window": {
     "backgroundTextStyle": "light",

@@ -3,8 +3,15 @@
   管理台首页 - 卡片入口式导航
 -->
 <view class="dashboard-page">
+  <!-- 自定义导航栏 -->
+  <view class="custom-nav" style="padding-top: {{statusBarHeight}}px;">
+    <view class="nav-content">
+      <text class="nav-title">管理台</text>
+    </view>
+  </view>
+
   <!-- 页面标题 -->
-  <view class="page-header">
+  <view class="page-header" style="margin-top: {{navBarHeight}}px;">
     <text class="welcome-text">管理控制台</text>
     <text class="user-name">{{userName}}</text>
   </view>
@@ -75,6 +82,20 @@
       <view class="card-info">
         <text class="card-title">消息模板</text>
         <text class="card-desc">通知消息模板配置</text>
+      </view>
+      <view class="card-arrow">
+        <text class="iconfont icon-arrow-right"></text>
+      </view>
+    </view>
+
+    <!-- 字典管理 -->
+    <view class="module-card" bindtap="navigateTo" data-path="/pages/admin/dict/index">
+      <view class="card-icon icon-dict">
+        <text class="iconfont icon-dict"></text>
+      </view>
+      <view class="card-info">
+        <text class="card-title">字典管理</text>
+        <text class="card-desc">下拉选项数据维护</text>
       </view>
       <view class="card-arrow">
         <text class="iconfont icon-arrow-right"></text>

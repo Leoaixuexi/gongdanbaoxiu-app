@@ -2,6 +2,7 @@
 const app = getApp();
 const workOrderService = require('../../services/workOrder');
 const auth = require('../../services/auth');
+const dictionary = require('../../services/dictionary');
 
 Page({
   data: {
@@ -71,10 +72,29 @@ Page({
         }, 1200);
         return;
       }
+      await this.loadDictionaries();
       await this.loadWorkOrder();
     } catch (error) {
       console.error('[Edit] Auth check error:', error);
       await this.loadWorkOrder();
+    }
+  },
+
+  async loadDictionaries() {
+    try {
+      const [categories, parties] = await Promise.all([
+        dictionary.getOptions('order_category'),
+        dictionary.getOptions('responsible_party')
+      ]);
+
+      if (categories.length > 0) {
+        this.setData({ categoryOptions: categories });
+      }
+      if (parties.length > 0) {
+        this.setData({ responsibleOptions: parties });
+      }
+    } catch (error) {
+      console.error('[Edit] Load dictionaries error:', error);
     }
   },
 

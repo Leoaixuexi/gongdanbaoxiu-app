@@ -21,7 +21,7 @@
         />
         <!-- 扫一扫按钮 - 无工单编号时显示 -->
         <view wx:if="{{!orderNumber}}" class="scan-button-inline">
-          <text class="iconfont icon-saoyisao" style="font-size: 44rpx; color: #CCCCCC;"></text>
+          <text class="iconfont icon-saoyisao1" style="font-size: 44rpx; color: #CCCCCC;"></text>
         </view>
       </view>
     </view>

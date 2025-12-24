@@ -120,9 +120,9 @@
             <view class="p-4 flex items-center gap-3"
                   style="border-bottom: 1rpx solid var(--border);">
               <view style="width: 60rpx; text-align: center; display: flex; align-items: center; justify-content: center;">
-                <text wx:if="{{item.rank == 1}}" class="iconfont icon-jinpai" style="font-size: 48rpx; color: #FFD700;"></text>
-                <text wx:elif="{{item.rank == 2}}" class="iconfont icon-yinpai" style="font-size: 48rpx; color: #C0C0C0;"></text>
-                <text wx:elif="{{item.rank == 3}}" class="iconfont icon-tongpai" style="font-size: 48rpx; color: #CD7F32;"></text>
+                <image wx:if="{{item.rank == 1}}" src="/images/tabbar/one.png" style="width: 64rpx; height: 64rpx;"></image>
+                <image wx:elif="{{item.rank == 2}}" src="/images/tabbar/two.png" style="width: 64rpx; height: 64rpx;"></image>
+                <image wx:elif="{{item.rank == 3}}" src="/images/tabbar/three.png" style="width: 64rpx; height: 64rpx;"></image>
                 <text wx:else class="text-base font-bold">{{item.rank}}</text>
               </view>
 
@@ -261,9 +261,9 @@
               <view class="p-4 flex items-center gap-3"
                     style="border-bottom: 1rpx solid var(--border);">
                 <view style="width: 60rpx; text-align: center; display: flex; align-items: center; justify-content: center;">
-                  <text wx:if="{{item.rank == 1}}" class="iconfont icon-jinpai" style="font-size: 48rpx; color: #FFD700;"></text>
-                  <text wx:elif="{{item.rank == 2}}" class="iconfont icon-yinpai" style="font-size: 48rpx; color: #C0C0C0;"></text>
-                  <text wx:elif="{{item.rank == 3}}" class="iconfont icon-tongpai" style="font-size: 48rpx; color: #CD7F32;"></text>
+                  <image wx:if="{{item.rank == 1}}" src="/images/tabbar/one.png" style="width: 64rpx; height: 64rpx;"></image>
+                  <image wx:elif="{{item.rank == 2}}" src="/images/tabbar/two.png" style="width: 64rpx; height: 64rpx;"></image>
+                  <image wx:elif="{{item.rank == 3}}" src="/images/tabbar/three.png" style="width: 64rpx; height: 64rpx;"></image>
                   <text wx:else class="text-base font-bold">{{item.rank}}</text>
                 </view>
 

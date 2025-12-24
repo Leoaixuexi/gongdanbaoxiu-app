@@ -1,9 +1,18 @@
 <canvas
-  canvas-id="{{ canvasId }}"
-  id="{{ canvasId }}"
+  wx:if="{{isUseNewCanvas}}"
+  type="2d"
   class="ec-canvas"
-  disable-scroll="{{ disableScroll }}"
-  bindtouchstart="{{ ec.touchStart }}"
-  bindtouchmove="{{ ec.touchMove }}"
-  bindtouchend="{{ ec.touchEnd }}">
+  canvas-id="{{canvasId}}"
+  bindtouchstart="touchStart"
+  bindtouchmove="touchMove"
+  bindtouchend="touchEnd">
+</canvas>
+
+<canvas
+  wx:else
+  class="ec-canvas"
+  canvas-id="{{canvasId}}"
+  bindtouchstart="touchStart"
+  bindtouchmove="touchMove"
+  bindtouchend="touchEnd">
 </canvas>

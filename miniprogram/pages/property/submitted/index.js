@@ -1,5 +1,6 @@
 // pages/index/index.js
 const auth = require('../../../services/auth');
+const { STORAGE_KEYS } = require('../../../utils/constants');
 const app = getApp()
 
 Page({
@@ -40,32 +41,37 @@ Page({
   // 加载用户信息
   async loadUserInfo() {
     try {
-      // 尝试从全局获取用户信息
+      // 直接从 storage 获取用户信息
+      const storedUserInfo = wx.getStorageSync(STORAGE_KEYS.USER_INFO);
       const globalUserInfo = app.globalData.userInfo;
 
-      if (globalUserInfo) {
+      // 优先使用 storage 中的数据，因为它包含 role_name
+      const userInfo = storedUserInfo || globalUserInfo;
+
+      if (userInfo) {
+        console.log('[Profile] User info:', userInfo);
         // 格式化用户信息
         const formattedUserInfo = {
-          name: globalUserInfo.name || globalUserInfo.username || '用户',
-          position: globalUserInfo.position || globalUserInfo.role || '员工',
-          department: globalUserInfo.department || '未设置',
-          avatar: globalUserInfo.avatar || 'https://placehold.co/200x200/10b981/ffffff?text=' + (globalUserInfo.name || 'U').charAt(0),
-          phone: this.formatPhone(globalUserInfo.phone || globalUserInfo.mobile || '')
+          name: userInfo.name || userInfo.username || '用户',
+          position: userInfo.role_name || userInfo.position || userInfo.role || '员工',
+          department: userInfo.department || '未设置',
+          avatar: userInfo.avatar || 'https://placehold.co/200x200/10b981/ffffff?text=' + (userInfo.name || 'U').charAt(0),
+          phone: this.formatPhone(userInfo.contact_phone || userInfo.phone || userInfo.mobile || '')
         };
 
         this.setData({
           userInfo: formattedUserInfo
         });
       } else {
-        // 如果没有全局用户信息，尝试获取
-        const userInfo = await app.getUserInfo();
-        if (userInfo) {
+        // 如果没有用户信息，尝试从 app 获取
+        const fetchedUserInfo = await app.getUserInfo();
+        if (fetchedUserInfo) {
           const formattedUserInfo = {
-            name: userInfo.name || userInfo.username || '用户',
-            position: userInfo.position || userInfo.role || '员工',
-            department: userInfo.department || '未设置',
-            avatar: userInfo.avatar || 'https://placehold.co/200x200/10b981/ffffff?text=' + (userInfo.name || 'U').charAt(0),
-            phone: this.formatPhone(userInfo.phone || userInfo.mobile || '')
+            name: fetchedUserInfo.name || fetchedUserInfo.username || '用户',
+            position: fetchedUserInfo.role_name || fetchedUserInfo.position || fetchedUserInfo.role || '员工',
+            department: fetchedUserInfo.department || '未设置',
+            avatar: fetchedUserInfo.avatar || 'https://placehold.co/200x200/10b981/ffffff?text=' + (fetchedUserInfo.name || 'U').charAt(0),
+            phone: this.formatPhone(fetchedUserInfo.contact_phone || fetchedUserInfo.phone || fetchedUserInfo.mobile || '')
           };
 
           this.setData({

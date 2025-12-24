@@ -4,6 +4,7 @@
  */
 
 const { ROLE_DISPLAY_NAMES } = require('../../../../utils/constants');
+const dictionary = require('../../../../services/dictionary');
 
 Page({
   data: {
@@ -33,6 +34,18 @@ Page({
 
   onLoad() {
     this.loadRoles();
+    this.loadDepartments();
+  },
+
+  async loadDepartments() {
+    try {
+      const departments = await dictionary.getOptions('department');
+      if (departments.length > 0) {
+        this.setData({ departments });
+      }
+    } catch (error) {
+      console.error('[AddUser] Load departments error:', error);
+    }
   },
 
   /**

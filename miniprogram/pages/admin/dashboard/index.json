@@ -2,5 +2,6 @@
   "navigationBarTitleText": "管理台",
   "navigationBarBackgroundColor": "#0CA77D",
   "backgroundColor": "#F5F5F5",
-  "enablePullDownRefresh": false
+  "enablePullDownRefresh": false,
+  "navigationStyle": "custom"
 }

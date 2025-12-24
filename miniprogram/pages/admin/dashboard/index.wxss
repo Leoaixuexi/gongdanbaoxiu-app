@@ -5,7 +5,31 @@
   min-height: 100vh;
   background-color: #F5F5F5;
   padding: 32rpx;
+  padding-top: 0;
   padding-bottom: calc(120rpx + env(safe-area-inset-bottom));
+}
+
+/* 自定义导航栏 */
+.custom-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: #0CA77D;
+  z-index: 1000;
+}
+
+.nav-content {
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav-title {
+  font-size: 34rpx;
+  font-weight: 600;
+  color: #FFFFFF;
 }
 
 /* 页面头部 */
@@ -91,6 +115,11 @@
 .icon-templates {
   background: linear-gradient(135deg, #10B981 0%, #34D399 100%);
   box-shadow: 0 8rpx 24rpx rgba(16, 185, 129, 0.3);
+}
+
+.icon-dict {
+  background: linear-gradient(135deg, #14B8A6 0%, #2DD4BF 100%);
+  box-shadow: 0 8rpx 24rpx rgba(20, 184, 166, 0.3);
 }
 
 .icon-audit {

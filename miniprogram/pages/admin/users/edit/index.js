@@ -4,6 +4,7 @@
  */
 
 const { ROLE_DISPLAY_NAMES } = require('../../../../utils/constants');
+const dictionary = require('../../../../services/dictionary');
 
 Page({
   data: {
@@ -42,6 +43,7 @@ Page({
     if (userId) {
       this.setData({ userId: userId });
       this.loadRoles();
+      this.loadDepartments();
       this.loadUser();
     } else {
       wx.showToast({
@@ -49,6 +51,17 @@ Page({
         icon: 'none'
       });
       setTimeout(() => wx.navigateBack(), 1500);
+    }
+  },
+
+  async loadDepartments() {
+    try {
+      const departments = await dictionary.getOptions('department');
+      if (departments.length > 0) {
+        this.setData({ departments });
+      }
+    } catch (error) {
+      console.error('[EditUser] Load departments error:', error);
     }
   },
 

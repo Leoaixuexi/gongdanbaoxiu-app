@@ -562,7 +562,7 @@
   color: white;
   box-shadow: 0 8rpx 16rpx rgba(249, 115, 22, 0.2);
   padding: 0 32rpx;
-  max-width: 180rpx;
+  max-width: 220rpx;
 }
 
 /* 催维修/催复核按钮 - 橙色风格 */
@@ -711,8 +711,7 @@
   display: flex;
   gap: 16rpx;
   padding: 32rpx;
-  border-top: 1rpx solid #F3F4F6;
-  background-color: #FAFAFA;
+  background-color: transparent;
 }
 
 .modal-btn {
@@ -723,6 +722,9 @@
   font-weight: 500;
   border: none;
   transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .modal-btn:active {
@@ -730,8 +732,9 @@
 }
 
 .modal-btn.cancel {
-  background-color: #F3F4F6;
+  background-color: white;
   color: #6B7280;
+  border: 1rpx solid #E5E7EB;
 }
 
 .modal-btn.confirm {
@@ -1351,4 +1354,62 @@
 .edit-modal-btn:disabled {
   opacity: 0.4;
   pointer-events: none;
+}
+
+/* ==================== Rework Modal Styles ==================== */
+.rework-notice {
+  background-color: #FFF7ED;
+  padding: 24rpx 32rpx;
+  border-radius: 16rpx;
+  margin-bottom: 32rpx;
+  display: flex;
+  align-items: flex-start;
+  gap: 16rpx;
+}
+
+.rework-icon-circle {
+  width: 36rpx;
+  height: 36rpx;
+  border-radius: 50%;
+  background-color: #EA580C;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24rpx;
+  font-weight: bold;
+  flex-shrink: 0;
+  margin-top: 2rpx;
+}
+
+.rework-notice-text {
+  font-size: 26rpx;
+  color: #9A3412;
+  line-height: 1.5;
+  flex: 1;
+}
+
+.rework-textarea {
+  min-height: 170rpx;
+  width: calc(100% - 40rpx);
+  margin: 0 auto;
+  display: block;
+  background-color: #F9FAFB;
+  border: 2rpx solid transparent;
+  transition: all 0.2s;
+}
+
+.rework-placeholder {
+  font-size: 28rpx;
+  color: #9CA3AF;
+}
+
+.rework-hint {
+  margin-right: 24rpx;
+}
+
+.rework-textarea:focus {
+  background-color: white;
+  border-color: #FB923C;
+  box-shadow: 0 0 0 4rpx rgba(251, 146, 60, 0.1);
 }

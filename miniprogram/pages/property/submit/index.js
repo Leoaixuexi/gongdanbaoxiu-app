@@ -6,6 +6,7 @@
 const app = getApp();
 const workOrderService = require('../../../services/workOrder');
 const auth = require('../../../services/auth');
+const dictionary = require('../../../services/dictionary');
 
 Page({
   data: {
@@ -51,6 +52,7 @@ Page({
       headerHeight: statusBarHeight + navBarHeight
     });
     this.checkAuth();
+    this.loadDictionaries();
     // Set default date and time to now
     const now = new Date();
     const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
@@ -86,6 +88,37 @@ Page({
     }
   },
 
+  /**
+   * Load dictionaries from service
+   */
+  loadDictionaries: async function () {
+    try {
+      const [floors, categories, parties] = await Promise.all([
+        dictionary.getOptions('floor'),
+        dictionary.getOptions('order_category'),
+        dictionary.getOptions('responsible_party')
+      ]);
+
+      if (floors.length > 0) {
+        this.setData({
+          floorOptions: ['请选择楼层', ...floors]
+        });
+      }
+      if (categories.length > 0) {
+        this.setData({
+          orderCategories: ['请选择工单类别', ...categories]
+        });
+      }
+      if (parties.length > 0) {
+        this.setData({
+          responsibleParties: ['请选择责任方', ...parties]
+        });
+      }
+    } catch (error) {
+      console.error('[Submit] Load dictionaries error:', error);
+      // 使用硬编码兜底值，不影响页面使用
+    }
+  },
 
   /**
    * Form Input Handlers

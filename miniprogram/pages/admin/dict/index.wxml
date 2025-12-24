@@ -1,0 +1,120 @@
+<!--
+  Dictionary Management Page
+  字典管理列表页面
+-->
+<view class="dict-page">
+  <!-- 字典列表 -->
+  <view class="dict-list">
+    <view wx:if="{{loading}}" class="loading-state">
+      <text>加载中...</text>
+    </view>
+
+    <view wx:elif="{{dictionaries.length === 0}}" class="empty-state">
+      <text class="empty-icon">📚</text>
+      <text class="empty-text">暂无字典</text>
+    </view>
+
+    <view wx:else class="list-content">
+      <view
+        wx:for="{{dictionaries}}"
+        wx:key="_id"
+        class="dict-card"
+        bindtap="goToItems"
+        data-dict-key="{{item.dict_key}}"
+        data-dict-name="{{item.dict_name}}"
+      >
+        <view class="card-header">
+          <view class="dict-icon">
+            <text>📖</text>
+          </view>
+          <view class="dict-info">
+            <view class="dict-name">
+              <text>{{item.dict_name}}</text>
+              <view wx:if="{{item.is_system}}" class="system-tag">系统</view>
+            </view>
+            <text class="dict-key">{{item.dict_key}}</text>
+          </view>
+          <view class="item-count">
+            <text class="count-num">{{item.item_count}}</text>
+            <text class="count-label">项</text>
+          </view>
+        </view>
+
+        <view wx:if="{{item.description}}" class="card-desc">
+          <text>{{item.description}}</text>
+        </view>
+
+        <view class="card-actions" catchtap="">
+          <view class="action-btn" catchtap="goToItems" data-dict-key="{{item.dict_key}}" data-dict-name="{{item.dict_name}}">
+            管理字典项
+          </view>
+          <view
+            wx:if="{{!item.is_system}}"
+            class="action-btn danger"
+            catchtap="deleteDictionary"
+            data-dict-key="{{item.dict_key}}"
+            data-dict-name="{{item.dict_name}}"
+            data-is-system="{{item.is_system}}"
+          >
+            删除
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 新建按钮 -->
+  <view class="fab-button" bindtap="showAddDialog">
+    <text class="fab-icon">+</text>
+  </view>
+
+  <!-- 新增字典弹窗 -->
+  <view wx:if="{{showAddModal}}" class="modal-mask" bindtap="closeModal">
+    <view class="modal-content" catchtap="">
+      <view class="modal-header">
+        <text class="modal-title">新增字典</text>
+        <view class="close-btn" bindtap="closeModal">×</view>
+      </view>
+
+      <view class="modal-body">
+        <view class="form-item" catchtap="">
+          <text class="form-label">字典键名 <text class="required">*</text></text>
+          <input
+            class="form-input"
+            placeholder="如：floor、category（只支持小写英文、数字、下划线）"
+            value="{{newDict.dict_key}}"
+            bindinput="onKeyInput"
+            catchtap=""
+          />
+        </view>
+
+        <view class="form-item" catchtap="">
+          <text class="form-label">字典名称 <text class="required">*</text></text>
+          <input
+            class="form-input"
+            placeholder="如：楼层、类别"
+            value="{{newDict.dict_name}}"
+            bindinput="onNameInput"
+            catchtap=""
+          />
+        </view>
+
+        <view class="form-item" catchtap="">
+          <text class="form-label">描述</text>
+          <textarea
+            class="form-textarea"
+            placeholder="可选，描述该字典的用途"
+            value="{{newDict.description}}"
+            bindinput="onDescInput"
+            catchtap=""
+          />
+        </view>
+      </view>
+
+      <view class="modal-footer">
+        <view class="btn-cancel" bindtap="closeModal">取消</view>
+        <view class="btn-confirm" bindtap="createDictionary">创建</view>
+      </view>
+    </view>
+  </view>
+</view>

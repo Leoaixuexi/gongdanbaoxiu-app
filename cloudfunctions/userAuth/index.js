@@ -173,6 +173,20 @@ async function getUserPermissions(roleId) {
 }
 
 /**
+ * 获取角色名称
+ * 使用固定映射，与账号管理页面保持一致
+ */
+function getRoleName(roleId) {
+  const roleNames = {
+    1: '系统管理员',
+    2: '行政经理',
+    3: '维修员',
+    4: '办美员工'
+  };
+  return roleNames[roleId] || '员工';
+}
+
+/**
  * 记录审计日志
  */
 async function logAudit(action, details) {
@@ -303,8 +317,9 @@ exports.main = async (event, context) => {
         // 更新最后登录时间
         await updateLastLogin(user.user_id);
 
-        // 获取权限
+        // 获取权限和角色名称
         const permissions = await getUserPermissions(user.role_id);
+        const roleName = await getRoleName(user.role_id);
 
         // 记录审计日志
         await logAudit('user_login', {
@@ -321,7 +336,7 @@ exports.main = async (event, context) => {
             username: user.username,
             name: user.name,
             role_id: user.role_id,
-            role_name: user.role?.display_name,
+            role_name: roleName,
             contact_phone: user.contact_phone,
             department: user.department,
             active: user.active
@@ -1845,6 +1860,29 @@ exports.main = async (event, context) => {
         };
       }
 
+      case 'getPropertyStaffList': {
+        // 获取办美员工列表（用于筛选下拉）- 无需管理员权限
+        const users = db.collection('users');
+
+        const { data: staffList } = await users.where({
+          role_id: 4,  // 办美员工
+          active: true
+        }).field({
+          name: true
+        }).get();
+
+        // 提取姓名列表并排序
+        const names = staffList
+          .map(u => u.name)
+          .filter(Boolean)
+          .sort();
+
+        return {
+          success: true,
+          data: names
+        };
+      }
+
       default:
         return {
           success: false,
@@ -1852,7 +1890,7 @@ exports.main = async (event, context) => {
           available_actions: [
             'login', 'passwordLogin', 'getUserInfo', 'updateProfile', 'getUserById',
             'listUsers', 'listRoles', 'updateRolePermissions', 'migratePasswords', 'changePassword',
-            'createUser', 'updateUser', 'deleteUser', 'getSupervisors',
+            'createUser', 'updateUser', 'deleteUser', 'getSupervisors', 'getPropertyStaffList',
             'enableUser', 'disableUser', 'resetUserPassword',
             'listAnnouncements', 'getAnnouncement', 'createAnnouncement', 'updateAnnouncement',
             'publishAnnouncement', 'offlineAnnouncement', 'deleteAnnouncement',

@@ -1,0 +1,113 @@
+<!--
+  Dictionary Items Management Page
+  字典项管理页面
+-->
+<view class="items-page">
+  <!-- 字典项列表 -->
+  <view class="items-list">
+    <view wx:if="{{loading}}" class="loading-state">
+      <text>加载中...</text>
+    </view>
+
+    <view wx:elif="{{items.length === 0}}" class="empty-state">
+      <text class="empty-icon">📝</text>
+      <text class="empty-text">暂无字典项</text>
+      <text class="empty-hint">点击右下角按钮添加</text>
+    </view>
+
+    <view wx:else class="list-content">
+      <view
+        wx:for="{{items}}"
+        wx:key="value"
+        class="item-card {{item.enabled === false ? 'disabled' : ''}}"
+      >
+        <view class="item-main">
+          <view class="item-sort">{{item.sort || 0}}</view>
+          <view class="item-info">
+            <view class="item-value">{{item.value}}</view>
+            <view wx:if="{{item.label && item.label !== item.value}}" class="item-label">
+              显示为: {{item.label}}
+            </view>
+          </view>
+          <view class="item-status {{item.enabled === false ? 'off' : 'on'}}" bindtap="toggleItemEnabled" data-index="{{index}}">
+            {{item.enabled === false ? '已停用' : '启用中'}}
+          </view>
+        </view>
+
+        <view class="item-actions">
+          <view class="action-btn" bindtap="editItem" data-index="{{index}}">
+            编辑
+          </view>
+          <view class="action-btn danger" bindtap="deleteItem" data-index="{{index}}" data-value="{{item.value}}">
+            删除
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 新建按钮 -->
+  <view class="fab-button" bindtap="showAddDialog">
+    <text class="fab-icon">+</text>
+  </view>
+
+  <!-- 编辑字典项弹窗 -->
+  <view wx:if="{{showEditModal}}" class="modal-mask" bindtap="closeModal">
+    <view class="modal-content" catchtap="stopPropagation">
+      <view class="modal-header">
+        <text class="modal-title">{{editingItem ? '编辑字典项' : '新增字典项'}}</text>
+        <view class="close-btn" bindtap="closeModal">×</view>
+      </view>
+
+      <view class="modal-body">
+        <view class="form-item">
+          <text class="form-label">值 <text class="required">*</text></text>
+          <input
+            class="form-input"
+            placeholder="字典项的值"
+            value="{{editForm.value}}"
+            bindinput="onValueInput"
+            disabled="{{editingItem}}"
+          />
+          <text wx:if="{{editingItem}}" class="form-hint">值不可修改</text>
+        </view>
+
+        <view class="form-item">
+          <text class="form-label">显示标签</text>
+          <input
+            class="form-input"
+            placeholder="可选，不填则与值相同"
+            value="{{editForm.label}}"
+            bindinput="onLabelInput"
+          />
+        </view>
+
+        <view class="form-item">
+          <text class="form-label">排序</text>
+          <input
+            class="form-input"
+            type="number"
+            placeholder="数字越小越靠前"
+            value="{{editForm.sort}}"
+            bindinput="onSortInput"
+          />
+        </view>
+
+        <view class="form-item switch-item">
+          <text class="form-label">启用状态</text>
+          <view class="switch-wrapper" bindtap="toggleEnabled">
+            <view class="switch-track {{editForm.enabled ? 'on' : ''}}">
+              <view class="switch-thumb"></view>
+            </view>
+            <text class="switch-text">{{editForm.enabled ? '启用' : '停用'}}</text>
+          </view>
+        </view>
+      </view>
+
+      <view class="modal-footer">
+        <view class="btn-cancel" bindtap="closeModal">取消</view>
+        <view class="btn-confirm" bindtap="saveItem">保存</view>
+      </view>
+    </view>
+  </view>
+</view>

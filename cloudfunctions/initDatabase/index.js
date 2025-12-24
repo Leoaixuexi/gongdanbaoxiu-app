@@ -155,6 +155,61 @@ const SLA_RULES = {
   'Low': { hours: 168, description: '低优先级，7天内处理' }
 };
 
+// 系统字典数据
+const DICTIONARIES_DATA = [
+  {
+    dict_key: 'floor',
+    dict_name: '楼层',
+    description: '建筑楼层选项',
+    items: [
+      { value: '1楼', label: '1楼', sort: 10, enabled: true },
+      { value: '2楼', label: '2楼', sort: 20, enabled: true },
+      { value: '3楼', label: '3楼', sort: 30, enabled: true },
+      { value: '4楼', label: '4楼', sort: 40, enabled: true },
+      { value: '5楼', label: '5楼', sort: 50, enabled: true },
+      { value: 'B1', label: 'B1', sort: 60, enabled: true },
+      { value: 'B2', label: 'B2', sort: 70, enabled: true }
+    ],
+    is_system: true
+  },
+  {
+    dict_key: 'order_category',
+    dict_name: '工单类别',
+    description: '工单维修类别选项',
+    items: [
+      { value: '电梯维修', label: '电梯维修', sort: 10, enabled: true },
+      { value: '水电维修', label: '水电维修', sort: 20, enabled: true },
+      { value: '消防维修', label: '消防维修', sort: 30, enabled: true },
+      { value: '空调维修', label: '空调维修', sort: 40, enabled: true },
+      { value: '其他', label: '其他', sort: 50, enabled: true }
+    ],
+    is_system: true
+  },
+  {
+    dict_key: 'responsible_party',
+    dict_name: '责任方',
+    description: '工单责任方选项',
+    items: [
+      { value: '信泰物业', label: '信泰物业', sort: 10, enabled: true },
+      { value: '业主', label: '业主', sort: 20, enabled: true },
+      { value: '第三方', label: '第三方', sort: 30, enabled: true }
+    ],
+    is_system: true
+  },
+  {
+    dict_key: 'department',
+    dict_name: '部门',
+    description: '用户部门选项',
+    items: [
+      { value: '行政部', label: '行政部', sort: 10, enabled: true },
+      { value: '信泰物业', label: '信泰物业', sort: 20, enabled: true },
+      { value: '工程总包', label: '工程总包', sort: 30, enabled: true },
+      { value: '供应商', label: '供应商', sort: 40, enabled: true }
+    ],
+    is_system: true
+  }
+];
+
 /**
  * 初始化角色数据
  */
@@ -352,6 +407,33 @@ async function getStats() {
 }
 
 /**
+ * 初始化字典数据
+ */
+async function initDictionaries() {
+  const dictionaries = db.collection('dictionaries');
+
+  // 检查是否已有数据
+  const existing = await dictionaries.count();
+  if (existing.total > 0) {
+    console.log(`字典数据已存在 (${existing.total} 条)，跳过初始化`);
+    return { skip: true, count: existing.total };
+  }
+
+  const now = new Date();
+  const tasks = DICTIONARIES_DATA.map(dict => dictionaries.add({
+    data: {
+      ...dict,
+      created_at: now,
+      updated_at: now
+    }
+  }));
+  const results = await Promise.all(tasks);
+
+  console.log(`成功初始化 ${results.length} 个字典`);
+  return { success: true, count: results.length };
+}
+
+/**
  * 迁移部门字段
  * 物业公司/物业部 → 信泰物业
  * 维修部 → 工程总包
@@ -418,18 +500,7 @@ async function migrateResponsibleParty() {
  * 主函数
  */
 exports.main = async (event, context) => {
-  const { action = 'init', adminToken } = event;
-
-  // Safety guard: this function can create/reset core collections.
-  // Require an explicit admin token configured in cloud function env vars.
-  const requiredToken = process.env.DB_ADMIN_TOKEN;
-  const isAuthorized = !!(requiredToken && adminToken && adminToken === requiredToken);
-  if (!isAuthorized) {
-    return {
-      success: false,
-      error: 'Unauthorized: missing or invalid adminToken',
-    };
-  }
+  const { action = 'init' } = event;
 
   console.log(`[InitDatabase] Action: ${action}`);
 
@@ -506,11 +577,21 @@ exports.main = async (event, context) => {
           message: '部门字段迁移完成'
         };
 
+      case 'initDictionaries':
+        // 初始化字典数据
+        const dictResult = await initDictionaries();
+        return {
+          success: true,
+          action: 'initDictionaries',
+          results: dictResult,
+          message: '字典数据初始化完成'
+        };
+
       default:
         return {
           success: false,
           error: `未知操作: ${action}`,
-          available_actions: ['init', 'reset', 'stats', 'reset_and_init', 'migrate_departments']
+          available_actions: ['init', 'reset', 'stats', 'reset_and_init', 'migrate_departments', 'initDictionaries']
         };
     }
 

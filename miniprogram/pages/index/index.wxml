@@ -19,7 +19,7 @@
           />
           <!-- 扫一扫按钮 - 无输入时显示 -->
           <view wx:if="{{!searchText}}" class="scan-button-inline" bindtap="handleScan">
-            <text class="iconfont icon-saoyisao" style="font-size: 44rpx; color: #10b981;"></text>
+            <text class="iconfont icon-saoyisao1" style="font-size: 44rpx; color: #10b981;"></text>
           </view>
           <!-- 清空按钮 - 有输入时显示 -->
           <view wx:if="{{searchText}}" class="clear-button-inline" bindtap="clearSearch">

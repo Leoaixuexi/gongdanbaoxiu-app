@@ -64,7 +64,7 @@ Page({
         // 已登录,根据角色跳转
         const userInfo = wx.getStorageSync(STORAGE_KEYS.USER_INFO);
         if (userInfo && userInfo.role_id == ROLES.ADMIN) {
-          wx.navigateTo({
+          wx.reLaunch({
             url: '/pages/admin/dashboard/index'
           });
         } else {
@@ -172,7 +172,7 @@ Page({
         // 使用 == 宽松比较，兼容字符串和数字类型
         if (user.role_id == ROLES.ADMIN) {
           // 管理员跳转到管理台首页
-          wx.navigateTo({
+          wx.reLaunch({
             url: '/pages/admin/dashboard/index'
           });
         } else {

@@ -205,16 +205,16 @@
       <view class="modal-body">
         <!-- 完成描述 -->
         <view class="form-group">
-          <view class="form-label">完成描述</view>
           <textarea
-            class="form-textarea"
+            class="form-textarea rework-textarea"
             placeholder="请填写完成描述（选填）"
+            placeholder-class="rework-placeholder"
             value="{{completionNotes}}"
             bindinput="onNotesInput"
-            maxlength="30"
-            auto-height
+            maxlength="50"
+            style="height: 170rpx;"
           />
-          <view class="form-hint">{{completionNotes.length}}/30</view>
+          <view class="form-hint rework-hint">{{completionNotes.length}}/50</view>
         </view>
       </view>
 
@@ -235,18 +235,20 @@
   <view class="modal-overlay" wx:if="{{showReviewForm}}" catchtap="cancelReviewForm">
     <view class="modal-container modal-container-simple" catchtap="stopPropagation">
       <view class="modal-body">
+
+        
         <!-- 需返工原因 -->
         <view class="form-group">
-          <view class="form-label">需返工原因</view>
           <textarea
-            class="form-textarea"
-            placeholder="请填写需返工原因(选填)"
+            class="form-textarea rework-textarea"
+            placeholder="请输入返工原因，以便维修人员快速定位问题..."
+            placeholder-class="rework-placeholder"
             value="{{reviewNotes}}"
             bindinput="onReviewNotesInput"
-            maxlength="30"
-            auto-height
+            maxlength="50"
+            style="height: 170rpx;"
           />
-          <view class="form-hint">{{reviewNotes.length}}/30</view>
+          <view class="form-hint rework-hint">{{reviewNotes.length}}/50</view>
         </view>
       </view>
 
@@ -257,7 +259,7 @@
           bindtap="submitReview"
           disabled="{{submittingReview}}"
         >
-          {{submittingReview ? '提交中...' : '确认'}}
+          {{submittingReview ? '提交中...' : '确认返工'}}
         </button>
       </view>
     </view>

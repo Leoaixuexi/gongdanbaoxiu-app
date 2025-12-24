@@ -1,14 +1,14 @@
 /**
  * iconfont 图标字体
  * 项目ID: 5090968
- * 在线链接: //at.alicdn.com/t/c/font_5090968_asys14b3mm6.css
+ * 更新时间: 2025-12-24
  */
 
 @font-face {
   font-family: "iconfont";
-  src: url('https://at.alicdn.com/t/c/font_5090968_i5hfy9pvg8.woff2?t=1766413188191') format('woff2'),
-       url('https://at.alicdn.com/t/c/font_5090968_i5hfy9pvg8.woff?t=1766413188191') format('woff'),
-       url('https://at.alicdn.com/t/c/font_5090968_i5hfy9pvg8.ttf?t=1766413188191') format('truetype');
+  src: url('https://at.alicdn.com/t/c/font_5090968_erbs2s7u97p.woff2?t=1766556017590') format('woff2'),
+       url('https://at.alicdn.com/t/c/font_5090968_erbs2s7u97p.woff?t=1766556017590') format('woff'),
+       url('https://at.alicdn.com/t/c/font_5090968_erbs2s7u97p.ttf?t=1766556017590') format('truetype');
 }
 
 .iconfont {
@@ -39,6 +39,11 @@
 /* 扫一扫 */
 .icon-saoyisao:before {
   content: "\e62e";
+}
+
+/* 扫一扫（新版本） */
+.icon-saoyisao1:before {
+  content: "\e60e";
 }
 
 /* 筛选 */
@@ -126,19 +131,34 @@
 }
 
 /* ========== 数据页面排名图标 ========== */
-/* 第一名 */
+/* 第一名（旧版本） */
 .icon-diyiming:before {
   content: "\e69d";
 }
 
-/* 第二名 */
+/* 第二名（旧版本） */
 .icon-dierming:before {
   content: "\e61c";
 }
 
-/* 第三名 */
+/* 第三名（旧版本） */
 .icon-disanming:before {
   content: "\e608";
+}
+
+/* 第一名（新版本） */
+.icon-diyiming1:before {
+  content: "\e668";
+}
+
+/* 第二名（新版本） */
+.icon-dierming1:before {
+  content: "\e66e";
+}
+
+/* 第三名（新版本） */
+.icon-disanming1:before {
+  content: "\e66f";
 }
 
 /* 金牌（旧版本） */

@@ -9,12 +9,28 @@ const { ROLES, STORAGE_KEYS } = require('../../../utils/constants');
 
 Page({
   data: {
-    userName: ''
+    userName: '',
+    statusBarHeight: 20,
+    navBarHeight: 64
   },
 
   onLoad() {
+    this.initNavBar();
     this.checkAdminPermission();
     this.loadUserInfo();
+  },
+
+  /**
+   * 初始化导航栏高度
+   */
+  initNavBar() {
+    const systemInfo = wx.getSystemInfoSync();
+    const statusBarHeight = systemInfo.statusBarHeight || 20;
+    const navBarHeight = statusBarHeight + 44;
+    this.setData({
+      statusBarHeight,
+      navBarHeight
+    });
   },
 
   onShow() {
