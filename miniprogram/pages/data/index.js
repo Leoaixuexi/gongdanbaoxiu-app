@@ -15,6 +15,14 @@ Page({
   data: {
     // 工单统计（办美员工/维修员使用）
     stats: [],
+    // KPI统计数据（办美员工使用，与行政经理格式一致）
+    staffKpiData: {
+      totalOrders: 0,          // 总工单数
+      completedOrders: 0,      // 已完成数
+      completionRate: 0,       // 完成率百分比
+      inProgressOrders: 0,     // 进行中数
+      avgCompletionTime: 0     // 平均完成时长（小时）
+    },
     // 月度排名
     rankings: [],
     // 月度排名的年月选择
@@ -326,12 +334,67 @@ Page({
         };
       });
 
+      // ========== 计算KPI统计数据（办美员工使用） ==========
+
+      // 1. 总工单数
+      const totalOrders = myOrders.length;
+
+      // 2. 已完成工单数
+      const completedOrders = myOrders.filter(order =>
+        order.status === 'Completed' || order.status === '已完成'
+      ).length;
+
+      // 3. 进行中工单数（排除已完成的所有工单）
+      const inProgressOrders = myOrders.filter(order =>
+        order.status !== 'Completed' && order.status !== '已完成'
+      ).length;
+
+      // 4. 完成率
+      const completionRate = totalOrders > 0
+        ? ((completedOrders / totalOrders) * 100).toFixed(1)
+        : '0.0';
+
+      // 5. 平均完成时长（小时）
+      let avgCompletionTime = 0;
+      const completedWithTime = myOrders.filter(order => {
+        const isCompleted = order.status === 'Completed' || order.status === '已完成';
+        return isCompleted && order.completed_at && order.created_at;
+      });
+
+      if (completedWithTime.length > 0) {
+        const totalHours = completedWithTime.reduce((sum, order) => {
+          const reportTime = order.created_at?.$date
+            ? new Date(order.created_at.$date)
+            : new Date(order.created_at);
+          const completeTime = order.completed_at?.$date
+            ? new Date(order.completed_at.$date)
+            : new Date(order.completed_at);
+          const hours = (completeTime - reportTime) / (1000 * 60 * 60);
+          return sum + hours;
+        }, 0);
+        avgCompletionTime = (totalHours / completedWithTime.length).toFixed(1);
+      }
+
       this.setData({
         stats,
+        staffKpiData: {
+          totalOrders,
+          completedOrders,
+          completionRate: parseFloat(completionRate),
+          inProgressOrders,
+          avgCompletionTime: parseFloat(avgCompletionTime)
+        },
         loading: false
       });
 
       console.log('[Data] Statistics loaded:', stats);
+      console.log('[Data] KPI Data:', {
+        totalOrders,
+        completedOrders,
+        completionRate: parseFloat(completionRate),
+        inProgressOrders,
+        avgCompletionTime: parseFloat(avgCompletionTime)
+      });
 
     } catch (error) {
       console.error('[Data] Load statistics error:', error);

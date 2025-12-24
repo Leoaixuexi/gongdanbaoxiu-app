@@ -36,18 +36,49 @@
       </view>
     </view>
 
-    <!-- 工单汇总 -->
+    <!-- KPI统计 -->
     <view class="section mb-3">
       <view class="section-title mb-3">
-        <text class="text-base font-bold text-foreground tracking-tight">工单汇总</text>
+        <text class="text-base font-bold text-foreground tracking-tight">KPI统计</text>
       </view>
 
       <view class="kpi-grid">
-        <view wx:for="{{stats}}" wx:key="index" class="kpi-card">
-          <text class="kpi-label">{{item.label}}</text>
-          <text class="kpi-value" style="color: {{item.color}};">{{item.value}}</text>
-          <view class="absolute" style="right: {{item.iconRight || '8rpx'}}; top: {{item.iconTop || '8rpx'}};">
-            <text class="iconfont {{item.icon}}" style="font-size: {{item.iconSize || '64rpx'}}; opacity: 0.6; color: {{item.color}};"></text>
+        <!-- 1. 总工单数 -->
+        <view class="kpi-card">
+          <text class="kpi-label">总工单数</text>
+          <text class="kpi-value" style="color: #10b981;">{{staffKpiData.totalOrders}}</text>
+          <view class="absolute" style="right: 8rpx; top: 8rpx;">
+            <text class="iconfont icon-icon_zonggongdan" style="font-size: 64rpx; opacity: 0.6; color: #10b981;"></text>
+          </view>
+        </view>
+
+        <!-- 2. 已完成 -->
+        <view class="kpi-card">
+          <text class="kpi-label">已完成</text>
+          <view class="flex items-baseline gap-2">
+            <text class="kpi-value" style="color: #8B5CF6;">{{staffKpiData.completedOrders}}</text>
+            <text class="kpi-subtitle">({{staffKpiData.completionRate}}%)</text>
+          </view>
+          <view class="absolute" style="right: 8rpx; top: 8rpx;">
+            <text class="iconfont icon-yiwancheng" style="font-size: 64rpx; opacity: 0.6; color: #8B5CF6;"></text>
+          </view>
+        </view>
+
+        <!-- 3. 进行中 -->
+        <view class="kpi-card">
+          <text class="kpi-label">进行中</text>
+          <text class="kpi-value" style="color: #06B6D4;">{{staffKpiData.inProgressOrders}}</text>
+          <view class="absolute" style="right: 8rpx; top: 8rpx;">
+            <text class="iconfont icon-jinhangzhong" style="font-size: 64rpx; opacity: 0.6; color: #06B6D4;"></text>
+          </view>
+        </view>
+
+        <!-- 4. 平均时长 -->
+        <view class="kpi-card">
+          <text class="kpi-label">平均时长(h)</text>
+          <text class="kpi-value" style="color: #F59E0B;">{{staffKpiData.avgCompletionTime}}</text>
+          <view class="absolute" style="right: 8rpx; top: 8rpx;">
+            <text class="iconfont icon-chushenpingjunshichang" style="font-size: 64rpx; opacity: 0.6; color: #F59E0B;"></text>
           </view>
         </view>
       </view>
@@ -284,7 +315,17 @@
         </view>
       </view>
 
-      <!-- 1. 工单状态环形图 -->
+      <!-- 1. 一周工单趋势折线图 -->
+      <view class="section mb-3">
+        <view class="section-title mb-2">
+          <text class="text-base font-bold">一周工单趋势</text>
+        </view>
+        <view class="chart-container">
+          <ec-canvas id="trendChart" canvas-id="trendChart" ec="{{ ecTrend }}" class="chart-canvas"></ec-canvas>
+        </view>
+      </view>
+
+      <!-- 2. 工单状态环形图 -->
       <view class="section mb-3">
         <view class="section-title mb-2">
           <text class="text-base font-bold">工单状态</text>
@@ -292,16 +333,6 @@
         <view class="chart-divider"></view>
         <view class="chart-container">
           <ec-canvas id="statusChart" canvas-id="statusChart" ec="{{ ecStatus }}" class="chart-canvas"></ec-canvas>
-        </view>
-      </view>
-
-      <!-- 2. 一周工单趋势折线图 -->
-      <view class="section mb-3">
-        <view class="section-title mb-2">
-          <text class="text-base font-bold">一周工单趋势</text>
-        </view>
-        <view class="chart-container">
-          <ec-canvas id="trendChart" canvas-id="trendChart" ec="{{ ecTrend }}" class="chart-canvas"></ec-canvas>
         </view>
       </view>
 
