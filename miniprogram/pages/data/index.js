@@ -20,6 +20,7 @@ Page({
     // 月度排名的年月选择
     rankingYear: new Date().getFullYear(),
     rankingMonth: new Date().getMonth() + 1,  // 1-12
+    showAllRankings: false,  // 全部排名弹窗显示状态
     // 自定义导航栏高度
     headerHeight: 0,
     // 用户角色信息
@@ -346,14 +347,25 @@ Page({
    * 查看全部排名
    */
   viewAllRankings() {
-    wx.showToast({
-      title: '查看全部排名',
-      icon: 'none'
+    this.setData({
+      showAllRankings: true
     });
-    // TODO: 跳转到完整排名页面
-    // wx.navigateTo({
-    //   url: '/pages/rankings/index'
-    // });
+  },
+
+  /**
+   * 关闭全部排名弹窗
+   */
+  closeAllRankings() {
+    this.setData({
+      showAllRankings: false
+    });
+  },
+
+  /**
+   * 阻止事件冒泡
+   */
+  stopPropagation() {
+    // 阻止点击弹窗内容区域时关闭弹窗
   },
 
   // ========== 月度排名月份切换方法 ==========

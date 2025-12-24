@@ -74,7 +74,8 @@
       <view class="card card-backdrop">
         <!-- 有排名数据时显示列表 -->
         <block wx:if="{{rankings.length > 0}}">
-          <view wx:for="{{rankings}}" wx:key="rank">
+          <!-- 只显示前3名 -->
+          <view wx:for="{{rankings}}" wx:key="rank" wx:if="{{index < 3}}">
             <view class="p-4 flex items-center gap-3"
                   style="border-bottom: 1rpx solid var(--border);">
               <view style="width: 60rpx; text-align: center; display: flex; align-items: center; justify-content: center;">
@@ -102,8 +103,8 @@
             </view>
           </view>
 
-          <!-- 查看全部 -->
-          <view class="view-all-button" bindtap="viewAllRankings">
+          <!-- 查看全部 - 只在排名超过3个时显示 -->
+          <view wx:if="{{rankings.length > 3}}" class="view-all-button" bindtap="viewAllRankings">
             <text class="text-base font-semibold">查看全部</text>
           </view>
         </block>
@@ -371,6 +372,55 @@
         </view>
         <view class="modal-button modal-button-confirm" bindtap="confirmDatePicker">
           <text class="modal-button-text modal-button-text-white">确定</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 全部排名弹窗 -->
+  <view wx:if="{{showAllRankings}}" class="modal-overlay" catchtap="closeAllRankings">
+    <view class="modal-content" catchtap="stopPropagation" style="max-height: 70vh; display: flex; flex-direction: column;">
+      <!-- 弹窗标题 -->
+      <view style="padding: 32rpx 32rpx 24rpx; border-bottom: 1rpx solid var(--color-divider);">
+        <text class="text-lg font-bold">完成工单排名</text>
+        <text class="text-sm text-muted-foreground ml-2">({{rankingMonth}}月)</text>
+      </view>
+
+      <!-- 排名列表 - 可滚动 -->
+      <scroll-view scroll-y style="flex: 1; overflow-y: auto;">
+        <view wx:for="{{rankings}}" wx:key="rank">
+          <view class="p-4 flex items-center gap-3"
+                style="border-bottom: 1rpx solid var(--color-divider);">
+            <view style="width: 60rpx; text-align: center; display: flex; align-items: center; justify-content: center;">
+              <image wx:if="{{item.rank == 1}}" src="/images/tabbar/one.png" style="width: 64rpx; height: 64rpx;"></image>
+              <image wx:elif="{{item.rank == 2}}" src="/images/tabbar/two.png" style="width: 64rpx; height: 64rpx;"></image>
+              <image wx:elif="{{item.rank == 3}}" src="/images/tabbar/three.png" style="width: 64rpx; height: 64rpx;"></image>
+              <text wx:else class="text-base font-bold">{{item.rank}}</text>
+            </view>
+
+            <view class="avatar-placeholder {{item.isCurrentUser ? 'current-user-avatar' : ''}}">
+              <text>{{item.name[0] || '?'}}</text>
+            </view>
+
+            <view class="flex-1 min-w-0 flex items-center gap-2">
+              <text class="text-sm truncate tracking-tight {{item.isCurrentUser ? 'text-primary' : ''}}">{{item.name}}</text>
+              <view wx:if="{{item.isCurrentUser}}" class="badge badge-primary" style="height: 40rpx; padding: 0 16rpx;">
+                <text class="text-xs">我</text>
+              </view>
+            </view>
+
+            <view class="text-right">
+              <text class="text-base font-bold text-foreground">{{item.completedOrders}}</text>
+              <text class="text-xs text-muted-foreground ml-1">单</text>
+            </view>
+          </view>
+        </view>
+      </scroll-view>
+
+      <!-- 关闭按钮 -->
+      <view style="padding: 24rpx 32rpx;">
+        <view class="modal-button modal-button-confirm" bindtap="closeAllRankings" style="width: 100%;">
+          <text class="modal-button-text modal-button-text-white">关闭</text>
         </view>
       </view>
     </view>
