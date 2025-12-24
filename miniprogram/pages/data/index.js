@@ -231,7 +231,7 @@ Page({
     try {
       this.setData({ loading: true });
 
-      const { isPropertyStaff, isMaintenanceWorker, userId, userDepartment } = this.data;
+      const { isPropertyStaff, isMaintenanceWorker, userId, userDepartment, startDate, endDate } = this.data;
 
       // 获取统计配置
       const statsConfig = this.getStatsConfigByRole(isPropertyStaff, isMaintenanceWorker);
@@ -251,6 +251,20 @@ Page({
         myOrders = allOrders.filter(order =>
           order.assigned_technician && order.assigned_technician.user_id === userId
         );
+      }
+
+      // 应用日期过滤
+      if (startDate && endDate) {
+        const start = new Date(startDate);
+        start.setHours(0, 0, 0, 0);
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999);
+
+        myOrders = myOrders.filter(order => {
+          const createdAt = order.created_at?.$date ?
+            new Date(order.created_at.$date) : new Date(order.created_at);
+          return createdAt >= start && createdAt <= end;
+        });
       }
 
       // 计算各项统计数据

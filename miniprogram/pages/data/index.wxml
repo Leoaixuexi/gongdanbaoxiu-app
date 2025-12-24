@@ -5,6 +5,37 @@
 
   <!-- ========== 办美员工/维修员视图 ========== -->
   <view wx:if="{{!isManager}}" class="main px-5" style="padding-top: {{headerHeight + 20}}px;">
+    <!-- 日期筛选器 -->
+    <view class="manager-date-filter mb-3">
+      <view class="flex gap-1 justify-center">
+        <view class="date-chip {{timeFilter === 'all' ? 'active' : ''}}"
+              bindtap="onTimeFilterChange" data-filter="all">
+          <text>全部</text>
+        </view>
+        <view class="date-chip {{timeFilter === 'yesterday' ? 'active' : ''}}"
+              bindtap="onTimeFilterChange" data-filter="yesterday">
+          <text>昨日</text>
+        </view>
+        <view class="date-chip {{timeFilter === 'today' ? 'active' : ''}}"
+              bindtap="onTimeFilterChange" data-filter="today">
+          <text>今日</text>
+        </view>
+        <view class="date-chip {{timeFilter === 'week' ? 'active' : ''}}"
+              bindtap="onTimeFilterChange" data-filter="week">
+          <text>本周</text>
+        </view>
+        <view class="date-chip {{timeFilter === 'month' ? 'active' : ''}}"
+              bindtap="onTimeFilterChange" data-filter="month">
+          <text>本月</text>
+        </view>
+        <view class="date-chip {{timeFilter === 'custom' ? 'active' : ''}}"
+              bindtap="onTimeFilterChange" data-filter="custom">
+          <image src="{{icons.calendar}}" mode="aspectFit"
+                 style="width: 28rpx; height: 28rpx; {{timeFilter === 'custom' ? 'filter: brightness(0) invert(1);' : 'opacity: 0.5;'}}"></image>
+        </view>
+      </view>
+    </view>
+
     <!-- 工单汇总 -->
     <view class="section mb-3">
       <view class="section-title mb-3">
@@ -17,81 +48,6 @@
           <text class="kpi-value" style="color: {{item.color}};">{{item.value}}</text>
           <view class="absolute" style="right: {{item.iconRight || '8rpx'}}; top: {{item.iconTop || '8rpx'}};">
             <text class="iconfont {{item.icon}}" style="font-size: {{item.iconSize || '64rpx'}}; opacity: 0.6; color: {{item.color}};"></text>
-          </view>
-        </view>
-      </view>
-    </view>
-
-    <!-- 个人绩效 -->
-    <view class="section mb-3">
-      <view class="flex items-center justify-between mb-3">
-        <view class="flex items-center gap-2">
-          <text class="text-base font-bold text-foreground tracking-tight">个人绩效</text>
-        </view>
-
-        <view class="flex items-center gap-1">
-          <image src="/images/icons/chevron-left.svg" class="icon-xs" style="opacity: 0.3;"></image>
-          <view class="badge" style="background-color: transparent; padding: 8rpx 24rpx;">
-            <text class="text-xs font-semibold" style="color: #9ca3af;">11月</text>
-          </view>
-          <image src="/images/icons/chevron-right.svg" class="icon-xs" style="opacity: 0.3;"></image>
-        </view>
-      </view>
-
-      <view class="card card-backdrop">
-        <!-- 已完成工单 -->
-        <view class="performance-item">
-          <view class="flex items-center gap-3">
-            <view class="performance-icon" style="background-color: #10b981;">
-              <text class="performance-icon-text">✓</text>
-            </view>
-            <text class="text-sm text-foreground">已完成工单</text>
-          </view>
-          <view class="performance-value">
-            <text class="performance-number">28</text>
-            <text class="performance-unit">单</text>
-          </view>
-        </view>
-
-        <!-- 平均处理时长 -->
-        <view class="performance-item">
-          <view class="flex items-center gap-3">
-            <view class="performance-icon" style="background-color: #3b82f6;">
-              <text class="performance-icon-text">🕐</text>
-            </view>
-            <text class="text-sm text-foreground">平均处理时长</text>
-          </view>
-          <view class="performance-value">
-            <text class="performance-number">2.5</text>
-            <text class="performance-unit">小时</text>
-          </view>
-        </view>
-
-        <!-- 超时工单 -->
-        <view class="performance-item">
-          <view class="flex items-center gap-3">
-            <view class="performance-icon" style="background-color: #ef4444;">
-              <text class="performance-icon-text">🔔</text>
-            </view>
-            <text class="text-sm text-foreground">超时工单</text>
-          </view>
-          <view class="performance-value">
-            <text class="performance-number">1</text>
-            <text class="performance-unit">单</text>
-          </view>
-        </view>
-
-        <!-- 超时率 -->
-        <view class="performance-item" style="border-bottom: none;">
-          <view class="flex items-center gap-3">
-            <view class="performance-icon" style="background-color: #f97316;">
-              <text class="performance-icon-text">%</text>
-            </view>
-            <text class="text-sm text-foreground">超时率</text>
-          </view>
-          <view class="performance-value">
-            <text class="performance-number">3.6</text>
-            <text class="performance-unit">%</text>
           </view>
         </view>
       </view>
