@@ -317,6 +317,10 @@ Page({
       // Filter by time range
       filteredOrders = this.filterByTimeRange(filteredOrders);
 
+      // Calculate status counts BEFORE status filtering (so counts show all statuses)
+      const statusCounts = this.calculateStatusCounts(filteredOrders);
+      this.updateStatusButtonCounts(statusCounts);
+
       // Filter by status
       filteredOrders = this.filterByStatus(filteredOrders);
 
@@ -1089,5 +1093,45 @@ Page({
         }
       }
     });
+  },
+
+  /**
+   * Calculate status counts for all orders
+   */
+  calculateStatusCounts: function(orders) {
+    const counts = {
+      all: orders.length,
+      'Pending Repair': 0,
+      'In Progress': 0,
+      'Repaired': 0,
+      'Completed': 0,
+      'Needs Rework': 0
+    };
+
+    orders.forEach(order => {
+      if (counts[order.status] !== undefined) {
+        counts[order.status]++;
+      }
+    });
+
+    return counts;
+  },
+
+  /**
+   * Update status button counts display
+   */
+  updateStatusButtonCounts: function(counts) {
+    const statusButtons = this.data.statusButtons.map(btn => {
+      let count = 0;
+      if (btn.status === null) {
+        // "全部" button
+        count = counts.all;
+      } else {
+        count = counts[btn.status] || 0;
+      }
+      return { ...btn, count };
+    });
+
+    this.setData({ statusButtons });
   }
 });

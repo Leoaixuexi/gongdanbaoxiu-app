@@ -181,12 +181,12 @@
 
 .status-tab {
   display: inline-block;
-  padding: 10rpx 24rpx;
-  background: #F7F8FA;
-  border-radius: 24rpx;
+  padding: 12rpx 16rpx;
+  background: transparent;
+  border-radius: 0;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .status-tab:active {
@@ -195,95 +195,190 @@
 
 .status-tab-active {
   transform: scale(1);
-  animation: status-select 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* 全部状态 - 绿色背景+白色字体（与日期筛选标签一致） */
+/* 全部状态 - 底部绿色横线 */
 .status-tab-all {
-  background: #10b981;
+  background: transparent;
+}
+
+.status-tab-all::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40rpx;
+  height: 6rpx;
+  background-color: #10b981;
+  border-radius: 3rpx;
 }
 
 .status-tab-all .status-tab-text-active {
-  color: #ffffff;
+  color: #1f2937;
   font-weight: 600;
 }
 
-/* 已提报状态 - 浅蓝色背景+深蓝色字体 */
+/* 已提报状态 - 底部蓝色横线 */
 .status-tab-reported {
-  background: #dbeafe;
+  background: transparent;
+}
+
+.status-tab-reported::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40rpx;
+  height: 6rpx;
+  background-color: #2563eb;
+  border-radius: 3rpx;
 }
 
 .status-tab-reported .status-tab-text-active {
-  color: #2563eb;
+  color: #1f2937;
   font-weight: 600;
 }
 
-/* 维修中状态 - 浅青色背景+深青色字体 */
+/* 维修中状态 - 底部青色横线 */
 .status-tab-maintenance {
-  background: #cffafe;
+  background: transparent;
+}
+
+.status-tab-maintenance::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40rpx;
+  height: 6rpx;
+  background-color: #0891b2;
+  border-radius: 3rpx;
 }
 
 .status-tab-maintenance .status-tab-text-active {
-  color: #0891b2;
+  color: #1f2937;
   font-weight: 600;
 }
 
-/* 待复核状态 - 浅红色背景+深红色字体 */
+/* 待复核状态 - 底部红色横线 */
 .status-tab-review {
-  background: #fee2e2;
+  background: transparent;
+}
+
+.status-tab-review::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40rpx;
+  height: 6rpx;
+  background-color: #dc2626;
+  border-radius: 3rpx;
 }
 
 .status-tab-review .status-tab-text-active {
-  color: #dc2626;
+  color: #1f2937;
   font-weight: 600;
 }
 
-/* 已完成状态 - 浅绿色背景+深绿色字体 */
+/* 已完成状态 - 底部深绿色横线 */
 .status-tab-completed {
-  background: #d1fae5;
+  background: transparent;
+}
+
+.status-tab-completed::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40rpx;
+  height: 6rpx;
+  background-color: #059669;
+  border-radius: 3rpx;
 }
 
 .status-tab-completed .status-tab-text-active {
-  color: #059669;
+  color: #1f2937;
   font-weight: 600;
 }
 
 /* 维修员特有状态样式 */
 
-/* 待接单状态 - 浅橙色背景+深橙色字体 */
+/* 待接单状态 - 底部橙色横线 */
 .status-tab-pending_accept {
-  background: #ffedd5;
+  background: transparent;
+}
+
+.status-tab-pending_accept::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40rpx;
+  height: 6rpx;
+  background-color: #ea580c;
+  border-radius: 3rpx;
 }
 
 .status-tab-pending_accept .status-tab-text-active {
-  color: #ea580c;
+  color: #1f2937;
   font-weight: 600;
 }
 
-/* 已修复状态 - 浅紫色背景+深紫色字体 */
+/* 已修复状态 - 底部紫色横线 */
 .status-tab-repaired {
-  background: #ede9fe;
+  background: transparent;
+}
+
+.status-tab-repaired::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40rpx;
+  height: 6rpx;
+  background-color: #7c3aed;
+  border-radius: 3rpx;
 }
 
 .status-tab-repaired .status-tab-text-active {
-  color: #7c3aed;
+  color: #1f2937;
   font-weight: 600;
 }
 
-/* 需返工状态 - 浅灰色背景+深灰色字体 */
+/* 需返工状态 - 底部深灰色横线 */
 .status-tab-rework {
-  background: #e2e8f0;
+  background: transparent;
+}
+
+.status-tab-rework::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40rpx;
+  height: 6rpx;
+  background-color: #334155;
+  border-radius: 3rpx;
 }
 
 .status-tab-rework .status-tab-text-active {
-  color: #334155;
+  color: #1f2937;
   font-weight: 600;
 }
 
 .status-tab-text {
-  font-size: 26rpx;
-  font-weight: 500;
-  color: #4b5563;
+  font-size: 28rpx;
+  font-weight: 400;
+  color: #9ca3af;
   white-space: nowrap;
   transition: all 0.3s;
 }
