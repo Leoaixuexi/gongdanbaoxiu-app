@@ -34,6 +34,16 @@ Page({
       'Completed': '已完成',
       'Needs Rework': '需返工'
     },
+    // Status color mapping (matches work order list filter button colors)
+    statusColorMap: {
+      '已提报': '#2563eb',
+      '待接单': '#ea580c',
+      '维修中': '#0891b2',
+      '已修复': '#7c3aed',
+      '待复核': '#dc2626',
+      '已完成': '#059669',
+      '需返工': '#334155'
+    },
     // Stepper data for work-order-stepper component
     stepperData: null,
     // Work order duration
@@ -443,9 +453,12 @@ Page({
           description = '';
         }
 
+        const statusText = item.to_status_text || item.to_status;
+
         return {
           id: String(index + 1),
-          title: item.to_status_text || item.to_status,
+          title: statusText,
+          titleColor: this.data.statusColorMap[statusText] || '#374151',
           description: description,
           timestamp: item.time_display || formatDateTime(item.changed_at),
           user: item.changed_by ? {

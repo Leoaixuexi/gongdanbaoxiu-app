@@ -9,7 +9,7 @@
 
   <view class="timeline-card">
     <view class="card-header">
-      <text class="title">{{event.title}}</text>
+      <text class="title" style="color: {{event.titleColor || '#374151'}};">{{event.title}}</text>
       <view wx:if="{{event.user}}" class="user">
         <image class="avatar" src="{{event.user.avatar}}" mode="aspectFill"></image>
         <text class="user-name">{{event.user.name}}</text>

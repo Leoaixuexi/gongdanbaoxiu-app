@@ -70,7 +70,7 @@
 .title {
   font-size: 32rpx;
   font-weight: 600;
-  color: #374151;
+  /* color: #374151; */ /* Using inline style for dynamic status colors */
   flex: 1;
 }
 
