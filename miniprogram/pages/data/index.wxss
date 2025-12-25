@@ -799,7 +799,8 @@ page {
 }
 
 .modal-button-confirm {
-  background-color: #00A678;
+  background: linear-gradient(135deg, #00A678 0%, #059669 100%);
+  box-shadow: 0 8rpx 24rpx rgba(0, 166, 120, 0.3);
 }
 
 .modal-button-text {
