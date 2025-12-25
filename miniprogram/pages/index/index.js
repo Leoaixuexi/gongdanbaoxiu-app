@@ -989,13 +989,14 @@ Page({
       return;
     }
 
-    // 验证结束日期不能小于开始日期
+    // 验证日期范围：开始日期不能大于结束日期
     const start = new Date(this.data.startDate);
     const end = new Date(this.data.endDate);
-    if (end < start) {
+    if (start > end) {
       wx.showToast({
-        title: '结束日期不能早于开始日期',
-        icon: 'none'
+        title: '开始日期不能大于结束日期',
+        icon: 'none',
+        duration: 2000
       });
       return;
     }
