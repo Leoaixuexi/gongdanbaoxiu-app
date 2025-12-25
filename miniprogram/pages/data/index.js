@@ -658,6 +658,19 @@ Page({
       return;
     }
 
+    // 验证日期范围：开始日期不能大于结束日期
+    const startDate = new Date(customStartDate);
+    const endDate = new Date(customEndDate);
+
+    if (startDate > endDate) {
+      wx.showToast({
+        title: '开始日期不能大于结束日期',
+        icon: 'none',
+        duration: 2000
+      });
+      return;
+    }
+
     this.setData({
       timeFilter: 'custom',
       startDate: customStartDate,

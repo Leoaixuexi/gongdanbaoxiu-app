@@ -384,13 +384,13 @@
   <view wx:if="{{showDatePicker}}" class="modal-overlay" catchtap="closeDatePicker">
     <view class="modal-content" catchtap="stopPropagation">
       <view class="date-picker-content">
-        <picker mode="date" value="{{customStartDate}}" bindchange="onCustomStartDateChange">
+        <picker mode="date" value="{{customStartDate}}" end="{{customEndDate}}" bindchange="onCustomStartDateChange">
           <view class="date-display">
             <text class="date-text">{{customStartDate || '请选择开始日期'}}</text>
           </view>
         </picker>
         <text class="date-separator">至</text>
-        <picker mode="date" value="{{customEndDate}}" bindchange="onCustomEndDateChange">
+        <picker mode="date" value="{{customEndDate}}" start="{{customStartDate}}" bindchange="onCustomEndDateChange">
           <view class="date-display">
             <text class="date-text">{{customEndDate || '请选择结束日期'}}</text>
           </view>
