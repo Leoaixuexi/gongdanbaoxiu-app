@@ -836,10 +836,11 @@ page {
 /* ========== 替代图标样式 ========== */
 /* 箭头图标 */
 .arrow-icon {
-  font-size: 36rpx;
+  font-size: 48rpx;
   color: #9ca3af;
-  padding: 0 8rpx;
+  padding: 0 16rpx;
   font-weight: 300;
+  cursor: pointer;
 }
 
 /* 头像占位符 */
