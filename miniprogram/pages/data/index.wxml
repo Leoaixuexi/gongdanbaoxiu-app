@@ -91,14 +91,14 @@
           <text class="text-base font-bold text-foreground tracking-tight">完成工单排名</text>
         </view>
 
-        <view class="flex items-center gap-3">
-          <text class="arrow-icon" bindtap="prevMonth">‹</text>
+        <view class="flex items-center gap-2" style="align-items: flex-start;">
+          <text class="arrow-icon" bindtap="prevMonth" style="margin-top: -4rpx;">‹</text>
           <picker mode="date" fields="month" value="{{rankingYear}}-{{rankingMonth < 10 ? '0' + rankingMonth : rankingMonth}}" bindchange="onMonthPickerChange">
             <view class="badge" style="background-color: #f5f5f5; padding: 8rpx 24rpx;">
               <text class="text-xs font-semibold">{{rankingMonth}}月</text>
             </view>
           </picker>
-          <text class="arrow-icon" bindtap="nextMonth">›</text>
+          <text class="arrow-icon" bindtap="nextMonth" style="margin-top: -4rpx;">›</text>
         </view>
       </view>
 
