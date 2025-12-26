@@ -102,9 +102,29 @@ async function getUserById(userId) {
 const ORDER_CATEGORIES = ['电梯维修', '水电维修', '消防维修', '空调维修', '其他'];
 
 /**
- * 责任方选项
+ * 责任方选项兜底值
  */
-const RESPONSIBLE_PARTIES = ['信泰物业', '业主', '第三方'];
+const DEFAULT_RESPONSIBLE_PARTIES = ['信泰物业', '工程总包', '业主', '第三方'];
+
+/**
+ * 从字典获取责任方选项
+ */
+async function getResponsibleParties() {
+  try {
+    const { data } = await db.collection('dictionaries').where({
+      dict_key: 'responsible_party'
+    }).get();
+
+    if (data.length > 0 && data[0].items && data[0].items.length > 0) {
+      return data[0].items
+        .filter(item => item.enabled !== false)
+        .map(item => item.value);
+    }
+  } catch (error) {
+    console.error('[WorkOrder] Error fetching responsible_party dictionary:', error);
+  }
+  return DEFAULT_RESPONSIBLE_PARTIES;
+}
 
 /**
  * 自动分配维修员
@@ -200,9 +220,10 @@ async function createBatchNotifications(userIds, type, title, message, data = {}
 
 /**
  * 格式化通知消息内容
+ * 格式：楼层+位置+故障描述+后缀（无空格）
  */
 function formatNotificationMessage(floor, location, description, suffix) {
-  return `${floor} ${location} ${description} ${suffix}`;
+  return `${floor}${location}${description}${suffix}`;
 }
 
 /**
@@ -388,8 +409,9 @@ async function createWorkOrder(openid, orderData) {
     throw new Error('工单类别不正确');
   }
 
-  // 验证责任方
-  if (!orderData.responsible_party || !RESPONSIBLE_PARTIES.includes(orderData.responsible_party)) {
+  // 验证责任方（从字典动态获取）
+  const validParties = await getResponsibleParties();
+  if (!orderData.responsible_party || !validParties.includes(orderData.responsible_party)) {
     throw new Error('责任方不正确');
   }
 
@@ -474,28 +496,46 @@ async function createWorkOrder(openid, orderData) {
     }
   );
 
-  // 场景1：如果责任方为"信泰物业"，通知所有信泰物业部门的用户
-  if (orderData.responsible_party === '信泰物业') {
-    const propertyUsers = await db.collection('users')
+  // 场景1：通知责任方对应部门的维修员
+  if (orderData.responsible_party) {
+    const targetUsers = await db.collection('users')
       .where({
-        department: '信泰物业',
+        department: orderData.responsible_party,
+        role_id: 3,  // 只通知维修员
         active: true
       })
       .get();
 
-    if (propertyUsers.data && propertyUsers.data.length > 0) {
-      const userIds = propertyUsers.data.map(user => user.user_id);
+    if (targetUsers.data && targetUsers.data.length > 0) {
+      // 调试日志：确认查询到的目标用户
+      console.log('[WorkOrder] Creating notification - responsible_party:', orderData.responsible_party);
+      console.log('[WorkOrder] Target users:', targetUsers.data.map(u => ({
+        user_id: u.user_id,
+        username: u.username,
+        role_id: u.role_id,
+        department: u.department
+      })));
+
+      // 排除提交工单的用户自己
+      const userIds = targetUsers.data
+        .map(user => user.user_id)
+        .filter(id => id !== submitter.user_id);
+
+      if (userIds.length === 0) {
+        console.log('[WorkOrder] No target users after filtering out creator');
+      }
+
       const notificationMessage = formatNotificationMessage(
         orderData.floor,
         orderData.location,
         orderData.description,
-        '请确认并安排维修'
+        '，请确认并安排维修。'
       );
 
       await createBatchNotifications(
         userIds,
         'work_order_new',
-        `${orderNumber}：请确认并安排维修`,
+        `工单编号：${orderNumber}`,
         notificationMessage,
         {
           order_id: orderId,
@@ -545,9 +585,10 @@ async function updateOrderStatus(openid, orderId, newStatus, notes = '') {
   // 权限检查
   const isAdmin = user.role_id === 1;
   const isManager = user.role_id === 2;
-  const isAssignedTechnician = user.role_id === 3 && order.assigned_technician.user_id === user.user_id;
+  // 维修员：责任方与自己部门匹配即可操作
+  const isTechnicianWithAccess = user.role_id === 3 && order.responsible_party === user.department;
 
-  const canUpdate = isAdmin || isManager || isAssignedTechnician;
+  const canUpdate = isAdmin || isManager || isTechnicianWithAccess;
 
   if (!canUpdate) {
     throw new Error('权限不足');
@@ -639,7 +680,9 @@ async function updateWorkOrderDetails(openid, orderId, updates = {}) {
   if (!floor) throw new Error('请填写楼层');
   if (!location) throw new Error('请填写具体位置');
   if (!orderCategory || !ORDER_CATEGORIES.includes(orderCategory)) throw new Error('工单类别不正确');
-  if (!responsibleParty || !RESPONSIBLE_PARTIES.includes(responsibleParty)) throw new Error('责任方不正确');
+  // 验证责任方（从字典动态获取）
+  const validPartiesForUpdate = await getResponsibleParties();
+  if (!responsibleParty || !validPartiesForUpdate.includes(responsibleParty)) throw new Error('责任方不正确');
   if (!priority || !Object.prototype.hasOwnProperty.call(SLA_RULES, priority)) throw new Error('优先级不正确');
   if (!description || description.length < 10) throw new Error('问题描述至少需要10个字符');
   if (!photos || photos.length === 0) throw new Error('请至少上传一张现场照片');
@@ -704,8 +747,10 @@ async function getWorkOrders(openid, filters = {}) {
 
   // 根据角色过滤
   if (user.role_id === 3) {
-    // 维修员只能看到分配给自己的工单
-    conditions['assigned_technician.user_id'] = user.user_id;
+    // 维修员只能看到责任方与自己部门匹配的工单
+    if (user.department) {
+      conditions.responsible_party = user.department;
+    }
   } else if (user.role_id === 4) {
     // 办美员工只能看到自己提交的工单
     conditions['submitter.user_id'] = user.user_id;
@@ -786,9 +831,9 @@ async function completeRepair(openid, orderId, completionNotes) {
   const targetStatus = 'Repaired'; // 固定为已修复状态
   const notes = normalizeNotes(completionNotes);
 
-  // 权限检查：只有分配的维修员可以完成维修
-  if (user.role_id !== 3 || order.assigned_technician.user_id !== user.user_id) {
-    throw new Error('只有分配的维修员可以完成维修');
+  // 权限检查：维修员 && 部门与责任方匹配
+  if (user.role_id !== 3 || order.responsible_party !== user.department) {
+    throw new Error('只有责任方部门的维修员可以完成维修');
   }
 
   // 状态检查：只有"维修中"或"需返工"的工单可以完成
@@ -815,13 +860,13 @@ async function completeRepair(openid, orderId, completionNotes) {
     order.floor,
     order.location,
     order.description,
-    '维修完成，请到场复核'
+    '，维修完成，请到场复核。'
   );
 
   await createNotification(
     order.submitter.user_id,
     'order_repaired',
-    order.order_number,
+    `工单编号：${order.order_number}`,
     notificationMessage,
     {
       order_id: numericOrderId,
@@ -910,64 +955,58 @@ async function reviewOrder(openid, orderId, status, reviewNotes) {
     data: updateData
   });
 
-  // 发送通知
-  if (targetStatus === 'Completed') {
-    // 场景3：复核通过，通知所有信泰物业部门的用户
-    const propertyUsers = await db.collection('users')
-      .where({ department: '信泰物业', active: true })
+  // 发送通知给责任方对应部门的维修员
+  if (order.responsible_party) {
+    const targetUsers = await db.collection('users')
+      .where({ department: order.responsible_party, role_id: 3, active: true })
       .get();
 
-    if (propertyUsers.data && propertyUsers.data.length > 0) {
-      const userIds = propertyUsers.data.map(user => user.user_id);
-      const notificationMessage = formatNotificationMessage(
-        order.floor,
-        order.location,
-        order.description,
-        '复核通过，辛苦了！'
-      );
+    if (targetUsers.data && targetUsers.data.length > 0) {
+      const userIds = targetUsers.data.map(user => user.user_id);
 
-      await createBatchNotifications(
-        userIds,
-        'order_reviewed_pass',
-        order.order_number,
-        notificationMessage,
-        {
-          order_id: numericOrderId,
-          order_number: order.order_number,
-          floor: order.floor,
-          location: order.location
-        }
-      );
-    }
-  } else if (targetStatus === 'Needs Rework') {
-    // 场景4：需要返工，通知所有信泰物业部门的用户
-    const propertyUsers = await db.collection('users')
-      .where({ department: '信泰物业', active: true })
-      .get();
+      if (targetStatus === 'Completed') {
+        // 场景3：复核通过
+        const notificationMessage = formatNotificationMessage(
+          order.floor,
+          order.location,
+          order.description,
+          '，复核通过，辛苦了！'
+        );
 
-    if (propertyUsers.data && propertyUsers.data.length > 0) {
-      const userIds = propertyUsers.data.map(user => user.user_id);
-      const reworkReason = notes || '无';
-      const notificationMessage = formatNotificationMessage(
-        order.floor,
-        order.location,
-        order.description,
-        `现场复核未通过，请返工，返工说明：${reworkReason}`
-      );
+        await createBatchNotifications(
+          userIds,
+          'order_reviewed_pass',
+          `工单编号：${order.order_number}`,
+          notificationMessage,
+          {
+            order_id: numericOrderId,
+            order_number: order.order_number,
+            floor: order.floor,
+            location: order.location
+          }
+        );
+      } else if (targetStatus === 'Needs Rework') {
+        // 场景4：需要返工
+        const notificationMessage = formatNotificationMessage(
+          order.floor,
+          order.location,
+          order.description,
+          '，现场复核未通过，请返工。'
+        );
 
-      await createBatchNotifications(
-        userIds,
-        'order_needs_rework',
-        order.order_number,
-        notificationMessage,
-        {
-          order_id: numericOrderId,
-          order_number: order.order_number,
-          floor: order.floor,
-          location: order.location,
-          rework_notes: reworkReason
-        }
-      );
+        await createBatchNotifications(
+          userIds,
+          'order_needs_rework',
+          `工单编号：${order.order_number}`,
+          notificationMessage,
+          {
+            order_id: numericOrderId,
+            order_number: order.order_number,
+            floor: order.floor,
+            location: order.location
+          }
+        );
+      }
     }
   }
 
@@ -1009,18 +1048,17 @@ async function urgeRepair(openid, orderId) {
     throw new Error('工单状态不允许催维修');
   }
 
-  // 检查是否有分配的维修员
-  if (!order.assigned_technician || !order.assigned_technician.user_id) {
-    throw new Error('工单尚未分配维修员');
+  // 检查是否有责任方
+  if (!order.responsible_party) {
+    throw new Error('工单未设置责任方');
   }
 
-  // 4. 频控检查：查询20分钟内是否已发送过
+  // 4. 频控检查：查询20分钟内是否已发送过（按工单ID检查）
   const twentyMinutesAgo = new Date(Date.now() - 20 * 60 * 1000);
   const { data: existingReminders } = await db.collection('notifications')
     .where({
       'data.order_id': orderId,
       'data.reminder_type': 'urge_repair',
-      user_id: order.assigned_technician.user_id,
       sent_at: _.gte(twentyMinutesAgo)
     })
     .limit(1)
@@ -1033,12 +1071,25 @@ async function urgeRepair(openid, orderId) {
     };
   }
 
-  // 5. 创建提醒通知
-  const title = `工单编号 ${order.order_number}`;
-  const message = `${order.floor} ${order.location}${order.description}，需要尽快维修。`;
+  // 5. 创建提醒通知 - 发给责任方部门的所有维修员
+  const targetUsers = await db.collection('users')
+    .where({
+      department: order.responsible_party,
+      role_id: 3,  // 只通知维修员
+      active: true
+    })
+    .get();
 
-  await createNotification(
-    order.assigned_technician.user_id,
+  if (!targetUsers.data || targetUsers.data.length === 0) {
+    throw new Error('该责任方部门暂无维修员');
+  }
+
+  const title = `工单编号：${order.order_number}`;
+  const message = `${order.floor}${order.location}${order.description}，需要尽快维修。`;
+  const userIds = targetUsers.data.map(u => u.user_id);
+
+  await createBatchNotifications(
+    userIds,
     'urge_repair',
     title,
     message,
@@ -1216,7 +1267,7 @@ exports.main = async (event, context) => {
           const canView =
             currentUser.role_id === 1 ||
             currentUser.role_id === 2 ||
-            (currentUser.role_id === 3 && order.assigned_technician?.user_id === currentUser.user_id) ||
+            (currentUser.role_id === 3 && order.responsible_party === currentUser.department) ||
             (currentUser.role_id === 4 && order.submitter?.user_id === currentUser.user_id);
 
           if (!canView) {
@@ -1253,7 +1304,7 @@ exports.main = async (event, context) => {
           const canView =
             currentUser.role_id === 1 ||
             currentUser.role_id === 2 ||
-            (currentUser.role_id === 3 && order.assigned_technician?.user_id === currentUser.user_id) ||
+            (currentUser.role_id === 3 && order.responsible_party === currentUser.department) ||
             (currentUser.role_id === 4 && order.submitter?.user_id === currentUser.user_id);
 
           if (!canView) {
@@ -1263,6 +1314,23 @@ exports.main = async (event, context) => {
           return {
             success: true,
             order: enhanceWorkOrder(order),
+          };
+        }
+
+      // 检查工单编号是否已存在（不需要权限校验，用于扫码时判断编号是否重复）
+      case 'checkOrderNumberExists':
+        {
+          const orderNumber = data.order_number;
+          if (!orderNumber) {
+            return { success: false, error: '工单编号不正确' };
+          }
+
+          const workOrders = db.collection('work_orders');
+          const { data: orderData } = await workOrders.where({ order_number: orderNumber }).get();
+
+          return {
+            success: true,
+            exists: orderData.length > 0
           };
         }
 
