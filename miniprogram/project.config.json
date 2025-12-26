@@ -7,50 +7,6 @@
         "value": "node_modules"
       },
       {
-        "type": "folder",
-        "value": "ec-canvas"
-      },
-      {
-        "type": "folder",
-        "value": "components/duration-timer"
-      },
-      {
-        "type": "folder",
-        "value": "components/image-uploader"
-      },
-      {
-        "type": "folder",
-        "value": "components/timeline"
-      },
-      {
-        "type": "folder",
-        "value": "components/status-badge"
-      },
-      {
-        "type": "folder",
-        "value": "components/message-card"
-      },
-      {
-        "type": "folder",
-        "value": "components/module-icon"
-      },
-      {
-        "type": "folder",
-        "value": "components/swipeable-message"
-      },
-      {
-        "type": "folder",
-        "value": "components/footer"
-      },
-      {
-        "type": "file",
-        "value": "utils/notification.js"
-      },
-      {
-        "type": "file",
-        "value": "config/test-config.js"
-      },
-      {
         "type": "suffix",
         "value": ".md"
       },

@@ -1,8 +1,0 @@
-<!--
-  Duration Timer Component
-  实时显示工单总用时，带读秒效果
--->
-<view class="duration-timer {{className}}">
-  <text class="timer-icon" wx:if="{{showIcon}}">⏱</text>
-  <text class="timer-text {{sizeClass}}">{{displayText}}</text>
-</view>

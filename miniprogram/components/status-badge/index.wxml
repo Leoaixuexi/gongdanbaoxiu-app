@@ -1,8 +1,0 @@
-<!--
-  状态标识组件
-  显示工单状态徽章
--->
-<view class="status-badge status-badge--{{size}} {{customClass}}"
-      style="background-color: {{bgColor}}; color: {{textColor}};">
-  {{displayText}}
-</view>
