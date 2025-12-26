@@ -1,9 +1,0 @@
-{
-  "name": "testNotifications",
-  "version": "1.0.0",
-  "description": "Test notifications cloud function",
-  "main": "index.js",
-  "dependencies": {
-    "wx-server-sdk": "~2.6.1"
-  }
-}

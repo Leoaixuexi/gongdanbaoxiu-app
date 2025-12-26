@@ -240,5 +240,28 @@ Page({
       icon: 'success',
       duration: 1500
     });
+  },
+
+  /**
+   * 快捷登录 - 自动填充并登录
+   */
+  async quickLogin(e) {
+    const { username, password } = e.currentTarget.dataset;
+
+    if (!username || !password) {
+      console.error('[Login] Missing username or password in dataset');
+      return;
+    }
+
+    // 填充账号密码
+    this.setData({
+      username,
+      password
+    });
+
+    console.log('[Login] Quick login with:', username);
+
+    // 自动执行登录
+    await this.handleLogin();
   }
 });

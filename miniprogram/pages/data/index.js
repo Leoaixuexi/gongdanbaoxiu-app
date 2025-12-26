@@ -264,9 +264,9 @@ Page({
           order.submitter && order.submitter.user_id === userId
         );
       } else if (isMaintenanceWorker && userDepartment) {
-        // 维修员：只看分配给自己的工单（云函数也会过滤，这里做兜底）
+        // 维修员：统计该部门（责任方）的所有工单
         myOrders = allOrders.filter(order =>
-          order.assigned_technician && order.assigned_technician.user_id === userId
+          order.responsible_party === userDepartment
         );
       }
 

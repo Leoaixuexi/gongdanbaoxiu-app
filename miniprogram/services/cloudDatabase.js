@@ -468,6 +468,11 @@ class CloudDatabaseService {
         }
         return { list: result.result.announcements || [] };
       } catch (error) {
+        // 如果是集合不存在的错误，返回空列表而不是抛出错误
+        if (error.message && error.message.includes('collection not exists')) {
+          console.warn('[CloudDB] Announcements 集合不存在，返回空列表');
+          return { list: [] };
+        }
         console.error('[CloudDB] List announcements for user error:', error);
         throw error;
       }

@@ -390,10 +390,10 @@ Page({
       return orders.filter(order => {
         return order.submitter && order.submitter.user_id === userId;
       });
-    } else if (isMaintenanceWorker && userId) {
-      // 维修员：只显示分配给自己的工单（服务端也会做过滤，这里做兜底）
+    } else if (isMaintenanceWorker && userDepartment) {
+      // 维修员：只显示责任方与自己部门匹配的工单（服务端也会做过滤，这里做兜底）
       return orders.filter(order => {
-        return order.assigned_technician && order.assigned_technician.user_id === userId;
+        return order.responsible_party === userDepartment;
       });
     }
 

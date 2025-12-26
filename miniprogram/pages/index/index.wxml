@@ -28,7 +28,7 @@
         </view>
         <view class="icon-buttons">
           <view class="filter-button" bindtap="handleFilter">
-            <text class="iconfont icon-shaixuan" style="font-size: 40rpx; color: #10b981;"></text>
+            <text class="iconfont icon-shaixuan1" style="font-size: 40rpx; color: #10b981;"></text>
           </view>
         </view>
       </view>

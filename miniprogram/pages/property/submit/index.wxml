@@ -34,9 +34,7 @@
       </view>
       <picker mode="selector" range="{{floorOptions}}" value="{{floorIndex}}" bindchange="onFloorChange">
         <view class="card-picker">
-          <text class="picker-text {{floorIndex === 0 ? 'placeholder' : ''}}">
-            {{floorOptions[floorIndex]}}
-          </text>
+          <text class="picker-text {{floorIndex === 0 ? 'placeholder' : ''}}">{{floorOptions[floorIndex]}}</text>
         </view>
       </picker>
     </view>
@@ -64,9 +62,7 @@
       </view>
       <picker mode="selector" range="{{orderCategories}}" value="{{orderCategoryIndex}}" bindchange="onOrderCategoryChange">
         <view class="card-picker">
-          <text class="picker-text {{orderCategoryIndex === 0 ? 'placeholder' : ''}}">
-            {{orderCategories[orderCategoryIndex]}}
-          </text>
+          <text class="picker-text {{orderCategoryIndex === 0 ? 'placeholder' : ''}}">{{orderCategories[orderCategoryIndex]}}</text>
         </view>
       </picker>
     </view>
@@ -79,9 +75,7 @@
       </view>
       <picker mode="selector" range="{{responsibleParties}}" value="{{responsiblePartyIndex}}" bindchange="onResponsiblePartyChange">
         <view class="card-picker">
-          <text class="picker-text {{responsiblePartyIndex === 0 ? 'placeholder' : ''}}">
-            {{responsibleParties[responsiblePartyIndex]}}
-          </text>
+          <text class="picker-text {{responsiblePartyIndex === 0 ? 'placeholder' : ''}}">{{responsibleParties[responsiblePartyIndex]}}</text>
         </view>
       </picker>
     </view>

@@ -49,23 +49,23 @@
   align-items: center;
   gap: 8rpx;
   flex-shrink: 0;
-  line-height: 30rpx;
-  height: 30rpx;
   min-width: 128rpx;
+  height: 40rpx;
 }
 
 .star {
   color: #FF3B30;
   font-size: 30rpx;
-  line-height: 30rpx;
+  height: 40rpx;
+  line-height: 40rpx;
 }
 
 .label {
   font-size: 30rpx;
   color: #1F1F1F;
-  line-height: 30rpx;
-  height: 30rpx;
   font-weight: 500;
+  height: 40rpx;
+  line-height: 40rpx;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
@@ -84,7 +84,7 @@
   font-size: 30rpx;
   color: #333;
   text-align: right;
-  line-height: 30rpx;
+  line-height: 1;
   min-height: 30rpx;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
@@ -137,16 +137,17 @@ picker {
 }
 
 .card-picker {
+  flex: 1;
   display: flex;
   align-items: center;
   gap: 16rpx;
   justify-content: flex-end;
+  height: 40rpx;
 }
 
 .picker-text {
   font-size: 30rpx;
   color: #333;
-  line-height: 1.2;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 

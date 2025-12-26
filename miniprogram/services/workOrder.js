@@ -156,6 +156,37 @@ const getWorkOrderByNumber = async (orderNumber) => {
 };
 
 /**
+ * 检查工单编号是否已存在（不需要权限校验）
+ * @param {String} orderNumber - 工单编号
+ * @returns {Promise<boolean>} 是否存在
+ */
+const checkOrderNumberExists = async (orderNumber) => {
+  try {
+    console.log('[WorkOrder] Checking order number exists:', orderNumber);
+
+    const result = await wx.cloud.callFunction({
+      name: 'workOrderManager',
+      data: {
+        action: 'checkOrderNumberExists',
+        data: {
+          order_number: orderNumber
+        }
+      }
+    });
+
+    if (!result.result || !result.result.success) {
+      throw new Error(result.result?.error || '检查工单编号失败');
+    }
+
+    return result.result.exists;
+
+  } catch (error) {
+    console.error('[WorkOrder] Check order number error:', error);
+    throw error;
+  }
+};
+
+/**
  * 更新工单状态
  * @param {Number} orderId - 工单ID
  * @param {String} status - 新状态
@@ -443,6 +474,7 @@ module.exports = {
   listWorkOrders,
   getWorkOrderById,
   getWorkOrderByNumber,
+  checkOrderNumberExists,
   updateWorkOrderStatus,
   updateWorkOrderDetails,
   deleteWorkOrder,

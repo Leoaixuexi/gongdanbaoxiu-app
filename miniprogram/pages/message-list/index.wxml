@@ -36,7 +36,7 @@
 
     <!-- 空状态 -->
     <view class="empty-state" wx:elif="{{messages.length === 0}}">
-      <text class="empty-icon">📭</text>
+      <image class="empty-icon" src="/images/tabbar/08.png" mode="aspectFit"></image>
       <text class="empty-text">暂无消息</text>
     </view>
 
@@ -85,8 +85,5 @@
         </view>
       </view>
     </view>
-
-    <!-- 底部提示 -->
-    <view class="footer-tip">90天以前的消息将自动删除</view>
   </scroll-view>
 </view>

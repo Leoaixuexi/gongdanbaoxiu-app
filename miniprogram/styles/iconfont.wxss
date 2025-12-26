@@ -1,14 +1,14 @@
 /**
  * iconfont 图标字体
  * 项目ID: 5090968
- * 更新时间: 2025-12-24
+ * 更新时间: 2025-12-25
  */
 
 @font-face {
   font-family: "iconfont";
-  src: url('https://at.alicdn.com/t/c/font_5090968_erbs2s7u97p.woff2?t=1766556017590') format('woff2'),
-       url('https://at.alicdn.com/t/c/font_5090968_erbs2s7u97p.woff?t=1766556017590') format('woff'),
-       url('https://at.alicdn.com/t/c/font_5090968_erbs2s7u97p.ttf?t=1766556017590') format('truetype');
+  src: url('https://at.alicdn.com/t/c/font_5090968_9ayapvp4e1a.woff2?t=1766633096506') format('woff2'),
+       url('https://at.alicdn.com/t/c/font_5090968_9ayapvp4e1a.woff?t=1766633096506') format('woff'),
+       url('https://at.alicdn.com/t/c/font_5090968_9ayapvp4e1a.ttf?t=1766633096506') format('truetype');
 }
 
 .iconfont {
@@ -49,6 +49,11 @@
 /* 筛选 */
 .icon-shaixuan:before {
   content: "\e619";
+}
+
+/* 筛选（新版本） */
+.icon-shaixuan1:before {
+  content: "\e60d";
 }
 
 /* ========== 消息页面图标 ========== */
@@ -179,4 +184,30 @@
 /* 扫把 */
 .icon-saoba:before {
   content: "\e606";
+}
+
+/* ========== 个人中心图标 ========== */
+/* 职位 */
+.icon-zhiwei-copy:before {
+  content: "\eac0";
+}
+
+/* 组织部门 */
+.icon-zuzhibumen:before {
+  content: "\e68b";
+}
+
+/* 修改密码 */
+.icon-xiugaimima:before {
+  content: "\e611";
+}
+
+/* 修改头像 */
+.icon-xiugaitouxiang:before {
+  content: "\e68e";
+}
+
+/* 修改手机 */
+.icon-xiugaishouji:before {
+  content: "\e738";
 }

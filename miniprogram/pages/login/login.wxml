@@ -66,33 +66,33 @@
         <view class="login-button" bindtap="handleLogin">
           <text class="button-text">登 录</text>
         </view>
+
+        <!-- 快捷登录区域 -->
+        <view class="quick-login-section">
+          <text class="quick-login-title">快捷登录</text>
+          <view class="quick-login-grid">
+            <view class="quick-login-btn" bindtap="quickLogin" data-username="xintaiwuye" data-password="123456">
+              <text>信泰物业</text>
+            </view>
+            <view class="quick-login-btn" bindtap="quickLogin" data-username="tonghezongbao" data-password="123456">
+              <text>工程总包</text>
+            </view>
+            <view class="quick-login-btn" bindtap="quickLogin" data-username="laocui" data-password="123456">
+              <text>老崔</text>
+            </view>
+            <view class="quick-login-btn" bindtap="quickLogin" data-username="yangqiankun" data-password="123456">
+              <text>杨乾坤</text>
+            </view>
+            <view class="quick-login-btn" bindtap="quickLogin" data-username="huanghenana" data-password="123456">
+              <text>黄贺楠</text>
+            </view>
+            <view class="quick-login-btn" bindtap="quickLogin" data-username="zhangyurui" data-password="123456">
+              <text>张语芮</text>
+            </view>
+          </view>
+        </view>
       </view>
     </view>
   </view>
 
-  <!-- 测试账号区域（仅非 release 环境显示） -->
-  <view class="test-accounts-section" wx:if="{{showTestAccounts}}">
-    <text class="test-accounts-title">测试账号</text>
-    <view class="test-accounts-grid">
-      <!-- 系统管理员 -->
-      <view class="test-account-card" bindtap="fillTestAccount" data-username="admin" data-password="admin123">
-        <text class="test-account-role">系统管理员</text>
-      </view>
-
-      <!-- 行政经理 -->
-      <view class="test-account-card" bindtap="fillTestAccount" data-username="manager" data-password="manager123">
-        <text class="test-account-role">行政经理</text>
-      </view>
-
-      <!-- 维修员 -->
-      <view class="test-account-card" bindtap="fillTestAccount" data-username="technician" data-password="tech123">
-        <text class="test-account-role">维修员</text>
-      </view>
-
-      <!-- 办美员工 -->
-      <view class="test-account-card" bindtap="fillTestAccount" data-username="staff" data-password="staff123">
-        <text class="test-account-role">办美员工</text>
-      </view>
-    </view>
-  </view>
 </view>

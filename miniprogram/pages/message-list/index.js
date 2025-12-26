@@ -58,18 +58,23 @@ Page({
 
       if (this.data.moduleId === 'notification') {
         // 从云端获取公告列表
-        const userInfo = wx.getStorageSync(STORAGE_KEYS.USER_INFO);
-        const roleId = userInfo?.role_id || 4;
-        const result = await cloudDB.announcements.listForUser(roleId);
+        try {
+          const userInfo = wx.getStorageSync(STORAGE_KEYS.USER_INFO);
+          const roleId = userInfo?.role_id || 4;
+          const result = await cloudDB.announcements.listForUser(roleId);
 
-        messages = (result.list || []).map(item => ({
-          id: item._id,
-          titlePrefix: item.title,
-          orderNumber: '',
-          content: this.stripHtml(item.content || ''),
-          timeText: this.formatDate(item.publish_time || item.created_at),
-          isRead: false // 可后续扩展已读状态
-        }));
+          messages = (result.list || []).map(item => ({
+            id: item._id,
+            titlePrefix: item.title,
+            orderNumber: '',
+            content: this.stripHtml(item.content || ''),
+            timeText: this.formatDate(item.publish_time || item.created_at),
+            isRead: false // 可后续扩展已读状态
+          }));
+        } catch (err) {
+          console.warn('[Message List] 公告集合不存在或查询失败，返回空列表:', err);
+          messages = [];
+        }
       } else if (this.data.moduleId === 'workorder') {
         // 从云端获取工单通知列表
         const result = await notificationService.getUserNotifications(false, 50);

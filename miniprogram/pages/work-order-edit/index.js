@@ -26,6 +26,7 @@ Page({
     // 照片显示数组（固定3个位置）
     photoSlots: ['', '', ''],
     // 选择器选项
+    floorOptions: ['B2', 'B1', '1F', '2F', '3F', '4F', '5F', '6F', '7F', '8F', '9F', '10F'],
     categoryOptions: ['电梯维修', '水电维修', '消防维修', '空调维修', '其他'],
     responsibleOptions: ['信泰物业', '业主', '第三方'],
     priorityOptions: [
@@ -82,9 +83,10 @@ Page({
 
   async loadDictionaries() {
     try {
-      const [categories, parties] = await Promise.all([
+      const [categories, parties, floors] = await Promise.all([
         dictionary.getOptions('order_category'),
-        dictionary.getOptions('responsible_party')
+        dictionary.getOptions('responsible_party'),
+        dictionary.getOptions('floor')
       ]);
 
       if (categories.length > 0) {
@@ -92,6 +94,9 @@ Page({
       }
       if (parties.length > 0) {
         this.setData({ responsibleOptions: parties });
+      }
+      if (floors.length > 0) {
+        this.setData({ floorOptions: floors });
       }
     } catch (error) {
       console.error('[Edit] Load dictionaries error:', error);
@@ -175,10 +180,11 @@ Page({
     });
   },
 
-  // 楼层变化
+  // 楼层选择
   handleFloorChange(e) {
+    const index = e.detail.value;
     this.setData({
-      'formData.floor': e.detail.value
+      'formData.floor': this.data.floorOptions[index]
     });
   },
 

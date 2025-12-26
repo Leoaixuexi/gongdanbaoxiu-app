@@ -170,10 +170,10 @@ Page({
           // 检查工单编号是否已存在
           try {
             wx.showLoading({ title: '检查中...', mask: true });
-            const existingOrder = await workOrderService.getWorkOrderByNumber(scannedCode);
+            const exists = await workOrderService.checkOrderNumberExists(scannedCode);
             wx.hideLoading();
 
-            if (existingOrder) {
+            if (exists) {
               // 工单编号已存在，弹窗警告
               wx.showModal({
                 title: '编号重复',
@@ -185,8 +185,12 @@ Page({
             }
           } catch (error) {
             wx.hideLoading();
-            // 如果查询出错（如工单不存在），继续使用该编号
-            console.log('[Submit] Order number check:', error.message);
+            console.error('[Submit] Order number check error:', error);
+            wx.showToast({
+              title: '检查失败，请重试',
+              icon: 'none'
+            });
+            return;
           }
 
           this.setData({ orderNumber: scannedCode });

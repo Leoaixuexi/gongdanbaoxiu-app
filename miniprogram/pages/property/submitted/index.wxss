@@ -14,14 +14,11 @@
 
 .user-card {
   position: relative;
-  overflow: hidden;
-  padding: 12rpx 20rpx; /* Extremely compact padding */
-  border-radius: 20rpx; /* Slightly smaller radius */
-  background: linear-gradient(135deg, #10b981 0%, #14b8a6 100%);
+  overflow: visible;
+  padding: 12rpx 20rpx;
   display: flex;
   align-items: center;
-  box-shadow: 0 4rpx 12rpx rgba(16, 185, 129, 0.2);
-  min-height: 100rpx; /* Ultra compact height */
+  min-height: 100rpx;
 }
 
 /* 装饰性背景元素 */
@@ -58,10 +55,10 @@
 }
 
 .avatar-wrapper {
-  width: 84rpx; /* Increased from 72rpx */
-  height: 84rpx;
+  width: 110rpx;
+  height: 110rpx;
   border-radius: 50%;
-  border: 3rpx solid rgba(255, 255, 255, 0.6);
+  border: 3rpx solid rgba(16, 185, 129, 0.3);
   overflow: hidden;
   box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
   flex-shrink: 0;
@@ -77,18 +74,18 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  color: #ffffff;
-  padding-left: 4rpx;
+  color: #333333;
+  padding-left: 20rpx;
+  margin-top: -16rpx;
 }
 
 .user-name {
-  font-size: 30rpx; /* Compact font */
+  font-size: 32rpx;
   font-weight: 600;
   line-height: normal;
   letter-spacing: 0.5rpx;
   margin-top: 0;
-  color: #ffffff;
-  text-shadow: 0 1rpx 2rpx rgba(0,0,0,0.05);
+  color: #333333;
 }
 
 /* ==================== 资料卡片 ==================== */
@@ -145,33 +142,14 @@
   background: linear-gradient(180deg, #f7faff 0%, #eef2fb 100%);
   box-shadow: inset 0 1rpx 0 rgba(255, 255, 255, 0.8), 0 6rpx 16rpx rgba(15, 23, 42, 0.08);
   flex-shrink: 0;
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: 32rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.icon-user {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23838BA7' stroke-width='1.8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M12 12a4 4 0 100-8 4 4 0 000 8zm0 2c-3.33 0-6 2.24-6 5v1h12v-1c0-2.76-2.67-5-6-5z'/%3E%3C/svg%3E");
-}
-
-.icon-position {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23838BA7' stroke-width='1.8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M6 7V5a3 3 0 013-3h6a3 3 0 013 3v2M6 7h12M6 7v12a2 2 0 002 2h8a2 2 0 002-2V7M9 11h6M9 15h6'/%3E%3C/svg%3E");
-}
-
-.icon-dept {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23838BA7' stroke-width='1.8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M3 21h18M6 21v-7h4v7M14 21v-4h4v4M5 10l7-7 7 7M5 10h14'/%3E%3C/svg%3E");
-}
-
-.icon-camera {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23838BA7' stroke-width='1.8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M4 7h3l2-3h6l2 3h3a2 2 0 012 2v9a2 2 0 01-2 2H4a2 2 0 01-2-2V9a2 2 0 012-2zm8 3a4 4 0 100 8 4 4 0 000-8z'/%3E%3C/svg%3E");
-}
-
-.icon-lock {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23838BA7' stroke-width='1.8'%3E%3Crect x='5' y='11' width='14' height='10' rx='2'/%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M8 11V8a4 4 0 118 0v3'/%3E%3C/svg%3E");
-}
-
-.icon-phone {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23838BA7' stroke-width='1.8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M5 4h4l2 5-2.5 1.5a11 11 0 005 5L15 13l5 2v4a2 2 0 01-2 2c-8.837 0-16-7.163-16-16a2 2 0 012-2z'/%3E%3C/svg%3E");
+.profile-icon .iconfont {
+  font-size: 36rpx;
+  color: #838BA7;
 }
 
 /* 文字样式 */

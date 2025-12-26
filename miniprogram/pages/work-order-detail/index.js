@@ -205,15 +205,19 @@ Page({
       const canEdit = (isPropertyManager || (isPropertyStaff && isSubmitter)) &&
         processedOrder.status === 'Pending Repair';
 
-      // 判断是否为分配的维修员 - 使用统一的 currentUserId
-      const assignedTechnicianId = processedOrder.assigned_technician?.user_id;
-      const isAssignedTechnician = isMaintenanceWorker &&
-        assignedTechnicianId && currentUserId &&
-        assignedTechnicianId === currentUserId;
+      // 判断维修员是否有权限操作该工单 - 使用部门匹配（新权限模型）
+      const userDepartment = userInfo.department;
+      const isTechnicianWithAccess = isMaintenanceWorker &&
+        userDepartment && processedOrder.responsible_party &&
+        userDepartment === processedOrder.responsible_party;
+
+      // 保留旧变量名以兼容后续代码
+      const isAssignedTechnician = isTechnicianWithAccess;
 
       console.log('[Detail] Technician check:', {
         currentUserId,
-        assignedTechnicianId,
+        userDepartment,
+        responsibleParty: processedOrder.responsible_party,
         isMaintenanceWorker,
         isAssignedTechnician
       });
@@ -916,7 +920,7 @@ Page({
       // 跳转到工作台页面
       setTimeout(() => {
         wx.switchTab({
-          url: '/pages/workbench/index'
+          url: '/pages/index/index'
         });
       }, 1500);
 

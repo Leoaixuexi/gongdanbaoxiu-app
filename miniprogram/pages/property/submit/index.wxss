@@ -146,8 +146,6 @@ picker {
 .picker-text {
   font-size: 30rpx;
   color: #333;
-  line-height: 1.2;
-  transform: translateY(-16rpx);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 

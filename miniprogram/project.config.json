@@ -52,18 +52,6 @@
       },
       {
         "type": "file",
-        "value": "utils/reportExport.js"
-      },
-      {
-        "type": "file",
-        "value": "utils/timeUtils.js"
-      },
-      {
-        "type": "file",
-        "value": "utils/message-mapper.js"
-      },
-      {
-        "type": "file",
         "value": "utils/time-formatter.js"
       },
       {
