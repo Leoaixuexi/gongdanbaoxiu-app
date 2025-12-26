@@ -1,8 +1,0 @@
-{
-  "navigationBarTitleText": "数据监控",
-  "navigationBarBackgroundColor": "#14AB80",
-  "navigationBarTextStyle": "white",
-  "enablePullDownRefresh": true,
-  "backgroundColor": "#F7F7F7",
-  "usingComponents": {}
-}

@@ -12,10 +12,6 @@
       },
       {
         "type": "folder",
-        "value": "pages/admin-manager"
-      },
-      {
-        "type": "folder",
         "value": "components/duration-timer"
       },
       {
@@ -45,14 +41,6 @@
       {
         "type": "folder",
         "value": "components/footer"
-      },
-      {
-        "type": "file",
-        "value": "utils/slaCalculator.js"
-      },
-      {
-        "type": "file",
-        "value": "utils/time-formatter.js"
       },
       {
         "type": "file",
