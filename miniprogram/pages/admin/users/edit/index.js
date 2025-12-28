@@ -5,6 +5,7 @@
 
 const { ROLE_DISPLAY_NAMES } = require('../../../../utils/constants');
 const dictionary = require('../../../../services/dictionary');
+const cloudDB = require('../../../../services/cloudDatabase');
 
 Page({
   data: {
@@ -13,6 +14,7 @@ Page({
     formData: {
       username: '',
       name: '',
+      gender: null,
       role_id: null,
       contact_phone: '',
       department: '',
@@ -34,7 +36,8 @@ Page({
     showRolePicker: false,
     showDeptPicker: false,
     showDeactivateConfirm: false,
-    pendingDeactivation: false
+    pendingDeactivation: false,
+    showActionMenu: false
   },
 
   onLoad(options) {
@@ -106,6 +109,7 @@ Page({
         formData: {
           username: user.username || '',
           name: user.name,
+          gender: user.gender || null,
           role_id: user.role_id,
           contact_phone: user.contact_phone || '',
           department: user.department || '',
@@ -151,6 +155,17 @@ Page({
     } catch (error) {
       console.error('Failed to load roles:', error);
     }
+  },
+
+  /**
+   * Select gender
+   */
+  onSelectGender(e) {
+    const gender = parseInt(e.currentTarget.dataset.gender);
+    this.setData({
+      'formData.gender': gender,
+      'errors.gender': ''
+    });
   },
 
   /**
@@ -308,12 +323,16 @@ Page({
    */
   validateForm() {
     const errors = {};
-    const { name, role_id, contact_phone } = this.data.formData;
+    const { name, gender, role_id, contact_phone } = this.data.formData;
 
     if (!name || !name.trim()) {
       errors.name = '请输入姓名';
     } else if (name.trim().length < 2) {
       errors.name = '姓名至少2个字符';
+    }
+
+    if (!gender) {
+      errors.gender = '请选择性别';
     }
 
     if (!role_id) {
@@ -346,6 +365,7 @@ Page({
       const data = {
         user_id: parseInt(this.data.userId),
         name: this.data.formData.name.trim(),
+        gender: this.data.formData.gender,
         role_id: this.data.formData.role_id,
         is_active: this.data.formData.is_active
       };
@@ -397,5 +417,90 @@ Page({
    */
   onCancel() {
     wx.navigateBack();
+  },
+
+  /**
+   * Show action menu
+   */
+  onShowActionMenu() {
+    this.setData({ showActionMenu: true });
+  },
+
+  /**
+   * Close action menu
+   */
+  onCloseActionMenu() {
+    this.setData({ showActionMenu: false });
+  },
+
+  /**
+   * Reset password
+   */
+  async onResetPassword() {
+    this.setData({ showActionMenu: false });
+
+    wx.showModal({
+      title: '确认重置密码',
+      content: `确认重置用户"${this.data.formData.name}"的密码？重置后密码将变为默认密码。`,
+      success: async (res) => {
+        if (res.confirm) {
+          try {
+            wx.showLoading({ title: '处理中...' });
+            const result = await cloudDB.users.resetPassword(parseInt(this.data.userId));
+            wx.hideLoading();
+
+            wx.showModal({
+              title: '密码已重置',
+              content: `新密码为：${result.newPassword || '123456'}\n请通知用户尽快修改密码。`,
+              showCancel: false
+            });
+          } catch (error) {
+            wx.hideLoading();
+            wx.showToast({ title: error.message || '重置失败', icon: 'none' });
+          }
+        }
+      }
+    });
+  },
+
+  /**
+   * Disable/Enable user
+   */
+  async onDisableUser() {
+    this.setData({ showActionMenu: false });
+
+    if (this.data.isSelf) {
+      wx.showToast({ title: '不能停用自己', icon: 'none' });
+      return;
+    }
+
+    const isActive = this.data.formData.is_active;
+    const actionText = isActive ? '停用' : '启用';
+
+    wx.showModal({
+      title: `确认${actionText}`,
+      content: isActive
+        ? `停用后用户"${this.data.formData.name}"将无法登录系统，确认停用？`
+        : `确认启用用户"${this.data.formData.name}"？`,
+      confirmColor: isActive ? '#EF4444' : '#56B78A',
+      success: async (res) => {
+        if (res.confirm) {
+          try {
+            wx.showLoading({ title: '处理中...' });
+            if (isActive) {
+              await cloudDB.users.disable(parseInt(this.data.userId));
+            } else {
+              await cloudDB.users.enable(parseInt(this.data.userId));
+            }
+            wx.hideLoading();
+            wx.showToast({ title: `已${actionText}`, icon: 'success' });
+            this.setData({ 'formData.is_active': !isActive });
+          } catch (error) {
+            wx.hideLoading();
+            wx.showToast({ title: error.message || '操作失败', icon: 'none' });
+          }
+        }
+      }
+    });
   }
 });

@@ -36,7 +36,13 @@ Page({
     isDateTimePickerOpen: false,
     tempDate: '',
     tempTime: '',
-    headerHeight: 0
+    headerHeight: 0,
+    // --- 新增：通用选择器数据 ---
+    isSelectorOpen: false,
+    selectorTitle: '',
+    selectorOptions: [],
+    selectorType: '', // 'floor', 'category', 'party'
+    selectorCurrentIndex: -1
   },
 
   /**
@@ -516,6 +522,68 @@ Page({
       displayDateTime: displayDateTime,
       isDateTimePickerOpen: false
     });
+  },
+
+  /**
+   * --- 新增：通用选择器逻辑 ---
+   */
+  openSelector: function(e) {
+    const type = e.currentTarget.dataset.type;
+    let title = '';
+    let options = [];
+    let currentIndex = -1;
+
+    switch(type) {
+      case 'floor':
+        title = '选择楼层';
+        // 移除第一个占位符 "请选择..."
+        options = this.data.floorOptions.slice(1);
+        // 原索引包含占位符，所以减1
+        currentIndex = this.data.floorIndex > 0 ? this.data.floorIndex - 1 : -1;
+        break;
+      case 'category':
+        title = '选择工单类别';
+        options = this.data.orderCategories.slice(1);
+        currentIndex = this.data.orderCategoryIndex > 0 ? this.data.orderCategoryIndex - 1 : -1;
+        break;
+      case 'party':
+        title = '选择责任方';
+        options = this.data.responsibleParties.slice(1);
+        currentIndex = this.data.responsiblePartyIndex > 0 ? this.data.responsiblePartyIndex - 1 : -1;
+        break;
+    }
+
+    this.setData({
+      isSelectorOpen: true,
+      selectorTitle: title,
+      selectorOptions: options,
+      selectorType: type,
+      selectorCurrentIndex: currentIndex
+    });
+  },
+
+  closeSelector: function() {
+    this.setData({ isSelectorOpen: false });
+  },
+
+  onSelectorSelect: function(e) {
+    const index = e.currentTarget.dataset.index; // 列表中的索引 (0-based)
+    const type = this.data.selectorType;
+    
+    // 映射回原始数组索引 (原始数组第0位是占位符，所以+1)
+    const originalIndex = index + 1;
+
+    const updates = { isSelectorOpen: false };
+
+    if (type === 'floor') {
+      updates.floorIndex = originalIndex;
+    } else if (type === 'category') {
+      updates.orderCategoryIndex = originalIndex;
+    } else if (type === 'party') {
+      updates.responsiblePartyIndex = originalIndex;
+    }
+
+    this.setData(updates);
   },
 
   /**

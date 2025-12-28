@@ -67,11 +67,55 @@
   margin-bottom: 12rpx;
 }
 
-.title {
-  font-size: 32rpx;
-  font-weight: 600;
-  /* color: #374151; */ /* Using inline style for dynamic status colors */
-  flex: 1;
+/* 状态标签 - 与工作台页面保持一致的胶囊样式 */
+.status-badge {
+  display: inline-block;
+  padding: 8rpx 20rpx;
+  font-size: 26rpx;
+  font-weight: bold;
+  border-radius: 24rpx;
+}
+
+/* 已提报状态 - 浅蓝色背景+深蓝色字体 */
+.status-reported {
+  background-color: #dbeafe;
+  color: #2563eb;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.2);
+}
+
+/* 维修中状态 - 浅青色背景+深青色字体 */
+.status-maintenance {
+  background-color: #cffafe;
+  color: #0891b2;
+  box-shadow: 0 2px 8px rgba(8, 145, 178, 0.2);
+}
+
+/* 已修复状态 - 浅紫色背景+深紫色字体 */
+.status-repaired {
+  background-color: #ede9fe;
+  color: #7c3aed;
+  box-shadow: 0 2px 8px rgba(124, 58, 237, 0.2);
+}
+
+/* 待复核状态 - 浅红色背景+深红色字体 */
+.status-review {
+  background-color: #fee2e2;
+  color: #dc2626;
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.2);
+}
+
+/* 需返工状态 - 浅灰色背景+深灰色字体 */
+.status-rework {
+  background-color: #e2e8f0;
+  color: #334155;
+  box-shadow: 0 2px 8px rgba(51, 65, 85, 0.2);
+}
+
+/* 已完成状态 - 浅绿色背景+深绿色字体 */
+.status-completed {
+  background-color: #d1fae5;
+  color: #059669;
+  box-shadow: 0 2px 8px rgba(5, 150, 105, 0.2);
 }
 
 .user {

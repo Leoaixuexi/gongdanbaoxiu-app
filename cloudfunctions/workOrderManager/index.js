@@ -516,13 +516,13 @@ async function createWorkOrder(openid, orderData) {
         department: u.department
       })));
 
-      // 排除提交工单的用户自己
+      // 排除提交工单的用户自己，以及已经收到 order_assigned 通知的 technician
       const userIds = targetUsers.data
         .map(user => user.user_id)
-        .filter(id => id !== submitter.user_id);
+        .filter(id => id !== submitter.user_id && id !== technician.user_id);
 
       if (userIds.length === 0) {
-        console.log('[WorkOrder] No target users after filtering out creator');
+        console.log('[WorkOrder] No target users after filtering out creator and technician');
       }
 
       const notificationMessage = formatNotificationMessage(
@@ -1386,13 +1386,13 @@ exports.main = async (event, context) => {
 
       case 'delete':
         {
-          // 只有行政经理可以删除工单
+          // 行政经理和办美员工可以删除工单
           const deleteUser = await getUserByOpenId(openid);
           if (!deleteUser) {
             return { success: false, error: '用户未注册' };
           }
-          if (deleteUser.role_id !== 2) { // 2 = 行政经理
-            return { success: false, error: '只有行政经理才能删除工单' };
+          if (deleteUser.role_id !== 2 && deleteUser.role_id !== 4) { // 2 = 行政经理, 4 = 办美员工
+            return { success: false, error: '只有行政经理和办美员工才能删除工单' };
           }
 
           const workOrders = db.collection('work_orders');

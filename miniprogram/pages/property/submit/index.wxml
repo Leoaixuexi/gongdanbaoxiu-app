@@ -27,16 +27,15 @@
     </view>
 
     <!-- 楼层 -->
-    <view class="card">
+    <view class="card" bindtap="openSelector" data-type="floor">
       <view class="card-label-required">
         <text class="star">*</text>
         <text class="label">楼层</text>
       </view>
-      <picker mode="selector" range="{{floorOptions}}" value="{{floorIndex}}" bindchange="onFloorChange">
-        <view class="card-picker">
-          <text class="picker-text {{floorIndex === 0 ? 'placeholder' : ''}}">{{floorOptions[floorIndex]}}</text>
-        </view>
-      </picker>
+      <view class="card-right">
+        <text class="picker-text {{floorIndex === 0 ? 'placeholder' : ''}}">{{floorOptions[floorIndex]}}</text>
+        <view class="card-arrow"></view>
+      </view>
     </view>
 
     <!-- 具体位置 -->
@@ -55,29 +54,27 @@
     </view>
 
     <!-- 工单类别 -->
-    <view class="card">
+    <view class="card" bindtap="openSelector" data-type="category">
       <view class="card-label-required">
         <text class="star">*</text>
         <text class="label">工单类别</text>
       </view>
-      <picker mode="selector" range="{{orderCategories}}" value="{{orderCategoryIndex}}" bindchange="onOrderCategoryChange">
-        <view class="card-picker">
-          <text class="picker-text {{orderCategoryIndex === 0 ? 'placeholder' : ''}}">{{orderCategories[orderCategoryIndex]}}</text>
-        </view>
-      </picker>
+      <view class="card-right">
+        <text class="picker-text {{orderCategoryIndex === 0 ? 'placeholder' : ''}}">{{orderCategories[orderCategoryIndex]}}</text>
+        <view class="card-arrow"></view>
+      </view>
     </view>
 
     <!-- 责任方 -->
-    <view class="card">
+    <view class="card" bindtap="openSelector" data-type="party">
       <view class="card-label-required">
         <text class="star">*</text>
         <text class="label">责任方</text>
       </view>
-      <picker mode="selector" range="{{responsibleParties}}" value="{{responsiblePartyIndex}}" bindchange="onResponsiblePartyChange">
-        <view class="card-picker">
-          <text class="picker-text {{responsiblePartyIndex === 0 ? 'placeholder' : ''}}">{{responsibleParties[responsiblePartyIndex]}}</text>
-        </view>
-      </picker>
+      <view class="card-right">
+        <text class="picker-text {{responsiblePartyIndex === 0 ? 'placeholder' : ''}}">{{responsibleParties[responsiblePartyIndex]}}</text>
+        <view class="card-arrow"></view>
+      </view>
     </view>
 
     <!-- 优先级 -->
@@ -211,6 +208,31 @@
           <text class="modal-button-text modal-button-text-white">确定</text>
         </view>
       </view>
+    </view>
+  </view>
+
+  <!-- 通用底部选择器弹窗 -->
+  <view wx:if="{{isSelectorOpen}}" class="modal-overlay" catchtap="closeSelector">
+    <view class="modal-content selector-modal" catchtap="stopPropagation">
+      <view class="modal-header">
+        <text class="modal-title">{{selectorTitle}}</text>
+        <view class="modal-close" catchtap="closeSelector">
+          <text class="iconfont icon-close">×</text>
+        </view>
+      </view>
+      
+      <scroll-view scroll-y class="selector-scroll">
+        <view 
+          wx:for="{{selectorOptions}}" 
+          wx:key="*this"
+          class="selector-item {{index === selectorCurrentIndex ? 'active' : ''}}"
+          catchtap="onSelectorSelect"
+          data-index="{{index}}"
+        >
+          <text class="selector-item-text">{{item}}</text>
+          <view wx:if="{{index === selectorCurrentIndex}}" class="selector-check"></view>
+        </view>
+      </scroll-view>
     </view>
   </view>
 </view>

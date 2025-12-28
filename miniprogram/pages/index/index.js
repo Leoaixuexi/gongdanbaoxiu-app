@@ -56,7 +56,10 @@ Page({
     // 动态状态按钮列表
     statusButtons: [],
     // 滚动到指定状态按钮
-    scrollIntoView: ''
+    scrollIntoView: '',
+    // 触摸滑动相关
+    touchStartX: 0,
+    touchStartY: 0
   },
 
   /**
@@ -937,6 +940,74 @@ Page({
 
     this.setData({
       activeStatus: status,
+      scrollIntoView: scrollTarget
+    });
+
+    // 切换状态后，工单列表滚动到顶部
+    wx.pageScrollTo({
+      scrollTop: 0,
+      duration: 200
+    });
+
+    this.loadWorkOrders();
+  },
+
+  /**
+   * 触摸开始 - 记录起始位置
+   */
+  onTouchStart: function (e) {
+    this.setData({
+      touchStartX: e.touches[0].clientX,
+      touchStartY: e.touches[0].clientY
+    });
+  },
+
+  /**
+   * 触摸结束 - 判断滑动方向并切换状态
+   */
+  onTouchEnd: function (e) {
+    const touchEndX = e.changedTouches[0].clientX;
+    const touchEndY = e.changedTouches[0].clientY;
+    const deltaX = touchEndX - this.data.touchStartX;
+    const deltaY = touchEndY - this.data.touchStartY;
+
+    // 只有水平滑动距离 > 50px 且 水平距离 > 垂直距离 才触发切换
+    if (Math.abs(deltaX) > 50 && Math.abs(deltaX) > Math.abs(deltaY)) {
+      const statusButtons = this.data.statusButtons;
+      const currentIndex = statusButtons.findIndex(btn => btn.key === this.data.activeStatus);
+
+      if (deltaX < 0) {
+        // 向左滑动 -> 切换到下一个状态
+        if (currentIndex < statusButtons.length - 1) {
+          this.switchToStatusByIndex(currentIndex + 1);
+        }
+      } else {
+        // 向右滑动 -> 切换到上一个状态
+        if (currentIndex > 0) {
+          this.switchToStatusByIndex(currentIndex - 1);
+        }
+      }
+    }
+  },
+
+  /**
+   * 根据索引切换状态
+   */
+  switchToStatusByIndex: function (index) {
+    const statusButtons = this.data.statusButtons;
+    const targetStatus = statusButtons[index].key;
+    const totalButtons = statusButtons.length;
+
+    // 根据按钮位置决定滚动目标
+    let scrollTarget = 'status-' + targetStatus;
+    if (index <= totalButtons / 2 - 1) {
+      scrollTarget = 'status-' + statusButtons[0].key;
+    } else {
+      scrollTarget = 'status-' + statusButtons[totalButtons - 1].key;
+    }
+
+    this.setData({
+      activeStatus: targetStatus,
       scrollIntoView: scrollTarget
     });
 

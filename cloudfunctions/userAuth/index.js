@@ -13,6 +13,30 @@ cloud.init({
 const db = cloud.database();
 const _ = db.command;
 
+// 默认头像配置（云存储路径）
+const DEFAULT_AVATARS = {
+  male: [
+    'cloud://cloud1-7glfhm4r06e030bd.636c-cloud1-7glfhm4r06e030bd-1386591973/avatars/male/man1.png',
+    'cloud://cloud1-7glfhm4r06e030bd.636c-cloud1-7glfhm4r06e030bd-1386591973/avatars/male/man2.png',
+    'cloud://cloud1-7glfhm4r06e030bd.636c-cloud1-7glfhm4r06e030bd-1386591973/avatars/male/man3.png'
+  ],
+  female: [
+    'cloud://cloud1-7glfhm4r06e030bd.636c-cloud1-7glfhm4r06e030bd-1386591973/avatars/female/wowen1.png',
+    'cloud://cloud1-7glfhm4r06e030bd.636c-cloud1-7glfhm4r06e030bd-1386591973/avatars/female/women2.png',
+    'cloud://cloud1-7glfhm4r06e030bd.636c-cloud1-7glfhm4r06e030bd-1386591973/avatars/female/women3.png'
+  ]
+};
+
+/**
+ * 根据性别随机获取默认头像
+ * @param {number} gender - 1=男, 2=女
+ * @returns {string} 头像路径
+ */
+function getRandomAvatar(gender) {
+  const avatars = gender === 1 ? DEFAULT_AVATARS.male : DEFAULT_AVATARS.female;
+  return avatars[Math.floor(Math.random() * avatars.length)];
+}
+
 /**
  * 获取用户信息（通过 openid）
  */
@@ -755,13 +779,13 @@ exports.main = async (event, context) => {
           };
         }
 
-        const { username, password, name, role_id, contact_phone, department, supervisor_id } = data;
+        const { username, password, name, gender, role_id, contact_phone, department, supervisor_id } = data;
 
         // 验证必填字段
-        if (!username || !password || !name || !role_id) {
+        if (!username || !password || !name || !gender || !role_id) {
           return {
             success: false,
-            error: '缺少必填字段：用户名、密码、姓名、角色'
+            error: '缺少必填字段：用户名、密码、姓名、性别、角色'
           };
         }
 
@@ -782,12 +806,17 @@ exports.main = async (event, context) => {
         const { data: allUsers } = await users.orderBy('user_id', 'desc').limit(1).get();
         const newUserId = allUsers.length > 0 ? allUsers[0].user_id + 1 : 1;
 
+        // 根据性别随机分配默认头像
+        const avatar = getRandomAvatar(parseInt(gender));
+
         // 创建用户数据
         const newUser = {
           user_id: newUserId,
           username: username,
           password: hashedPassword,
           name: name,
+          gender: parseInt(gender),  // 1=男, 2=女
+          avatar: avatar,            // 默认头像
           role_id: parseInt(role_id),
           contact_phone: contact_phone || '',
           department: department || '',
@@ -834,7 +863,7 @@ exports.main = async (event, context) => {
           };
         }
 
-        const { user_id, name, role_id, contact_phone, department, supervisor_id, is_active } = data;
+        const { user_id, name, gender, role_id, contact_phone, department, supervisor_id, is_active } = data;
 
         if (!user_id) {
           return {
@@ -872,6 +901,7 @@ exports.main = async (event, context) => {
         };
 
         if (name !== undefined) updateData.name = name;
+        if (gender !== undefined) updateData.gender = parseInt(gender);
         if (role_id !== undefined) updateData.role_id = parseInt(role_id);
         if (contact_phone !== undefined) updateData.contact_phone = contact_phone;
         if (department !== undefined) updateData.department = department;

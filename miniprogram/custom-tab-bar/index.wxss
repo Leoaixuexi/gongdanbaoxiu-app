@@ -20,6 +20,11 @@
   align-items: center;
 }
 
+.tab-icon-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
 .tab-icon {
   width: 28px;
   height: 28px;
@@ -28,4 +33,23 @@
 
 .tab-text {
   font-size: 13px;
+}
+
+/* 未读消息徽章 */
+.badge {
+  position: absolute;
+  top: -5px;
+  right: -10px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  font-size: 10px;
+  font-weight: bold;
+  color: #fff;
+  background-color: #f5222d;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
 }

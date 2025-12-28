@@ -14,6 +14,7 @@
           <input
             class="search-input"
             placeholder="编号/位置/问题描述"
+            placeholder-class="search-placeholder"
             value="{{searchText}}"
             bindinput="onSearchInput"
           />
@@ -87,7 +88,10 @@
   </view>
 
   <!-- 工单列表 -->
-  <view class="order-list" style="padding-top: calc(300rpx + {{headerHeight}}px);">
+  <view class="order-list" style="padding-top: calc(300rpx + {{headerHeight}}px);"
+    bindtouchstart="onTouchStart"
+    bindtouchend="onTouchEnd"
+  >
     <block wx:if="{{!loading && workOrders.length > 0}}">
       <view
         wx:for="{{workOrders}}"
@@ -180,7 +184,7 @@
 
     <!-- Empty State -->
     <view class="empty-state" wx:if="{{!loading && workOrders.length === 0}}">
-      <image class="empty-icon" src="/images/tabbar/02.png" mode="aspectFit"></image>
+      <image class="empty-icon" src="cloud://cloud1-7glfhm4r06e030bd.636c-cloud1-7glfhm4r06e030bd-1386591973/icons/02.png" mode="aspectFit"></image>
       <text class="empty-text">暂无工单记录</text>
     </view>
   </view>

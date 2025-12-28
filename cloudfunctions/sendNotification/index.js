@@ -67,9 +67,16 @@ async function getUserById(userId) {
  * Get user by openid (cloud context)
  */
 async function getUserByOpenId(openid) {
+  // 防护：openid 不能为空
+  if (!openid) {
+    console.error('[getUserByOpenId] openid is empty');
+    return null;
+  }
   const users = db.collection('users');
   const { data } = await users.where({ wechat_openid: openid }).get();
-  return data.length > 0 ? data[0] : null;
+  // 确保返回的用户 wechat_openid 精确匹配（防止空值匹配问题）
+  const validUsers = data.filter(u => u.wechat_openid && u.wechat_openid === openid);
+  return validUsers.length > 0 ? validUsers[0] : null;
 }
 
 /**
@@ -152,7 +159,15 @@ exports.main = async (event, context) => {
       return { success: false, error: '无法获取微信身份，请在小程序内操作' };
     }
 
-    const currentUser = await getUserByOpenId(openid);
+    // 优先通过 openid 获取用户
+    let currentUser = await getUserByOpenId(openid);
+
+    // 测试阶段备用方案：如果 openid 匹配不到，使用前端传递的 user_id
+    if (!currentUser && eventData.user_id) {
+      console.log('[SendNotification] Fallback to user_id:', eventData.user_id);
+      currentUser = await getUserById(eventData.user_id);
+    }
+
     if (!currentUser) {
       return { success: false, error: '用户不存在' };
     }
@@ -263,22 +278,29 @@ exports.main = async (event, context) => {
         const user_id = currentUser.user_id;
 
         const notifications = db.collection('notifications');
-        let query = notifications.where({ user_id });
 
+        // 构建查询条件（合并到单个 where 调用）
+        const queryCondition = { user_id };
         if (unread_only) {
-          query = query.where({ read: false });
+          queryCondition.read = false;
         }
 
-        const { data } = await query
-          .orderBy('created_at', 'desc')
+        // 移除 orderBy 避免云数据库索引问题
+        const { data } = await notifications
+          .where(queryCondition)
           .limit(Math.min(Math.max(parseInt(limit, 10) || 20, 1), 100))
           .get();
 
+        // 在应用层按 created_at 降序排序
+        const sortedData = data.sort((a, b) => {
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        });
+
         return {
           success: true,
-          notifications: data,
-          total: data.length,
-          unread_count: data.filter(n => !n.read).length
+          notifications: sortedData,
+          total: sortedData.length,
+          unread_count: sortedData.filter(n => !n.read).length
         };
       }
 

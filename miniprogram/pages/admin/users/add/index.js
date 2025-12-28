@@ -12,6 +12,7 @@ Page({
       username: '',
       password: '',
       name: '',
+      gender: null,  // 1=男, 2=女
       role_id: null,
       contact_phone: '',
       department: '',
@@ -153,6 +154,17 @@ Page({
   },
 
   /**
+   * Gender select handler
+   */
+  onSelectGender(e) {
+    const gender = parseInt(e.currentTarget.dataset.gender);
+    this.setData({
+      'formData.gender': gender,
+      'errors.gender': ''
+    });
+  },
+
+  /**
    * Phone input handler
    */
   onPhoneInput(e) {
@@ -257,7 +269,7 @@ Page({
    */
   validateForm() {
     const errors = {};
-    const { username, password, name, role_id, contact_phone } = this.data.formData;
+    const { username, password, name, gender, role_id, contact_phone } = this.data.formData;
 
     // Validate username
     if (!username || !username.trim()) {
@@ -278,6 +290,11 @@ Page({
       errors.name = '请输入姓名';
     } else if (name.trim().length < 2) {
       errors.name = '姓名至少2个字符';
+    }
+
+    // Validate gender
+    if (!gender) {
+      errors.gender = '请选择性别';
     }
 
     // Validate role
@@ -314,6 +331,7 @@ Page({
         username: this.data.formData.username.trim(),
         password: this.data.formData.password,
         name: this.data.formData.name.trim(),
+        gender: this.data.formData.gender,
         role_id: this.data.formData.role_id
       };
 

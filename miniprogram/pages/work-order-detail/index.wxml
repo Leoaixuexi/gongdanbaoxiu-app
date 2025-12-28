@@ -56,7 +56,9 @@
           </view>
           <view class="info-row">
             <text class="info-label">优先级</text>
-            <text class="info-value">{{priorityDisplay}}</text>
+            <view class="priority-tag {{workOrder.priority === 'Emergency' ? 'priority-red' : 'priority-green'}}">
+              {{priorityDisplay}}
+            </view>
           </view>
           <view class="info-row">
             <text class="info-label">报修时间</text>

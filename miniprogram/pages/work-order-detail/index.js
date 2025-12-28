@@ -44,6 +44,16 @@ Page({
       '已完成': '#059669',
       '需返工': '#334155'
     },
+    // Status CSS class mapping (matches work order list card styles)
+    statusClassMap: {
+      '已提报': 'status-reported',
+      '待接单': 'status-reported',
+      '维修中': 'status-maintenance',
+      '已修复': 'status-repaired',
+      '待复核': 'status-review',
+      '已完成': 'status-completed',
+      '需返工': 'status-rework'
+    },
     // Stepper data for work-order-stepper component
     stepperData: null,
     // Work order duration
@@ -463,6 +473,7 @@ Page({
           id: String(index + 1),
           title: statusText,
           titleColor: this.data.statusColorMap[statusText] || '#374151',
+          statusClass: this.data.statusClassMap[statusText] || '',
           description: description,
           timestamp: item.time_display || formatDateTime(item.changed_at),
           user: item.changed_by ? {
