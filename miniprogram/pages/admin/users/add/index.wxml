@@ -142,49 +142,52 @@
 </view>
 
 <!-- Role Picker Modal -->
-<view class="modal-mask" wx:if="{{showRolePicker}}" bindtap="onCloseRolePicker">
-  <view class="modal-container" catchtap="onModalStopPropagation">
+<view wx:if="{{showRolePicker}}" class="modal-overlay" catchtap="onCloseRolePicker">
+  <view class="modal-content selector-modal" catchtap="onModalStopPropagation">
     <view class="modal-header">
       <text class="modal-title">选择角色</text>
-      <icon type="clear" size="20" color="#999" bindtap="onCloseRolePicker"/>
+      <view class="modal-close" catchtap="onCloseRolePicker">
+        <text class="iconfont icon-close">×</text>
+      </view>
     </view>
-    <view class="modal-content">
+
+    <scroll-view scroll-y class="selector-scroll">
       <view
         wx:for="{{roles}}"
         wx:key="id"
-        class="option-item {{formData.role_id === item.id ? 'selected' : ''}}"
-        bindtap="onSelectRole"
+        class="selector-item {{formData.role_id === item.id ? 'active' : ''}}"
+        catchtap="onSelectRole"
         data-id="{{item.id}}"
         data-name="{{item.name}}"
       >
-        <view class="option-info">
-          <text class="option-name">{{item.name}}</text>
-          <text class="option-desc" wx:if="{{item.description}}">{{item.description}}</text>
-        </view>
-        <icon wx:if="{{formData.role_id === item.id}}" type="success_no_circle" size="18" color="#10b981"/>
+        <text class="selector-item-text">{{item.name}}</text>
+        <view wx:if="{{formData.role_id === item.id}}" class="selector-check"></view>
       </view>
-    </view>
+    </scroll-view>
   </view>
 </view>
 
 <!-- Department Picker Modal -->
-<view class="modal-mask" wx:if="{{showDeptPicker}}" bindtap="onCloseDeptPicker">
-  <view class="modal-container" catchtap="onModalStopPropagation">
+<view wx:if="{{showDeptPicker}}" class="modal-overlay" catchtap="onCloseDeptPicker">
+  <view class="modal-content selector-modal" catchtap="onModalStopPropagation">
     <view class="modal-header">
       <text class="modal-title">选择部门</text>
-      <icon type="clear" size="20" color="#999" bindtap="onCloseDeptPicker"/>
+      <view class="modal-close" catchtap="onCloseDeptPicker">
+        <text class="iconfont icon-close">×</text>
+      </view>
     </view>
-    <view class="modal-content">
+
+    <scroll-view scroll-y class="selector-scroll">
       <view
         wx:for="{{departments}}"
         wx:key="*this"
-        class="option-item {{formData.department === item ? 'selected' : ''}}"
-        bindtap="onSelectDept"
+        class="selector-item {{formData.department === item ? 'active' : ''}}"
+        catchtap="onSelectDept"
         data-dept="{{item}}"
       >
-        <text class="option-name">{{item}}</text>
-        <icon wx:if="{{formData.department === item}}" type="success_no_circle" size="18" color="#10b981"/>
+        <text class="selector-item-text">{{item}}</text>
+        <view wx:if="{{formData.department === item}}" class="selector-check"></view>
       </view>
-    </view>
+    </scroll-view>
   </view>
 </view>

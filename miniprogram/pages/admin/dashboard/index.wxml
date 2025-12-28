@@ -74,20 +74,6 @@
       </view>
     </view>
 
-    <!-- 消息模板 -->
-    <view class="module-card" bindtap="navigateTo" data-path="/pages/admin/message-templates/index">
-      <view class="card-icon icon-templates">
-        <text class="iconfont icon-template"></text>
-      </view>
-      <view class="card-info">
-        <text class="card-title">消息模板</text>
-        <text class="card-desc">通知消息模板配置</text>
-      </view>
-      <view class="card-arrow">
-        <text class="iconfont icon-arrow-right"></text>
-      </view>
-    </view>
-
     <!-- 字典管理 -->
     <view class="module-card" bindtap="navigateTo" data-path="/pages/admin/dict/index">
       <view class="card-icon icon-dict">

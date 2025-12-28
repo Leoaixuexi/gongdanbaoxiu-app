@@ -148,46 +148,53 @@
   </view>
 </view>
 
-<!-- 保持原有的弹窗组件，样式会自动适配全局 -->
 <!-- Role Picker Modal -->
-<view class="modal-mask" wx:if="{{showRolePicker}}" bindtap="onCloseRolePicker">
-  <view class="modal-container" catchtap="onModalStopPropagation" style="background:white; border-radius: 24rpx 24rpx 0 0;">
-    <view class="modal-header" style="padding: 32rpx; text-align: center; border-bottom: 1rpx solid #eee;">
-      <text style="font-size: 32rpx; font-weight: bold;">选择角色</text>
+<view wx:if="{{showRolePicker}}" class="modal-overlay" catchtap="onCloseRolePicker">
+  <view class="modal-content selector-modal" catchtap="onModalStopPropagation">
+    <view class="modal-header">
+      <text class="modal-title">选择角色</text>
+      <view class="modal-close" catchtap="onCloseRolePicker">
+        <text class="iconfont icon-close">×</text>
+      </view>
     </view>
-    <view class="modal-content" style="padding: 0;">
+
+    <scroll-view scroll-y class="selector-scroll">
       <view
         wx:for="{{roles}}"
         wx:key="id"
-        style="padding: 32rpx; border-bottom: 1rpx solid #f9f9f9; display: flex; justify-content: space-between;"
-        bindtap="onSelectRole"
+        class="selector-item {{formData.role_id === item.id ? 'active' : ''}}"
+        catchtap="onSelectRole"
         data-id="{{item.id}}"
         data-name="{{item.name}}"
       >
-        <text style="color: {{formData.role_id === item.id ? '#56B78A' : '#333'}}">{{item.name}}</text>
-        <icon wx:if="{{formData.role_id === item.id}}" type="success_no_circle" size="16" color="#56B78A"/>
+        <text class="selector-item-text">{{item.name}}</text>
+        <view wx:if="{{formData.role_id === item.id}}" class="selector-check"></view>
       </view>
-    </view>
+    </scroll-view>
   </view>
 </view>
 
 <!-- Department Picker Modal -->
-<view class="modal-mask" wx:if="{{showDeptPicker}}" bindtap="onCloseDeptPicker">
-  <view class="modal-container" catchtap="onModalStopPropagation" style="background:white; border-radius: 24rpx 24rpx 0 0;">
-    <view class="modal-header" style="padding: 32rpx; text-align: center; border-bottom: 1rpx solid #eee;">
-      <text style="font-size: 32rpx; font-weight: bold;">选择部门</text>
+<view wx:if="{{showDeptPicker}}" class="modal-overlay" catchtap="onCloseDeptPicker">
+  <view class="modal-content selector-modal" catchtap="onModalStopPropagation">
+    <view class="modal-header">
+      <text class="modal-title">选择部门</text>
+      <view class="modal-close" catchtap="onCloseDeptPicker">
+        <text class="iconfont icon-close">×</text>
+      </view>
     </view>
-    <view class="modal-content" style="padding: 0;">
+
+    <scroll-view scroll-y class="selector-scroll">
       <view
         wx:for="{{departments}}"
         wx:key="*this"
-        style="padding: 32rpx; border-bottom: 1rpx solid #f9f9f9; display: flex; justify-content: space-between;"
-        bindtap="onSelectDept"
+        class="selector-item {{formData.department === item ? 'active' : ''}}"
+        catchtap="onSelectDept"
         data-dept="{{item}}"
       >
-        <text style="color: {{formData.department === item ? '#56B78A' : '#333'}}">{{item}}</text>
-        <icon wx:if="{{formData.department === item}}" type="success_no_circle" size="16" color="#56B78A"/>
+        <text class="selector-item-text">{{item}}</text>
+        <view wx:if="{{formData.department === item}}" class="selector-check"></view>
       </view>
-    </view>
+    </scroll-view>
   </view>
 </view>

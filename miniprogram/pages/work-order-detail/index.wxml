@@ -268,43 +268,53 @@
   </view>
 
   <!-- 更多操作弹窗 -->
-  <view class="more-actions-overlay" wx:if="{{showMoreActions}}" catchtap="closeMoreActions">
-    <view class="more-actions-content" catchtap="stopPropagation">
-      <!-- 删除 - 物业人员可见 -->
-      <view wx:if="{{showDeleteInMenu}}" class="more-action-item" bindtap="handleDelete">
-        <view class="more-action-icon delete-icon">
-          <text class="iconfont icon-shanchu1"></text>
+  <view wx:if="{{showMoreActions}}" class="modal-overlay" catchtap="closeMoreActions">
+    <view class="modal-content selector-modal" catchtap="stopPropagation">
+      <view class="modal-header">
+        <text class="modal-title">更多操作</text>
+        <view class="modal-close" catchtap="closeMoreActions">
+          <text class="iconfont icon-close">×</text>
         </view>
-        <text class="more-action-label">删除</text>
       </view>
-      <!-- 空白卡片提示 -->
-      <view wx:if="{{showEmptyMenu && !showDeleteInMenu}}" class="more-action-empty">
-        <text class="more-action-empty-text">暂无可用操作</text>
-      </view>
+
+      <scroll-view scroll-y class="selector-scroll">
+        <!-- 删除 - 物业人员可见 -->
+        <view wx:if="{{showDeleteInMenu}}" class="selector-item" catchtap="handleDelete">
+          <text class="selector-item-text delete-text">删除</text>
+        </view>
+        <!-- 空白卡片提示 -->
+        <view wx:if="{{showEmptyMenu && !showDeleteInMenu}}" class="selector-item">
+          <text class="selector-item-text empty-text">暂无可用操作</text>
+        </view>
+      </scroll-view>
     </view>
   </view>
 
-  <!-- 切换状态弹窗 -->
-  <view class="modal-overlay" wx:if="{{showStatusPicker}}" catchtap="closeStatusPicker">
-    <view class="modal-container status-picker-container" catchtap="stopPropagation">
+  <!-- 切换状态弹窗 (保留颜色圆点) -->
+  <view wx:if="{{showStatusPicker}}" class="modal-overlay" catchtap="closeStatusPicker">
+    <view class="modal-content selector-modal" catchtap="stopPropagation">
       <view class="modal-header">
         <text class="modal-title">请选择工单状态</text>
-        <view class="modal-close" bindtap="closeStatusPicker">×</view>
-      </view>
-      <view class="modal-body">
-        <view class="status-list">
-          <view
-            wx:for="{{availableStatuses}}"
-            wx:key="value"
-            class="status-option {{selectedStatus === item.value ? 'status-option-selected' : ''}}"
-            bindtap="selectStatus"
-            data-status="{{item.value}}"
-          >
-            <view class="status-color-dot" style="background-color: {{item.color}};"></view>
-            <text class="status-label">{{item.label}}</text>
-          </view>
+        <view class="modal-close" catchtap="closeStatusPicker">
+          <text class="iconfont icon-close">×</text>
         </view>
       </view>
+
+      <scroll-view scroll-y class="selector-scroll">
+        <view
+          wx:for="{{availableStatuses}}"
+          wx:key="value"
+          class="selector-item status-item {{selectedStatus === item.value ? 'active' : ''}}"
+          catchtap="selectStatus"
+          data-status="{{item.value}}"
+        >
+          <view class="status-with-dot">
+            <view class="status-color-dot" style="background-color: {{item.color}};"></view>
+            <text class="selector-item-text">{{item.label}}</text>
+          </view>
+          <view wx:if="{{selectedStatus === item.value}}" class="selector-check"></view>
+        </view>
+      </scroll-view>
     </view>
   </view>
 </view>

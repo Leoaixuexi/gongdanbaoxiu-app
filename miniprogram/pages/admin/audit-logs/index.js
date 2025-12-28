@@ -211,10 +211,6 @@ Page({
       'announcement_published': '发布公告',
       'announcement_offline': '下线公告',
       'announcement_deleted': '删除公告',
-      'message_template_created': '创建模板',
-      'message_template_updated': '更新模板',
-      'message_template_toggled': '切换模板状态',
-      'message_template_deleted': '删除模板',
       'passwords_migrated': '密码迁移'
     };
     return actionMap[action] || action;
