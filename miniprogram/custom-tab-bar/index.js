@@ -45,18 +45,46 @@ Component({
 
   lifetimes: {
     async attached() {
-      // 组件加载时异步获取用户信息并缓存
+      const app = getApp();
+
+      // 从全局状态恢复未读数
+      if (app && app.globalData.unreadCounts) {
+        const counts = app.globalData.unreadCounts;
+        this.setData({
+          notificationCount: counts.notificationCount || 0,
+          workorderCount: counts.workorderCount || 0,
+          reminderCount: counts.reminderCount || 0,
+          totalUnread: counts.totalUnread || 0
+        });
+      }
+
+      // 缓存用户信息
       const userInfo = await storage.get(STORAGE_KEYS.USER_INFO);
       this.setData({ _cachedUserInfo: userInfo });
-      // 尝试更新未读数，带重试机制
-      this.tryUpdateUnreadCount(0);
+
+      // 只在首次加载（globalData._unreadInitialized 为 false）时发起请求
+      // 避免多个 TabBar 实例同时发起请求导致数据不一致
+      if (app && !app.globalData._unreadInitialized) {
+        app.globalData._unreadInitialized = true;
+        this.tryUpdateUnreadCount(0);
+      }
     }
   },
 
   pageLifetimes: {
     show() {
-      // 每次页面显示时更新未读消息数
-      this.updateUnreadCount();
+      // 只从 globalData 同步恢复数据，不发起新的异步请求
+      // 避免多个 TabBar 组件同时请求导致数据不一致
+      const app = getApp();
+      if (app && app.globalData.unreadCounts) {
+        const counts = app.globalData.unreadCounts;
+        this.setData({
+          notificationCount: counts.notificationCount || 0,
+          workorderCount: counts.workorderCount || 0,
+          reminderCount: counts.reminderCount || 0,
+          totalUnread: counts.totalUnread || 0
+        });
+      }
     }
   },
 
@@ -117,12 +145,21 @@ Component({
         console.log('[TabBar] Fetching unread counts...');
         const counts = await notificationService.getCategorizedUnreadCount();
         console.log('[TabBar] Got counts:', counts);
-        this.setData({
+
+        const newCounts = {
           notificationCount: counts.notificationCount || 0,
           workorderCount: counts.workorderCount || 0,
           reminderCount: counts.reminderCount || 0,
           totalUnread: counts.totalUnread || 0
-        });
+        };
+
+        // 同步更新全局状态，避免切换 Tab 时回退
+        const app = getApp();
+        if (app) {
+          app.globalData.unreadCounts = newCounts;
+        }
+
+        this.setData(newCounts);
       } catch (error) {
         console.error('[TabBar] Get unread count error:', error);
       }

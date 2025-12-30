@@ -3,16 +3,12 @@
  * 管理用户通知
  */
 
-const cloudDB = require('./cloudDatabase');
+const { callCloudSilent } = require('../utils/cloudCall');
 
 /**
- * 获取当前用户ID（使用cloudDatabase的缓存机制）
+ * 获取当前用户ID
  */
 function getCurrentUserId() {
-  // 优先使用cloudDatabase的缓存
-  const cachedUserId = cloudDB.users ? null : null; // cloudDB是单例，不需要检查
-
-  // 使用cloudDatabase中的getCurrentUserId，它有缓存机制
   try {
     const userInfo = wx.getStorageSync('user_info');
     return userInfo?.user_id || userInfo?.id || null;
@@ -28,34 +24,14 @@ function getCurrentUserId() {
  * @returns {Promise<Object>} 通知列表
  */
 const getUserNotifications = async (unreadOnly = false, limit = 20) => {
-  try {
-    console.log('[Notification] Getting user notifications');
-
-    const userId = getCurrentUserId();
-
-    const result = await wx.cloud.callFunction({
-      name: 'sendNotification',
-      data: {
-        action: 'getUserNotifications',
-        data: {
-          user_id: userId,
-          unread_only: unreadOnly,
-          limit
-        }
-      }
-    });
-
-    if (!result.result || !result.result.success) {
-      throw new Error(result.result?.error || '获取通知失败');
-    }
-
-    console.log('[Notification] Got notifications:', result.result.total);
-    return result.result;
-
-  } catch (error) {
-    console.error('[Notification] Get notifications error:', error);
-    throw error;
-  }
+  console.log('[Notification] Getting user notifications');
+  const userId = getCurrentUserId();
+  const result = await callCloudSilent('sendNotification', {
+    action: 'getUserNotifications',
+    data: { user_id: userId, unread_only: unreadOnly, limit }
+  });
+  console.log('[Notification] Got notifications:', result.total);
+  return result;
 };
 
 /**
@@ -64,32 +40,12 @@ const getUserNotifications = async (unreadOnly = false, limit = 20) => {
  * @returns {Promise<Object>} 操作结果
  */
 const markAsRead = async (notificationId) => {
-  try {
-    console.log('[Notification] Marking as read:', notificationId);
-
-    const userId = getCurrentUserId();
-
-    const result = await wx.cloud.callFunction({
-      name: 'sendNotification',
-      data: {
-        action: 'markAsRead',
-        data: {
-          notification_id: notificationId,
-          user_id: userId
-        }
-      }
-    });
-
-    if (!result.result || !result.result.success) {
-      throw new Error(result.result?.error || '标记失败');
-    }
-
-    return result.result;
-
-  } catch (error) {
-    console.error('[Notification] Mark as read error:', error);
-    throw error;
-  }
+  console.log('[Notification] Marking as read:', notificationId);
+  const userId = getCurrentUserId();
+  return await callCloudSilent('sendNotification', {
+    action: 'markAsRead',
+    data: { notification_id: notificationId, user_id: userId }
+  });
 };
 
 /**
@@ -97,31 +53,12 @@ const markAsRead = async (notificationId) => {
  * @returns {Promise<Object>} 操作结果
  */
 const markAllAsRead = async () => {
-  try {
-    console.log('[Notification] Marking all as read');
-
-    const userId = getCurrentUserId();
-
-    const result = await wx.cloud.callFunction({
-      name: 'sendNotification',
-      data: {
-        action: 'markAllAsRead',
-        data: {
-          user_id: userId
-        }
-      }
-    });
-
-    if (!result.result || !result.result.success) {
-      throw new Error(result.result?.error || '标记失败');
-    }
-
-    return result.result;
-
-  } catch (error) {
-    console.error('[Notification] Mark all as read error:', error);
-    throw error;
-  }
+  console.log('[Notification] Marking all as read');
+  const userId = getCurrentUserId();
+  return await callCloudSilent('sendNotification', {
+    action: 'markAllAsRead',
+    data: { user_id: userId }
+  });
 };
 
 /**
@@ -131,23 +68,11 @@ const markAllAsRead = async () => {
 const getUnreadCount = async () => {
   try {
     const userId = getCurrentUserId();
-
-    const result = await wx.cloud.callFunction({
-      name: 'sendNotification',
-      data: {
-        action: 'getUnreadCount',
-        data: {
-          user_id: userId
-        }
-      }
+    const result = await callCloudSilent('sendNotification', {
+      action: 'getUnreadCount',
+      data: { user_id: userId }
     });
-
-    if (!result.result || !result.result.success) {
-      throw new Error(result.result?.error || '获取未读数量失败');
-    }
-
-    return result.result.unread_count;
-
+    return result.unread_count;
   } catch (error) {
     console.error('[Notification] Get unread count error:', error);
     return 0; // Return 0 on error instead of throwing
@@ -161,7 +86,6 @@ const getUnreadCount = async () => {
  */
 const getCategorizedUnreadCount = async () => {
   try {
-    // 获取所有未读通知
     const result = await getUserNotifications(true, 100);
 
     if (!result || !result.success || !result.notifications) {
@@ -185,7 +109,7 @@ const getCategorizedUnreadCount = async () => {
 
     // 通知公告：除了待办工单和提醒我的以外的其他通知
     const notificationCount = notifications.filter(notif => {
-      if (!notif.type) return true; // 没有类型的算通知公告
+      if (!notif.type) return true;
       const isWorkorder = (notif.type.includes('work_order') || notif.type.includes('order_')) && !notif.type.startsWith('urge_');
       const isReminder = notif.type.startsWith('urge_');
       return !isWorkorder && !isReminder;
@@ -215,27 +139,10 @@ const getCategorizedUnreadCount = async () => {
 const sendNotification = async (userId, type, title, message, data = {}) => {
   try {
     console.log('[Notification] Sending notification to user:', userId);
-
-    const result = await wx.cloud.callFunction({
-      name: 'sendNotification',
-      data: {
-        action: 'send',
-        data: {
-          user_id: userId,
-          type,
-          title,
-          message,
-          data
-        }
-      }
+    return await callCloudSilent('sendNotification', {
+      action: 'send',
+      data: { user_id: userId, type, title, message, data }
     });
-
-    if (!result.result || !result.result.success) {
-      throw new Error(result.result?.error || '发送通知失败');
-    }
-
-    return result.result;
-
   } catch (error) {
     console.error('[Notification] Send notification error:', error);
     // Don't throw - notification failure shouldn't break the main flow
@@ -249,29 +156,11 @@ const sendNotification = async (userId, type, title, message, data = {}) => {
  * @returns {Promise<Object>} 操作结果
  */
 const deleteNotification = async (notificationId) => {
-  try {
-    console.log('[Notification] Deleting notification:', notificationId);
-
-    const result = await wx.cloud.callFunction({
-      name: 'sendNotification',
-      data: {
-        action: 'deleteNotification',
-        data: {
-          notification_id: notificationId
-        }
-      }
-    });
-
-    if (!result.result || !result.result.success) {
-      throw new Error(result.result?.error || '删除失败');
-    }
-
-    return result.result;
-
-  } catch (error) {
-    console.error('[Notification] Delete notification error:', error);
-    throw error;
-  }
+  console.log('[Notification] Deleting notification:', notificationId);
+  return await callCloudSilent('sendNotification', {
+    action: 'deleteNotification',
+    data: { notification_id: notificationId }
+  });
 };
 
 module.exports = {

@@ -1,7 +1,9 @@
 /**
  * 工单服务（云数据库版本）
- * 直接调用云函数，无需后端 API
+ * 直接调用云函数，使用 cloudCall 统一封装
  */
+
+const { callCloud, callCloudSilent } = require('../utils/cloudCall');
 
 /**
  * 创建工单
@@ -9,81 +11,34 @@
  * @returns {Promise<Object>} 创建的工单
  */
 const createWorkOrder = async (orderData) => {
-  try {
-    console.log('[WorkOrder] Creating work order:', orderData);
-
-    wx.showLoading({
-      title: '提交中...',
-      mask: true
-    });
-
-    const result = await wx.cloud.callFunction({
-      name: 'workOrderManager',
-      data: {
-        action: 'create',
-        data: orderData
-      }
-    });
-
-    wx.hideLoading();
-
-    if (!result.result || !result.result.success) {
-      throw new Error(result.result?.error || '创建工单失败');
-    }
-
-    console.log('[WorkOrder] Work order created:', result.result.order);
-    return result.result.order;
-
-  } catch (error) {
-    wx.hideLoading();
-    console.error('[WorkOrder] Create error:', error);
-    throw error;
-  }
+  console.log('[WorkOrder] Creating work order:', orderData);
+  const result = await callCloud('workOrderManager', {
+    action: 'create',
+    data: orderData
+  }, { loadingText: '提交中...' });
+  console.log('[WorkOrder] Work order created:', result.order);
+  return result.order;
 };
 
 /**
  * 获取工单列表
  * @param {Object} filters - 筛选条件
- * @returns {Promise<Array>} 工单列表
+ * @returns {Promise<Object>} 工单列表
  */
 const listWorkOrders = async (filters = {}) => {
-  try {
-    console.log('[WorkOrder] Getting work orders with filters:', filters);
-
-    // 获取当前用户ID
-    const storage = require('./storage');
-    const { STORAGE_KEYS } = require('../utils/constants');
-    const userInfo = await storage.get(STORAGE_KEYS.USER_INFO);
-
-    const result = await wx.cloud.callFunction({
-      name: 'workOrderManager',
-      data: {
-        action: 'list',
-        data: {
-          // 服务端只信任云函数上下文 openid，这里不再传 user_id（避免被篡改越权）
-          filters
-        }
-      }
-    });
-
-    if (!result.result || !result.result.success) {
-      throw new Error(result.result?.error || '获取工单列表失败');
-    }
-
-    const listResult = result.result;
-    console.log('[WorkOrder] Got orders:', listResult.total);
-    return {
-      orders: listResult.orders || [],
-      total: listResult.total || 0,
-      page: listResult.page || 1,
-      limit: listResult.limit || (filters.limit || 100),
-      totalPages: listResult.totalPages || 0,
-    };
-
-  } catch (error) {
-    console.error('[WorkOrder] Get orders error:', error);
-    throw error;
-  }
+  console.log('[WorkOrder] Getting work orders with filters:', filters);
+  const result = await callCloudSilent('workOrderManager', {
+    action: 'list',
+    data: { filters }
+  });
+  console.log('[WorkOrder] Got orders:', result.total);
+  return {
+    orders: result.orders || [],
+    total: result.total || 0,
+    page: result.page || 1,
+    limit: result.limit || (filters.limit || 100),
+    totalPages: result.totalPages || 0,
+  };
 };
 
 const getWorkOrders = async (filters = {}) => {
@@ -97,30 +52,13 @@ const getWorkOrders = async (filters = {}) => {
  * @returns {Promise<Object>} 工单详情
  */
 const getWorkOrderById = async (orderId) => {
-  try {
-    console.log('[WorkOrder] Getting work order:', orderId);
-
-    const result = await wx.cloud.callFunction({
-      name: 'workOrderManager',
-      data: {
-        action: 'getById',
-        data: {
-          order_id: orderId
-        }
-      }
-    });
-
-    if (!result.result || !result.result.success) {
-      throw new Error(result.result?.error || '获取工单详情失败');
-    }
-
-    console.log('[WorkOrder] Got order:', result.result.order);
-    return result.result.order;
-
-  } catch (error) {
-    console.error('[WorkOrder] Get order error:', error);
-    throw error;
-  }
+  console.log('[WorkOrder] Getting work order:', orderId);
+  const result = await callCloudSilent('workOrderManager', {
+    action: 'getById',
+    data: { order_id: orderId }
+  });
+  console.log('[WorkOrder] Got order:', result.order);
+  return result.order;
 };
 
 /**
@@ -129,30 +67,13 @@ const getWorkOrderById = async (orderId) => {
  * @returns {Promise<Object>} 工单详情
  */
 const getWorkOrderByNumber = async (orderNumber) => {
-  try {
-    console.log('[WorkOrder] Getting work order by number:', orderNumber);
-
-    const result = await wx.cloud.callFunction({
-      name: 'workOrderManager',
-      data: {
-        action: 'getByNumber',
-        data: {
-          order_number: orderNumber
-        }
-      }
-    });
-
-    if (!result.result || !result.result.success) {
-      throw new Error(result.result?.error || '获取工单失败');
-    }
-
-    console.log('[WorkOrder] Got order by number:', result.result.order);
-    return result.result.order;
-
-  } catch (error) {
-    console.error('[WorkOrder] Get order by number error:', error);
-    throw error;
-  }
+  console.log('[WorkOrder] Getting work order by number:', orderNumber);
+  const result = await callCloudSilent('workOrderManager', {
+    action: 'getByNumber',
+    data: { order_number: orderNumber }
+  });
+  console.log('[WorkOrder] Got order by number:', result.order);
+  return result.order;
 };
 
 /**
@@ -161,29 +82,12 @@ const getWorkOrderByNumber = async (orderNumber) => {
  * @returns {Promise<boolean>} 是否存在
  */
 const checkOrderNumberExists = async (orderNumber) => {
-  try {
-    console.log('[WorkOrder] Checking order number exists:', orderNumber);
-
-    const result = await wx.cloud.callFunction({
-      name: 'workOrderManager',
-      data: {
-        action: 'checkOrderNumberExists',
-        data: {
-          order_number: orderNumber
-        }
-      }
-    });
-
-    if (!result.result || !result.result.success) {
-      throw new Error(result.result?.error || '检查工单编号失败');
-    }
-
-    return result.result.exists;
-
-  } catch (error) {
-    console.error('[WorkOrder] Check order number error:', error);
-    throw error;
-  }
+  console.log('[WorkOrder] Checking order number exists:', orderNumber);
+  const result = await callCloudSilent('workOrderManager', {
+    action: 'checkOrderNumberExists',
+    data: { order_number: orderNumber }
+  });
+  return result.exists;
 };
 
 /**
@@ -194,40 +98,13 @@ const checkOrderNumberExists = async (orderNumber) => {
  * @returns {Promise<Object>} 更新结果
  */
 const updateWorkOrderStatus = async (orderId, status, notes = '') => {
-  try {
-    console.log('[WorkOrder] Updating status:', orderId, status);
-
-    wx.showLoading({
-      title: '更新中...',
-      mask: true
-    });
-
-    const result = await wx.cloud.callFunction({
-      name: 'workOrderManager',
-      data: {
-        action: 'updateStatus',
-        data: {
-          order_id: orderId,
-          status,
-          notes
-        }
-      }
-    });
-
-    wx.hideLoading();
-
-    if (!result.result || !result.result.success) {
-      throw new Error(result.result?.error || '更新工单状态失败');
-    }
-
-    console.log('[WorkOrder] Status updated');
-    return result.result;
-
-  } catch (error) {
-    wx.hideLoading();
-    console.error('[WorkOrder] Update status error:', error);
-    throw error;
-  }
+  console.log('[WorkOrder] Updating status:', orderId, status);
+  const result = await callCloud('workOrderManager', {
+    action: 'updateStatus',
+    data: { order_id: orderId, status, notes }
+  }, { loadingText: '更新中...' });
+  console.log('[WorkOrder] Status updated');
+  return result;
 };
 
 /**
@@ -235,27 +112,12 @@ const updateWorkOrderStatus = async (orderId, status, notes = '') => {
  * @returns {Promise<Array>} 故障类型列表
  */
 const getFaultTypes = async () => {
-  try {
-    console.log('[WorkOrder] Getting fault types');
-
-    const result = await wx.cloud.callFunction({
-      name: 'workOrderManager',
-      data: {
-        action: 'getFaultTypes'
-      }
-    });
-
-    if (!result.result || !result.result.success) {
-      throw new Error(result.result?.error || '获取故障类型失败');
-    }
-
-    console.log('[WorkOrder] Got fault types:', result.result.fault_types.length);
-    return result.result.fault_types;
-
-  } catch (error) {
-    console.error('[WorkOrder] Get fault types error:', error);
-    throw error;
-  }
+  console.log('[WorkOrder] Getting fault types');
+  const result = await callCloudSilent('workOrderManager', {
+    action: 'getFaultTypes'
+  });
+  console.log('[WorkOrder] Got fault types:', result.fault_types.length);
+  return result.fault_types;
 };
 
 /**
@@ -263,51 +125,29 @@ const getFaultTypes = async () => {
  * @returns {Promise<Object>} 工单统计
  */
 const getWorkOrderStats = async () => {
-  try {
-    // 获取所有工单
-    const allOrders = await getWorkOrders();
+  const allOrders = await getWorkOrders();
+  const stats = {
+    total: allOrders.length,
+    pending: 0,
+    inProgress: 0,
+    repaired: 0,
+    completed: 0,
+    needsRework: 0,
+    overdue: 0
+  };
 
-    // 按状态分组统计
-    const stats = {
-      total: allOrders.length,
-      pending: 0,
-      inProgress: 0,
-      repaired: 0,
-      completed: 0,
-      needsRework: 0,
-      overdue: 0
-    };
+  allOrders.forEach(order => {
+    switch (order.status) {
+      case 'Pending Repair': stats.pending++; break;
+      case 'In Progress': stats.inProgress++; break;
+      case 'Repaired': stats.repaired++; break;
+      case 'Completed': stats.completed++; break;
+      case 'Needs Rework': stats.needsRework++; break;
+    }
+    if (order.is_overdue) stats.overdue++;
+  });
 
-    allOrders.forEach(order => {
-      switch (order.status) {
-        case 'Pending Repair':
-          stats.pending++;
-          break;
-        case 'In Progress':
-          stats.inProgress++;
-          break;
-        case 'Repaired':
-          stats.repaired++;
-          break;
-        case 'Completed':
-          stats.completed++;
-          break;
-        case 'Needs Rework':
-          stats.needsRework++;
-          break;
-      }
-
-      if (order.is_overdue) {
-        stats.overdue++;
-      }
-    });
-
-    return stats;
-
-  } catch (error) {
-    console.error('[WorkOrder] Get stats error:', error);
-    throw error;
-  }
+  return stats;
 };
 
 /**
@@ -317,39 +157,13 @@ const getWorkOrderStats = async () => {
  * @returns {Promise<Object>} 更新结果
  */
 const completeRepair = async (orderId, completionNotes) => {
-  try {
-    console.log('[WorkOrder] Completing repair:', orderId);
-
-    wx.showLoading({
-      title: '提交中...',
-      mask: true
-    });
-
-    const result = await wx.cloud.callFunction({
-      name: 'workOrderManager',
-      data: {
-        action: 'completeRepair',
-        data: {
-          order_id: orderId,
-          completion_notes: completionNotes
-        }
-      }
-    });
-
-    wx.hideLoading();
-
-    if (!result.result || !result.result.success) {
-      throw new Error(result.result?.error || '完成维修失败');
-    }
-
-    console.log('[WorkOrder] Repair completed');
-    return result.result;
-
-  } catch (error) {
-    wx.hideLoading();
-    console.error('[WorkOrder] Complete repair error:', error);
-    throw error;
-  }
+  console.log('[WorkOrder] Completing repair:', orderId);
+  const result = await callCloud('workOrderManager', {
+    action: 'completeRepair',
+    data: { order_id: orderId, completion_notes: completionNotes }
+  }, { loadingText: '提交中...' });
+  console.log('[WorkOrder] Repair completed');
+  return result;
 };
 
 /**
@@ -360,40 +174,13 @@ const completeRepair = async (orderId, completionNotes) => {
  * @returns {Promise<Object>} 更新结果
  */
 const reviewWorkOrder = async (orderId, status, reviewNotes) => {
-  try {
-    console.log('[WorkOrder] Reviewing work order:', orderId, status);
-
-    wx.showLoading({
-      title: '提交中...',
-      mask: true
-    });
-
-    const result = await wx.cloud.callFunction({
-      name: 'workOrderManager',
-      data: {
-        action: 'reviewOrder',
-        data: {
-          order_id: orderId,
-          status,
-          review_notes: reviewNotes
-        }
-      }
-    });
-
-    wx.hideLoading();
-
-    if (!result.result || !result.result.success) {
-      throw new Error(result.result?.error || '审核工单失败');
-    }
-
-    console.log('[WorkOrder] Review submitted');
-    return result.result;
-
-  } catch (error) {
-    wx.hideLoading();
-    console.error('[WorkOrder] Review error:', error);
-    throw error;
-  }
+  console.log('[WorkOrder] Reviewing work order:', orderId, status);
+  const result = await callCloud('workOrderManager', {
+    action: 'reviewOrder',
+    data: { order_id: orderId, status, review_notes: reviewNotes }
+  }, { loadingText: '提交中...' });
+  console.log('[WorkOrder] Review submitted');
+  return result;
 };
 
 /**
@@ -403,37 +190,12 @@ const reviewWorkOrder = async (orderId, status, reviewNotes) => {
  * @returns {Promise<Object>} 更新结果
  */
 const updateWorkOrderDetails = async (orderId, updates) => {
-  try {
-    console.log('[WorkOrder] Updating work order details:', orderId, updates);
-
-    wx.showLoading({
-      title: '保存中...',
-      mask: true
-    });
-
-    const result = await wx.cloud.callFunction({
-      name: 'workOrderManager',
-      data: {
-        action: 'updateDetails',
-        data: {
-          order_id: orderId,
-          updates: updates || {}
-        }
-      }
-    });
-
-    wx.hideLoading();
-
-    if (!result.result || !result.result.success) {
-      throw new Error(result.result?.error || '保存失败');
-    }
-
-    return result.result;
-  } catch (error) {
-    wx.hideLoading();
-    console.error('[WorkOrder] Update details error:', error);
-    throw error;
-  }
+  console.log('[WorkOrder] Updating work order details:', orderId, updates);
+  const result = await callCloud('workOrderManager', {
+    action: 'updateDetails',
+    data: { order_id: orderId, updates: updates || {} }
+  }, { loadingText: '保存中...' });
+  return result;
 };
 
 /**
@@ -442,30 +204,13 @@ const updateWorkOrderDetails = async (orderId, updates) => {
  * @returns {Promise<Object>} 删除结果
  */
 const deleteWorkOrder = async (orderId) => {
-  try {
-    console.log('[WorkOrder] Deleting work order:', orderId);
-
-    const result = await wx.cloud.callFunction({
-      name: 'workOrderManager',
-      data: {
-        action: 'delete',
-        data: {
-          order_id: orderId
-        }
-      }
-    });
-
-    if (!result.result || !result.result.success) {
-      throw new Error(result.result?.error || '删除工单失败');
-    }
-
-    console.log('[WorkOrder] Work order deleted');
-    return result.result;
-
-  } catch (error) {
-    console.error('[WorkOrder] Delete error:', error);
-    throw error;
-  }
+  console.log('[WorkOrder] Deleting work order:', orderId);
+  const result = await callCloudSilent('workOrderManager', {
+    action: 'delete',
+    data: { order_id: orderId }
+  });
+  console.log('[WorkOrder] Work order deleted');
+  return result;
 };
 
 module.exports = {

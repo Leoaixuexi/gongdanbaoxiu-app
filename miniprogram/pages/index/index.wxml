@@ -91,7 +91,7 @@
     <block wx:if="{{!loading && workOrders.length > 0}}">
       <view
         wx:for="{{workOrders}}"
-        wx:key="index"
+        wx:key="order_id"
         class="ticket-card"
         bindtap="navigateToDetail"
         data-id="{{item.order_id}}"

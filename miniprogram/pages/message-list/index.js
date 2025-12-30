@@ -303,8 +303,10 @@ Page({
           this.setData({ messages });
           this.currentSwipedIndex = -1;
 
-          // 同步更新 TabBar 未读数
-          this.updateTabBarUnreadCount();
+          // 如果删除的是未读消息，同步更新 TabBar 未读数
+          if (!message.isRead) {
+            this.updateTabBarUnreadCount(-1);
+          }
 
           wx.showToast({
             title: '删除成功',
@@ -321,8 +323,9 @@ Page({
    */
   async handleMarkAllRead() {
     const unreadMessages = this.data.messages.filter(m => !m.isRead);
+    const unreadCount = unreadMessages.length;
 
-    if (unreadMessages.length === 0) {
+    if (unreadCount === 0) {
       wx.showToast({
         title: '没有未读消息',
         icon: 'none',
@@ -348,8 +351,8 @@ Page({
 
       this.setData({ messages });
 
-      // 同步更新 TabBar 未读数
-      this.updateTabBarUnreadCount();
+      // 同步更新 TabBar 未读数（乐观更新 -未读数量）
+      this.updateTabBarUnreadCount(-unreadCount);
 
       wx.hideLoading();
       wx.showToast({
@@ -409,8 +412,8 @@ Page({
           });
           this.setData({ messages });
 
-          // 同步更新 TabBar 未读数
-          this.updateTabBarUnreadCount();
+          // 同步更新 TabBar 未读数（乐观更新 -1）
+          this.updateTabBarUnreadCount(-1);
         } catch (error) {
           console.error('[Message List] Mark as read error:', error);
           // 失败时不更新状态，保持数据一致性
@@ -467,8 +470,30 @@ Page({
   /**
    * 更新 TabBar 未读数
    * 由于当前页面是子页面，需要通过页面栈获取 tabBar 页面实例
+   * @param {number} delta - 未读数变化量（负数表示减少）
    */
-  updateTabBarUnreadCount() {
+  updateTabBarUnreadCount(delta = 0) {
+    // 立即乐观更新 globalData，避免切换 Tab 时显示旧值
+    if (delta !== 0) {
+      const app = getApp();
+      if (app && app.globalData.unreadCounts) {
+        const counts = app.globalData.unreadCounts;
+        const newTotal = Math.max(0, (counts.totalUnread || 0) + delta);
+
+        // 根据模块类型更新对应的分类计数
+        const moduleKey = this.data.moduleId === 'workorder' ? 'workorderCount'
+                        : this.data.moduleId === 'reminder' ? 'reminderCount'
+                        : 'notificationCount';
+        const newModuleCount = Math.max(0, (counts[moduleKey] || 0) + delta);
+
+        app.globalData.unreadCounts = {
+          ...counts,
+          totalUnread: newTotal,
+          [moduleKey]: newModuleCount
+        };
+      }
+    }
+
     // 获取当前页面栈
     const pages = getCurrentPages();
     // 找到 tabBar 页面（notifications 或 index）

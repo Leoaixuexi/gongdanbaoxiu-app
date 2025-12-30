@@ -16,6 +16,15 @@ App({
     systemInfo: null,
     apiBaseUrl: API_BASE_URL,
     isLoggedIn: false,
+    // 未读消息数缓存，避免切换 Tab 时徽章回退
+    unreadCounts: {
+      notificationCount: 0,
+      workorderCount: 0,
+      reminderCount: 0,
+      totalUnread: 0
+    },
+    // 标记未读数是否已初始化，避免多个 TabBar 组件重复请求
+    _unreadInitialized: false
   },
 
   /**

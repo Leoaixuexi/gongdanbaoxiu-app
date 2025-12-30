@@ -755,15 +755,32 @@ Page({
     }
   },
 
+  // 批量更新机制 - 用于合并图片加载的setData调用
+  _pendingPhotoUpdates: {},
+  _photoUpdateTimer: null,
+
+  /**
+   * 调度批量更新（50ms防抖窗口）
+   */
+  _schedulePhotoUpdate: function () {
+    if (this._photoUpdateTimer) return;
+    this._photoUpdateTimer = setTimeout(() => {
+      if (Object.keys(this._pendingPhotoUpdates).length > 0) {
+        this.setData(this._pendingPhotoUpdates);
+        this._pendingPhotoUpdates = {};
+      }
+      this._photoUpdateTimer = null;
+    }, 50);
+  },
+
   /**
    * 图片加载成功
    */
   onPhotoLoad: function (e) {
     const { orderIndex, photoIndex } = e.currentTarget.dataset;
     const key = `workOrders[${orderIndex}].photoLoaded[${photoIndex}]`;
-    this.setData({
-      [key]: true
-    });
+    this._pendingPhotoUpdates[key] = true;
+    this._schedulePhotoUpdate();
   },
 
   /**
@@ -771,12 +788,9 @@ Page({
    */
   onPhotoError: function (e) {
     const { orderIndex, photoIndex } = e.currentTarget.dataset;
-    const loadedKey = `workOrders[${orderIndex}].photoLoaded[${photoIndex}]`;
-    const errorKey = `workOrders[${orderIndex}].photoError[${photoIndex}]`;
-    this.setData({
-      [loadedKey]: true,
-      [errorKey]: true
-    });
+    this._pendingPhotoUpdates[`workOrders[${orderIndex}].photoLoaded[${photoIndex}]`] = true;
+    this._pendingPhotoUpdates[`workOrders[${orderIndex}].photoError[${photoIndex}]`] = true;
+    this._schedulePhotoUpdate();
   },
 
   /**

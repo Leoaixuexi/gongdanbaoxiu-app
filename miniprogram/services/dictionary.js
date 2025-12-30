@@ -9,6 +9,9 @@ const CACHE_DURATION = 5 * 60 * 1000; // 5分钟
 // 内存缓存
 const cache = {};
 
+// 请求去重Map - 防止同一字典的并发请求
+const _pendingFetches = new Map();
+
 // 硬编码兜底值
 const FALLBACK_OPTIONS = {
   floor: ['1楼', '2楼', '3楼', '4楼', '5楼', 'B1', 'B2'],
@@ -23,38 +26,54 @@ const FALLBACK_OPTIONS = {
  * @returns {Promise<object|null>} 字典对象
  */
 const getDictionary = async (dictKey) => {
-  // 检查缓存
+  // 1. 检查是否有进行中的相同请求（请求去重）
+  if (_pendingFetches.has(dictKey)) {
+    console.log(`[Dictionary] Reusing pending request: ${dictKey}`);
+    return _pendingFetches.get(dictKey);
+  }
+
+  // 2. 检查缓存
   const cached = cache[dictKey];
   if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
     console.log(`[Dictionary] Using cached: ${dictKey}`);
     return cached.data;
   }
 
-  try {
-    console.log(`[Dictionary] Fetching: ${dictKey}`);
-    const result = await wx.cloud.callFunction({
-      name: 'dictionaryManager',
-      data: {
-        action: 'get',
-        data: { dict_key: dictKey }
+  // 3. 发起新请求并记录
+  const fetchPromise = (async () => {
+    try {
+      console.log(`[Dictionary] Fetching: ${dictKey}`);
+      const result = await wx.cloud.callFunction({
+        name: 'dictionaryManager',
+        data: {
+          action: 'get',
+          data: { dict_key: dictKey }
+        }
+      });
+
+      if (result.result && result.result.success) {
+        // 更新缓存
+        cache[dictKey] = {
+          data: result.result.data,
+          timestamp: Date.now()
+        };
+        return result.result.data;
       }
-    });
 
-    if (result.result && result.result.success) {
-      // 更新缓存
-      cache[dictKey] = {
-        data: result.result.data,
-        timestamp: Date.now()
-      };
-      return result.result.data;
+      console.warn(`[Dictionary] Not found: ${dictKey}`);
+      return null;
+    } catch (error) {
+      console.error(`[Dictionary] Error fetching ${dictKey}:`, error);
+      return null;
+    } finally {
+      // 请求完成后从去重Map中移除
+      _pendingFetches.delete(dictKey);
     }
+  })();
 
-    console.warn(`[Dictionary] Not found: ${dictKey}`);
-    return null;
-  } catch (error) {
-    console.error(`[Dictionary] Error fetching ${dictKey}:`, error);
-    return null;
-  }
+  // 将Promise存入去重Map
+  _pendingFetches.set(dictKey, fetchPromise);
+  return fetchPromise;
 };
 
 /**

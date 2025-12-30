@@ -58,8 +58,8 @@
         </view>
         
         <!-- 消息卡片（可滑动） -->
-        <view 
-          class="message-item {{item.swiped ? 'swiped' : ''}}" 
+        <view
+          class="message-item {{item.swiped ? 'swiped' : ''}}"
           bindtouchstart="onTouchStart"
           bindtouchmove="onTouchMove"
           bindtouchend="onTouchEnd"
@@ -67,15 +67,15 @@
           data-id="{{item.id}}"
           data-index="{{index}}"
         >
-          <!-- 未读指示点 -->
-          <view class="unread-dot {{item.isRead ? 'dot-hidden' : 'dot-visible'}}"></view>
-          
           <!-- 消息内容 -->
           <view class="message-content">
-            <!-- 标题 - 工单编号显示绿色 -->
+            <!-- 标题 - 工单编号显示绿色，后面追加阅读状态 -->
             <view class="message-title-row">
               <text class="message-title {{item.isRead ? '' : 'title-unread'}}">{{item.titlePrefix}}</text>
               <text class="message-order-number">{{item.orderNumber}}</text>
+              <!-- 阅读状态：未读红色，已读灰色 -->
+              <text wx:if="{{!item.isRead}}" class="read-status unread">未读</text>
+              <text wx:else class="read-status read">已读</text>
             </view>
             <!-- 描述文本 -->
             <text class="message-desc">{{item.content}}</text>

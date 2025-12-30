@@ -278,6 +278,29 @@
   line-height: 1.4;
 }
 
+/* 阅读状态标签 */
+.read-status {
+  font-size: 18rpx;
+  font-weight: 500;
+  margin-left: 10rpx;
+  line-height: 1;
+  padding: 3rpx 8rpx;
+  border-radius: 4rpx;
+}
+
+/* 未读 - 红色背景 */
+.read-status.unread {
+  color: #FFFFFF;
+  background-color: #EF4444;
+}
+
+/* 已读 - 灰色边框 */
+.read-status.read {
+  color: #9CA3AF;
+  background-color: transparent;
+  border: 1rpx solid #9CA3AF;
+}
+
 .title-unread {
   color: #1F2937; /* 未读颜色也调暗 */
 }
