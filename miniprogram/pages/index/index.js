@@ -67,7 +67,9 @@ Page({
     scrollIntoView: '',
     // 触摸滑动相关
     touchStartX: 0,
-    touchStartY: 0
+    touchStartY: 0,
+    // 防重复加载
+    _isRefreshing: false
   },
 
   /**
@@ -115,6 +117,17 @@ Page({
       });
     } catch (error) {
       console.error('[Index] Load dictionaries error:', error);
+    }
+  },
+
+  /**
+   * Lifecycle - Page Unload
+   * 清理定时器防止内存泄漏
+   */
+  onUnload: function () {
+    if (this.searchTimer) {
+      clearTimeout(this.searchTimer);
+      this.searchTimer = null;
     }
   },
 
@@ -275,9 +288,16 @@ Page({
    * Pull down to refresh
    */
   onPullDownRefresh: function () {
+    if (this.data._isRefreshing) {
+      wx.stopPullDownRefresh();
+      return;
+    }
     console.log('[Index] Pull down refresh');
-    this.loadWorkOrders();
-    wx.stopPullDownRefresh();
+    this.setData({ _isRefreshing: true });
+    this.loadWorkOrders().finally(() => {
+      this.setData({ _isRefreshing: false });
+      wx.stopPullDownRefresh();
+    });
   },
 
   /**

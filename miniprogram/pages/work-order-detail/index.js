@@ -107,7 +107,9 @@ Page({
       { value: 'Repaired', label: '已修复', color: '#10B981' },
       { value: 'Completed', label: '已完成', color: '#059669' },
       { value: 'Needs Rework', label: '需返工', color: '#EF4444' }
-    ]
+    ],
+    // 防重复刷新
+    _isRefreshing: false
   },
 
   /**
@@ -144,9 +146,16 @@ Page({
    * Pull down to refresh
    */
   onPullDownRefresh: function () {
+    if (this.data._isRefreshing) {
+      wx.stopPullDownRefresh();
+      return;
+    }
     console.log('[Detail] Pull down refresh');
-    this.loadWorkOrder();
-    wx.stopPullDownRefresh();
+    this.setData({ _isRefreshing: true });
+    this.loadWorkOrder().finally(() => {
+      this.setData({ _isRefreshing: false });
+      wx.stopPullDownRefresh();
+    });
   },
 
   /**
