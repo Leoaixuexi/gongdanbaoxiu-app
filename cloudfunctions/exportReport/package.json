@@ -1,9 +1,0 @@
-{
-  "name": "exportReport",
-  "version": "1.0.0",
-  "description": "Export reports to CSV format",
-  "main": "index.js",
-  "dependencies": {
-    "wx-server-sdk": "~2.6.3"
-  }
-}
