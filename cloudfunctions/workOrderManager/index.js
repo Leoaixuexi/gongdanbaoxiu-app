@@ -1489,6 +1489,15 @@ exports.main = async (event, context) => {
           }
 
           const orderToDelete = orders[0];
+
+          // 权限校验：管理员可删除任意工单，其他用户只能删除自己提交的工单
+          const isAdmin = deleteUser.role_id === 1;
+          const isSubmitter = orderToDelete.submitter?.user_id === deleteUser.user_id;
+
+          if (!isAdmin && !isSubmitter) {
+            return { success: false, error: '只能删除自己提交的工单' };
+          }
+
           // 只允许删除待维修状态的工单
           const normalizedStatus = normalizeStatus(orderToDelete.status);
           if (normalizedStatus !== 'Pending Repair') {

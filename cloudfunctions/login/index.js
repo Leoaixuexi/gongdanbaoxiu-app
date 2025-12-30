@@ -17,11 +17,8 @@ exports.main = async (event, context) => {
   try {
     const wxContext = cloud.getWXContext();
 
-    console.log('[Cloud Function - Login] User login:', {
-      openid: wxContext.OPENID,
-      appid: wxContext.APPID,
-      unionid: wxContext.UNIONID
-    });
+    // 只记录操作状态，不输出敏感信息
+    console.log('[Cloud Function - Login] User login success');
 
     return {
       success: true,

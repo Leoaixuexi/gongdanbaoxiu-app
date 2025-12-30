@@ -26,6 +26,14 @@ Page({
     }
   },
 
+  onUnload() {
+    // 清理定时器，防止内存泄漏
+    if (this._countdownTimer) {
+      clearInterval(this._countdownTimer);
+      this._countdownTimer = null;
+    }
+  },
+
   // 输入新手机号
   onPhoneInput(e) {
     const value = e.detail.value.replace(/\D/g, '').slice(0, 11)
@@ -60,10 +68,12 @@ Page({
       countdown: 60
     })
 
-    const timer = setInterval(() => {
+    // 将定时器存储到实例上，以便在onUnload中清理
+    this._countdownTimer = setInterval(() => {
       const count = this.data.countdown - 1
       if (count <= 0) {
-        clearInterval(timer)
+        clearInterval(this._countdownTimer)
+        this._countdownTimer = null
         this.setData({ countdown: 0 })
       } else {
         this.setData({ countdown: count })

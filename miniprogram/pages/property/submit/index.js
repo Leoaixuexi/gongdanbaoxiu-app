@@ -292,6 +292,11 @@ Page({
    * Handle Submit
    */
   handleSubmit: async function () {
+    // 防止重复提交
+    if (this.data.submitting) {
+      return;
+    }
+
     if (!this.validateForm()) {
       return;
     }
@@ -314,23 +319,25 @@ Page({
                 mask: true
               });
 
-              for (let i = 0; i < localPhotos.length; i++) {
-                const tempFilePath = localPhotos[i];
-                const cloudPath = `work-orders/${Date.now()}-${i}.jpg`;
+              try {
+                for (let i = 0; i < localPhotos.length; i++) {
+                  const tempFilePath = localPhotos[i];
+                  const cloudPath = `work-orders/${Date.now()}-${i}.jpg`;
 
-                try {
-                  const uploadResult = await wx.cloud.uploadFile({
-                    cloudPath: cloudPath,
-                    filePath: tempFilePath
-                  });
-                  uploadedPhotoUrls.push(uploadResult.fileID);
-                  console.log('[Submit] Photo uploaded:', uploadResult.fileID);
-                } catch (uploadError) {
-                  console.error('[Submit] Photo upload error:', uploadError);
+                  try {
+                    const uploadResult = await wx.cloud.uploadFile({
+                      cloudPath: cloudPath,
+                      filePath: tempFilePath
+                    });
+                    uploadedPhotoUrls.push(uploadResult.fileID);
+                    console.log('[Submit] Photo uploaded:', uploadResult.fileID);
+                  } catch (uploadError) {
+                    console.error('[Submit] Photo upload error:', uploadError);
+                  }
                 }
+              } finally {
+                wx.hideLoading();
               }
-
-              wx.hideLoading();
             }
 
             const submitData = {
