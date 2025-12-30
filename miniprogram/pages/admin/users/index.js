@@ -25,7 +25,11 @@ Page({
       { value: 2, label: '行政经理' },
       { value: 3, label: '维修员' },
       { value: 4, label: '办美员工' }
-    ]
+    ],
+
+    // 防重复加载
+    _isLoading: false,
+    _lastLoadTime: 0
   },
 
   onLoad() {
@@ -34,6 +38,12 @@ Page({
   },
 
   onShow() {
+    // 防止2秒内重复加载
+    const now = Date.now();
+    if (this.data._isLoading || (now - this.data._lastLoadTime < 2000)) {
+      console.log('[Users] Skip duplicate load');
+      return;
+    }
     this.loadUsers();
   },
 
@@ -75,7 +85,9 @@ Page({
    * 加载用户列表
    */
   async loadUsers() {
-    this.setData({ loading: true });
+    if (this.data._isLoading) return;
+
+    this.setData({ loading: true, _isLoading: true });
 
     try {
       const filters = {};
@@ -112,7 +124,9 @@ Page({
 
       this.setData({
         users: filteredUsers,
-        loading: false
+        loading: false,
+        _isLoading: false,
+        _lastLoadTime: Date.now()
       });
     } catch (error) {
       console.error('[Users] Load error:', error);
@@ -120,7 +134,7 @@ Page({
         title: '加载失败',
         icon: 'none'
       });
-      this.setData({ loading: false });
+      this.setData({ loading: false, _isLoading: false });
     }
   },
 

@@ -155,22 +155,23 @@ Component({
         if (workOrder && workOrder.time_remaining !== undefined) {
           // Recalculate time remaining (decrease by 1 minute)
           const updatedTimeRemaining = workOrder.time_remaining - 60000;
+          const isOverdue = updatedTimeRemaining <= 0;
 
-          // Update work order data
-          this.setData({
+          // 收集所有需要更新的数据
+          const updates = {
             'workOrder.time_remaining': updatedTimeRemaining,
             slaDisplay: formatSLATimeRemaining(updatedTimeRemaining)
-          });
+          };
 
-          // Update badge if status changed
-          const isOverdue = updatedTimeRemaining <= 0;
+          // Update badge if status changed to overdue
           if (isOverdue && !this.data.showSLABadge) {
-            this.setData({
-              showSLABadge: true,
-              slaBadgeText: '超期',
-              slaColorClass: 'red'
-            });
+            updates.showSLABadge = true;
+            updates.slaBadgeText = '超期';
+            updates.slaColorClass = 'red';
           }
+
+          // 合并setData，将2次调用合并为1次
+          this.setData(updates);
         }
       }, 60000);
 

@@ -125,12 +125,33 @@
   flex-shrink: 0;
 }
 
+.avatar-wrapper {
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
 .avatar {
   width: 64rpx;
   height: 64rpx;
   border-radius: 50%;
   border: 2rpx solid #f3f4f6;
   box-shadow: 0 4rpx 12rpx rgba(15, 23, 42, 0.12);
+}
+
+.avatar-placeholder {
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #10b981 0%, #14b8a6 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-size: 28rpx;
+  font-weight: 600;
 }
 
 .user-name {

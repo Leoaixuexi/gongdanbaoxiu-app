@@ -38,7 +38,12 @@ Page({
     isDateTimePickerOpen: false,
     tempDate: '',
     tempTime: '',
-    displayDateTime: ''
+    displayDateTime: '',
+    // 通用选择器数据
+    isSelectorOpen: false,
+    selectorOptions: [],
+    selectorType: '',
+    selectorCurrentValue: ''
   },
 
   onLoad(options) {
@@ -180,14 +185,6 @@ Page({
     });
   },
 
-  // 楼层选择
-  handleFloorChange(e) {
-    const index = e.detail.value;
-    this.setData({
-      'formData.floor': this.data.floorOptions[index]
-    });
-  },
-
   // 具体位置变化
   handleLocationChange(e) {
     this.setData({
@@ -209,28 +206,54 @@ Page({
     });
   },
 
-  // 工单类别选择
-  handleCategorySelect() {
-    wx.showActionSheet({
-      itemList: this.data.categoryOptions,
-      success: (res) => {
-        this.setData({
-          'formData.category': this.data.categoryOptions[res.tapIndex]
-        });
-      }
+  // --- 通用选择器逻辑 ---
+  openSelector(e) {
+    const type = e.currentTarget.dataset.type;
+    let options = [];
+    let currentValue = '';
+
+    switch(type) {
+      case 'floor':
+        options = this.data.floorOptions;
+        currentValue = this.data.formData.floor || '';
+        break;
+      case 'category':
+        options = this.data.categoryOptions;
+        currentValue = this.data.formData.category || '';
+        break;
+      case 'party':
+        options = this.data.responsibleOptions;
+        currentValue = this.data.formData.responsible || '';
+        break;
+    }
+
+    this.setData({
+      isSelectorOpen: true,
+      selectorOptions: options,
+      selectorType: type,
+      selectorCurrentValue: currentValue
     });
   },
 
-  // 责任方选择
-  handleResponsibleSelect() {
-    wx.showActionSheet({
-      itemList: this.data.responsibleOptions,
-      success: (res) => {
-        this.setData({
-          'formData.responsible': this.data.responsibleOptions[res.tapIndex]
-        });
-      }
-    });
+  closeSelector() {
+    this.setData({ isSelectorOpen: false });
+  },
+
+  onSelectorConfirm(e) {
+    const selectedValue = e.detail.value;
+    const type = this.data.selectorType;
+
+    const updates = { isSelectorOpen: false };
+
+    if (type === 'floor') {
+      updates['formData.floor'] = selectedValue;
+    } else if (type === 'category') {
+      updates['formData.category'] = selectedValue;
+    } else if (type === 'party') {
+      updates['formData.responsible'] = selectedValue;
+    }
+
+    this.setData(updates);
   },
 
   // 优先级按钮点击

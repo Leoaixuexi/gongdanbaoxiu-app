@@ -149,7 +149,7 @@
 /* 时长标签 */
 .duration-pill {
   background-color: #fff7ed;
-  padding: 12rpx 32rpx;
+  padding: 10rpx 24rpx;
   border-radius: 9999rpx;
   border: 2rpx solid #ffedd5;
   box-shadow: 0 2rpx 4rpx 0 rgba(0, 0, 0, 0.05);
@@ -159,11 +159,11 @@
 /* 时长标签上的小三角箭头 */
 .duration-arrow {
   position: absolute;
-  top: -10rpx;
+  top: -9rpx;
   left: 50%;
   transform: translateX(-50%) rotate(45deg);
-  width: 20rpx;
-  height: 20rpx;
+  width: 16rpx;
+  height: 16rpx;
   background-color: #fff7ed;
   border-top: 2rpx solid #ffedd5;
   border-left: 2rpx solid #ffedd5;
@@ -172,7 +172,7 @@
 .duration-text {
   color: #ea580c;
   font-weight: bold;
-  font-size: 30rpx;
+  font-size: 26rpx;
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
 }
@@ -181,11 +181,11 @@
 .completed-time-container {
   display: flex;
   justify-content: center;
-  margin-top: 20rpx;
+  margin-top: 12rpx;
 }
 
 .completed-time-text {
-  color: #9CA3AF;
-  font-size: 24rpx;
-  font-weight: 400;
+  color: #333333;
+  font-size: 20rpx;
+  font-weight: 600;
 }

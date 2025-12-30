@@ -131,6 +131,12 @@ page {
   font-weight: 400 !important;
 }
 
+/* 自动生成提示文字 */
+.auto-generate-text {
+  color: #999;
+  font-size: 28rpx;
+}
+
 /* 输入框 placeholder */
 .card-input::placeholder {
   color: #CCCCCC !important;

@@ -9,6 +9,9 @@ const storage = require('./storage');
 const cloud = require('./cloud');
 const { STORAGE_KEYS } = require('../utils/constants');
 
+// Token过期天数
+const TOKEN_EXPIRY_DAYS = 7;
+
 /**
  * Password Login (Username/Password Authentication)
  * Uses cloud function for password-based authentication
@@ -196,11 +199,34 @@ const isAuthenticated = async () => {
   try {
     const token = await storage.get(STORAGE_KEYS.TOKEN);
     const userInfo = await storage.get(STORAGE_KEYS.USER_INFO);
+    const lastLogin = await storage.get(STORAGE_KEYS.LAST_LOGIN);
 
-    const isAuth = !!(token && userInfo);
-    console.log('[Auth] Is authenticated:', isAuth);
+    // 检查基本认证数据
+    if (!token || !userInfo) {
+      console.log('[Auth] No token or userInfo');
+      return false;
+    }
 
-    return isAuth;
+    // 检查Token是否过期
+    if (lastLogin) {
+      const loginTime = new Date(lastLogin).getTime();
+      const daysSinceLogin = (Date.now() - loginTime) / (1000 * 60 * 60 * 24);
+
+      if (daysSinceLogin > TOKEN_EXPIRY_DAYS) {
+        console.log('[Auth] Token已过期，天数:', daysSinceLogin.toFixed(1));
+        // 清除过期会话
+        await Promise.all([
+          storage.remove(STORAGE_KEYS.TOKEN),
+          storage.remove(STORAGE_KEYS.USER_INFO),
+          storage.remove(STORAGE_KEYS.USER_PERMISSIONS),
+          storage.remove(STORAGE_KEYS.LAST_LOGIN)
+        ]);
+        return false;
+      }
+    }
+
+    console.log('[Auth] Is authenticated: true');
+    return true;
   } catch (error) {
     console.error('[Auth] Error checking authentication:', error);
     return false;

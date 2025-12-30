@@ -20,8 +20,8 @@
         <view class="form-row avatar-row">
           <text class="label-text">头像</text>
           <view class="avatar-wrapper">
-            <!-- 假设有 avatar 字段，暂时用占位符 -->
-            <text class="avatar-placeholder">👤</text> 
+            <image wx:if="{{formData.avatar}}" class="avatar-img" src="{{formData.avatar}}" mode="aspectFill"></image>
+            <text wx:else class="avatar-placeholder">{{formData.name[0] || '?'}}</text>
           </view>
         </view>
 

@@ -77,15 +77,27 @@
             <text class="info-label">现场照片</text>
             <view class="info-value info-value-photos">
               <view class="photo-grid-inline">
-                <image
-                  wx:for="{{workOrder.photos}}"
-                  wx:key="index"
-                  class="photo-item-inline"
-                  src="{{item}}"
-                  mode="aspectFill"
-                  bindtap="previewPhoto"
-                  data-index="{{index}}"
-                />
+                <view wx:for="{{workOrder.photos}}" wx:key="index" class="photo-item-wrapper">
+                  <!-- 加载中状态 -->
+                  <view class="photo-loading" wx:if="{{!photoLoaded[index] && !photoError[index]}}">
+                    <van-loading size="20px" color="#10b981" />
+                  </view>
+                  <!-- 加载失败状态 -->
+                  <view class="photo-error" wx:if="{{photoError[index]}}">
+                    <text class="photo-error-icon">!</text>
+                    <text class="photo-error-text">加载失败</text>
+                  </view>
+                  <!-- 图片 -->
+                  <image
+                    class="photo-item-inline {{photoLoaded[index] ? 'photo-loaded' : 'photo-hidden'}}"
+                    src="{{item}}"
+                    mode="aspectFill"
+                    bindtap="previewPhoto"
+                    binderror="onPhotoError"
+                    bindload="onPhotoLoad"
+                    data-index="{{index}}"
+                  />
+                </view>
               </view>
             </view>
           </view>
@@ -239,11 +251,11 @@
       <view class="modal-body">
 
         
-        <!-- 需返工原因 -->
+        <!-- 需返工原因（必填） -->
         <view class="form-group">
           <textarea
             class="form-textarea rework-textarea"
-            placeholder="请输入返工原因，以便维修人员快速定位问题..."
+            placeholder="请输入返工原因（必填）"
             placeholder-class="rework-placeholder"
             value="{{reviewNotes}}"
             bindinput="onReviewNotesInput"
@@ -267,26 +279,20 @@
     </view>
   </view>
 
-  <!-- 更多操作弹窗 -->
+  <!-- 更多操作弹窗 - 底部抽屉 -->
   <view wx:if="{{showMoreActions}}" class="modal-overlay" catchtap="closeMoreActions">
-    <view class="modal-content selector-modal" catchtap="stopPropagation">
-      <view class="modal-header">
-        <text class="modal-title">更多操作</text>
-        <view class="modal-close" catchtap="closeMoreActions">
-          <text class="iconfont icon-close">×</text>
+    <view class="more-actions-drawer" catchtap="stopPropagation">
+      <!-- 删除按钮 - 物业人员可见 -->
+      <view wx:if="{{showDeleteInMenu}}" class="drawer-action-item delete-action" catchtap="handleDelete">
+        <view class="icon-wrapper">
+          <text class="iconfont icon-shanchu1"></text>
         </view>
+        <text class="action-label">删除</text>
       </view>
-
-      <scroll-view scroll-y class="selector-scroll">
-        <!-- 删除 - 物业人员可见 -->
-        <view wx:if="{{showDeleteInMenu}}" class="selector-item" catchtap="handleDelete">
-          <text class="selector-item-text delete-text">删除</text>
-        </view>
-        <!-- 空白卡片提示 -->
-        <view wx:if="{{showEmptyMenu && !showDeleteInMenu}}" class="selector-item">
-          <text class="selector-item-text empty-text">暂无可用操作</text>
-        </view>
-      </scroll-view>
+      <!-- 空白提示 -->
+      <view wx:if="{{showEmptyMenu && !showDeleteInMenu && !showNeedsReworkInMenu}}" class="drawer-action-item empty-action">
+        <text class="empty-text">暂无可用功能</text>
+      </view>
     </view>
   </view>
 

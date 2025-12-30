@@ -319,19 +319,13 @@ function getBarChartOption(categories, data, title = '') {
   return {
     color: ['#3B82F6'],
     tooltip: {
-      trigger: 'axis',
+      trigger: 'item',
       backgroundColor: '#fff',
       borderColor: '#fff',
       borderWidth: 1,
       textStyle: { color: '#1f2937' },
       formatter: function (params) {
-        // 只显示"楼层：数量"格式
-        const item = params[0];
-        return item.name + '：' + item.value;
-      },
-      axisPointer: {
-        type: 'shadow',
-        shadowStyle: { color: 'rgba(243, 244, 246, 0.5)' }
+        return params.name + '：' + params.value;
       }
     },
     grid: {
@@ -386,6 +380,11 @@ function getBarChartOption(categories, data, title = '') {
           }, {
             offset: 1, color: '#60A5FA' // Blue-400
           }]
+        }
+      },
+      emphasis: {
+        itemStyle: {
+          color: '#9CA3AF'
         }
       },
       label: {

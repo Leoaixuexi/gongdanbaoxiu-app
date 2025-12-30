@@ -13,6 +13,7 @@ Page({
   data: {
     workOrders: [],
     loading: true,
+    preloadedIndex: 0, // 已预加载图片的工单索引
     searchText: '',
     activeTab: '', // '', today, week, month, date - 默认未选中
     activeStatus: '', // 默认为空，onShow 时设置
@@ -20,6 +21,14 @@ Page({
     isDatePickerOpen: false,
     startDate: '',
     endDate: '',
+    // van-calendar 日期范围（往前24个月，往后12个月）
+    minDate: new Date(new Date().getFullYear() - 2, new Date().getMonth(), 1).getTime(),
+    maxDate: new Date(new Date().getFullYear() + 1, new Date().getMonth() + 1, 0).getTime(),
+    // 默认日期设为当前日期
+    calendarDefaultDate: null,
+    // 临时存储选择的日期范围
+    tempStartDate: '',
+    tempEndDate: '',
     // 筛选弹窗
     isFilterOpen: false,
     filterRows: [
@@ -31,8 +40,7 @@ Page({
     ],
     // 筛选选择器弹窗
     isPickerOpen: false,
-    pickerTitle: '',
-    pickerOptions: [],
+    pickerColumns: [],
     pickerSelectedValue: '',
     currentPickerId: '',
     // 报修人输入弹窗
@@ -193,6 +201,7 @@ Page({
       console.error('[Index] Get user info error:', error);
     }
 
+    // 每次 onShow 都刷新数据
     this.loadWorkOrders();
   },
 
@@ -269,6 +278,18 @@ Page({
     console.log('[Index] Pull down refresh');
     this.loadWorkOrders();
     wx.stopPullDownRefresh();
+  },
+
+  /**
+   * 滚动到底部时加载更多图片
+   */
+  onReachBottom: function () {
+    const { workOrders, preloadedIndex } = this.data;
+    // 如果还有未预加载的工单，继续加载
+    if (preloadedIndex < workOrders.length) {
+      console.log('[Index] Reach bottom, loading more photos from index', preloadedIndex);
+      this.preloadPhotoUrls(preloadedIndex, 5);
+    }
   },
 
   /**
@@ -353,8 +374,12 @@ Page({
 
       this.setData({
         workOrders: filteredOrders,
-        loading: false
+        loading: false,
+        preloadedIndex: 0 // 重置预加载索引
       });
+
+      // 预加载前5个工单的图片（异步执行，不阻塞列表显示）
+      this.preloadPhotoUrls(0, 5);
 
       console.log('[Index] Work orders loaded:', filteredOrders.length);
       if (filteredOrders.length > 0) {
@@ -378,23 +403,17 @@ Page({
 
   /**
    * Filter orders by user role
-   * 行政经理：看到所有工单
-   * 办美员工：只看自己提报的工单
+   * 行政经理和办美员工：共享可见所有工单
    * 维修员：只看责任方=自己部门的工单
    */
   filterByUserRole: function (orders) {
-    const { isPropertyStaff, isMaintenanceWorker, isManager, userId, userDepartment } = this.data;
+    const { isPropertyStaff, isMaintenanceWorker, isManager, userDepartment } = this.data;
 
-    if (isManager) {
-      // 行政经理：显示所有工单
+    if (isManager || isPropertyStaff) {
+      // 行政经理和办美员工：共享可见所有工单
       return orders;
-    } else if (isPropertyStaff && userId) {
-      // 办美员工：只显示自己提报的工单
-      return orders.filter(order => {
-        return order.submitter && order.submitter.user_id === userId;
-      });
     } else if (isMaintenanceWorker && userDepartment) {
-      // 维修员：只显示责任方与自己部门匹配的工单（服务端也会做过滤，这里做兜底）
+      // 维修员：只显示责任方与自己部门匹配的工单
       return orders.filter(order => {
         return order.responsible_party === userDepartment;
       });
@@ -627,14 +646,117 @@ Page({
       });
     }
 
+    // 初始化照片加载状态
+    const photoLoaded = {};
+    const photoError = {};
+    validPhotos.forEach((_, idx) => {
+      photoLoaded[idx] = false;
+      photoError[idx] = false;
+    });
+
     return {
       ...order,
       statusColor: statusColorMap[order.status] || 'gray',
       statusText: statusTextMap[order.status] || order.status,
       statusClass: statusClassMap[order.status] || 'status-processing',
       created_at: formattedTime,
-      photos: validPhotos
+      photos: validPhotos,
+      photoLoaded: photoLoaded,
+      photoError: photoError
     };
+  },
+
+  /**
+   * 预加载图片临时 URL（分批加载）
+   * @param {number} startIndex - 开始索引
+   * @param {number} count - 预加载数量
+   */
+  preloadPhotoUrls: async function (startIndex = 0, count = 5) {
+    try {
+      const orders = this.data.workOrders;
+      if (!orders || orders.length === 0) return;
+
+      // 只处理指定范围内的工单
+      const endIndex = Math.min(startIndex + count, orders.length);
+      const ordersToLoad = orders.slice(startIndex, endIndex);
+
+      // 收集需要转换的 cloud:// 图片
+      const cloudFileIds = [];
+      const fileIdToOrderMap = {};
+
+      ordersToLoad.forEach((order, idx) => {
+        const orderIndex = startIndex + idx;
+        if (order.photos && order.photos.length > 0) {
+          order.photos.forEach((photo, photoIndex) => {
+            // 只处理未转换的 cloud:// 链接
+            if (photo && photo.startsWith('cloud://')) {
+              cloudFileIds.push(photo);
+              fileIdToOrderMap[photo] = { orderIndex, photoIndex };
+            }
+          });
+        }
+      });
+
+      if (cloudFileIds.length === 0) {
+        // 没有需要转换的图片，但仍更新预加载索引
+        this.setData({ preloadedIndex: endIndex });
+        return;
+      }
+
+      console.log('[Index] Preloading photos for orders', startIndex, '-', endIndex - 1, ':', cloudFileIds.length, 'photos');
+
+      // 批量获取临时 URL
+      const result = await wx.cloud.getTempFileURL({
+        fileList: cloudFileIds
+      });
+
+      if (result.fileList && result.fileList.length > 0) {
+        const updates = {};
+        result.fileList.forEach(item => {
+          if (item.tempFileURL && item.status === 0) {
+            const mapping = fileIdToOrderMap[item.fileID];
+            if (mapping) {
+              const key = `workOrders[${mapping.orderIndex}].photos[${mapping.photoIndex}]`;
+              updates[key] = item.tempFileURL;
+            }
+          }
+        });
+
+        if (Object.keys(updates).length > 0) {
+          this.setData(updates);
+          console.log('[Index] Preloaded', Object.keys(updates).length, 'photo URLs');
+        }
+      }
+
+      // 记录已预加载到的索引
+      this.setData({ preloadedIndex: endIndex });
+    } catch (error) {
+      console.error('[Index] Preload photo URLs error:', error);
+    }
+  },
+
+  /**
+   * 图片加载成功
+   */
+  onPhotoLoad: function (e) {
+    const { orderIndex, photoIndex } = e.currentTarget.dataset;
+    const key = `workOrders[${orderIndex}].photoLoaded[${photoIndex}]`;
+    this.setData({
+      [key]: true
+    });
+  },
+
+  /**
+   * 图片加载失败
+   */
+  onPhotoError: function (e) {
+    const { orderIndex, photoIndex } = e.currentTarget.dataset;
+    const loadedKey = `workOrders[${orderIndex}].photoLoaded[${photoIndex}]`;
+    const errorKey = `workOrders[${orderIndex}].photoError[${photoIndex}]`;
+    this.setData({
+      [loadedKey]: true,
+      [errorKey]: true
+    });
   },
 
   /**
@@ -661,66 +783,6 @@ Page({
       searchText: ''
     });
     this.loadWorkOrders();
-  },
-
-  /**
-   * Handle Scan QR Code
-   */
-  handleScan: function () {
-    wx.scanCode({
-      success: (res) => {
-        console.log('[Index] Scan result:', res);
-        // 扫描结果作为工单编号，直接跳转到工单详情
-        const orderNumber = res.result;
-        if (orderNumber) {
-          // 根据工单编号查找工单ID并跳转
-          this.navigateToOrderByNumber(orderNumber);
-        }
-      },
-      fail: (err) => {
-        console.error('[Index] Scan failed:', err);
-        wx.showToast({
-          title: '扫码失败',
-          icon: 'none'
-        });
-      }
-    });
-  },
-
-  /**
-   * Navigate to Order by Order Number
-   * 根据工单编号查找并跳转到工单详情
-   */
-  navigateToOrderByNumber: async function (orderNumber) {
-    try {
-      wx.showLoading({ title: '查找工单...', mask: true });
-
-      // 调用服务查找工单
-      const result = await workOrderService.getWorkOrderByNumber(orderNumber);
-
-      wx.hideLoading();
-
-      if (result && result.order_id) {
-        // 标记正在导航到子页面
-        this.setData({ isNavigatingToSubPage: true });
-        // 找到工单，跳转到详情页
-        wx.navigateTo({
-          url: `/pages/work-order-detail/index?id=${result.order_id}`
-        });
-      } else {
-        wx.showToast({
-          title: '未找到该工单',
-          icon: 'none'
-        });
-      }
-    } catch (error) {
-      wx.hideLoading();
-      console.error('[Index] Find order by number failed:', error);
-      wx.showToast({
-        title: '查找工单失败',
-        icon: 'none'
-      });
-    }
   },
 
   /**
@@ -819,19 +881,10 @@ Page({
 
     this.setData({
       isPickerOpen: true,
-      pickerTitle: title,
-      pickerOptions: options,
+      pickerColumns: options,
       pickerSelectedValue: row.value || '',
       currentPickerId: id
     });
-  },
-
-  /**
-   * 选择器选项点击
-   */
-  onPickerOptionTap: function (e) {
-    const value = e.currentTarget.dataset.value;
-    this.setData({ pickerSelectedValue: value });
   },
 
   /**
@@ -844,14 +897,18 @@ Page({
   /**
    * 确认选择器选择
    */
-  confirmPickerSelection: function () {
-    const { currentPickerId, pickerSelectedValue, filterRows } = this.data;
+  confirmPickerSelection: function (e) {
+    const { currentPickerId, filterRows } = this.data;
+    // custom-picker 组件返回 detail: { value: '选中的值', index: 选中的索引 }
+    const selectedValue = e.detail.value;
+
     const updatedRows = filterRows.map(row => {
       if (row.id === currentPickerId) {
-        return { ...row, value: pickerSelectedValue };
+        return { ...row, value: selectedValue };
       }
       return row;
     });
+
     this.setData({
       filterRows: updatedRows,
       isPickerOpen: false
@@ -910,8 +967,12 @@ Page({
     });
 
     if (tab === 'date') {
+      const now = new Date().getTime();
       this.setData({
-        isDatePickerOpen: true
+        isDatePickerOpen: true,
+        calendarDefaultDate: [now, now],
+        tempStartDate: '',
+        tempEndDate: ''
       });
     } else {
       this.loadWorkOrders();
@@ -1025,60 +1086,50 @@ Page({
    */
   closeDatePicker: function () {
     this.setData({
-      isDatePickerOpen: false
+      isDatePickerOpen: false,
+      tempStartDate: '',
+      tempEndDate: ''
     });
-  },
-
-  stopPropagation: function () {
-    // Prevent event bubbling
   },
 
   onStartDateChange: function (e) {
     this.setData({
-      startDate: e.detail.value
+      tempStartDate: e.detail.value
     });
   },
 
   onEndDateChange: function (e) {
     this.setData({
-      endDate: e.detail.value
+      tempEndDate: e.detail.value
     });
-  },
-
-  cancelDatePicker: function () {
-    this.setData({
-      startDate: '',
-      endDate: '',
-      activeTab: '',
-      isDatePickerOpen: false
-    });
-    this.loadWorkOrders();
   },
 
   confirmDatePicker: function () {
-    if (!this.data.startDate || !this.data.endDate) {
+    if (!this.data.tempStartDate || !this.data.tempEndDate) {
       wx.showToast({
-        title: '请选择开始和结束日期',
+        title: '请选择完整日期范围',
         icon: 'none'
       });
       return;
     }
 
-    // 验证日期范围：开始日期不能大于结束日期
-    const start = new Date(this.data.startDate);
-    const end = new Date(this.data.endDate);
-    if (start > end) {
+    // 验证日期
+    if (new Date(this.data.tempStartDate) > new Date(this.data.tempEndDate)) {
       wx.showToast({
         title: '开始日期不能大于结束日期',
-        icon: 'none',
-        duration: 2000
+        icon: 'none'
       });
       return;
     }
 
     this.setData({
-      isDatePickerOpen: false
+      startDate: this.data.tempStartDate,
+      endDate: this.data.tempEndDate,
+      isDatePickerOpen: false,
+      tempStartDate: '',
+      tempEndDate: ''
     });
+
     this.loadWorkOrders();
   },
 

@@ -56,16 +56,33 @@ const SLA_RULES = {
 };
 
 /**
- * 生成工单编号
+ * 生成工单编号（格式: YYYYMMDDXXXXX，全局递增）
  */
-function generateOrderNumber() {
+async function generateOrderNumber() {
   const now = new Date();
   const year = now.getFullYear();
   const month = String(now.getMonth() + 1).padStart(2, '0');
   const day = String(now.getDate()).padStart(2, '0');
-  const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+  const dateStr = `${year}${month}${day}`;
 
-  return `WO${year}${month}${day}${random}`;
+  // 查询全局最大序列号
+  const workOrders = db.collection('work_orders');
+  const { data } = await workOrders
+    .orderBy('order_number', 'desc')
+    .limit(1)
+    .get();
+
+  let sequence = 1;
+  if (data.length > 0 && data[0].order_number) {
+    // 提取最后5位数字作为序列号
+    const lastNumber = data[0].order_number;
+    const match = lastNumber.match(/(\d{5})$/);
+    if (match) {
+      sequence = parseInt(match[1], 10) + 1;
+    }
+  }
+
+  return `${dateStr}${String(sequence).padStart(5, '0')}`;
 }
 
 /**
@@ -235,11 +252,63 @@ function addStatusHistory(fromStatus, toStatus, changedBy, notes = '') {
     to_status: toStatus,
     changed_by: {
       user_id: changedBy.user_id,
-      name: changedBy.name
+      name: changedBy.name,
+      avatar: changedBy.avatar || ''
     },
     changed_at: new Date(),
     notes
   };
+}
+
+/**
+ * 刷新工单中status_history的用户头像（获取最新头像）
+ */
+async function refreshStatusHistoryAvatars(order) {
+  if (!order || !order.status_history || order.status_history.length === 0) {
+    return order;
+  }
+
+  // 收集所有唯一的user_id
+  const userIds = [...new Set(
+    order.status_history
+      .filter(item => item.changed_by && item.changed_by.user_id)
+      .map(item => item.changed_by.user_id)
+  )];
+
+  if (userIds.length === 0) {
+    return order;
+  }
+
+  // 批量查询用户最新信息
+  const users = db.collection('users');
+  const { data: usersData } = await users.where({
+    user_id: _.in(userIds)
+  }).field({
+    user_id: true,
+    avatar: true
+  }).get();
+
+  // 创建user_id到avatar的映射
+  const avatarMap = {};
+  usersData.forEach(user => {
+    avatarMap[user.user_id] = user.avatar || '';
+  });
+
+  // 更新status_history中的头像
+  order.status_history = order.status_history.map(item => {
+    if (item.changed_by && item.changed_by.user_id && avatarMap[item.changed_by.user_id] !== undefined) {
+      return {
+        ...item,
+        changed_by: {
+          ...item.changed_by,
+          avatar: avatarMap[item.changed_by.user_id]
+        }
+      };
+    }
+    return item;
+  });
+
+  return order;
 }
 
 /**
@@ -418,8 +487,8 @@ async function createWorkOrder(openid, orderData) {
   // 自动分配维修员
   const technician = await assignTechnician();
 
-  // 生成工单编号（如果没有提供）
-  const orderNumber = orderData.order_number || generateOrderNumber();
+  // 自动生成工单编号（服务端强制生成，忽略客户端传入）
+  const orderNumber = await generateOrderNumber();
 
   // 计算 SLA 截止时间
   const now = new Date();
@@ -454,7 +523,8 @@ async function createWorkOrder(openid, orderData) {
       user_id: submitter.user_id,
       openid: submitter.wechat_openid,
       name: submitter.name,
-      phone: submitter.contact_phone
+      phone: submitter.contact_phone,
+      role_id: submitter.role_id
     },
     assigned_technician: {
       user_id: technician.user_id,
@@ -684,7 +754,7 @@ async function updateWorkOrderDetails(openid, orderId, updates = {}) {
   const validPartiesForUpdate = await getResponsibleParties();
   if (!responsibleParty || !validPartiesForUpdate.includes(responsibleParty)) throw new Error('责任方不正确');
   if (!priority || !Object.prototype.hasOwnProperty.call(SLA_RULES, priority)) throw new Error('优先级不正确');
-  if (!description || description.length < 10) throw new Error('问题描述至少需要10个字符');
+  if (!description) throw new Error('请填写问题描述');
   if (!photos || photos.length === 0) throw new Error('请至少上传一张现场照片');
 
   // 处理报修时间（允许修改）
@@ -751,11 +821,15 @@ async function getWorkOrders(openid, filters = {}) {
     if (user.department) {
       conditions.responsible_party = user.department;
     }
-  } else if (user.role_id === 4) {
-    // 办美员工只能看到自己提交的工单
-    conditions['submitter.user_id'] = user.user_id;
+  } else if (user.role_id === 2 || user.role_id === 4) {
+    // 办美员工和行政经理共享可见所有工单
+    // 已完成状态：办美员工只能看自己提交的
+    if (filters.status === 'Completed' && user.role_id === 4) {
+      conditions['submitter.user_id'] = user.user_id;
+    }
+    // 其他状态：不过滤，可以看到所有工单
   }
-  // 管理员和行政经理可以看到所有工单
+  // 管理员可以看到所有工单
 
   // 应用过滤条件（兼容老数据中文状态）
   if (filters.status) {
@@ -913,9 +987,11 @@ async function reviewOrder(openid, orderId, status, reviewNotes) {
   const targetStatus = normalizeStatus(status);
   const notes = normalizeNotes(reviewNotes);
 
-  // 权限检查：只有提交者可以审核
-  if (order.submitter.user_id !== user.user_id) {
-    throw new Error('只有工单提交者可以审核');
+  // 权限检查：只有提报人或管理员可审核
+  const isSubmitter = order.submitter.user_id === user.user_id;
+  const isManager = user.role_id === 1;
+  if (!isSubmitter && !isManager) {
+    throw new Error('只有工单提报人可以审核');
   }
 
   // 状态检查：只有"已修复"的工单可以审核
@@ -1041,6 +1117,11 @@ async function urgeRepair(openid, orderId) {
     throw new Error('工单不存在');
   }
   const order = orders[0];
+
+  // 2.1 非管理员需要是提报人才能催维修
+  if (user.role_id !== 1 && order.submitter.user_id !== user.user_id) {
+    throw new Error('只有工单提报人可以催维修');
+  }
 
   // 3. 状态校验：维修中 或 需返工
   const status = normalizeStatus(order.status);
@@ -1263,20 +1344,23 @@ exports.main = async (event, context) => {
 
           const order = orderData[0];
 
-          // 访问控制：提交者 / 负责人 / 管理员 / 行政经理可查看
+          // 访问控制：管理员 / 维修员(部门匹配) / 办美员工和行政经理(共享可见)
+          const submitterRoleId = order.submitter?.role_id ?? 4; // 历史数据默认办美员工
           const canView =
             currentUser.role_id === 1 ||
-            currentUser.role_id === 2 ||
             (currentUser.role_id === 3 && order.responsible_party === currentUser.department) ||
-            (currentUser.role_id === 4 && order.submitter?.user_id === currentUser.user_id);
+            ([2, 4].includes(currentUser.role_id) && [2, 4].includes(submitterRoleId));
 
           if (!canView) {
             return { success: false, error: '无权限查看该工单' };
           }
 
+          // 刷新status_history中的头像为最新
+          const refreshedOrder = await refreshStatusHistoryAvatars(order);
+
           return {
             success: true,
-            order: enhanceWorkOrder(order),
+            order: enhanceWorkOrder(refreshedOrder),
           };
         }
 
@@ -1300,12 +1384,12 @@ exports.main = async (event, context) => {
 
           const order = orderData[0];
 
-          // 访问控制：提交者 / 负责人 / 管理员 / 行政经理可查看
+          // 访问控制：管理员 / 维修员(部门匹配) / 办美员工和行政经理(共享可见)
+          const submitterRoleId = order.submitter?.role_id ?? 4; // 历史数据默认办美员工
           const canView =
             currentUser.role_id === 1 ||
-            currentUser.role_id === 2 ||
             (currentUser.role_id === 3 && order.responsible_party === currentUser.department) ||
-            (currentUser.role_id === 4 && order.submitter?.user_id === currentUser.user_id);
+            ([2, 4].includes(currentUser.role_id) && [2, 4].includes(submitterRoleId));
 
           if (!canView) {
             return { success: false, error: '无权限查看该工单' };

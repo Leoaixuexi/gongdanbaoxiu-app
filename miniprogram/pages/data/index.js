@@ -89,7 +89,11 @@ Page({
       check: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiMxMGI5ODEiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cGF0aCBkPSJNMjIgMTEuMDhWMTIwMiAyIDAgMCAxLTIgMmgtM2wtNS01bDEgMWgzVjRzOSAxMSI+PC9wYXRoPjxwYXRoIGQ9Ik0yMiA0IDEyIDE0LjAxbC0zLTMiPjwvcGF0aD48L3N2Zz4=',
       clock: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiMzYjgyZjYiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48Y2lyY2xlIGN4PSIxMiIgY3k9IjEyIiByPSIxMCI+PC9jaXJjbGU+PHBvbHlsaW5lIHBvaW50cz0iMTIgNiAxMiAxMiAxNiAxNCI+PC9wb2x5bGluZT48L3N2Zz4=',
       timer: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmNTllMGIiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cGF0aCBkPSJNNSAyMmgxNCI+PC9wYXRoPjxwYXRoIGQ9Ik01IDJoMTQiPjwvcGF0aD48cGF0aCBkPSJNMTcgMjJhNSA1IDAgMSAxIDAtMTBIN2E1IDUgMCAxIDEgMCAxMCI+PC9wYXRoPjxwYXRoIGQ9Ik0xNyAyYTUgNSAwIDEgMCAwIDEwSDdhNSA1IDAgMSAwIDAtMTAiPjwvcGF0aD48L3N2Zz4='
-    }
+    },
+
+    // 防重复加载和缓存
+    _lastFetchTime: 0,
+    _cacheValidMs: 30000  // 30秒缓存有效期
   },
 
   onLoad() {
@@ -137,15 +141,27 @@ Page({
 
         // 根据角色加载不同的数据
         if (isManager) {
-          // 行政经理：初始化全局分析视图
-          this.initManagerView();
+          // 行政经理：检查缓存是否有效
+          const now = Date.now();
+          const cacheValid = (now - this.data._lastFetchTime) < this.data._cacheValidMs;
+          if (cacheValid && this.data.kpiData.totalOrders > 0) {
+            console.log('[Data] Using cached manager data');
+            this.setData({ loading: false });
+          } else {
+            // 初始化全局分析视图
+            this.initManagerView();
+          }
         } else {
-          // 办美员工/维修员：加载个人统计数据
-          await this.loadStatistics();
-
-          // 如果是办美员工，加载月度排名
+          // 办美员工/维修员：并行加载数据
           if (isPropertyStaff) {
-            await this.loadRankings();
+            // 办美员工：同时加载统计数据和月度排名
+            await Promise.all([
+              this.loadStatistics(),
+              this.loadRankings()
+            ]);
+          } else {
+            // 维修员：只加载统计数据
+            await this.loadStatistics();
           }
         }
       }
@@ -503,7 +519,7 @@ Page({
             rank: index + 1,
             name: item.employeeName,
             completedOrders: item.totalCompleted,
-            avatar: '/images/icons/default-avatar.png',
+            avatar: item.avatar || '',
             isCurrentUser: item.employeeId === userId
           }));
 
@@ -759,7 +775,7 @@ Page({
           rank: index + 1,
           name: item.employeeName,
           completedOrders: item.totalCompleted,
-          avatar: '/images/icons/default-avatar.png',
+          avatar: item.avatar || '',
           isCurrentUser: false
         }));
 
@@ -772,7 +788,8 @@ Page({
         categoryChartData: categoryRes.result?.data || [],
         responsibleChartData: responsibleRes.result?.data || [],
         floorChartData: floorRes.result?.data || { categories: [], values: [] },
-        loading: false
+        loading: false,
+        _lastFetchTime: Date.now()  // 更新缓存时间戳
       });
 
       // 触发KPI卡片动画

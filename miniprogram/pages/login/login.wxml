@@ -1,94 +1,53 @@
-<view class="container">
-  <!-- 动态背景层 -->
-  <view class="background-layer">
-    <!-- 6个呼吸光晕 -->
-    <view class="glow glow-1"></view>
-    <view class="glow glow-2"></view>
-    <view class="glow glow-3"></view>
-    <view class="glow glow-4"></view>
-    <view class="glow glow-5"></view>
-    <view class="glow glow-6"></view>
+<view class="page">
+  <!-- 顶部区域 -->
+  <view class="top-area">
+    <!-- 光斑效果 -->
+    <view class="blob blob-a"></view>
+    <view class="blob blob-b"></view>
+    <!-- 右上角装饰图 -->
+    <image class="top-image" src="/images/icons/Image1.png" mode="aspectFit"></image>
+    <!-- 标题 -->
+    <view class="title">欢迎使用\n小物业工单管理</view>
   </view>
 
-  <!-- 登录卡片容器 -->
-  <view class="login-wrapper">
+  <!-- 内容区域 -->
+  <view class="content">
     <view class="login-card">
-      <!-- 标题区域 -->
-      <view class="title-section">
-        <text class="title">小物业报修管理</text>
-        <text class="subtitle">欢迎登录</text>
+      <!-- 用户名输入 -->
+      <view class="field">
+        <view class="label">用户名/手机号</view>
+        <input class="input" type="text" placeholder="请输入您的用户名" placeholder-class="placeholder" value="{{username}}" bindinput="onUsernameInput" />
+        <view class="line"></view>
       </view>
 
-      <!-- 表单区域 -->
-      <view class="form-container">
-        <!-- 用户名输入框 -->
-        <view class="input-group">
-          <view class="input-icon">
-            <view class="icon-wrapper user-icon"></view>
-          </view>
-          <input
-            class="input-field"
-            type="text"
-            placeholder="请输入用户名"
-            placeholder-class="input-placeholder"
-            value="{{username}}"
-            bindinput="onUsernameInput"
-            confirm-type="next"
-          />
-        </view>
+      <!-- 密码输入 -->
+      <view class="field password-field">
+        <view class="label">密码</view>
+        <input class="input" type="password" placeholder="请输入您的密码" placeholder-class="placeholder" value="{{password}}" bindinput="onPasswordInput" password="true" />
+        <view class="line"></view>
+        <text class="forget" bindtap="onForget">忘记密码?</text>
+      </view>
 
-        <!-- 密码输入框 -->
-        <view class="input-group">
-          <view class="input-icon">
-            <view class="icon-wrapper lock-icon"></view>
-          </view>
-          <input
-            class="input-field"
-            password="{{!showPassword}}"
-            placeholder="请输入密码"
-            placeholder-class="input-placeholder"
-            value="{{password}}"
-            bindinput="onPasswordInput"
-            confirm-type="done"
-            bindconfirm="handleLogin"
-          />
-          <view class="input-eye-icon" wx:if="{{password.length > 0}}" bindtap="togglePassword">
-            <view class="icon-wrapper {{showPassword ? 'eye-open-icon' : 'eye-close-icon'}}"></view>
-          </view>
+      <!-- 登录按钮 -->
+      <view class="btn-wrap">
+        <view class="btn" bindtap="onLogin">
+          <view class="btn-bg"></view>
+          <view class="btn-text">登 录</view>
         </view>
+      </view>
 
-        <!-- 忘记密码 -->
-        <view class="forgot-section">
-          <text class="forgot-link" bindtap="handleForgotPassword">忘记密码</text>
-        </view>
-
-        <!-- 登录按钮 -->
-        <view class="login-button" bindtap="handleLogin">
-          <text class="button-text">登 录</text>
-        </view>
-
-        <!-- 快捷登录区域 -->
-        <view class="quick-login-section">
-          <text class="quick-login-title">快捷登录</text>
-          <view class="quick-login-grid">
-            <view class="quick-login-btn" bindtap="quickLogin" data-username="xintaiwuye" data-password="123456">
-              <text>信泰物业</text>
-            </view>
-            <view class="quick-login-btn" bindtap="quickLogin" data-username="tonghezongbao" data-password="123456">
-              <text>工程总包</text>
-            </view>
-            <view class="quick-login-btn" bindtap="quickLogin" data-username="laocui" data-password="123456">
-              <text>老崔</text>
-            </view>
-            <view class="quick-login-btn" bindtap="quickLogin" data-username="yangqiankun" data-password="123456">
-              <text>杨乾坤</text>
-            </view>
-            <view class="quick-login-btn" bindtap="quickLogin" data-username="huanghenana" data-password="123456">
-              <text>黄贺楠</text>
-            </view>
-            <view class="quick-login-btn" bindtap="quickLogin" data-username="zhangyurui" data-password="123456">
-              <text>张语芮</text>
-            </view>
+      <!-- 快捷登录 -->
+      <view class="quick-login">
+        <view class="quick-login-title">快捷登录</view>
+        <view class="quick-login-grid">
+          <view
+            wx:for="{{quickAccounts}}"
+            wx:key="username"
+            class="quick-login-btn"
+            bindtap="onQuickLogin"
+            data-index="{{index}}"
+          >
+            <text>{{item.label}}</text>
           </view>
         </view>
       </view>

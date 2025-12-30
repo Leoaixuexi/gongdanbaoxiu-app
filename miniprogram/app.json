@@ -44,26 +44,26 @@
       {
         "pagePath": "pages/index/index",
         "text": "工作台",
-        "iconPath": "images/tabbar/home.png",
-        "selectedIconPath": "images/tabbar/home-active.png"
+        "iconPath": "images/tabbar/placeholder.png",
+        "selectedIconPath": "images/tabbar/placeholder.png"
       },
       {
         "pagePath": "pages/data/index",
         "text": "数据",
-        "iconPath": "images/tabbar/baobiaohui.png",
-        "selectedIconPath": "images/tabbar/baobiaolv.png"
+        "iconPath": "images/tabbar/placeholder.png",
+        "selectedIconPath": "images/tabbar/placeholder.png"
       },
       {
         "pagePath": "pages/notifications/index",
         "text": "消息",
-        "iconPath": "images/tabbar/message.png",
-        "selectedIconPath": "images/tabbar/message-active.png"
+        "iconPath": "images/tabbar/placeholder.png",
+        "selectedIconPath": "images/tabbar/placeholder.png"
       },
       {
         "pagePath": "pages/property/submitted/index",
         "text": "我的",
-        "iconPath": "images/tabbar/profile.png",
-        "selectedIconPath": "images/tabbar/profile-active.png"
+        "iconPath": "images/tabbar/placeholder.png",
+        "selectedIconPath": "images/tabbar/placeholder.png"
       }
     ]
   },
@@ -81,5 +81,16 @@
   "debug": false,
   "style": "v2",
   "sitemapLocation": "sitemap.json",
-  "lazyCodeLoading": "requiredComponents"
+  "lazyCodeLoading": "requiredComponents",
+  "usingComponents": {
+    "van-button": "@vant/weapp/button/index",
+    "van-popup": "@vant/weapp/popup/index",
+    "van-dialog": "@vant/weapp/dialog/index",
+    "van-calendar": "@vant/weapp/calendar/index",
+    "van-empty": "@vant/weapp/empty/index",
+    "van-loading": "@vant/weapp/loading/index",
+    "van-toast": "@vant/weapp/toast/index",
+    "van-picker": "@vant/weapp/picker/index",
+    "custom-picker": "/components/custom-picker/index"
+  }
 }

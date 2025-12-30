@@ -120,7 +120,7 @@ Component({
       }
 
       const diff = Math.max(0, endTime - startTime);
-      const durationStr = this.formatDuration(diff, true); // 传递 isCompleted = true
+      const durationStr = this.formatDuration(diff);
 
       this.setData({
         durationStr: durationStr
@@ -129,25 +129,20 @@ Component({
 
     /**
      * 格式化时长
-     * 未完成状态：自动向上叠加显示（只显示有值的单位）
-     * 已完成状态：天数为0时只显示时分秒，否则显示完整格式
+     * 智能显示：从最高非零单位开始显示
+     * 年为0时只显示天时分秒，天为0时只显示时分秒，以此类推
      */
-    formatDuration(diff, isCompleted = false) {
-      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    formatDuration(diff) {
+      const years = Math.floor(diff / (1000 * 60 * 60 * 24 * 365));
+      const days = Math.floor((diff % (1000 * 60 * 60 * 24 * 365)) / (1000 * 60 * 60 * 24));
       const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
       const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
       const seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
-      // 已完成状态：天数为0时只显示时分秒，否则显示完整格式
-      if (isCompleted) {
-        if (days === 0) {
-          return `${hours}时${minutes}分${seconds}秒`;
-        }
-        return `${days}天${hours}时${minutes}分${seconds}秒`;
-      }
-
-      // 未完成状态：自动向上叠加显示
-      if (days > 0) {
+      // 从最高非零单位开始显示
+      if (years > 0) {
+        return `${years}年${days}天${hours}时${minutes}分${seconds}秒`;
+      } else if (days > 0) {
         return `${days}天${hours}时${minutes}分${seconds}秒`;
       } else if (hours > 0) {
         return `${hours}时${minutes}分${seconds}秒`;

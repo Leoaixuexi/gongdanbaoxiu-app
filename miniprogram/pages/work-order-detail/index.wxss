@@ -267,13 +267,66 @@
   justify-content: flex-end; /* 照片改为靠右，与文字对齐 */
 }
 
-.photo-item-inline {
-  width: 140rpx; /* 稍微加大照片 */
+.photo-item-wrapper {
+  width: 140rpx;
   height: 140rpx;
   border-radius: 12rpx;
   overflow: hidden;
   background-color: #F3F4F6;
   flex-shrink: 0;
+  position: relative;
+}
+
+.photo-item-inline {
+  width: 100%;
+  height: 100%;
+  border-radius: 12rpx;
+}
+
+.photo-hidden {
+  opacity: 0;
+}
+
+.photo-loaded {
+  opacity: 1;
+}
+
+/* 图片加载中状态 */
+.photo-loading {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #F3F4F6;
+}
+
+/* 图片加载失败状态 */
+.photo-error {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: #F3F4F6;
+}
+
+.photo-error-icon {
+  font-size: 32rpx;
+  color: #9CA3AF;
+  margin-bottom: 4rpx;
+}
+
+.photo-error-text {
+  font-size: 18rpx;
+  color: #9CA3AF;
 }
 
 /* 备注模块 */
@@ -742,6 +795,36 @@
   border-left: 4rpx solid #0CA77D;
   border-bottom: 4rpx solid #0CA77D;
   transform: rotate(-45deg) translateY(-4rpx);
+}
+
+/* 弹窗容器基础样式 */
+.modal-container {
+  width: 100%;
+  background-color: white;
+  border-radius: 32rpx 32rpx 0 0;
+  padding: 32rpx;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* 弹窗底部按钮区域 */
+.modal-footer {
+  display: flex;
+  padding: 24rpx 0 0 0;
+  border-top: 1rpx solid #F3F4F6;
+  gap: 24rpx;
+  margin-top: 16rpx;
+}
+
+/* 弹窗按钮基础样式 */
+.modal-btn {
+  flex: 1;
+  height: 88rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 24rpx;
+  font-size: 32rpx;
+  font-weight: 500;
 }
 
 .modal-btn.cancel {
@@ -1297,4 +1380,80 @@
   background-color: white;
   border-color: #FB923C;
   box-shadow: 0 0 0 4rpx rgba(251, 146, 60, 0.1);
+}
+
+/* ==================== 更多操作抽屉（底部弹出） ==================== */
+.more-actions-drawer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: white;
+  border-radius: 32rpx 32rpx 0 0;
+  padding: 32rpx;
+  padding-bottom: calc(32rpx + env(safe-area-inset-bottom));
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.drawer-action-item {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24rpx;
+  transition: all 0.2s;
+}
+
+.drawer-action-item .icon-wrapper {
+  width: 100rpx;
+  height: 100rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #F5F5F5;
+  border: 2rpx solid #E5E5E5;
+  border-radius: 16rpx;
+}
+
+.drawer-action-item .icon-wrapper:active {
+  background-color: #EBEBEB;
+}
+
+.drawer-action-item.delete-action .icon-wrapper {
+  color: #FF3B30;
+}
+
+.drawer-action-item .iconfont {
+  font-size: 52rpx;
+}
+
+.drawer-action-item .action-label {
+  font-size: 24rpx;
+  color: #333;
+  margin-top: 12rpx;
+}
+
+.drawer-action-item.empty-action {
+  color: #999;
+}
+
+.drawer-action-item .empty-text {
+  font-size: 32rpx;
+  color: #999;
+}
+
+.empty-action {
+  color: #999;
+}
+
+.empty-action .empty-text {
+  font-size: 24rpx;
 }

@@ -18,7 +18,8 @@ Page({
       role_id: null,
       contact_phone: '',
       department: '',
-      is_active: true
+      is_active: true,
+      avatar: ''
     },
     errors: {},
     loading: false,
@@ -113,7 +114,8 @@ Page({
           role_id: user.role_id,
           contact_phone: user.contact_phone || '',
           department: user.department || '',
-          is_active: user.active
+          is_active: user.active,
+          avatar: user.avatar || ''
         },
         selectedRoleName: ROLE_DISPLAY_NAMES[user.role_id] || '未知',
         isSelf: user.user_id === currentUserId,

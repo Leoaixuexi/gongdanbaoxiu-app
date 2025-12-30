@@ -18,6 +18,8 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  height: 100%;
+  padding-top: 8px;
 }
 
 .tab-icon-wrapper {
@@ -26,28 +28,28 @@
 }
 
 .tab-icon {
-  width: 28px;
-  height: 28px;
+  width: 26px;
+  height: 26px;
   margin-bottom: 2px;
 }
 
 .tab-text {
-  font-size: 13px;
+  font-size: 10px;
 }
 
 /* 未读消息徽章 */
 .badge {
   position: absolute;
-  top: -5px;
-  right: -10px;
-  min-width: 16px;
-  height: 16px;
-  padding: 0 4px;
-  font-size: 10px;
+  top: -6px;
+  right: -12px;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  font-size: 12px;
   font-weight: bold;
   color: #fff;
   background-color: #f5222d;
-  border-radius: 8px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;

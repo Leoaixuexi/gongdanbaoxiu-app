@@ -363,6 +363,7 @@ exports.main = async (event, context) => {
             role_name: roleName,
             contact_phone: user.contact_phone,
             department: user.department,
+            avatar: user.avatar,
             active: user.active
           },
           permissions,
@@ -432,6 +433,7 @@ exports.main = async (event, context) => {
         if (data.name) updateData.name = data.name;
         if (data.contact_phone) updateData.contact_phone = data.contact_phone;
         if (data.department) updateData.department = data.department;
+        if (data.avatar) updateData.avatar = data.avatar;
 
         updateData.updated_at = new Date();
 

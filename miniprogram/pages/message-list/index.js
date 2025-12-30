@@ -303,6 +303,9 @@ Page({
           this.setData({ messages });
           this.currentSwipedIndex = -1;
 
+          // 同步更新 TabBar 未读数
+          this.updateTabBarUnreadCount();
+
           wx.showToast({
             title: '删除成功',
             icon: 'success',
@@ -344,6 +347,9 @@ Page({
       }));
 
       this.setData({ messages });
+
+      // 同步更新 TabBar 未读数
+      this.updateTabBarUnreadCount();
 
       wx.hideLoading();
       wx.showToast({
@@ -392,18 +398,33 @@ Page({
       if ((this.data.moduleId === 'workorder' || this.data.moduleId === 'reminder') && message.notificationId) {
         try {
           await notificationService.markAsRead(message.notificationId);
+          console.log('[Message List] Mark as read success:', message.notificationId);
+
+          // 只有成功后才更新本地状态和 TabBar
+          const messages = this.data.messages.map(m => {
+            if (m.id === messageId) {
+              return { ...m, isRead: true };
+            }
+            return m;
+          });
+          this.setData({ messages });
+
+          // 同步更新 TabBar 未读数
+          this.updateTabBarUnreadCount();
         } catch (error) {
           console.error('[Message List] Mark as read error:', error);
+          // 失败时不更新状态，保持数据一致性
         }
+      } else {
+        // 非工单/提醒类消息，直接更新本地状态
+        const messages = this.data.messages.map(m => {
+          if (m.id === messageId) {
+            return { ...m, isRead: true };
+          }
+          return m;
+        });
+        this.setData({ messages });
       }
-
-      const messages = this.data.messages.map(m => {
-        if (m.id === messageId) {
-          return { ...m, isRead: true };
-        }
-        return m;
-      });
-      this.setData({ messages });
     }
 
     // 根据模块类型跳转
@@ -441,5 +462,26 @@ Page({
   onRefresh() {
     this.setData({ refreshing: true });
     this.loadMessages();
+  },
+
+  /**
+   * 更新 TabBar 未读数
+   * 由于当前页面是子页面，需要通过页面栈获取 tabBar 页面实例
+   */
+  updateTabBarUnreadCount() {
+    // 获取当前页面栈
+    const pages = getCurrentPages();
+    // 找到 tabBar 页面（notifications 或 index）
+    const tabBarPage = pages.find(p =>
+      p.route === 'pages/notifications/index' ||
+      p.route === 'pages/index/index'
+    );
+
+    if (tabBarPage && typeof tabBarPage.getTabBar === 'function') {
+      const tabBar = tabBarPage.getTabBar();
+      if (tabBar) {
+        tabBar.updateUnreadCount();
+      }
+    }
   }
 });

@@ -79,6 +79,7 @@ exports.main = async (event, context) => {
         return {
           employeeName: employee.name || employee.username || '未知',
           employeeId: employee.user_id || employee._openid || 'unknown',
+          avatar: employee.avatar || '',
           totalSubmitted: 0,
           totalCompleted: 0
         };
@@ -104,6 +105,7 @@ exports.main = async (event, context) => {
       return {
         employeeName: employee.name || employee.username || '未知',
         employeeId: employee.user_id,
+        avatar: employee.avatar || '',
         totalSubmitted: totalResult.total,
         totalCompleted: completedResult.total
       };

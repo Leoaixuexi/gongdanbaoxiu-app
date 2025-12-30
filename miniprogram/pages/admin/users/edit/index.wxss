@@ -95,7 +95,7 @@
   width: 100rpx;
   height: 100rpx;
   border-radius: 50%;
-  background-color: #F0F0F0;
+  background: linear-gradient(135deg, #10b981 0%, #14b8a6 100%);
   overflow: hidden;
   display: flex;
   align-items: center;
@@ -105,11 +105,13 @@
 .avatar-img {
   width: 100%;
   height: 100%;
+  border-radius: 50%;
 }
 
 .avatar-placeholder {
   font-size: 40rpx;
-  color: #CCCCCC;
+  color: #ffffff;
+  font-weight: 600;
 }
 
 /* 二维码行 */

@@ -168,38 +168,51 @@ picker {
 /* 优先级按钮行 - 水平布局 */
 .priority-row {
   display: flex;
-  gap: 32rpx;
+  gap: 24rpx;
+  justify-content: flex-end;
 }
 
 .priority-btn {
-  width: 64rpx;
+  min-width: 90rpx;
   height: 56rpx;
-  background-color: #F5F5F5;
-  border-radius: 8rpx;
+  padding: 0 12rpx;
+  background-color: #F7F8FA;
+  border-radius: 28rpx;
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: all 0.2s ease;
+  border: 1rpx solid transparent;
 }
 
+/* 选中态 - 绿色 (普通) */
 .priority-btn.active-green {
-  background-color: #34C759;
+  background: linear-gradient(135deg, #34C759 0%, #30B753 100%);
+  box-shadow: 0 4rpx 12rpx rgba(52, 199, 89, 0.3);
 }
 
+/* 选中态 - 黄色 */
 .priority-btn.active-yellow {
-  background-color: #FFCC00;
+  background: linear-gradient(135deg, #FFCC00 0%, #E6B800 100%);
+  box-shadow: 0 4rpx 12rpx rgba(255, 204, 0, 0.3);
 }
 
+/* 选中态 - 橙色 */
 .priority-btn.active-orange {
-  background-color: #FF9500;
+  background: linear-gradient(135deg, #FF9500 0%, #E68600 100%);
+  box-shadow: 0 4rpx 12rpx rgba(255, 149, 0, 0.3);
 }
 
+/* 选中态 - 红色 (紧急) */
 .priority-btn.active-red {
-  background-color: #FF3B30;
+  background: linear-gradient(135deg, #FF3B30 0%, #E6352B 100%);
+  box-shadow: 0 4rpx 12rpx rgba(255, 59, 48, 0.3);
 }
 
 .priority-text {
-  font-size: 26rpx;
+  font-size: 28rpx;
   color: #666;
+  font-weight: 500;
 }
 
 .priority-btn.active-green .priority-text,
@@ -207,6 +220,7 @@ picker {
 .priority-btn.active-orange .priority-text,
 .priority-btn.active-red .priority-text {
   color: white;
+  font-weight: 600;
 }
 
 /* 日期时间显示 */
@@ -509,4 +523,14 @@ picker {
   color: #333;
   text-align: right;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+/* 触发器箭头 - 使用纯 CSS 绘制 Chevron */
+.card-arrow {
+  width: 16rpx;
+  height: 16rpx;
+  border-top: 3rpx solid #CCCCCC;
+  border-right: 3rpx solid #CCCCCC;
+  transform: rotate(45deg);
+  margin-left: 8rpx;
 }

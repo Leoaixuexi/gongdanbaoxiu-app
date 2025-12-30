@@ -1,6 +1,7 @@
 {
   "usingComponents": {
-    "custom-header": "/components/header/header"
+    "custom-header": "/components/header/header",
+    "custom-picker": "/components/custom-picker/index"
   },
   "navigationStyle": "custom"
 }

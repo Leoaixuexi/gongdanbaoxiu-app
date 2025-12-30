@@ -5,6 +5,7 @@
   min-height: 100vh;
   background: #E9F0F6;
   padding-bottom: 48rpx;
+  overflow-x: hidden;
 }
 
 /* ==================== 用户信息卡片 ==================== */

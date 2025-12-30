@@ -1,4 +1,9 @@
 {
-  "usingComponents": {},
-  "navigationStyle": "custom"
+  "usingComponents": {
+    "van-icon": "@vant/weapp/icon/index"
+  },
+  "navigationStyle": "custom",
+  "disableScroll": true,
+  "backgroundColorTop": "#C2FAEB",
+  "backgroundColor": "#C2FAEB"
 }

@@ -110,14 +110,15 @@
             <view class="p-4 flex items-center gap-3"
                   style="border-bottom: 1rpx solid var(--border);">
               <view style="width: 60rpx; text-align: center; display: flex; align-items: center; justify-content: center;">
-                <image wx:if="{{item.rank == 1}}" src="cloud://cloud1-7glfhm4r06e030bd.636c-cloud1-7glfhm4r06e030bd-1386591973/icons/one.png" style="width: 64rpx; height: 64rpx;"></image>
-                <image wx:elif="{{item.rank == 2}}" src="cloud://cloud1-7glfhm4r06e030bd.636c-cloud1-7glfhm4r06e030bd-1386591973/icons/two.png" style="width: 64rpx; height: 64rpx;"></image>
-                <image wx:elif="{{item.rank == 3}}" src="cloud://cloud1-7glfhm4r06e030bd.636c-cloud1-7glfhm4r06e030bd-1386591973/icons/three.png" style="width: 64rpx; height: 64rpx;"></image>
+                <image wx:if="{{item.rank == 1}}" src="/images/icons/one.png" style="width: 64rpx; height: 64rpx;"></image>
+                <image wx:elif="{{item.rank == 2}}" src="/images/icons/two.png" style="width: 64rpx; height: 64rpx;"></image>
+                <image wx:elif="{{item.rank == 3}}" src="/images/icons/three.png" style="width: 64rpx; height: 64rpx;"></image>
                 <text wx:else class="text-base font-bold">{{item.rank}}</text>
               </view>
 
               <view class="avatar-placeholder {{item.isCurrentUser && item.rank != 3 ? 'current-user-avatar' : ''}}">
-                <text>{{item.name[0] || '?'}}</text>
+                <image wx:if="{{item.avatar}}" class="avatar-img" src="{{item.avatar}}" mode="aspectFill"></image>
+                <text wx:else>{{item.name[0] || '?'}}</text>
               </view>
 
               <view class="flex-1 min-w-0 flex items-center gap-2">
@@ -251,14 +252,15 @@
               <view class="p-4 flex items-center gap-3"
                     style="border-bottom: 1rpx solid var(--border);">
                 <view style="width: 60rpx; text-align: center; display: flex; align-items: center; justify-content: center;">
-                  <image wx:if="{{item.rank == 1}}" src="cloud://cloud1-7glfhm4r06e030bd.636c-cloud1-7glfhm4r06e030bd-1386591973/icons/one.png" style="width: 64rpx; height: 64rpx;"></image>
-                  <image wx:elif="{{item.rank == 2}}" src="cloud://cloud1-7glfhm4r06e030bd.636c-cloud1-7glfhm4r06e030bd-1386591973/icons/two.png" style="width: 64rpx; height: 64rpx;"></image>
-                  <image wx:elif="{{item.rank == 3}}" src="cloud://cloud1-7glfhm4r06e030bd.636c-cloud1-7glfhm4r06e030bd-1386591973/icons/three.png" style="width: 64rpx; height: 64rpx;"></image>
+                  <image wx:if="{{item.rank == 1}}" src="/images/icons/one.png" style="width: 64rpx; height: 64rpx;"></image>
+                  <image wx:elif="{{item.rank == 2}}" src="/images/icons/two.png" style="width: 64rpx; height: 64rpx;"></image>
+                  <image wx:elif="{{item.rank == 3}}" src="/images/icons/three.png" style="width: 64rpx; height: 64rpx;"></image>
                   <text wx:else class="text-base font-bold">{{item.rank}}</text>
                 </view>
 
                 <view class="avatar-placeholder">
-                  <text>{{item.name[0] || '?'}}</text>
+                  <image wx:if="{{item.avatar}}" class="avatar-img" src="{{item.avatar}}" mode="aspectFill"></image>
+                  <text wx:else>{{item.name[0] || '?'}}</text>
                 </view>
 
                 <view class="flex-1 min-w-0 flex items-center gap-2">
@@ -381,32 +383,46 @@
   </view>
 
   <!-- 日期选择弹窗 -->
-  <view wx:if="{{showDatePicker}}" class="modal-overlay" catchtap="closeDatePicker">
-    <view class="modal-content" catchtap="stopPropagation">
-      <view class="date-picker-content">
-        <picker mode="date" value="{{customStartDate}}" end="{{customEndDate}}" bindchange="onCustomStartDateChange">
-          <view class="date-display">
-            <text class="date-text">{{customStartDate || '请选择开始日期'}}</text>
-          </view>
-        </picker>
-        <text class="date-separator">至</text>
-        <picker mode="date" value="{{customEndDate}}" start="{{customStartDate}}" bindchange="onCustomEndDateChange">
-          <view class="date-display">
-            <text class="date-text">{{customEndDate || '请选择结束日期'}}</text>
-          </view>
-        </picker>
+  <van-popup
+    show="{{ showDatePicker }}"
+    position="bottom"
+    bind:close="closeDatePicker"
+    round
+    closeable
+    close-icon="cross"
+    z-index="10000"
+  >
+    <view class="date-picker-popup">
+      <view class="date-picker-title">选择日期范围</view>
+
+      <view class="date-picker-row">
+        <view class="date-picker-col">
+          <view class="date-picker-label">开始日期</view>
+          <picker mode="date" value="{{customStartDate}}" bindchange="onCustomStartDateChange">
+            <view class="date-picker-value {{customStartDate ? 'has-value' : ''}}">
+              {{customStartDate || '请选择'}}
+            </view>
+          </picker>
+        </view>
+        <view class="date-picker-separator">至</view>
+        <view class="date-picker-col">
+          <view class="date-picker-label">结束日期</view>
+          <picker mode="date" value="{{customEndDate}}" start="{{customStartDate}}" bindchange="onCustomEndDateChange">
+            <view class="date-picker-value {{customEndDate ? 'has-value' : ''}}">
+              {{customEndDate || '请选择'}}
+            </view>
+          </picker>
+        </view>
       </view>
 
-      <view class="modal-actions">
-        <view class="modal-button modal-button-cancel" bindtap="cancelDatePicker">
-          <text class="modal-button-text">取消</text>
-        </view>
-        <view class="modal-button modal-button-confirm" bindtap="confirmDatePicker">
-          <text class="modal-button-text modal-button-text-white">确定</text>
-        </view>
-      </view>
+      <button
+        class="date-picker-confirm-btn {{customStartDate && customEndDate ? '' : 'disabled'}}"
+        bindtap="confirmDatePicker"
+      >
+        确定
+      </button>
     </view>
-  </view>
+  </van-popup>
 
   <!-- 全部排名弹窗 -->
   <view wx:if="{{showAllRankings}}" class="modal-overlay" catchtap="closeAllRankings">
@@ -423,14 +439,15 @@
           <view class="p-4 flex items-center gap-3"
                 style="border-bottom: 1rpx solid var(--color-divider);">
             <view style="width: 60rpx; text-align: center; display: flex; align-items: center; justify-content: center;">
-              <image wx:if="{{item.rank == 1}}" src="cloud://cloud1-7glfhm4r06e030bd.636c-cloud1-7glfhm4r06e030bd-1386591973/icons/one.png" style="width: 64rpx; height: 64rpx;"></image>
-              <image wx:elif="{{item.rank == 2}}" src="cloud://cloud1-7glfhm4r06e030bd.636c-cloud1-7glfhm4r06e030bd-1386591973/icons/two.png" style="width: 64rpx; height: 64rpx;"></image>
-              <image wx:elif="{{item.rank == 3}}" src="cloud://cloud1-7glfhm4r06e030bd.636c-cloud1-7glfhm4r06e030bd-1386591973/icons/three.png" style="width: 64rpx; height: 64rpx;"></image>
+              <image wx:if="{{item.rank == 1}}" src="/images/icons/one.png" style="width: 64rpx; height: 64rpx;"></image>
+              <image wx:elif="{{item.rank == 2}}" src="/images/icons/two.png" style="width: 64rpx; height: 64rpx;"></image>
+              <image wx:elif="{{item.rank == 3}}" src="/images/icons/three.png" style="width: 64rpx; height: 64rpx;"></image>
               <text wx:else class="text-base font-bold">{{item.rank}}</text>
             </view>
 
             <view class="avatar-placeholder {{item.isCurrentUser ? 'current-user-avatar' : ''}}">
-              <text>{{item.name[0] || '?'}}</text>
+              <image wx:if="{{item.avatar}}" class="avatar-img" src="{{item.avatar}}" mode="aspectFill"></image>
+              <text wx:else>{{item.name[0] || '?'}}</text>
             </view>
 
             <view class="flex-1 min-w-0 flex items-center gap-2">

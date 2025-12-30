@@ -1,0 +1,25 @@
+<!-- 可复用的下拉选项组件 - 基于 Vant Weapp van-picker -->
+<van-popup
+  show="{{ show }}"
+  position="bottom"
+  bind:close="onClose"
+  round
+  z-index="10001"
+  lock-scroll="{{ true }}"
+  catch:touchmove="noop"
+>
+  <view class="custom-picker-wrapper" catch:touchmove="noop">
+    <van-picker
+      class="custom-picker"
+      show-toolbar
+      columns="{{ columns }}"
+      default-index="{{ defaultIndex }}"
+      bind:confirm="onConfirm"
+      bind:cancel="onClose"
+      confirm-button-text="确定"
+      cancel-button-text="取消"
+      visible-item-count="{{ visibleCount }}"
+      item-height="50"
+    />
+  </view>
+</van-popup>

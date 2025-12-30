@@ -13,12 +13,15 @@ const getUserNotifications = async (unreadOnly = false, limit = 20) => {
   try {
     console.log('[Notification] Getting user notifications');
 
+    const userInfo = wx.getStorageSync('user_info');
+    const userId = userInfo?.user_id || userInfo?.id;
+
     const result = await wx.cloud.callFunction({
       name: 'sendNotification',
       data: {
         action: 'getUserNotifications',
         data: {
-          user_id: wx.getStorageSync('user_info')?.user_id,
+          user_id: userId,
           unread_only: unreadOnly,
           limit
         }
@@ -47,13 +50,16 @@ const markAsRead = async (notificationId) => {
   try {
     console.log('[Notification] Marking as read:', notificationId);
 
+    const userInfo = wx.getStorageSync('user_info');
+    const userId = userInfo?.user_id || userInfo?.id;
+
     const result = await wx.cloud.callFunction({
       name: 'sendNotification',
       data: {
         action: 'markAsRead',
         data: {
           notification_id: notificationId,
-          user_id: wx.getStorageSync('user_info')?.user_id
+          user_id: userId
         }
       }
     });
@@ -78,12 +84,15 @@ const markAllAsRead = async () => {
   try {
     console.log('[Notification] Marking all as read');
 
+    const userInfo = wx.getStorageSync('user_info');
+    const userId = userInfo?.user_id || userInfo?.id;
+
     const result = await wx.cloud.callFunction({
       name: 'sendNotification',
       data: {
         action: 'markAllAsRead',
         data: {
-          user_id: wx.getStorageSync('user_info')?.user_id
+          user_id: userId
         }
       }
     });
@@ -106,12 +115,15 @@ const markAllAsRead = async () => {
  */
 const getUnreadCount = async () => {
   try {
+    const userInfo = wx.getStorageSync('user_info');
+    const userId = userInfo?.user_id || userInfo?.id;
+
     const result = await wx.cloud.callFunction({
       name: 'sendNotification',
       data: {
         action: 'getUnreadCount',
         data: {
-          user_id: wx.getStorageSync('user_info')?.user_id
+          user_id: userId
         }
       }
     });
@@ -125,6 +137,55 @@ const getUnreadCount = async () => {
   } catch (error) {
     console.error('[Notification] Get unread count error:', error);
     return 0; // Return 0 on error instead of throwing
+  }
+};
+
+/**
+ * 获取分类未读数量（用于 TabBar 显示）
+ * 返回三个模块的未读数及总和
+ * @returns {Promise<Object>} { notificationCount, workorderCount, reminderCount, totalUnread }
+ */
+const getCategorizedUnreadCount = async () => {
+  try {
+    // 获取所有未读通知
+    const result = await getUserNotifications(true, 100);
+
+    if (!result || !result.success || !result.notifications) {
+      return { notificationCount: 0, workorderCount: 0, reminderCount: 0, totalUnread: 0 };
+    }
+
+    const notifications = result.notifications;
+
+    // 待办工单：type 包含 work_order 或 order_，但不是 urge_ 开头
+    const workorderCount = notifications.filter(notif => {
+      return notif.type && (
+        notif.type.includes('work_order') ||
+        notif.type.includes('order_')
+      ) && !notif.type.startsWith('urge_');
+    }).length;
+
+    // 提醒我的：type 以 urge_ 开头
+    const reminderCount = notifications.filter(notif => {
+      return notif.type && notif.type.startsWith('urge_');
+    }).length;
+
+    // 通知公告：除了待办工单和提醒我的以外的其他通知
+    const notificationCount = notifications.filter(notif => {
+      if (!notif.type) return true; // 没有类型的算通知公告
+      const isWorkorder = (notif.type.includes('work_order') || notif.type.includes('order_')) && !notif.type.startsWith('urge_');
+      const isReminder = notif.type.startsWith('urge_');
+      return !isWorkorder && !isReminder;
+    }).length;
+
+    const totalUnread = notificationCount + workorderCount + reminderCount;
+
+    console.log('[Notification] Categorized unread:', { notificationCount, workorderCount, reminderCount, totalUnread });
+
+    return { notificationCount, workorderCount, reminderCount, totalUnread };
+
+  } catch (error) {
+    console.error('[Notification] Get categorized unread count error:', error);
+    return { notificationCount: 0, workorderCount: 0, reminderCount: 0, totalUnread: 0 };
   }
 };
 
@@ -204,6 +265,7 @@ module.exports = {
   markAsRead,
   markAllAsRead,
   getUnreadCount,
+  getCategorizedUnreadCount,
   sendNotification,
   deleteNotification
 };

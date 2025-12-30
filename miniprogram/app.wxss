@@ -308,3 +308,20 @@ view::-webkit-scrollbar {
     background-position: -200% 0;
   }
 }
+
+/* ==================== Custom Picker 全局样式 ==================== */
+.custom-picker-wrapper .van-picker__cancel {
+  font-size: 32rpx !important;
+  font-weight: 600 !important;
+  color: #64748B !important;
+}
+
+.custom-picker-wrapper .van-picker__confirm {
+  font-size: 32rpx !important;
+  font-weight: 600 !important;
+  color: #10b981 !important;
+}
+
+.custom-picker-wrapper .van-picker-column__item {
+  font-size: 30rpx !important;
+}

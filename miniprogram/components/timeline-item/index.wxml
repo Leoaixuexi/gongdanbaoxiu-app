@@ -11,7 +11,10 @@
     <view class="card-header">
       <view class="status-badge {{event.statusClass || ''}}">{{event.title}}</view>
       <view wx:if="{{event.user}}" class="user">
-        <image class="avatar" src="{{event.user.avatar}}" mode="aspectFill"></image>
+        <view class="avatar-wrapper">
+          <image wx:if="{{event.user.avatar}}" class="avatar" src="{{event.user.avatar}}" mode="aspectFill"></image>
+          <view wx:else class="avatar-placeholder">{{event.user.name[0] || '?'}}</view>
+        </view>
         <text class="user-name">{{event.user.name}}</text>
       </view>
     </view>

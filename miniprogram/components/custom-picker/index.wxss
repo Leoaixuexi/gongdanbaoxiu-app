@@ -1,0 +1,24 @@
+/* 可复用下拉选项组件样式 */
+
+/* 使用 CSS 变量自定义 van-picker 样式 */
+.custom-picker-wrapper {
+  --picker-toolbar-height: 88rpx;
+  --picker-cancel-action-font-size: 32rpx;
+  --picker-confirm-action-font-size: 32rpx;
+  --picker-action-padding: 0 32rpx;
+  --picker-cancel-action-color: #64748B;
+  --picker-confirm-action-color: #10b981;
+  --picker-option-font-size: 30rpx;
+}
+
+.custom-picker-wrapper .van-picker__cancel {
+  font-size: 32rpx !important;
+  font-weight: 600 !important;
+  color: #64748B !important;
+}
+
+.custom-picker-wrapper .van-picker__confirm {
+  font-size: 32rpx !important;
+  font-weight: 600 !important;
+  color: #10b981 !important;
+}

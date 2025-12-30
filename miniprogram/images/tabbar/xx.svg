@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="_图层_2" data-name="图层 2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #fff;
+      }
+
+      .cls-2 {
+        fill: #00fad0;
+      }
+
+      .cls-3 {
+        fill: #00dca8;
+      }
+    </style>
+  </defs>
+  <g id="SCUIM原创">
+    <path id="_路径_7179-2" data-name="路径 7179-2" class="cls-2" d="M38.46,37.14l-2.04-7.62c-.26-.99-1.28-1.57-2.27-1.31-.31,.08-.6,.25-.83,.48l-5.58,5.58c-.72,.72-.72,1.89,0,2.62,.23,.23,.52,.39,.83,.48l7.62,2.04c.99,.26,2-.32,2.26-1.31,.08-.31,.08-.64,0-.95Z"/>
+    <circle id="_椭圆_2441-2" data-name="椭圆 2441-2" class="cls-3" cx="20" cy="20" r="20"/>
+    <circle id="_椭圆_2439-2" data-name="椭圆 2439-2" class="cls-1" cx="12.6" cy="16.22" r="3.5"/>
+    <circle id="_椭圆_2440-2" data-name="椭圆 2440-2" class="cls-1" cx="26.62" cy="16.22" r="3.5"/>
+  </g>
+</svg>

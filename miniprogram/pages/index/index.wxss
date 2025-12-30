@@ -29,12 +29,12 @@
 .search-bar {
   display: flex;
   align-items: center;
-  gap: 24rpx;
+  gap: 16rpx;
   margin-bottom: 20rpx;
 }
 
 .search-input-wrapper {
-  flex: 1;
+  width: 580rpx;
   position: relative;
   display: flex;
   align-items: center;
@@ -188,17 +188,8 @@
   padding: 12rpx 16rpx;
   background: transparent;
   border-radius: 0;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: visible;
-}
-
-.status-tab:active {
-  transform: scale(0.98);
-}
-
-.status-tab-active {
-  transform: scale(1);
 }
 
 /* 全部状态 - 底部绿色横线 */
@@ -1165,11 +1156,58 @@
   border-radius: 24rpx;
   border: 1px solid #E5E7EB;
   overflow: hidden;
+  position: relative;
 }
 
 .photo-image {
   width: 100%;
   height: 100%;
+}
+
+.photo-hidden {
+  opacity: 0;
+}
+
+.photo-loaded {
+  opacity: 1;
+}
+
+/* 图片加载中状态 */
+.photo-loading {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #F3F4F6;
+}
+
+/* 图片加载失败状态 */
+.photo-error {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: #F3F4F6;
+}
+
+.photo-error-icon {
+  font-size: 32rpx;
+  color: #9CA3AF;
+  margin-bottom: 4rpx;
+}
+
+.photo-error-text {
+  font-size: 18rpx;
+  color: #9CA3AF;
 }
 
 .photo-empty {
@@ -1227,18 +1265,15 @@
 }
 
 .filter-sheet {
-  position: relative;
   background: #ffffff;
   border-top-left-radius: 32rpx;
   border-top-right-radius: 32rpx;
-  padding-bottom: env(safe-area-inset-bottom);
-  max-height: 85vh;
+  max-height: 80vh;
   display: flex;
   flex-direction: column;
   width: 100%;
   box-sizing: border-box;
   overflow: hidden;
-  z-index: 2;
 }
 
 .sheet-header {
@@ -1296,7 +1331,7 @@
 
 .filter-body {
   flex: 1;
-  padding: 32rpx 40rpx 160rpx;
+  padding: 0 40rpx;
   box-sizing: border-box;
   width: 100%;
 }
@@ -1306,21 +1341,16 @@
 }
 
 .space {
-  height: 16rpx;
+  height: 12rpx;
 }
 
 .sheet-footer {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 24rpx 40rpx;
+  flex-shrink: 0;
+  padding: 12rpx 32rpx;
+  padding-bottom: calc(12rpx + env(safe-area-inset-bottom));
   background: #ffffff;
-  /* border-top: 1px solid #f3f4f6; Removed for floating effect */
   display: flex;
-  gap: 32rpx;
-  box-shadow: 0 -8rpx 24rpx rgba(0, 0, 0, 0.04);
-  padding-bottom: calc(24rpx + env(safe-area-inset-bottom));
+  gap: 24rpx;
   box-sizing: border-box;
   width: 100%;
 }
@@ -1465,3 +1495,4 @@
   transform: scale(0.95);
   opacity: 0.9;
 }
+

@@ -232,31 +232,12 @@ async function initRoles() {
 }
 
 /**
- * 初始化故障类型数据
+ * 初始化故障类型数据（已废弃，使用dictionaries替代）
  */
 async function initFaultTypes() {
-  const faultTypes = db.collection('fault_types');
-
-  // 检查是否已有数据
-  const existing = await faultTypes.count();
-  if (existing.total > 0) {
-    console.log(`故障类型已存在 (${existing.total} 条)，跳过初始化`);
-    return { skip: true, count: existing.total };
-  }
-
-  // 添加时间戳
-  const dataWithTimestamps = FAULT_TYPES_DATA.map(type => ({
-    ...type,
-    created_at: new Date(),
-    updated_at: new Date()
-  }));
-
-  // 批量插入
-  const tasks = dataWithTimestamps.map(type => faultTypes.add({ data: type }));
-  const results = await Promise.all(tasks);
-
-  console.log(`成功初始化 ${results.length} 个故障类型`);
-  return { success: true, count: results.length };
+  // fault_types 已废弃，直接跳过
+  console.log('fault_types 已废弃，跳过初始化');
+  return { skip: true, deprecated: true };
 }
 
 /**
@@ -265,7 +246,7 @@ async function initFaultTypes() {
 async function resetDatabase() {
   console.warn('⚠️ 开始重置数据库...');
 
-  const collections = ['roles', 'fault_types', 'users', 'work_orders', 'notifications', 'audit_logs'];
+  const collections = ['roles', 'users', 'work_orders', 'notifications', 'audit_logs'];
   const results = {};
 
   for (const collectionName of collections) {
@@ -390,7 +371,7 @@ async function createTestUsers() {
  * 获取数据库统计信息
  */
 async function getStats() {
-  const collections = ['roles', 'fault_types', 'users', 'work_orders', 'notifications', 'audit_logs'];
+  const collections = ['roles', 'users', 'work_orders', 'notifications', 'audit_logs'];
   const stats = {};
 
   for (const collectionName of collections) {

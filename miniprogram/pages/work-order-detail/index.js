@@ -264,7 +264,7 @@ Page({
 
       if (status === 'Pending Repair') {
         // 已提报/待接单状态
-        if (isPropertyManager || isPropertyStaff) {
+        if (isPropertyManager || (isPropertyStaff && isSubmitter)) {
           showThreeDots = true;
           showEditBtn = canEdit; // 只有提交者或经理可编辑
           showDeleteInMenu = true;
@@ -278,7 +278,7 @@ Page({
           showThreeDots = true;
           showConfirmRepairBtn = true;
           showEmptyMenu = true;
-        } else if (isPropertyManager || isPropertyStaff) {
+        } else if (isPropertyManager || (isPropertyStaff && isSubmitter)) {
           showThreeDots = true;
           showUrgeRepairBtn = true;
           showDeleteInMenu = true;
@@ -306,7 +306,7 @@ Page({
           showThreeDots = true;
           showConfirmRepairBtn = true;
           showEmptyMenu = true;
-        } else if (isPropertyManager || isPropertyStaff) {
+        } else if (isPropertyManager || (isPropertyStaff && isSubmitter)) {
           showThreeDots = true;
           showUrgeRepairBtn = true;
           showDeleteInMenu = true;
@@ -380,38 +380,48 @@ Page({
       order.photos = [];
     }
 
+    // 收集所有需要更新的数据，最后统一setData
+    const dataToUpdate = {};
+
+    // 初始化照片加载状态
+    const photoLoaded = {};
+    const photoError = {};
+    order.photos.forEach((_, idx) => {
+      photoLoaded[idx] = false;
+      photoError[idx] = false;
+    });
+    dataToUpdate.photoLoaded = photoLoaded;
+    dataToUpdate.photoError = photoError;
+
+    // 预加载图片临时 URL
+    this.preloadPhotoUrls(order.photos);
+
     console.log('[processWorkOrder] Photos:', order.photos);
     console.log('[processWorkOrder] Photos length:', order.photos.length);
     console.log('[processWorkOrder] Full order:', order);
 
     // Priority display
-    const priorityDisplay = PRIORITY_DISPLAY_NAMES[order.priority] || order.priority;
-    this.setData({ priorityDisplay });
+    dataToUpdate.priorityDisplay = PRIORITY_DISPLAY_NAMES[order.priority] || order.priority;
 
     // Created time
-    const createdTime = formatDateTime(order.created_at);
-    this.setData({ createdTime });
+    dataToUpdate.createdTime = formatDateTime(order.created_at);
 
     // Report time (故障发生时间) - 拆分为日期和时间
     if (order.report_time) {
-      const reportTime = formatDateTime(order.report_time);
       const reportDate = new Date(order.report_time);
       const year = reportDate.getFullYear();
       const month = String(reportDate.getMonth() + 1).padStart(2, '0');
       const day = String(reportDate.getDate()).padStart(2, '0');
       const hour = String(reportDate.getHours()).padStart(2, '0');
       const minute = String(reportDate.getMinutes()).padStart(2, '0');
-      this.setData({
-        reportTime,
-        reportDate: `${year}-${month}-${day}`,
-        reportTimeOnly: `${hour}:${minute}`
-      });
+      dataToUpdate.reportTime = formatDateTime(order.report_time);
+      dataToUpdate.reportDate = `${year}-${month}-${day}`;
+      dataToUpdate.reportTimeOnly = `${hour}:${minute}`;
     }
 
     // Assigned time
     if (order.assigned_at) {
-      const assignedTime = formatDateTime(order.assigned_at);
-      this.setData({ assignedTime });
+      dataToUpdate.assignedTime = formatDateTime(order.assigned_at);
     }
 
     // T175 - Enhanced SLA deadline display with progress and real-time updates
@@ -489,7 +499,7 @@ Page({
       console.log('[Detail] No status_history found or not an array');
     }
 
-    this.setData({ timelineData });
+    dataToUpdate.timelineData = timelineData;
 
     // Generate stepper data for work-order-stepper component
     const steps = ['已提报', '维修中', '已修复', '待复核', '已完成'];
@@ -577,14 +587,16 @@ Page({
       }
     }
 
-    this.setData({
-      stepperData: {
-        steps: steps,
-        currentStep: currentStep,
-        startTime: startTime,
-        endTime: endTime
-      }
-    });
+    // stepperData也收集到dataToUpdate
+    dataToUpdate.stepperData = {
+      steps: steps,
+      currentStep: currentStep,
+      startTime: startTime,
+      endTime: endTime
+    };
+
+    // 统一setData，将7次调用合并为1次
+    this.setData(dataToUpdate);
 
     return order;
   },
@@ -600,6 +612,71 @@ Page({
       urls: photos,
       current: photos[index]
     });
+  },
+
+  /**
+   * 图片加载成功
+   */
+  onPhotoLoad: function (e) {
+    const index = e.currentTarget.dataset.index;
+    const key = `photoLoaded[${index}]`;
+    this.setData({
+      [key]: true
+    });
+  },
+
+  /**
+   * 图片加载失败
+   */
+  onPhotoError: function (e) {
+    const index = e.currentTarget.dataset.index;
+    this.setData({
+      [`photoLoaded[${index}]`]: true,
+      [`photoError[${index}]`]: true
+    });
+  },
+
+  /**
+   * 预加载图片临时 URL
+   */
+  preloadPhotoUrls: async function (photos) {
+    if (!photos || photos.length === 0) return;
+
+    try {
+      // 收集所有 cloud:// 开头的图片 FileID
+      const cloudFileIds = photos.filter(photo => photo && photo.startsWith('cloud://'));
+
+      if (cloudFileIds.length === 0) return;
+
+      console.log('[Detail] Preloading', cloudFileIds.length, 'cloud photos');
+
+      // 批量获取临时 URL
+      const result = await wx.cloud.getTempFileURL({
+        fileList: cloudFileIds
+      });
+
+      if (result.fileList && result.fileList.length > 0) {
+        // 创建 fileID 到临时 URL 的映射
+        const urlMap = {};
+        result.fileList.forEach(item => {
+          if (item.tempFileURL && item.status === 0) {
+            urlMap[item.fileID] = item.tempFileURL;
+          }
+        });
+
+        // 更新工单数据中的图片 URL
+        const workOrder = this.data.workOrder;
+        if (workOrder && workOrder.photos) {
+          const newPhotos = workOrder.photos.map(photo => urlMap[photo] || photo);
+          this.setData({
+            'workOrder.photos': newPhotos
+          });
+          console.log('[Detail] Preloaded photo URLs');
+        }
+      }
+    } catch (error) {
+      console.error('[Detail] Preload photo URLs error:', error);
+    }
   },
 
   stopPropagation: function () {
@@ -619,7 +696,15 @@ Page({
    * Handle More - 显示更多操作菜单
    */
   handleMore: function () {
-    this.setData({ showMoreActions: true });
+    // 如果没有可用功能，显示提示后自动消失
+    if (this.data.showEmptyMenu && !this.data.showDeleteInMenu && !this.data.showNeedsReworkInMenu) {
+      this.setData({ showMoreActions: true });
+      setTimeout(() => {
+        this.setData({ showMoreActions: false });
+      }, 1500);
+    } else {
+      this.setData({ showMoreActions: true });
+    }
   },
 
   /**
@@ -1009,10 +1094,10 @@ Page({
     // Update immediately
     this.updateWorkOrderDuration();
 
-    // Update every second
+    // Update every minute instead of every second (性能优化)
     const interval = setInterval(() => {
       this.updateWorkOrderDuration();
-    }, 1000);
+    }, 60000);
 
     this.setData({ durationTimerInterval: interval });
     console.log('[Detail] Duration timer started');
@@ -1238,6 +1323,15 @@ Page({
    * Submit Review - 提交需返工
    */
   submitReview: async function () {
+    // 验证返工原因必填
+    if (!this.data.reviewNotes.trim()) {
+      wx.showToast({
+        title: '请填写返工原因',
+        icon: 'none'
+      });
+      return;
+    }
+
     // 确认对话框
     wx.showModal({
       title: '确认需返工',
@@ -1251,7 +1345,7 @@ Page({
             await workOrderService.reviewWorkOrder(
               parseInt(this.data.orderId),
               'Needs Rework',
-              this.data.reviewNotes.trim() // 允许空字符串
+              this.data.reviewNotes.trim()
             );
 
             this.setData({ submittingReview: false });
@@ -1379,8 +1473,31 @@ Page({
           is_overdue: updatedTimeRemaining <= 0
         };
 
-        this.setData({ workOrder: updatedOrder });
-        this.updateSLADisplay(updatedOrder);
+        // 计算SLA显示数据（原updateSLADisplay逻辑）
+        const isOverdue = updatedTimeRemaining <= 0;
+        const slaDisplay = formatSLATimeRemaining(updatedTimeRemaining);
+        const slaColorClass = getSLAColorClass(isOverdue, updatedPercentageUsed);
+        const progressWidth = Math.min(updatedPercentageUsed, 100);
+        const slaProgressWidth = `${progressWidth}%`;
+
+        let slaWarningMessage = '';
+        if (isOverdue) {
+          slaWarningMessage = '⚠️ 工单已超期，请尽快处理';
+        } else if (updatedPercentageUsed >= 80) {
+          slaWarningMessage = '⏰ 工单即将超期，请注意时间';
+        } else if (updatedPercentageUsed >= 50) {
+          slaWarningMessage = '提示：已使用一半以上时间';
+        }
+
+        // 合并setData，将2次调用合并为1次
+        this.setData({
+          workOrder: updatedOrder,
+          slaDisplay,
+          slaColorClass,
+          slaPercentageUsed: updatedPercentageUsed,
+          slaProgressWidth,
+          slaWarningMessage
+        });
       }
     }, 60000);
 

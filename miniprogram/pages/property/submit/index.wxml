@@ -7,22 +7,11 @@
   <view class="form-cards" style="padding-top: calc({{headerHeight}}px + 24rpx);">
     <!-- 工单编号 -->
     <view class="card">
-      <view class="card-label-required">
-        <text class="star">*</text>
+      <view class="card-label">
         <text class="label">工单编号</text>
       </view>
-      <view class="card-right" bindtap="{{!orderNumber ? 'handleScan' : ''}}">
-        <input
-          class="card-input order-number-input {{orderNumber ? 'has-value' : ''}}"
-          placeholder="扫码自动生成"
-          placeholder-class="order-number-placeholder"
-          value="{{orderNumber}}"
-          disabled="{{true}}"
-        />
-        <!-- 扫一扫按钮 - 无工单编号时显示 -->
-        <view wx:if="{{!orderNumber}}" class="scan-button-inline">
-          <text class="iconfont icon-saoyisao1" style="font-size: 44rpx; color: #CCCCCC;"></text>
-        </view>
+      <view class="card-right">
+        <text class="auto-generate-text">提交后自动生成</text>
       </view>
     </view>
 
@@ -211,28 +200,12 @@
     </view>
   </view>
 
-  <!-- 通用底部选择器弹窗 -->
-  <view wx:if="{{isSelectorOpen}}" class="modal-overlay" catchtap="closeSelector">
-    <view class="modal-content selector-modal" catchtap="stopPropagation">
-      <view class="modal-header">
-        <text class="modal-title">{{selectorTitle}}</text>
-        <view class="modal-close" catchtap="closeSelector">
-          <text class="iconfont icon-close">×</text>
-        </view>
-      </view>
-      
-      <scroll-view scroll-y class="selector-scroll">
-        <view 
-          wx:for="{{selectorOptions}}" 
-          wx:key="*this"
-          class="selector-item {{index === selectorCurrentIndex ? 'active' : ''}}"
-          catchtap="onSelectorSelect"
-          data-index="{{index}}"
-        >
-          <text class="selector-item-text">{{item}}</text>
-          <view wx:if="{{index === selectorCurrentIndex}}" class="selector-check"></view>
-        </view>
-      </scroll-view>
-    </view>
-  </view>
+  <!-- 通用底部选择器弹窗 - 使用可复用组件 -->
+  <custom-picker
+    show="{{ isSelectorOpen }}"
+    columns="{{ selectorOptions }}"
+    value="{{ selectorCurrentValue }}"
+    bind:confirm="onSelectorConfirm"
+    bind:cancel="closeSelector"
+  />
 </view>

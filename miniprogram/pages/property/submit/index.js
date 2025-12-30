@@ -10,7 +10,6 @@ const dictionary = require('../../../services/dictionary');
 
 Page({
   data: {
-    orderNumber: '',
     floorOptions: ['请选择楼层', '1楼', '2楼', '3楼', '4楼', '5楼', 'B1', 'B2'],
     floorIndex: 0,
     location: '',
@@ -37,12 +36,11 @@ Page({
     tempDate: '',
     tempTime: '',
     headerHeight: 0,
-    // --- 新增：通用选择器数据 ---
+    // --- 通用选择器数据 ---
     isSelectorOpen: false,
-    selectorTitle: '',
     selectorOptions: [],
     selectorType: '', // 'floor', 'category', 'party'
-    selectorCurrentIndex: -1
+    selectorCurrentValue: ''
   },
 
   /**
@@ -129,10 +127,6 @@ Page({
   /**
    * Form Input Handlers
    */
-  onOrderNumberInput: function (e) {
-    this.setData({ orderNumber: e.detail.value });
-  },
-
   onFloorChange: function (e) {
     this.setData({ floorIndex: parseInt(e.detail.value) });
   },
@@ -164,64 +158,6 @@ Page({
 
 
   /**
-   * Handle Scan QR Code
-   */
-  handleScan: function () {
-    wx.scanCode({
-      success: async (res) => {
-        console.log('[Submit] Scan result:', res);
-        // 使用扫描到的二维码内容
-        const scannedCode = res.result || '';
-        if (scannedCode) {
-          // 检查工单编号是否已存在
-          try {
-            wx.showLoading({ title: '检查中...', mask: true });
-            const exists = await workOrderService.checkOrderNumberExists(scannedCode);
-            wx.hideLoading();
-
-            if (exists) {
-              // 工单编号已存在，弹窗警告
-              wx.showModal({
-                title: '编号重复',
-                content: `工单编号 "${scannedCode}" 已被使用，请更换二维码重新扫描。`,
-                showCancel: false,
-                confirmText: '知道了'
-              });
-              return;
-            }
-          } catch (error) {
-            wx.hideLoading();
-            console.error('[Submit] Order number check error:', error);
-            wx.showToast({
-              title: '检查失败，请重试',
-              icon: 'none'
-            });
-            return;
-          }
-
-          this.setData({ orderNumber: scannedCode });
-          wx.showToast({
-            title: '扫码成功',
-            icon: 'success'
-          });
-        } else {
-          wx.showToast({
-            title: '未识别到内容',
-            icon: 'none'
-          });
-        }
-      },
-      fail: (err) => {
-        console.log('[Submit] Scan failed:', err);
-        wx.showToast({
-          title: '扫码取消',
-          icon: 'none'
-        });
-      }
-    });
-  },
-
-  /**
    * Handle Photo Upload
    */
   handlePhotoUpload: function (e) {
@@ -233,10 +169,10 @@ Page({
       success: (res) => {
         const tempFilePath = res.tempFilePaths[0];
 
-        // 压缩图片到150KB
+        // 压缩图片
         wx.compressImage({
           src: tempFilePath,
-          quality: 50,
+          quality: 30,
           success: (compressRes) => {
             // 检查压缩后的文件大小
             wx.getFileInfo({
@@ -296,7 +232,6 @@ Page({
    */
   validateForm: function () {
     const {
-      orderNumber,
       floorIndex,
       location,
       description,
@@ -307,11 +242,6 @@ Page({
       reportTime,
       uploadedPhotos
     } = this.data;
-
-    if (!orderNumber || orderNumber.trim() === '') {
-      wx.showToast({ title: '请扫码生成工单编号', icon: 'none' });
-      return false;
-    }
 
     if (floorIndex === 0) {
       wx.showToast({ title: '请选择楼层', icon: 'none' });
@@ -404,7 +334,6 @@ Page({
             }
 
             const submitData = {
-              order_number: this.data.orderNumber.trim(),
               floor: this.data.floorOptions[this.data.floorIndex],
               location: this.data.location.trim(),
               order_category: this.data.orderCategories[this.data.orderCategoryIndex],
@@ -525,40 +454,34 @@ Page({
   },
 
   /**
-   * --- 新增：通用选择器逻辑 ---
+   * --- 通用选择器逻辑 ---
    */
   openSelector: function(e) {
     const type = e.currentTarget.dataset.type;
-    let title = '';
     let options = [];
-    let currentIndex = -1;
+    let currentValue = '';
 
     switch(type) {
       case 'floor':
-        title = '选择楼层';
         // 移除第一个占位符 "请选择..."
         options = this.data.floorOptions.slice(1);
-        // 原索引包含占位符，所以减1
-        currentIndex = this.data.floorIndex > 0 ? this.data.floorIndex - 1 : -1;
+        currentValue = this.data.floorIndex > 0 ? this.data.floorOptions[this.data.floorIndex] : '';
         break;
       case 'category':
-        title = '选择工单类别';
         options = this.data.orderCategories.slice(1);
-        currentIndex = this.data.orderCategoryIndex > 0 ? this.data.orderCategoryIndex - 1 : -1;
+        currentValue = this.data.orderCategoryIndex > 0 ? this.data.orderCategories[this.data.orderCategoryIndex] : '';
         break;
       case 'party':
-        title = '选择责任方';
         options = this.data.responsibleParties.slice(1);
-        currentIndex = this.data.responsiblePartyIndex > 0 ? this.data.responsiblePartyIndex - 1 : -1;
+        currentValue = this.data.responsiblePartyIndex > 0 ? this.data.responsibleParties[this.data.responsiblePartyIndex] : '';
         break;
     }
 
     this.setData({
       isSelectorOpen: true,
-      selectorTitle: title,
       selectorOptions: options,
       selectorType: type,
-      selectorCurrentIndex: currentIndex
+      selectorCurrentValue: currentValue
     });
   },
 
@@ -566,21 +489,22 @@ Page({
     this.setData({ isSelectorOpen: false });
   },
 
-  onSelectorSelect: function(e) {
-    const index = e.currentTarget.dataset.index; // 列表中的索引 (0-based)
+  onSelectorConfirm: function(e) {
+    const selectedValue = e.detail.value;
     const type = this.data.selectorType;
-    
-    // 映射回原始数组索引 (原始数组第0位是占位符，所以+1)
-    const originalIndex = index + 1;
 
     const updates = { isSelectorOpen: false };
 
     if (type === 'floor') {
-      updates.floorIndex = originalIndex;
+      // 找到原始数组中的索引（包括占位符，所以+1）
+      const index = this.data.floorOptions.indexOf(selectedValue);
+      updates.floorIndex = index >= 0 ? index : 0;
     } else if (type === 'category') {
-      updates.orderCategoryIndex = originalIndex;
+      const index = this.data.orderCategories.indexOf(selectedValue);
+      updates.orderCategoryIndex = index >= 0 ? index : 0;
     } else if (type === 'party') {
-      updates.responsiblePartyIndex = originalIndex;
+      const index = this.data.responsibleParties.indexOf(selectedValue);
+      updates.responsiblePartyIndex = index >= 0 ? index : 0;
     }
 
     this.setData(updates);

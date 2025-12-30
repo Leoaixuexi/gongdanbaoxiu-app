@@ -19,7 +19,11 @@ Page({
     // 提醒我的
     reminderCount: 0,
     reminderSubtitle: '暂无提醒',
-    reminderTime: ''
+    reminderTime: '',
+
+    // 防重复加载
+    _isLoading: false,
+    _lastLoadTime: 0
   },
 
   onLoad() {
@@ -41,6 +45,13 @@ Page({
         selected: 2
       });
     }
+
+    // 防止2秒内重复加载
+    const now = Date.now();
+    if (this.data._isLoading || (now - this.data._lastLoadTime < 2000)) {
+      console.log('[Notifications] Skip duplicate load');
+      return;
+    }
     // 加载消息数据
     this.loadMessageData();
   },
@@ -49,7 +60,10 @@ Page({
    * 加载消息数据
    */
   async loadMessageData() {
+    if (this.data._isLoading) return;
+
     console.log('[Notifications] Loading message data...');
+    this.setData({ _isLoading: true });
 
     try {
       // 获取所有通知（未读）
@@ -100,13 +114,19 @@ Page({
             reminderTime: ''
           });
         }
+
+        // 同步更新 TabBar 未读数
+        this.updateTabBarUnreadCount();
       }
+
+      this.setData({ _isLoading: false, _lastLoadTime: Date.now() });
     } catch (error) {
       console.error('[Notifications] Load error:', error);
       wx.showToast({
         title: '加载失败',
         icon: 'none'
       });
+      this.setData({ _isLoading: false });
     }
   },
 
@@ -163,5 +183,15 @@ Page({
   onPullDownRefresh() {
     this.loadMessageData();
     wx.stopPullDownRefresh();
+  },
+
+  /**
+   * 更新 TabBar 未读数
+   */
+  updateTabBarUnreadCount() {
+    const tabBar = this.getTabBar?.();
+    if (tabBar) {
+      tabBar.updateUnreadCount();
+    }
   }
 });
