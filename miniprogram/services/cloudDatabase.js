@@ -18,13 +18,37 @@ wx.cloud.init({
 const db = wx.cloud.database();
 const _ = db.command;
 
+// 模块级缓存userId，避免频繁同步读取Storage
+let _cachedUserId = null;
+
+/**
+ * 初始化用户ID缓存（登录时调用）
+ */
+function initUserId(userId) {
+  _cachedUserId = userId;
+  console.log('[CloudDB] UserId cached:', userId);
+}
+
+/**
+ * 清除用户ID缓存（登出时调用）
+ */
+function clearUserId() {
+  _cachedUserId = null;
+  console.log('[CloudDB] UserId cache cleared');
+}
+
 /**
  * 获取当前用户ID（用于云函数权限验证）
+ * 优先使用缓存，缓存为空时同步读取Storage
  */
 function getCurrentUserId() {
+  if (_cachedUserId) {
+    return _cachedUserId;
+  }
   try {
     const userInfo = wx.getStorageSync(STORAGE_KEYS.USER_INFO);
-    return userInfo?.user_id || null;
+    _cachedUserId = userInfo?.user_id || null;
+    return _cachedUserId;
   } catch (e) {
     return null;
   }
@@ -588,4 +612,7 @@ class CloudDatabaseService {
 // 创建单例
 const cloudDB = new CloudDatabaseService();
 
+// 导出单例和辅助函数
 module.exports = cloudDB;
+module.exports.initUserId = initUserId;
+module.exports.clearUserId = clearUserId;

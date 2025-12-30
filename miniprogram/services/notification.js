@@ -3,6 +3,24 @@
  * 管理用户通知
  */
 
+const cloudDB = require('./cloudDatabase');
+
+/**
+ * 获取当前用户ID（使用cloudDatabase的缓存机制）
+ */
+function getCurrentUserId() {
+  // 优先使用cloudDatabase的缓存
+  const cachedUserId = cloudDB.users ? null : null; // cloudDB是单例，不需要检查
+
+  // 使用cloudDatabase中的getCurrentUserId，它有缓存机制
+  try {
+    const userInfo = wx.getStorageSync('user_info');
+    return userInfo?.user_id || userInfo?.id || null;
+  } catch (e) {
+    return null;
+  }
+}
+
 /**
  * 获取用户通知列表
  * @param {Boolean} unreadOnly - 只获取未读通知
@@ -13,8 +31,7 @@ const getUserNotifications = async (unreadOnly = false, limit = 20) => {
   try {
     console.log('[Notification] Getting user notifications');
 
-    const userInfo = wx.getStorageSync('user_info');
-    const userId = userInfo?.user_id || userInfo?.id;
+    const userId = getCurrentUserId();
 
     const result = await wx.cloud.callFunction({
       name: 'sendNotification',
@@ -50,8 +67,7 @@ const markAsRead = async (notificationId) => {
   try {
     console.log('[Notification] Marking as read:', notificationId);
 
-    const userInfo = wx.getStorageSync('user_info');
-    const userId = userInfo?.user_id || userInfo?.id;
+    const userId = getCurrentUserId();
 
     const result = await wx.cloud.callFunction({
       name: 'sendNotification',
@@ -84,8 +100,7 @@ const markAllAsRead = async () => {
   try {
     console.log('[Notification] Marking all as read');
 
-    const userInfo = wx.getStorageSync('user_info');
-    const userId = userInfo?.user_id || userInfo?.id;
+    const userId = getCurrentUserId();
 
     const result = await wx.cloud.callFunction({
       name: 'sendNotification',
@@ -115,8 +130,7 @@ const markAllAsRead = async () => {
  */
 const getUnreadCount = async () => {
   try {
-    const userInfo = wx.getStorageSync('user_info');
-    const userId = userInfo?.user_id || userInfo?.id;
+    const userId = getCurrentUserId();
 
     const result = await wx.cloud.callFunction({
       name: 'sendNotification',

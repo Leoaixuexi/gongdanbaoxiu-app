@@ -1,4 +1,5 @@
 const notificationService = require('../services/notification');
+const storage = require('../services/storage');
 const { STORAGE_KEYS } = require('../utils/constants');
 
 Component({
@@ -12,6 +13,8 @@ Component({
     workorderCount: 0,     // 待办工单
     reminderCount: 0,      // 提醒我的
     totalUnread: 0,        // 总未读数（派生值）
+    // 缓存的用户信息
+    _cachedUserInfo: null,
     list: [
       {
         pagePath: "/pages/index/index",
@@ -41,8 +44,11 @@ Component({
   },
 
   lifetimes: {
-    attached() {
-      // 组件加载时尝试更新未读数，带重试机制
+    async attached() {
+      // 组件加载时异步获取用户信息并缓存
+      const userInfo = await storage.get(STORAGE_KEYS.USER_INFO);
+      this.setData({ _cachedUserInfo: userInfo });
+      // 尝试更新未读数，带重试机制
       this.tryUpdateUnreadCount(0);
     }
   },
@@ -69,11 +75,15 @@ Component({
       const maxRetries = 5;
       const retryDelay = 1000;
 
-      const userInfo = wx.getStorageSync(STORAGE_KEYS.USER_INFO);
+      // 使用缓存的用户信息，避免同步调用
+      const userInfo = this.data._cachedUserInfo;
       if (!userInfo || (!userInfo.user_id && !userInfo.id)) {
         if (retryCount < maxRetries) {
           console.log('[TabBar] User not logged in, retry', retryCount + 1);
-          setTimeout(() => {
+          setTimeout(async () => {
+            // 重试时异步刷新缓存
+            const freshUserInfo = await storage.get(STORAGE_KEYS.USER_INFO);
+            this.setData({ _cachedUserInfo: freshUserInfo });
             this.tryUpdateUnreadCount(retryCount + 1);
           }, retryDelay);
         }
@@ -89,8 +99,15 @@ Component({
      */
     async updateUnreadCount() {
       try {
-        // 检查用户是否已登录
-        const userInfo = wx.getStorageSync(STORAGE_KEYS.USER_INFO);
+        // 使用缓存的用户信息，避免同步调用
+        let userInfo = this.data._cachedUserInfo;
+
+        // 如果缓存为空，异步获取一次
+        if (!userInfo) {
+          userInfo = await storage.get(STORAGE_KEYS.USER_INFO);
+          this.setData({ _cachedUserInfo: userInfo });
+        }
+
         if (!userInfo || (!userInfo.user_id && !userInfo.id)) {
           console.log('[TabBar] User not logged in, skip update');
           return;

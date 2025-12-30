@@ -7,6 +7,7 @@
 const api = require('./api');
 const storage = require('./storage');
 const cloud = require('./cloud');
+const cloudDB = require('./cloudDatabase');
 const { STORAGE_KEYS } = require('../utils/constants');
 
 // Token过期天数
@@ -55,6 +56,9 @@ const loginWithPassword = async (username, password) => {
 
     // Store a flag for authentication
     await storage.set(STORAGE_KEYS.TOKEN, 'authenticated');
+
+    // 缓存userId到cloudDatabase模块
+    cloudDB.initUserId(user.user_id || user.id);
 
     wx.hideLoading();
 
@@ -120,6 +124,9 @@ const login = async () => {
     // For cloud login, we don't need JWT token, but store a flag for compatibility
     await storage.set(STORAGE_KEYS.TOKEN, 'cloud_authenticated');
 
+    // 缓存userId到cloudDatabase模块
+    cloudDB.initUserId(user.user_id || user.id);
+
     wx.hideLoading();
 
     wx.showToast({
@@ -162,6 +169,9 @@ const logout = async () => {
       storage.remove(STORAGE_KEYS.USER_PERMISSIONS),
       storage.remove(STORAGE_KEYS.LAST_LOGIN)
     ]);
+
+    // 清除cloudDatabase模块的userId缓存
+    cloudDB.clearUserId();
 
     wx.showToast({
       title: '已退出登录',
