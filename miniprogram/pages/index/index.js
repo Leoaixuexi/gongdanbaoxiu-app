@@ -19,6 +19,12 @@ Page({
     activeStatus: '', // 默认为空，onShow 时设置
     isNavigatingToSubPage: false, // 标记是否导航到子页面
     isDatePickerOpen: false,
+    // ===== 懒加载优化 =====
+    allOrderIds: [],       // 全部工单ID（从后端获取）
+    loadedCount: 0,        // 已加载详情的数量
+    pageSize: 20,          // 每批加载数量
+    hasMore: true,         // 是否还有更多
+    isLoadingMore: false,  // 是否正在加载更多
     startDate: '',
     endDate: '',
     // van-calendar 日期范围（往前24个月，往后12个月）
@@ -143,11 +149,37 @@ Page({
       duration: 0
     });
 
-    // 设置自定义 tabBar 选中状态
+    // 关键修复：如果徽章数据未加载（直接打开首页场景），先等待加载完成
+    const app = getApp();
+    if (app && app.globalData._badgeVersion === 0) {
+      console.log('[Index] Badge data not loaded, awaiting refreshUnreadCounts');
+      if (app.refreshUnreadCounts) {
+        await app.refreshUnreadCounts();
+        console.log('[Index] refreshUnreadCounts completed');
+      }
+    }
+
+    // 设置自定义 tabBar 选中状态，并同步徽章数据
     if (typeof this.getTabBar === 'function' && this.getTabBar()) {
-      this.getTabBar().setData({
-        selected: 0
-      });
+      const tabBar = this.getTabBar();
+      tabBar.setData({ selected: 0 });
+
+      // 使用公共函数同步徽章数据
+      if (app && app.syncTabBarBadge) {
+        app.syncTabBarBadge(tabBar, 'index-onShow');
+      }
+    } else {
+      // TabBar 可能还未初始化，延迟重试
+      setTimeout(() => {
+        if (typeof this.getTabBar === 'function' && this.getTabBar()) {
+          const tabBar = this.getTabBar();
+          tabBar.setData({ selected: 0 });
+          const app = getApp();
+          if (app && app.syncTabBarBadge) {
+            app.syncTabBarBadge(tabBar, 'index-onShow-delayed');
+          }
+        }
+      }, 100);
     }
 
     // 判断是否从子页面返回
@@ -301,11 +333,18 @@ Page({
   },
 
   /**
-   * 滚动到底部时加载更多图片
+   * 滚动到底部时加载更多工单
    */
   onReachBottom: function () {
+    // 先加载更多工单
+    if (this.data.hasMore) {
+      console.log('[Index] Reach bottom, loading more orders');
+      this.loadMoreOrders();
+      return;
+    }
+
+    // 如果所有工单已加载，继续预加载图片
     const { workOrders, preloadedIndex } = this.data;
-    // 如果还有未预加载的工单，继续加载
     if (preloadedIndex < workOrders.length) {
       console.log('[Index] Reach bottom, loading more photos from index', preloadedIndex);
       this.preloadPhotoUrls(preloadedIndex, 5);
@@ -336,37 +375,35 @@ Page({
   },
 
   /**
-   * Load Work Orders from Cloud Database
+   * Load Work Orders - 两阶段懒加载优化
+   * Stage 1: 快速获取统计数据，立即显示状态计数
+   * Stage 2: 加载工单详情并应用筛选
    */
   loadWorkOrders: async function () {
     try {
       this.setData({ loading: true });
 
-      // Get work orders from cloud database
-      const allOrders = await workOrderService.getWorkOrders({});
+      // ===== Stage 1: 快速获取统计数据 =====
+      // 并行获取统计和详情，但统计先返回可以立即更新UI
+      const statsPromise = workOrderService.getOrderStatistics();
+      const ordersPromise = workOrderService.getWorkOrders({});
 
-      // Debug: 打印第一个工单的关键字段
-      if (allOrders.length > 0) {
-        console.log('[Index] First order debug:', {
-          order_id: allOrders[0].order_id,
-          order_number: allOrders[0].order_number,
-          order_category: allOrders[0].order_category,
-          report_time: allOrders[0].report_time
-        });
-      }
+      // 等待统计数据先返回，立即更新状态计数
+      const stats = await statsPromise;
+      console.log('[Index] Stage 1 - Statistics received:', stats.total);
+
+      // 从后端统计更新状态按钮计数（快速显示）
+      this.updateStatusButtonCountsFromStats(stats.statistics);
+
+      // ===== Stage 2: 加载工单详情 =====
+      const allOrders = await ordersPromise;
+      console.log('[Index] Stage 2 - Orders received:', allOrders.length);
 
       // Filter by user role
       let filteredOrders = this.filterByUserRole(allOrders);
 
       // Filter by time range
       filteredOrders = this.filterByTimeRange(filteredOrders);
-
-      // Calculate status counts BEFORE status filtering (so counts show all statuses)
-      const statusCounts = this.calculateStatusCounts(filteredOrders);
-      this.updateStatusButtonCounts(statusCounts);
-
-      // Filter by status
-      filteredOrders = this.filterByStatus(filteredOrders);
 
       // Filter by advanced criteria (from filter panel)
       filteredOrders = this.filterByAdvancedCriteria(filteredOrders);
@@ -384,6 +421,14 @@ Page({
         });
       }
 
+      // 计算状态计数（必须在搜索过滤之后、状态过滤之前）
+      // 这样状态按钮的数量才能准确反映当前搜索结果
+      const statusCounts = this.calculateStatusCounts(filteredOrders);
+      this.updateStatusButtonCounts(statusCounts);
+
+      // Filter by status (最后应用状态过滤，显示特定状态的工单)
+      filteredOrders = this.filterByStatus(filteredOrders);
+
       // Add display properties
       filteredOrders = filteredOrders.map(order => this.enrichOrderData(order));
 
@@ -392,24 +437,25 @@ Page({
         return new Date(b.created_at) - new Date(a.created_at);
       });
 
+      // ===== 渐进式渲染：先显示前20条 =====
+      const pageSize = this.data.pageSize;
+      const firstBatch = filteredOrders.slice(0, pageSize);
+
+      // 保存全部筛选后的工单ID用于后续加载
+      this._allFilteredOrders = filteredOrders;
+
       this.setData({
-        workOrders: filteredOrders,
+        workOrders: firstBatch,
         loading: false,
-        preloadedIndex: 0 // 重置预加载索引
+        loadedCount: firstBatch.length,
+        hasMore: filteredOrders.length > pageSize,
+        preloadedIndex: 0
       });
 
       // 预加载前5个工单的图片（异步执行，不阻塞列表显示）
       this.preloadPhotoUrls(0, 5);
 
-      console.log('[Index] Work orders loaded:', filteredOrders.length);
-      if (filteredOrders.length > 0) {
-        console.log('[Index] First order sample:', {
-          order_id: filteredOrders[0].order_id,
-          order_number: filteredOrders[0].order_number,
-          _id: filteredOrders[0]._id,
-          status: filteredOrders[0].status
-        });
-      }
+      console.log('[Index] Work orders loaded:', firstBatch.length, '/', filteredOrders.length);
 
     } catch (error) {
       console.error('[Index] Load work orders error:', error);
@@ -422,16 +468,85 @@ Page({
   },
 
   /**
+   * 加载更多工单（触底加载）
+   */
+  loadMoreOrders: function () {
+    const { loadedCount, pageSize, hasMore, isLoadingMore } = this.data;
+
+    if (!hasMore || isLoadingMore) return;
+    if (!this._allFilteredOrders) return;
+
+    this.setData({ isLoadingMore: true });
+
+    const nextBatch = this._allFilteredOrders.slice(loadedCount, loadedCount + pageSize);
+
+    if (nextBatch.length > 0) {
+      const newWorkOrders = [...this.data.workOrders, ...nextBatch];
+      const newLoadedCount = loadedCount + nextBatch.length;
+
+      this.setData({
+        workOrders: newWorkOrders,
+        loadedCount: newLoadedCount,
+        hasMore: newLoadedCount < this._allFilteredOrders.length,
+        isLoadingMore: false
+      });
+
+      // 继续预加载新加载工单的图片
+      this.preloadPhotoUrls(loadedCount, nextBatch.length);
+
+      console.log('[Index] Loaded more orders:', newLoadedCount, '/', this._allFilteredOrders.length);
+    } else {
+      this.setData({
+        hasMore: false,
+        isLoadingMore: false
+      });
+    }
+  },
+
+  /**
+   * 从后端统计数据快速更新状态按钮计数
+   */
+  updateStatusButtonCountsFromStats: function (statistics) {
+    if (!statistics) return;
+
+    const counts = {
+      all: 0,
+      'Pending Repair': statistics['Pending Repair'] || 0,
+      'In Progress': statistics['In Progress'] || 0,
+      'Repaired': statistics['Repaired'] || 0,
+      'Completed': statistics['Completed'] || 0,
+      'Needs Rework': statistics['Needs Rework'] || 0
+    };
+
+    // 计算总数
+    counts.all = counts['Pending Repair'] + counts['In Progress'] +
+                 counts['Repaired'] + counts['Completed'] + counts['Needs Rework'];
+
+    this.updateStatusButtonCounts(counts);
+  },
+
+  /**
    * Filter orders by user role
-   * 行政经理和办美员工：共享可见所有工单
+   * 行政经理：可见所有工单（包括已完成）
+   * 办美员工：共享可见所有工单，但"已完成"状态只能看自己提交的
    * 维修员：只看责任方=自己部门的工单
    */
   filterByUserRole: function (orders) {
-    const { isPropertyStaff, isMaintenanceWorker, isManager, userDepartment } = this.data;
+    const { isPropertyStaff, isMaintenanceWorker, isManager, userDepartment, userId } = this.data;
 
-    if (isManager || isPropertyStaff) {
-      // 行政经理和办美员工：共享可见所有工单
+    if (isManager) {
+      // 行政经理：可见所有工单（不受已完成限制）
       return orders;
+    } else if (isPropertyStaff) {
+      // 办美员工：共享可见所有工单，但"已完成"状态只能看自己提交的
+      return orders.filter(order => {
+        // 非已完成状态：全部可见
+        if (order.status !== 'Completed') {
+          return true;
+        }
+        // 已完成状态：只能看自己提交的
+        return order.submitter?.user_id === userId;
+      });
     } else if (isMaintenanceWorker && userDepartment) {
       // 维修员：只显示责任方与自己部门匹配的工单
       return orders.filter(order => {
@@ -732,12 +847,14 @@ Page({
 
       if (result.fileList && result.fileList.length > 0) {
         const updates = {};
+        const timestamp = Date.now(); // 添加时间戳，强制重新加载图片
         result.fileList.forEach(item => {
           if (item.tempFileURL && item.status === 0) {
             const mapping = fileIdToOrderMap[item.fileID];
             if (mapping) {
               const key = `workOrders[${mapping.orderIndex}].photos[${mapping.photoIndex}]`;
-              updates[key] = item.tempFileURL;
+              // 添加时间戳参数，避免缓存导致加载失败后无法恢复
+              updates[key] = item.tempFileURL + '?t=' + timestamp;
             }
           }
         });
@@ -1188,6 +1305,69 @@ Page({
     wx.navigateTo({
       url: `/pages/work-order-detail/index?id=${id}`
     });
+  },
+
+  /**
+   * 导出工单到Excel（仅行政经理可用）
+   */
+  handleExport: async function () {
+    // 权限检查
+    if (!this.data.isManager) {
+      wx.showToast({ title: '无权限导出', icon: 'none' });
+      return;
+    }
+
+    // 根据 activeStatus 的 key 找到对应的数据库状态值
+    let dbStatus = null;
+    if (this.data.activeStatus && this.data.activeStatus !== 'all') {
+      const statusButton = this.data.statusButtons.find(btn => btn.key === this.data.activeStatus);
+      if (statusButton) {
+        dbStatus = statusButton.status;
+      }
+    }
+
+    // 收集当前筛选条件
+    const filters = {
+      status: dbStatus,
+      timeRange: {
+        type: this.data.activeTab || '',
+        startDate: this.data.startDate || '',
+        endDate: this.data.endDate || ''
+      },
+      advancedFilters: {}
+    };
+
+    // 提取高级筛选条件
+    this.data.filterRows.forEach(row => {
+      if (row.value) {
+        filters.advancedFilters[row.id] = row.value;
+      }
+    });
+
+    console.log('[Index] Export with filters:', filters);
+
+    try {
+      // 调用导出服务
+      const result = await workOrderService.exportWorkOrders(filters);
+      console.log('[Index] Export result:', result);
+
+      // 下载并打开文件
+      await workOrderService.downloadAndOpenFile(result.downloadUrl, result.fileName);
+
+      wx.showToast({
+        title: `导出成功(${result.totalCount}条)`,
+        icon: 'success'
+      });
+    } catch (error) {
+      console.error('[Index] Export error:', error);
+      // 针对无数据的情况给出更友好的提示
+      const msg = error.message || '导出失败';
+      if (msg.includes('没有符合条件')) {
+        wx.showToast({ title: '当前筛选条件下无工单', icon: 'none', duration: 2000 });
+      } else {
+        wx.showToast({ title: msg, icon: 'none' });
+      }
+    }
   },
 
   /**

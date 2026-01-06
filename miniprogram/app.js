@@ -16,15 +16,17 @@ App({
     systemInfo: null,
     apiBaseUrl: API_BASE_URL,
     isLoggedIn: false,
-    // 未读消息数缓存，避免切换 Tab 时徽章回退
+    // 未读消息数缓存（全局统一状态源）
     unreadCounts: {
       notificationCount: 0,
       workorderCount: 0,
       reminderCount: 0,
       totalUnread: 0
     },
-    // 标记未读数是否已初始化，避免多个 TabBar 组件重复请求
-    _unreadInitialized: false
+    // 上次刷新未读数的时间戳，用于节流
+    _lastUnreadRefreshTime: 0,
+    // 徽章版本号，用于确保 TabBar 能检测到数据更新
+    _badgeVersion: 0
   },
 
   /**
@@ -152,6 +154,9 @@ App({
         console.log('[App] User is logged in:', userInfo);
         console.log('[App] User permissions object:', permissions);
         console.log('[App] User permissions array:', permissionsArray);
+
+        // 登录成功后刷新未读消息数（不需要 await，因为 TabBar 有数据过期检测兜底）
+        this.refreshUnreadCounts();
       } else {
         console.log('[App] User is not logged in');
         this.globalData.userInfo = null;
@@ -296,5 +301,122 @@ App({
   getPriorityDisplayName: function (priority) {
     const { PRIORITY_DISPLAY_NAMES } = require('./utils/constants');
     return PRIORITY_DISPLAY_NAMES[priority] || priority;
+  },
+
+  /**
+   * 统一的徽章更新入口（Single Source of Truth）
+   * 所有徽章更新必须通过此函数
+   * @param {Object} counts - 未读数对象
+   * @param {string} source - 调用来源（用于调试）
+   */
+  updateBadge: function (counts, source) {
+    const timestamp = Date.now();
+
+    // 1. 更新全局状态 + 版本号
+    this.globalData.unreadCounts = {
+      notificationCount: counts.notificationCount || 0,
+      workorderCount: counts.workorderCount || 0,
+      reminderCount: counts.reminderCount || 0,
+      totalUnread: counts.totalUnread || 0
+    };
+    this.globalData._badgeVersion = timestamp;
+
+    console.log('[Badge] ========== UPDATE START ==========');
+    console.log('[Badge] Source:', source);
+    console.log('[Badge] Counts:', JSON.stringify(this.globalData.unreadCounts));
+    console.log('[Badge] Version:', timestamp);
+
+    // 2. 同步到所有已加载的 TabBar
+    const pages = getCurrentPages();
+    console.log('[Badge] getCurrentPages() returned', pages.length, 'pages:', pages.map(p => p.route));
+
+    let syncCount = 0;
+    pages.forEach((page, index) => {
+      console.log('[Badge] Checking page[' + index + ']:', page.route);
+      if (typeof page.getTabBar === 'function') {
+        const tabBar = page.getTabBar();
+        console.log('[Badge] - getTabBar() returned:', tabBar ? 'TabBar instance' : 'null');
+        if (tabBar) {
+          console.log('[Badge] - applyBadge exists:', typeof tabBar.applyBadge === 'function');
+          if (typeof tabBar.applyBadge === 'function') {
+            tabBar.applyBadge(this.globalData.unreadCounts, timestamp, source);
+            syncCount++;
+          } else {
+            // 降级：直接 setData
+            console.log('[Badge] - Fallback: using setData directly');
+            tabBar.setData({
+              notificationCount: counts.notificationCount || 0,
+              workorderCount: counts.workorderCount || 0,
+              reminderCount: counts.reminderCount || 0,
+              totalUnread: counts.totalUnread || 0
+            });
+            syncCount++;
+          }
+        }
+      } else {
+        console.log('[Badge] - No getTabBar function');
+      }
+    });
+
+    console.log('[Badge] Synced to ' + syncCount + ' TabBar(s)');
+    console.log('[Badge] ========== UPDATE END ==========');
+  },
+
+  /**
+   * 刷新未读消息数并同步到所有 TabBar
+   * 在登录成功后调用，确保首页也能显示正确的未读数徽章
+   */
+  refreshUnreadCounts: async function () {
+    try {
+      console.log('[App] refreshUnreadCounts: starting...');
+      const notificationService = require('./services/notification');
+      const counts = await notificationService.getCategorizedUnreadCount();
+      console.log('[App] refreshUnreadCounts: got counts =', JSON.stringify(counts));
+
+      // 调试：显示 toast（临时）
+      // wx.showToast({ title: '未读:' + (counts.totalUnread || 0), icon: 'none', duration: 2000 });
+
+      // 使用统一入口更新徽章
+      this.updateBadge(counts, 'refreshUnreadCounts');
+      console.log('[App] refreshUnreadCounts: completed, globalData.unreadCounts =', JSON.stringify(this.globalData.unreadCounts));
+    } catch (error) {
+      console.error('[App] Refresh unread counts error:', error);
+      // 调试：显示错误（临时）
+      // wx.showToast({ title: '加载未读数失败', icon: 'none' });
+    }
+  },
+
+  /**
+   * 清除未读消息数缓存
+   * 在退出登录时调用，确保账号切换后不会显示旧账号的数据
+   */
+  clearUnreadCounts: function () {
+    this.updateBadge({
+      notificationCount: 0,
+      workorderCount: 0,
+      reminderCount: 0,
+      totalUnread: 0
+    }, 'logout');
+  },
+
+  /**
+   * 同步 TabBar 徽章数据（供各页面 onShow 调用）
+   * 解决 switchTab 时 TabBar 组件数据可能被重置的问题
+   * @param {Object} tabBar - TabBar 组件实例
+   * @param {string} source - 调用来源（用于日志）
+   */
+  syncTabBarBadge: function (tabBar, source) {
+    if (!tabBar || !this.globalData.unreadCounts) return;
+
+    const globalVersion = this.globalData._badgeVersion || 0;
+    const globalCounts = this.globalData.unreadCounts;
+    const appliedVersion = tabBar.data._appliedVersion || 0;
+    const localTotal = tabBar.data.totalUnread || 0;
+    const globalTotal = globalCounts.totalUnread || 0;
+
+    if ((globalVersion > appliedVersion || localTotal !== globalTotal) && tabBar.applyBadge) {
+      console.log('[App] syncTabBarBadge from ' + source + ': localTotal=' + localTotal + ', globalTotal=' + globalTotal);
+      tabBar.applyBadge(globalCounts, globalVersion, source);
+    }
   }
 });

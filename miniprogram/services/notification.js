@@ -11,8 +11,11 @@ const { callCloudSilent } = require('../utils/cloudCall');
 function getCurrentUserId() {
   try {
     const userInfo = wx.getStorageSync('user_info');
-    return userInfo?.user_id || userInfo?.id || null;
+    const userId = userInfo?.user_id || userInfo?.id || null;
+    console.log('[Notification] getCurrentUserId: userInfo =', userInfo ? JSON.stringify(userInfo).substring(0, 100) : 'null', ', userId =', userId);
+    return userId;
   } catch (e) {
+    console.error('[Notification] getCurrentUserId error:', e);
     return null;
   }
 }
@@ -24,13 +27,19 @@ function getCurrentUserId() {
  * @returns {Promise<Object>} 通知列表
  */
 const getUserNotifications = async (unreadOnly = false, limit = 20) => {
-  console.log('[Notification] Getting user notifications');
   const userId = getCurrentUserId();
+  console.log('[Notification] Getting user notifications, userId =', userId, ', unreadOnly =', unreadOnly);
+
+  if (!userId) {
+    console.warn('[Notification] No userId, returning empty result');
+    return { success: true, notifications: [], total: 0 };
+  }
+
   const result = await callCloudSilent('sendNotification', {
     action: 'getUserNotifications',
     data: { user_id: userId, unread_only: unreadOnly, limit }
   });
-  console.log('[Notification] Got notifications:', result.total);
+  console.log('[Notification] Got notifications: success =', result?.success, ', total =', result?.total);
   return result;
 };
 

@@ -14,16 +14,7 @@ Page({
     showPassword: false,
     isLoading: false,
     usernameFocus: false,
-    passwordFocus: false,
-    quickAccounts: [
-      { label: '信泰物业', username: 'xintaiwuye', password: '123456' },
-      { label: '工程总包', username: 'tonghezongbao', password: '123456' },
-      { label: '老崔', username: 'laocui', password: '123456' },
-      { label: '杨乾坤', username: 'yangqiankun', password: '123456' },
-      { label: '黄贺楠', username: 'huanghenan', password: '123456' },
-      { label: '张语芮', username: 'zhangyurui', password: '123456' },
-      { label: '管理员', username: 'admin', password: 'l19890522' }
-    ]
+    passwordFocus: false
   },
 
   onLoad() {
@@ -38,6 +29,14 @@ Page({
     try {
       const isAuth = await auth.isAuthenticated();
       if (isAuth) {
+        // 关键修复：自动登录时也需要等待未读数加载完成
+        const app = getApp();
+        if (app && typeof app.refreshUnreadCounts === 'function') {
+          console.log('[Login] AutoLogin: Awaiting refreshUnreadCounts');
+          await app.refreshUnreadCounts();
+          console.log('[Login] AutoLogin: refreshUnreadCounts completed');
+        }
+
         const userInfo = wx.getStorageSync(STORAGE_KEYS.USER_INFO);
         if (userInfo && userInfo.role_id == ROLES.ADMIN) {
           wx.reLaunch({ url: '/pages/admin/dashboard/index' });
@@ -94,30 +93,13 @@ Page({
     wx.showToast({ title: '《隐私协议》', icon: 'none' });
   },
 
-  // 快捷登录
-  onQuickLogin(e) {
-    const index = e.currentTarget.dataset.index;
-    const account = this.data.quickAccounts[index];
-
-    // 填充账号密码
-    this.setData({
-      username: account.username,
-      password: account.password
-    });
-
-    // 自动登录
-    setTimeout(() => {
-      this.onLogin();
-    }, 100);
-  },
-
   async onLogin() {
     const { username, password, isLoading } = this.data;
 
     if (isLoading) return;
 
     if (!username) {
-      return wx.showToast({ title: '请输入用户名', icon: 'none' });
+      return wx.showToast({ title: '请输入用户名或手机号', icon: 'none' });
     }
     if (!password) {
       return wx.showToast({ title: '请输入密码', icon: 'none' });
@@ -130,6 +112,14 @@ Page({
 
       console.log('[Login] Login successful:', user);
 
+      // 登录成功后，等待未读数获取完成再跳转（关键修复）
+      const app = getApp();
+      if (app && typeof app.refreshUnreadCounts === 'function') {
+        console.log('[Login] Awaiting refreshUnreadCounts');
+        await app.refreshUnreadCounts();
+        console.log('[Login] refreshUnreadCounts completed');
+      }
+
       wx.showToast({
         title: '登录成功',
         icon: 'success'
@@ -141,7 +131,7 @@ Page({
         } else {
           wx.switchTab({ url: '/pages/index/index' });
         }
-      }, 1500);
+      }, 1000);  // 缩短到1秒，因为数据已加载完成
 
     } catch (error) {
       console.error('[Login] Login error:', error);

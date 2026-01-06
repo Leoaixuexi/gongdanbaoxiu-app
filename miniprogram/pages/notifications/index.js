@@ -39,11 +39,32 @@ Page({
 
   onShow() {
     console.log('[Notifications] Page show');
-    // 设置自定义 tabBar 选中状态
+    // 设置自定义 tabBar 选中状态，并同步徽章数据
+    const syncBadge = (tabBar, source) => {
+      tabBar.setData({ selected: 2 });
+      const app = getApp();
+      if (app && app.globalData.unreadCounts) {
+        const globalVersion = app.globalData._badgeVersion || 0;
+        const globalCounts = app.globalData.unreadCounts;
+        const appliedVersion = tabBar.data._appliedVersion || 0;
+        const localTotal = tabBar.data.totalUnread || 0;
+        const globalTotal = globalCounts.totalUnread || 0;
+        if ((globalVersion > appliedVersion || localTotal !== globalTotal) && tabBar.applyBadge) {
+          console.log('[Notifications] Manual badge sync from ' + source + ': localTotal=' + localTotal + ', globalTotal=' + globalTotal);
+          tabBar.applyBadge(globalCounts, globalVersion, source);
+        }
+      }
+    };
+
     if (typeof this.getTabBar === 'function' && this.getTabBar()) {
-      this.getTabBar().setData({
-        selected: 2
-      });
+      syncBadge(this.getTabBar(), 'notifications-onShow');
+    } else {
+      // TabBar 可能还未初始化，延迟重试
+      setTimeout(() => {
+        if (typeof this.getTabBar === 'function' && this.getTabBar()) {
+          syncBadge(this.getTabBar(), 'notifications-onShow-delayed');
+        }
+      }, 100);
     }
 
     // 防止2秒内重复加载
@@ -186,12 +207,14 @@ Page({
   },
 
   /**
-   * 更新 TabBar 未读数
+   * 更新 TabBar 未读数 - 使用统一入口确保全局同步
    */
   updateTabBarUnreadCount() {
-    const tabBar = this.getTabBar?.();
-    if (tabBar) {
-      tabBar.updateUnreadCount();
+    const app = getApp();
+    // 使用 app.refreshUnreadCounts 而不是 tabBar.updateUnreadCount
+    // 这样可以确保所有页面的 TabBar 都同步更新，而不是只更新当前页面
+    if (app && app.refreshUnreadCounts) {
+      app.refreshUnreadCounts();
     }
   }
 });
