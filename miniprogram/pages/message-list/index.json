@@ -2,5 +2,7 @@
   "navigationBarTitleText": "消息列表",
   "navigationStyle": "custom",
   "enablePullDownRefresh": false,
-  "usingComponents": {}
+  "usingComponents": {
+    "van-icon": "@vant/weapp/icon/index"
+  }
 }

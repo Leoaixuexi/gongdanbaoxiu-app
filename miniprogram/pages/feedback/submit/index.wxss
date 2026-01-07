@@ -1,0 +1,320 @@
+/* 意见反馈提交页面 - 现代化UI设计 */
+
+.feedback-page {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #f0fdf4 0%, #f5f5f5 100%);
+  padding-bottom: calc(140rpx + env(safe-area-inset-bottom));
+}
+
+/* 导航栏 - 绿色渐变背景 */
+.nav-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  z-index: 100;
+}
+
+.nav-content {
+  height: 88rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24rpx;
+}
+
+.nav-left {
+  width: 80rpx;
+  height: 80rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+}
+
+.nav-left:active {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.nav-right-placeholder {
+  width: 80rpx;
+}
+
+/* 标题区域：现代化设计 */
+.title-section {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 32rpx 32rpx 24rpx;
+  background-color: #fff;
+  margin: 0 24rpx;
+  margin-top: 24rpx;
+  border-radius: 20rpx;
+  box-shadow: 0 4rpx 20rpx rgba(16, 185, 129, 0.08);
+}
+
+.section-title {
+  font-size: 40rpx;
+  font-weight: 700;
+  color: #1a1a1a;
+  letter-spacing: 1rpx;
+}
+
+.my-feedback-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12rpx 24rpx;
+  background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+  border-radius: 32rpx;
+  box-shadow: 0 4rpx 12rpx rgba(249, 115, 22, 0.3);
+  transition: all 0.2s;
+}
+
+.my-feedback-link:active {
+  transform: scale(0.96);
+  box-shadow: 0 2rpx 8rpx rgba(249, 115, 22, 0.25);
+}
+
+.my-feedback-text {
+  font-size: 24rpx;
+  color: #fff;
+  font-weight: 500;
+}
+
+/* 表单区域 */
+.form-area {
+  padding: 24rpx;
+}
+
+.form-card {
+  background-color: #fff;
+  border-radius: 20rpx;
+  padding: 28rpx;
+  margin-bottom: 20rpx;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.04);
+  border: 1rpx solid rgba(16, 185, 129, 0.08);
+  transition: all 0.2s;
+}
+
+.form-card:active {
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.06);
+}
+
+.form-label {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20rpx;
+}
+
+.form-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20rpx;
+}
+
+.required {
+  color: #ef4444;
+  font-size: 28rpx;
+  margin-right: 6rpx;
+}
+
+.label-text {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.label-hint {
+  font-size: 24rpx;
+  color: #9ca3af;
+  margin-left: 8rpx;
+}
+
+.photo-count {
+  font-size: 26rpx;
+  color: #10b981;
+  font-weight: 500;
+}
+
+/* 输入框 - 现代化设计 */
+.form-input {
+  width: 100%;
+  height: 88rpx;
+  font-size: 30rpx;
+  color: #1a1a1a;
+  background-color: #f9fafb;
+  border: 2rpx solid #e5e7eb;
+  border-radius: 16rpx;
+  padding: 0 24rpx;
+  box-sizing: border-box;
+  transition: all 0.2s;
+}
+
+.form-input:focus {
+  border-color: #10b981;
+  background-color: #fff;
+  box-shadow: 0 0 0 4rpx rgba(16, 185, 129, 0.1);
+}
+
+.placeholder {
+  color: #9ca3af;
+}
+
+/* 文本域 */
+.textarea-wrapper {
+  position: relative;
+}
+
+.form-textarea {
+  width: 100%;
+  min-height: 220rpx;
+  font-size: 30rpx;
+  color: #1a1a1a;
+  background-color: #f9fafb;
+  border: 2rpx solid #e5e7eb;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  padding-bottom: 60rpx;
+  box-sizing: border-box;
+  line-height: 1.7;
+  transition: all 0.2s;
+}
+
+.form-textarea:focus {
+  border-color: #10b981;
+  background-color: #fff;
+  box-shadow: 0 0 0 4rpx rgba(16, 185, 129, 0.1);
+}
+
+.char-count {
+  position: absolute;
+  right: 24rpx;
+  bottom: 20rpx;
+  font-size: 24rpx;
+  color: #9ca3af;
+}
+
+/* 图片网格 - 优化设计 */
+.photo-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+}
+
+.photo-item {
+  width: calc((100% - 48rpx) / 4);
+  aspect-ratio: 1;
+  position: relative;
+  border-radius: 16rpx;
+  overflow: hidden;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.08);
+}
+
+.photo-img {
+  width: 100%;
+  height: 100%;
+  transition: transform 0.2s;
+}
+
+.photo-item:active .photo-img {
+  transform: scale(1.05);
+}
+
+.photo-delete {
+  position: absolute;
+  top: 8rpx;
+  right: 8rpx;
+  width: 40rpx;
+  height: 40rpx;
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2rpx 8rpx rgba(239, 68, 68, 0.4);
+}
+
+.delete-icon {
+  font-size: 28rpx;
+  color: #fff;
+  line-height: 1;
+  font-weight: bold;
+}
+
+.photo-add {
+  width: calc((100% - 48rpx) / 4);
+  aspect-ratio: 1;
+  background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+  border: 2rpx dashed #10b981;
+  border-radius: 16rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8rpx;
+  transition: all 0.2s;
+}
+
+.photo-add:active {
+  background: linear-gradient(135deg, #dcfce7 0%, #d1fae5 100%);
+  transform: scale(0.96);
+}
+
+.add-icon {
+  font-size: 48rpx;
+  color: #10b981;
+  line-height: 1;
+  font-weight: 300;
+}
+
+.add-text {
+  font-size: 22rpx;
+  color: #10b981;
+  font-weight: 500;
+}
+
+/* 底部按钮 - 现代化设计 */
+.bottom-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: #fff;
+  padding: 20rpx 32rpx;
+  padding-bottom: calc(20rpx + env(safe-area-inset-bottom));
+  box-shadow: 0 -4rpx 20rpx rgba(0, 0, 0, 0.06);
+}
+
+.submit-btn {
+  width: 100%;
+  height: 100rpx;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  border-radius: 50rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8rpx 24rpx rgba(16, 185, 129, 0.35);
+  transition: all 0.2s;
+}
+
+.submit-btn:active {
+  transform: scale(0.98);
+  box-shadow: 0 4rpx 16rpx rgba(16, 185, 129, 0.3);
+}
+
+.submit-btn.disabled {
+  opacity: 0.6;
+  transform: none;
+}
+
+.submit-text {
+  font-size: 34rpx;
+  font-weight: 600;
+  color: #fff;
+  letter-spacing: 2rpx;
+}

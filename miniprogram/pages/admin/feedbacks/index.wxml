@@ -1,0 +1,80 @@
+<!--管理员-用户反馈列表页面（只读）-->
+<view class="feedback-page">
+  <!-- 自定义导航栏 -->
+  <view class="nav-bar" style="padding-top: {{statusBarHeight}}px;">
+    <view class="nav-content">
+      <view class="nav-left" bindtap="goBack">
+        <van-icon name="arrow-left" size="40rpx" color="#333" />
+      </view>
+      <text class="nav-title">用户反馈</text>
+      <view class="nav-right"></view>
+    </view>
+  </view>
+
+  <!-- 列表区域 -->
+  <view class="list-content" style="padding-top: {{navBarHeight}}px;">
+    <!-- 加载中 -->
+    <view wx:if="{{loading && list.length === 0}}" class="loading-wrapper">
+      <van-loading size="48rpx" color="#0CA77D">加载中...</van-loading>
+    </view>
+
+    <!-- 空态 -->
+    <view wx:elif="{{!loading && list.length === 0}}" class="empty-wrapper">
+      <van-empty description="暂无反馈记录" />
+    </view>
+
+    <!-- 反馈列表 -->
+    <view wx:else class="feedback-list">
+      <view
+        wx:for="{{list}}"
+        wx:key="feedback_id"
+        class="feedback-card"
+        bindtap="goToDetail"
+        data-id="{{item.feedback_id}}"
+      >
+        <!-- 头部：用户信息和时间 -->
+        <view class="card-header">
+          <view class="user-info">
+            <text class="user-name">{{item.user_name}}</text>
+            <text class="user-role">{{item.user_role_name}}</text>
+          </view>
+          <text class="card-time">{{item.created_at_str}}</text>
+        </view>
+
+        <!-- 标题 -->
+        <view class="card-title">{{item.title}}</view>
+
+        <!-- 内容摘要 -->
+        <view class="card-content">{{item.content_summary}}</view>
+
+        <!-- 照片缩略图 -->
+        <view wx:if="{{item.photos && item.photos.length > 0}}" class="card-photos">
+          <image
+            wx:for="{{item.photos}}"
+            wx:for-item="photo"
+            wx:for-index="pIndex"
+            wx:key="pIndex"
+            wx:if="{{pIndex < 4}}"
+            class="photo-thumb"
+            src="{{photo}}"
+            mode="aspectFill"
+          />
+          <view wx:if="{{item.photos.length > 4}}" class="photo-more">
+            <text>+{{item.photos.length - 4}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 加载更多 -->
+    <view wx:if="{{list.length > 0 && hasMore}}" class="load-more" bindtap="loadMore">
+      <text wx:if="{{!loadingMore}}">加载更多</text>
+      <van-loading wx:else size="32rpx" color="#999">加载中...</van-loading>
+    </view>
+
+    <!-- 没有更多了 -->
+    <view wx:if="{{list.length > 0 && !hasMore}}" class="no-more">
+      <text>没有更多了</text>
+    </view>
+  </view>
+</view>

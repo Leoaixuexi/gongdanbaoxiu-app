@@ -4,7 +4,7 @@
   <view class="nav-bar" style="padding-top: {{statusBarHeight}}px;">
     <view class="nav-content">
       <view class="nav-left" bindtap="handleCancel">
-        <view class="back-icon"></view>
+        <van-icon name="arrow-left" size="40rpx" color="#fff" />
       </view>
       <view class="nav-title">修改手机号</view>
       <view class="nav-right"></view>

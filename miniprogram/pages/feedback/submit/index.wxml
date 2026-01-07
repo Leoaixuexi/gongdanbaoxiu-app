@@ -1,0 +1,90 @@
+<!--意见反馈提交页面-->
+<view class="feedback-page">
+  <!-- 自定义导航栏 -->
+  <view class="nav-bar" style="padding-top: {{statusBarHeight}}px;">
+    <view class="nav-content">
+      <view class="nav-left" bindtap="goBack">
+        <van-icon name="arrow-left" size="40rpx" color="#fff" />
+      </view>
+      <view class="nav-right-placeholder"></view>
+    </view>
+  </view>
+
+  <!-- 标题区域：意见反馈和我的反馈在同一行 -->
+  <view class="title-section" style="margin-top: {{navBarHeight}}px;">
+    <text class="section-title">意见反馈</text>
+    <view class="my-feedback-link" bindtap="goToMyFeedback">
+      <text class="my-feedback-text">我的反馈</text>
+    </view>
+  </view>
+
+  <!-- 表单区域 -->
+  <view class="form-area">
+    <!-- 标题输入 -->
+    <view class="form-card">
+      <view class="form-label">
+        <text class="required">*</text>
+        <text class="label-text">标题</text>
+      </view>
+      <input
+        class="form-input"
+        placeholder="请输入标题"
+        placeholder-class="placeholder"
+        value="{{title}}"
+        bindinput="onTitleInput"
+        maxlength="50"
+      />
+    </view>
+
+    <!-- 内容输入 -->
+    <view class="form-card">
+      <view class="form-label">
+        <text class="required">*</text>
+        <text class="label-text">请具体描述您遇到的问题或建议</text>
+      </view>
+      <view class="textarea-wrapper">
+        <textarea
+          class="form-textarea"
+          placeholder="请详细描述问题或建议..."
+          placeholder-class="placeholder"
+          value="{{content}}"
+          bindinput="onContentInput"
+          maxlength="500"
+        />
+        <view class="char-count">{{contentLength}}/500</view>
+      </view>
+    </view>
+
+    <!-- 问题截图 -->
+    <view class="form-card">
+      <view class="form-label-row">
+        <view class="form-label">
+          <text class="label-text">问题截图</text>
+          <text class="label-hint">（提供截图，可以更快速的定位问题）</text>
+        </view>
+        <text class="photo-count">{{photoCount}}/4</text>
+      </view>
+      <view class="photo-grid">
+        <!-- 已上传的图片 -->
+        <view wx:for="{{uploadedPhotos}}" wx:key="index" class="photo-item">
+          <image class="photo-img" src="{{item}}" mode="aspectFill" bindtap="previewPhoto" data-index="{{index}}" />
+          <view class="photo-delete" catchtap="removePhoto" data-index="{{index}}">
+            <text class="delete-icon">×</text>
+          </view>
+        </view>
+        <!-- 上传按钮 -->
+        <view wx:if="{{photoCount < 4}}" class="photo-add" bindtap="choosePhoto">
+          <text class="add-icon">+</text>
+          <text class="add-text">上传图片</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 底部提交按钮 -->
+  <view class="bottom-bar">
+    <view class="submit-btn {{submitting ? 'disabled' : ''}}" bindtap="handleSubmit">
+      <text class="submit-text">{{submitting ? '提交中...' : '提交'}}</text>
+    </view>
+  </view>
+</view>

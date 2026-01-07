@@ -4,7 +4,7 @@
     <!-- 左侧返回按钮 -->
     <view class="header-left">
       <view wx:if="{{showBack}}" class="back-btn" bindtap="onBack">
-        <view class="icon-chevron-left"></view>
+        <van-icon name="arrow-left" size="40rpx" color="#fff" />
       </view>
     </view>
 

@@ -12,17 +12,29 @@
     "pages/notifications/index",
     "pages/message-list/index",
     "pages/data/index",
-    "pages/admin/dashboard/index",
-    "pages/admin/users/index",
-    "pages/admin/users/add/index",
-    "pages/admin/users/edit/index",
-    "pages/admin/roles/index",
-    "pages/admin/config/index",
-    "pages/admin/audit-logs/index",
-    "pages/admin/announcements/index",
-    "pages/admin/announcements/edit/index",
-    "pages/admin/dict/index",
-    "pages/admin/dict/items"
+    "pages/feedback/submit/index",
+    "pages/feedback/list/index",
+    "pages/feedback/detail/index"
+  ],
+  "subpackages": [
+    {
+      "root": "pages/admin",
+      "name": "admin",
+      "pages": [
+        "dashboard/index",
+        "users/index",
+        "users/add/index",
+        "users/edit/index",
+        "roles/index",
+        "config/index",
+        "audit-logs/index",
+        "announcements/index",
+        "announcements/edit/index",
+        "dict/index",
+        "dict/items",
+        "feedbacks/index"
+      ]
+    }
   ],
   "window": {
     "backgroundTextStyle": "light",
@@ -83,11 +95,8 @@
   "usingComponents": {
     "van-button": "@vant/weapp/button/index",
     "van-popup": "@vant/weapp/popup/index",
-    "van-dialog": "@vant/weapp/dialog/index",
-    "van-calendar": "@vant/weapp/calendar/index",
     "van-empty": "@vant/weapp/empty/index",
     "van-loading": "@vant/weapp/loading/index",
-    "van-toast": "@vant/weapp/toast/index",
     "van-picker": "@vant/weapp/picker/index",
     "custom-picker": "/components/custom-picker/index"
   }
