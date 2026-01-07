@@ -1,34 +1,27 @@
 <!--意见反馈提交页面-->
-<view class="feedback-page">
+<view class="feedback-submit-page">
   <!-- 自定义导航栏 -->
   <view class="nav-bar" style="padding-top: {{statusBarHeight}}px;">
     <view class="nav-content">
       <view class="nav-left" bindtap="goBack">
-        <van-icon name="arrow-left" size="40rpx" color="#fff" />
+        <van-icon name="arrow-left" size="40rpx" color="#333" />
       </view>
-      <view class="nav-right-placeholder"></view>
-    </view>
-  </view>
-
-  <!-- 标题区域：意见反馈和我的反馈在同一行 -->
-  <view class="title-section" style="margin-top: {{navBarHeight}}px;">
-    <text class="section-title">意见反馈</text>
-    <view class="my-feedback-link" bindtap="goToMyFeedback">
-      <text class="my-feedback-text">我的反馈</text>
+      <text class="nav-title">意见反馈</text>
+      <view class="nav-right"></view>
     </view>
   </view>
 
   <!-- 表单区域 -->
-  <view class="form-area">
+  <view class="form-area" style="padding-top: {{navBarHeight}}px;">
     <!-- 标题输入 -->
-    <view class="form-card">
+    <view class="form-group">
       <view class="form-label">
-        <text class="required">*</text>
         <text class="label-text">标题</text>
+        <text class="required">*</text>
       </view>
       <input
         class="form-input"
-        placeholder="请输入标题"
+        placeholder="请输入反馈标题"
         placeholder-class="placeholder"
         value="{{title}}"
         bindinput="onTitleInput"
@@ -37,15 +30,15 @@
     </view>
 
     <!-- 内容输入 -->
-    <view class="form-card">
+    <view class="form-group">
       <view class="form-label">
-        <text class="required">*</text>
         <text class="label-text">请具体描述您遇到的问题或建议</text>
+        <text class="required">*</text>
       </view>
       <view class="textarea-wrapper">
         <textarea
           class="form-textarea"
-          placeholder="请详细描述问题或建议..."
+          placeholder="请详细描述您的问题或建议..."
           placeholder-class="placeholder"
           value="{{content}}"
           bindinput="onContentInput"
@@ -56,12 +49,9 @@
     </view>
 
     <!-- 问题截图 -->
-    <view class="form-card">
+    <view class="form-group">
       <view class="form-label-row">
-        <view class="form-label">
-          <text class="label-text">问题截图</text>
-          <text class="label-hint">（提供截图，可以更快速的定位问题）</text>
-        </view>
+        <text class="label-text">问题截图（提供截图，可以更快速的定位问题）</text>
         <text class="photo-count">{{photoCount}}/4</text>
       </view>
       <view class="photo-grid">

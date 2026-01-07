@@ -14,7 +14,8 @@
     "pages/data/index",
     "pages/feedback/submit/index",
     "pages/feedback/list/index",
-    "pages/feedback/detail/index"
+    "pages/feedback/detail/index",
+    "pages/feedback/index/index"
   ],
   "subpackages": [
     {

@@ -1,10 +1,10 @@
 <!--我的反馈列表页面-->
-<view class="feedback-page">
+<view class="feedback-list-page">
   <!-- 自定义导航栏 -->
   <view class="nav-bar" style="padding-top: {{statusBarHeight}}px;">
     <view class="nav-content">
       <view class="nav-left" bindtap="goBack">
-        <van-icon name="arrow-left" size="40rpx" color="#fff" />
+        <van-icon name="arrow-left" size="40rpx" color="#333" />
       </view>
       <text class="nav-title">我的反馈</text>
       <view class="nav-right"></view>
@@ -15,7 +15,7 @@
   <view class="list-content" style="padding-top: {{navBarHeight}}px;">
     <!-- 加载中 -->
     <view wx:if="{{loading && list.length === 0}}" class="loading-wrapper">
-      <van-loading size="48rpx" color="#0CA77D">加载中...</van-loading>
+      <van-loading size="48rpx" color="#3b82f6">加载中...</van-loading>
     </view>
 
     <!-- 空态 -->
@@ -34,8 +34,9 @@
       >
         <!-- 头部：时间和用户 -->
         <view class="card-header">
-          <text class="card-user">{{item.user_name}}</text>
           <text class="card-time">{{item.created_at_str}}</text>
+          <text class="card-dot">·</text>
+          <text class="card-user">{{item.user_name}}</text>
         </view>
 
         <!-- 标题 -->
@@ -51,14 +52,16 @@
             wx:for-item="photo"
             wx:for-index="pIndex"
             wx:key="pIndex"
-            wx:if="{{pIndex < 4}}"
+            wx:if="{{pIndex < 3}}"
             class="photo-thumb"
             src="{{photo}}"
             mode="aspectFill"
           />
-          <view wx:if="{{item.photos.length > 4}}" class="photo-more">
-            <text>+{{item.photos.length - 4}}</text>
-          </view>
+        </view>
+
+        <!-- 右箭头 -->
+        <view class="card-arrow">
+          <van-icon name="arrow" size="32rpx" color="#ccc" />
         </view>
       </view>
     </view>
@@ -71,7 +74,7 @@
 
     <!-- 没有更多了 -->
     <view wx:if="{{list.length > 0 && !hasMore}}" class="no-more">
-      <text>没有更多了</text>
+      <text>— 没有更多了 —</text>
     </view>
   </view>
 </view>
