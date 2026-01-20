@@ -3,6 +3,7 @@ const app = getApp();
 const workOrderService = require('../../services/workOrder');
 const auth = require('../../services/auth');
 const dictionary = require('../../services/dictionary');
+const { smartCompress, COMPRESS_PRESETS } = require('../../utils/imageUtils');
 
 Page({
   data: {
@@ -320,23 +321,31 @@ Page({
   // 阻止事件冒泡
   stopPropagation() { },
 
-  // 添加图片
+  // 添加图片（使用智能压缩：50-130KB）
   handleAddImage(e) {
     const index = e.currentTarget.dataset.index;
 
     wx.chooseImage({
       count: 1,
-      sizeType: ['compressed'],
+      sizeType: ['original'], // 获取原图，由 smartCompress 决定是否压缩
       sourceType: ['album', 'camera'],
-      success: (res) => {
+      success: async (res) => {
         const tempFilePath = res.tempFilePaths[0];
+
+        // 智能压缩图片（使用工单预设：50-130KB）
+        const result = await smartCompress(tempFilePath, COMPRESS_PRESETS.WORKORDER);
+        console.log('[Edit] Image processed:', {
+          compressed: result.compressed,
+          size: (result.size / 1024).toFixed(1) + 'KB'
+        });
+
         const images = [...this.data.formData.images];
 
         // 如果该位置已有图片，替换；否则添加
         if (index < images.length) {
-          images[index] = tempFilePath;
+          images[index] = result.path;
         } else {
-          images.push(tempFilePath);
+          images.push(result.path);
         }
 
         this.setData({

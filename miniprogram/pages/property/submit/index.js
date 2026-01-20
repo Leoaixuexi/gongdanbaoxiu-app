@@ -7,6 +7,7 @@ const app = getApp();
 const workOrderService = require('../../../services/workOrder');
 const auth = require('../../../services/auth');
 const dictionary = require('../../../services/dictionary');
+const { smartCompress, COMPRESS_PRESETS } = require('../../../utils/imageUtils');
 
 Page({
   data: {
@@ -47,7 +48,7 @@ Page({
    * Lifecycle - Page Load
    */
   onLoad: function (options) {
-    console.log('[Submit] Page load');
+    // console.log('[Submit] Page load');
     // 计算自定义导航栏高度
     const systemInfo = wx.getSystemInfoSync();
     const statusBarHeight = systemInfo.statusBarHeight;
@@ -56,7 +57,6 @@ Page({
       headerHeight: statusBarHeight + navBarHeight
     });
     this.checkAuth();
-    this.loadDictionaries();
     // Set default date and time to now
     const now = new Date();
     const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
@@ -67,6 +67,15 @@ Page({
       reportTime: timeStr,
       displayDateTime: displayDateTime
     });
+  },
+
+  /**
+   * Lifecycle - Page Show (每次显示时刷新字典)
+   */
+  onShow: function () {
+    // 清除缓存并重新加载字典，确保获取最新数据
+    dictionary.refreshCache();
+    this.loadDictionaries();
   },
 
   /**
@@ -159,44 +168,27 @@ Page({
 
   /**
    * Handle Photo Upload
+   * 使用智能压缩：≤100KB 不压缩，>100KB 压缩到 ~80KB
    */
   handlePhotoUpload: function (e) {
     const index = e.currentTarget.dataset.index;
     wx.chooseImage({
       count: 1,
-      sizeType: ['compressed'],
+      sizeType: ['original'], // 获取原图，由 smartCompress 决定是否压缩
       sourceType: ['album', 'camera'],
-      success: (res) => {
+      success: async (res) => {
         const tempFilePath = res.tempFilePaths[0];
 
-        // 压缩图片
-        wx.compressImage({
-          src: tempFilePath,
-          quality: 30,
-          success: (compressRes) => {
-            // 检查压缩后的文件大小
-            wx.getFileInfo({
-              filePath: compressRes.tempFilePath,
-              success: (fileInfo) => {
-                console.log('[Submit] Compressed image size:', fileInfo.size);
-                const newPhotos = [...this.data.uploadedPhotos];
-                newPhotos[index] = compressRes.tempFilePath;
-                this.setData({ uploadedPhotos: newPhotos });
-              },
-              fail: () => {
-                const newPhotos = [...this.data.uploadedPhotos];
-                newPhotos[index] = compressRes.tempFilePath;
-                this.setData({ uploadedPhotos: newPhotos });
-              }
-            });
-          },
-          fail: () => {
-            // 压缩失败时使用原图
-            const newPhotos = [...this.data.uploadedPhotos];
-            newPhotos[index] = tempFilePath;
-            this.setData({ uploadedPhotos: newPhotos });
-          }
-        });
+        // 智能压缩图片（使用工单预设：50-130KB）
+        const result = await smartCompress(tempFilePath, COMPRESS_PRESETS.WORKORDER);
+        // console.log('[Submit] Image processed:', {
+        //   compressed: result.compressed,
+        //   size: (result.size / 1024).toFixed(1) + 'KB'
+        // });
+
+        const newPhotos = [...this.data.uploadedPhotos];
+        newPhotos[index] = result.path;
+        this.setData({ uploadedPhotos: newPhotos });
       }
     });
   },
@@ -330,7 +322,7 @@ Page({
                       filePath: tempFilePath
                     });
                     uploadedPhotoUrls.push(uploadResult.fileID);
-                    console.log('[Submit] Photo uploaded:', uploadResult.fileID);
+                    // console.log('[Submit] Photo uploaded:', uploadResult.fileID);
                   } catch (uploadError) {
                     console.error('[Submit] Photo upload error:', uploadError);
                   }
@@ -353,11 +345,11 @@ Page({
               remark: this.data.remark ? this.data.remark.trim() : ''
             };
 
-            console.log('[Submit] Submitting work order:', submitData);
+            // console.log('[Submit] Submitting work order:', submitData);
 
             const order = await workOrderService.createWorkOrder(submitData);
 
-            console.log('[Submit] Work order created:', order);
+            // console.log('[Submit] Work order created:', order);
 
             wx.showToast({
               title: '提交成功',

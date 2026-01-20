@@ -2,6 +2,7 @@
 const app = getApp()
 const { STORAGE_KEYS } = require('../../utils/constants')
 const cloud = require('../../services/cloud')
+const { smartCompress, COMPRESS_PRESETS } = require('../../utils/imageUtils')
 
 Page({
   data: {
@@ -35,29 +36,17 @@ Page({
       count: 1,
       mediaType: ['image'],
       sourceType: ['album', 'camera'],
-      sizeType: ['compressed'],
-      success: (res) => {
+      sizeType: ['original'], // 获取原图，由 smartCompress 决定是否压缩
+      success: async (res) => {
         const tempFilePath = res.tempFiles[0].tempFilePath
-        // 进一步压缩图片
-        this.compressImage(tempFilePath)
-      }
-    })
-  },
-
-  // 压缩图片
-  compressImage(filePath) {
-    wx.compressImage({
-      src: filePath,
-      quality: 50, // 压缩质量 0-100，越小压缩越厉害
-      success: (res) => {
-        this.setData({
-          preview: res.tempFilePath
+        // 智能压缩图片（使用头像预设：50-100KB）
+        const result = await smartCompress(tempFilePath, COMPRESS_PRESETS.AVATAR)
+        console.log('[Avatar] Image processed:', {
+          compressed: result.compressed,
+          size: (result.size / 1024).toFixed(1) + 'KB'
         })
-      },
-      fail: () => {
-        // 压缩失败则使用原图
         this.setData({
-          preview: filePath
+          preview: result.path
         })
       }
     })
