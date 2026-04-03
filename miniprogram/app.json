@@ -2,6 +2,7 @@
   "pages": [
     "pages/login/login",
     "pages/index/index",
+    "pages/home/index",
     "pages/property/submit/index",
     "pages/property/submitted/index",
     "pages/work-order-detail/index",
@@ -15,9 +16,11 @@
     "pages/feedback/submit/index",
     "pages/feedback/list/index",
     "pages/feedback/detail/index",
-    "pages/feedback/index/index"
+    "pages/feedback/index/index",
+    "pages/agreement/user/index",
+    "pages/agreement/privacy/index"
   ],
-  "subpackages": [
+  "subPackages": [
     {
       "root": "pages/admin",
       "name": "admin",
@@ -53,14 +56,8 @@
     "borderStyle": "white",
     "list": [
       {
-        "pagePath": "pages/index/index",
-        "text": "工作台",
-        "iconPath": "images/tabbar/placeholder.png",
-        "selectedIconPath": "images/tabbar/placeholder.png"
-      },
-      {
-        "pagePath": "pages/data/index",
-        "text": "数据",
+        "pagePath": "pages/home/index",
+        "text": "首页",
         "iconPath": "images/tabbar/placeholder.png",
         "selectedIconPath": "images/tabbar/placeholder.png"
       },

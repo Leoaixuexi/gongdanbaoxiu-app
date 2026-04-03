@@ -42,7 +42,7 @@ const listWorkOrders = async (filters = {}) => {
 };
 
 const getWorkOrders = async (filters = {}) => {
-  const { orders } = await listWorkOrders(filters);
+  const { orders } = await listWorkOrders({ ...filters, fetchAll: true });
   return orders;
 };
 
@@ -59,6 +59,24 @@ const getWorkOrderById = async (orderId) => {
   });
   console.log('[WorkOrder] Got order:', result.order);
   return result.order;
+};
+
+/**
+ * 公开获取工单详情（无需登录，用于分享链接）
+ * @param {Number} orderId - 工单ID
+ * @returns {Promise<Object>} { order, isPublicView }
+ */
+const getWorkOrderByIdPublic = async (orderId) => {
+  console.log('[WorkOrder] Getting work order (public):', orderId);
+  const result = await callCloudSilent('workOrderManager', {
+    action: 'getByIdPublic',
+    data: { order_id: orderId }
+  });
+  console.log('[WorkOrder] Got order (public):', result.order);
+  return {
+    order: result.order,
+    isPublicView: result.isPublicView
+  };
 };
 
 /**
@@ -213,11 +231,168 @@ const deleteWorkOrder = async (orderId) => {
   return result;
 };
 
+/**
+ * 获取工单统计和ID列表（懒加载第一阶段）
+ * 返回轻量数据：状态统计 + 工单ID列表
+ * @returns {Promise<Object>} { statistics, orderIds, total }
+ */
+const getOrderStatistics = async () => {
+  console.log('[WorkOrder] Getting order statistics');
+  const result = await callCloudSilent('workOrderManager', {
+    action: 'getStatistics'
+  });
+  console.log('[WorkOrder] Got statistics:', result.total);
+  return {
+    statistics: result.statistics || {},
+    orderIds: result.orderIds || [],
+    total: result.total || 0
+  };
+};
+
+/**
+ * 根据ID列表获取工单详情（懒加载第二阶段）
+ * @param {Array<Number>} ids - 工单ID列表
+ * @returns {Promise<Array>} 工单详情列表
+ */
+const getOrdersByIds = async (ids) => {
+  if (!Array.isArray(ids) || ids.length === 0) {
+    return [];
+  }
+  console.log('[WorkOrder] Getting orders by ids:', ids.length);
+  const result = await callCloudSilent('workOrderManager', {
+    action: 'getOrdersByIds',
+    data: { ids }
+  });
+  console.log('[WorkOrder] Got orders by ids:', result.orders?.length);
+  return result.orders || [];
+};
+
+/**
+ * 导出工单为Excel
+ * @param {Object} filters - 筛选条件
+ * @param {String} filters.status - 状态筛选
+ * @param {Object} filters.timeRange - 时间范围 { type, startDate, endDate }
+ * @param {Object} filters.advancedFilters - 高级筛选条件
+ * @returns {Promise<Object>} { downloadUrl, fileName, totalCount }
+ */
+const exportWorkOrders = async (filters = {}) => {
+  console.log('[WorkOrder] Exporting work orders with filters:', filters);
+  const result = await callCloud('workOrderManager', {
+    action: 'exportWorkOrders',
+    data: { filters }
+  }, { loadingText: '正在导出...', timeout: 60000 });
+  console.log('[WorkOrder] Export completed:', result.fileName, result.totalCount);
+  return {
+    downloadUrl: result.downloadUrl,
+    fileID: result.fileID,
+    fileName: result.fileName,
+    totalCount: result.totalCount
+  };
+};
+
+/**
+ * 下载并打开导出的文件
+ * @param {String} downloadUrl - 下载地址
+ * @param {String} fileName - 文件名
+ * @returns {Promise<void>}
+ */
+const downloadAndOpenFile = async (downloadUrl, fileName) => {
+  console.log('[WorkOrder] Downloading file:', fileName);
+
+  // 下载文件
+  const downloadRes = await new Promise((resolve, reject) => {
+    wx.downloadFile({
+      url: downloadUrl,
+      success: resolve,
+      fail: reject
+    });
+  });
+
+  if (downloadRes.statusCode !== 200) {
+    throw new Error('文件下载失败');
+  }
+
+  const tempFilePath = downloadRes.tempFilePath;
+  console.log('[WorkOrder] File downloaded to:', tempFilePath);
+
+  // 保存到本地并重命名
+  const fs = wx.getFileSystemManager();
+  const savedFilePath = `${wx.env.USER_DATA_PATH}/${fileName}`;
+
+  // 先删除已存在的文件
+  try {
+    fs.unlinkSync(savedFilePath);
+  } catch (e) {
+    // 文件不存在，忽略错误
+  }
+
+  await new Promise((resolve, reject) => {
+    fs.saveFile({
+      tempFilePath,
+      filePath: savedFilePath,
+      success: resolve,
+      fail: reject
+    });
+  });
+
+  console.log('[WorkOrder] File saved to:', savedFilePath);
+
+  // 打开文件预览
+  await new Promise((resolve, reject) => {
+    wx.openDocument({
+      filePath: savedFilePath,
+      showMenu: true,
+      fileType: 'xlsx',
+      success: resolve,
+      fail: reject
+    });
+  });
+
+  console.log('[WorkOrder] File opened successfully');
+};
+
+/**
+ * 催接单
+ */
+const urgeAccept = async (orderId) => {
+  console.log('[WorkOrder] Urging accept:', orderId);
+  const result = await callCloud('workOrderManager', {
+    action: 'urgeAccept',
+    data: { order_id: orderId }
+  }, { loadingText: '发送中...' });
+  return result;
+};
+
+/**
+ * 催维修
+ */
+const urgeRepair = async (orderId) => {
+  console.log('[WorkOrder] Urging repair:', orderId);
+  const result = await callCloud('workOrderManager', {
+    action: 'urgeRepair',
+    data: { order_id: orderId }
+  }, { loadingText: '发送中...' });
+  return result;
+};
+
+/**
+ * 催复核
+ */
+const urgeReview = async (orderId) => {
+  console.log('[WorkOrder] Urging review:', orderId);
+  const result = await callCloud('workOrderManager', {
+    action: 'urgeReview',
+    data: { order_id: orderId }
+  }, { loadingText: '发送中...' });
+  return result;
+};
+
 module.exports = {
   createWorkOrder,
   getWorkOrders,
   listWorkOrders,
   getWorkOrderById,
+  getWorkOrderByIdPublic,
   getWorkOrderByNumber,
   checkOrderNumberExists,
   updateWorkOrderStatus,
@@ -226,5 +401,15 @@ module.exports = {
   getFaultTypes,
   getWorkOrderStats,
   completeRepair,
-  reviewWorkOrder
+  reviewWorkOrder,
+  // 懒加载优化
+  getOrderStatistics,
+  getOrdersByIds,
+  // 导出功能
+  exportWorkOrders,
+  downloadAndOpenFile,
+  // 催单
+  urgeAccept,
+  urgeRepair,
+  urgeReview
 };

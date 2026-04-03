@@ -1,6 +1,7 @@
 // pages/index/index.js
 const auth = require('../../../services/auth');
 const { STORAGE_KEYS } = require('../../../utils/constants');
+const { getNavBarInfo } = require('../../../utils/navigation');
 const app = getApp()
 
 Page({
@@ -12,16 +13,15 @@ Page({
       avatar: 'https://placehold.co/200x200/10b981/ffffff?text=ZW',
       phone: '177******35'
     },
-    headerHeight: 0
+    headerHeight: 0,
+    isAdmin: false
   },
 
   onLoad() {
     // 计算自定义导航栏高度
-    const systemInfo = wx.getSystemInfoSync();
-    const statusBarHeight = systemInfo.statusBarHeight;
-    const navBarHeight = 88 * systemInfo.windowWidth / 750;
+    const { headerHeight } = getNavBarInfo();
     this.setData({
-      headerHeight: statusBarHeight + navBarHeight
+      headerHeight: Math.ceil(headerHeight)
     });
     this.loadUserInfo();
   },
@@ -30,11 +30,32 @@ Page({
     // 每次显示页面时刷新用户信息
     this.loadUserInfo();
 
-    // 设置 tabBar 选中状态（"我的"是第4个tab，索引为3）
+    // 设置 tabBar 选中状态，并同步徽章数据
+    const syncBadge = (tabBar, source) => {
+      tabBar.setData({ selected: 2 });
+      const app = getApp();
+      if (app && app.globalData.unreadCounts) {
+        const globalVersion = app.globalData._badgeVersion || 0;
+        const globalCounts = app.globalData.unreadCounts;
+        const appliedVersion = tabBar.data._appliedVersion || 0;
+        const localTotal = tabBar.data.totalUnread || 0;
+        const globalTotal = globalCounts.totalUnread || 0;
+        if ((globalVersion > appliedVersion || localTotal !== globalTotal) && tabBar.applyBadge) {
+          console.log('[Property] Manual badge sync from ' + source + ': localTotal=' + localTotal + ', globalTotal=' + globalTotal);
+          tabBar.applyBadge(globalCounts, globalVersion, source);
+        }
+      }
+    };
+
     if (typeof this.getTabBar === 'function' && this.getTabBar()) {
-      this.getTabBar().setData({
-        selected: 3
-      });
+      syncBadge(this.getTabBar(), 'property-onShow');
+    } else {
+      // TabBar 可能还未初始化，延迟重试
+      setTimeout(() => {
+        if (typeof this.getTabBar === 'function' && this.getTabBar()) {
+          syncBadge(this.getTabBar(), 'property-onShow-delayed');
+        }
+      }, 100);
     }
   },
 
@@ -59,8 +80,12 @@ Page({
           phone: this.formatPhone(userInfo.contact_phone || userInfo.phone || userInfo.mobile || '')
         };
 
+        // 判断是否为管理员（role_id = 1）
+        const isAdmin = userInfo.role_id === 1;
+
         this.setData({
-          userInfo: formattedUserInfo
+          userInfo: formattedUserInfo,
+          isAdmin
         });
       } else {
         // 如果没有用户信息，尝试从 app 获取
@@ -112,6 +137,13 @@ Page({
   navigateToPhone() {
     wx.navigateTo({
       url: '/pages/phone/phone'
+    })
+  },
+
+  // 跳转到意见反馈入口页面
+  goToFeedbackList() {
+    wx.navigateTo({
+      url: '/pages/feedback/index/index'
     })
   },
 

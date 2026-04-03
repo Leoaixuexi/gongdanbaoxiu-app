@@ -19,16 +19,10 @@ Component({
     _cachedUserInfo: null,
     list: [
       {
-        pagePath: "/pages/index/index",
-        text: "工作台",
-        iconPath: "/images/tabbar/gzt-gray.svg",
-        selectedIconPath: "/images/tabbar/gzt.svg"
-      },
-      {
-        pagePath: "/pages/data/index",
-        text: "数据",
-        iconPath: "/images/tabbar/sj-gray.svg",
-        selectedIconPath: "/images/tabbar/sj.svg"
+        pagePath: "/pages/home/index",
+        text: "首页",
+        iconPath: "/images/tabbar/sy-gray.svg",
+        selectedIconPath: "/images/tabbar/sy.svg"
       },
       {
         pagePath: "/pages/notifications/index",

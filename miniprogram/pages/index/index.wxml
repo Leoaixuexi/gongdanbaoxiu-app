@@ -1,13 +1,15 @@
 <!--首页 - 工单列表界面(基于 Taro 设计)-->
+<wxs src="./index.wxs" module="utils" />
 <view class="container">
-  <!-- 自定义导航栏 -->
-  <custom-header title="工单列表" showBack="{{false}}" />
-
   <!-- 顶部固定区域 -->
-  <view class="sticky-header" style="top: {{headerHeight}}px;">
+  <view class="sticky-header" style="padding-top: {{statusBarHeight}}px;">
     <!-- 绿色渐变头部 -->
     <view class="header">
-      <!-- 搜索栏 -->
+      <!-- 返回按钮 -->
+      <view class="back-btn" bindtap="goBack">
+        <van-icon name="arrow-left" size="20px" color="#ffffff" />
+      </view>
+      <!-- 搜索栏（独占一行） -->
       <view class="search-bar">
         <view class="search-input-wrapper">
           <view class="icon-search"></view>
@@ -23,15 +25,11 @@
             <text class="clear-icon">×</text>
           </view>
         </view>
-        <view class="icon-buttons">
-          <view class="filter-button" bindtap="handleFilter">
-            <text class="iconfont icon-shaixuan1" style="font-size: 40rpx; color: #10b981;"></text>
-          </view>
-        </view>
       </view>
 
-      <!-- 时间筛选标签 -->
-      <view class="time-tabs">
+      <!-- 日期筛选 + 导出/筛选按钮（同行） -->
+      <view class="filter-row-container">
+        <view class="time-tabs">
         <view
           class="time-tab {{activeTab === 'today' ? 'time-tab-active' : ''}}"
           bindtap="handleTabChange"
@@ -61,6 +59,18 @@
           <text class="time-tab-text {{activeTab === 'date' ? 'time-tab-text-active' : ''}}">按日期</text>
         </view>
       </view>
+        <view class="icon-buttons">
+          <!-- 导出按钮 - 仅行政经理可见 -->
+          <view wx:if="{{isManager}}" class="export-button" bindtap="handleExport">
+            <van-icon name="descending" size="32rpx" color="#ffffff" />
+            <text class="btn-label">导出</text>
+          </view>
+          <view class="filter-button" bindtap="handleFilter">
+            <view class="filter-icon-svg"></view>
+            <text class="btn-label">筛选</text>
+          </view>
+        </view>
+      </view>
     </view>
 
     <!-- 状态标签 -->
@@ -84,7 +94,7 @@
   </view>
 
   <!-- 工单列表 -->
-  <view class="order-list" style="padding-top: calc(300rpx + {{headerHeight}}px);"
+  <view class="order-list" style="padding-top: calc(280rpx + {{statusBarHeight}}px);"
     bindtouchstart="onTouchStart"
     bindtouchend="onTouchEnd"
   >
@@ -115,10 +125,25 @@
           {{item.description || '无描述'}}
         </view>
 
-        <!-- 元数据布局: 两列 -->
-        <view class="metadata-row">
-          <!-- 左列: 位置 & 时间 -->
-          <view class="metadata-col">
+        <!-- 元数据布局: 两行 -->
+        <view class="metadata-wrapper">
+          <!-- 第1行: 责任方(左) + 姓名(中) + 工单类型(右) -->
+          <view class="metadata-line">
+            <view class="metadata-item metadata-left">
+              <view class="icon icon-person"></view>
+              <text class="metadata-text">{{item.responsible_party || '未知'}}</text>
+            </view>
+            <view class="metadata-item metadata-center">
+              <view class="icon icon-user"></view>
+              <text class="metadata-text">{{item.submitter.name || '未知'}}</text>
+            </view>
+            <view class="metadata-item metadata-right">
+              <view class="icon icon-building"></view>
+              <text class="metadata-text">{{item.order_category || item.fault_type_name || '未分类'}}</text>
+            </view>
+          </view>
+          <!-- 第2行: 楼层/位置(左) + 日期时间(右) -->
+          <view class="metadata-line">
             <view class="metadata-item">
               <view class="icon icon-location"></view>
               <text class="metadata-text">{{item.floor}}</text>
@@ -128,18 +153,6 @@
             <view class="metadata-item">
               <view class="icon icon-time"></view>
               <text class="metadata-text">{{item.created_at}}</text>
-            </view>
-          </view>
-
-          <!-- 右列: 责任方 & 类别 -->
-          <view class="metadata-col metadata-col-right">
-            <view class="metadata-item">
-              <view class="icon icon-person"></view>
-              <text class="metadata-text">{{item.responsible_party || '未知'}}</text>
-            </view>
-            <view class="metadata-item">
-              <view class="icon icon-building"></view>
-              <text class="metadata-text">{{item.order_category || item.fault_type_name || '未分类'}}</text>
             </view>
           </view>
         </view>
@@ -157,8 +170,9 @@
                 <text class="photo-error-icon">!</text>
                 <text class="photo-error-text">加载失败</text>
               </view>
-              <!-- 图片 -->
+              <!-- 图片（仅当 URL 有效时渲染，cloud:// 需要先转换） -->
               <image
+                wx:if="{{utils.isValidImageUrl(photo)}}"
                 src="{{photo}}"
                 class="photo-image {{item.photoLoaded[photoIndex] ? 'photo-loaded' : 'photo-hidden'}}"
                 mode="aspectFill"
@@ -172,17 +186,33 @@
           </block>
         </view>
 
-        <!-- 接单按钮 - 维修员 + 待接单状态 -->
-        <view
-          wx:if="{{isMaintenanceWorker && item.status === 'Pending Repair'}}"
-          class="accept-order-btn"
-          catchtap="handleAcceptOrder"
-          data-order="{{item}}"
-        >
-          接单
+        <!-- 底部操作栏 -->
+        <view class="card-actions">
+          <!-- 接单按钮 - 维修员 + 待接单状态 -->
+          <view
+            wx:if="{{isMaintenanceWorker && item.status === 'Pending Repair'}}"
+            class="accept-order-btn"
+            catchtap="handleAcceptOrder"
+            data-order="{{item}}"
+          >
+            接单
+          </view>
         </view>
       </view>
     </block>
+
+    <!-- Load More Indicator -->
+    <view class="load-more-indicator" wx:if="{{!loading && workOrders.length > 0}}">
+      <view wx:if="{{isLoadingMore}}" class="loading-more">
+        <van-loading size="20px">加载更多...</van-loading>
+      </view>
+      <view wx:elif="{{hasMore}}" class="has-more-hint">
+        <text>上拉加载更多</text>
+      </view>
+      <view wx:else class="no-more-hint">
+        <text>— 已加载全部 —</text>
+      </view>
+    </view>
 
     <!-- Loading State -->
     <view class="loading-state" wx:if="{{loading}}">
@@ -316,5 +346,22 @@
   <!-- 浮动按钮 - 办美员工和行政经理可见 -->
   <view wx:if="{{isPropertyStaff || isManager}}" class="fab" bindtap="navigateToNewOrder">
     <text class="fab-icon">+</text>
+  </view>
+
+  <!-- 回到顶部按钮 -->
+  <view wx:if="{{showBackToTop}}" class="back-to-top" bindtap="scrollToTop">
+    <view class="back-to-top-arrow"></view>
+    <text class="back-to-top-label">顶部</text>
+  </view>
+
+  <!-- 分享成功撤回提示 -->
+  <view wx:if="{{showRevokePopup}}" class="revoke-toast">
+    <view class="revoke-toast-content">
+      <text class="revoke-toast-text">分享成功，30分钟内可撤回</text>
+      <view class="revoke-toast-actions">
+        <text class="revoke-btn" catchtap="handleRevokeShare">撤回</text>
+        <text class="revoke-close" catchtap="closeRevokePopup">×</text>
+      </view>
+    </view>
   </view>
 </view>

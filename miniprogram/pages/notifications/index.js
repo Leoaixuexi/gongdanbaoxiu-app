@@ -4,6 +4,7 @@
  */
 
 const notificationService = require('../../services/notification');
+const { getNavBarInfo } = require('../../utils/navigation');
 
 Page({
   data: {
@@ -27,21 +28,19 @@ Page({
   },
 
   onLoad() {
-    console.log('[Notifications] Page load');
+    // console.log('[Notifications] Page load');
     // 计算自定义导航栏高度
-    const systemInfo = wx.getSystemInfoSync();
-    const statusBarHeight = systemInfo.statusBarHeight;
-    const navBarHeight = 88 * systemInfo.windowWidth / 750;
+    const { headerHeight } = getNavBarInfo();
     this.setData({
-      headerHeight: statusBarHeight + navBarHeight
+      headerHeight: Math.ceil(headerHeight)
     });
   },
 
   onShow() {
-    console.log('[Notifications] Page show');
+    // console.log('[Notifications] Page show');
     // 设置自定义 tabBar 选中状态，并同步徽章数据
     const syncBadge = (tabBar, source) => {
-      tabBar.setData({ selected: 2 });
+      tabBar.setData({ selected: 1 });
       const app = getApp();
       if (app && app.globalData.unreadCounts) {
         const globalVersion = app.globalData._badgeVersion || 0;
@@ -50,7 +49,7 @@ Page({
         const localTotal = tabBar.data.totalUnread || 0;
         const globalTotal = globalCounts.totalUnread || 0;
         if ((globalVersion > appliedVersion || localTotal !== globalTotal) && tabBar.applyBadge) {
-          console.log('[Notifications] Manual badge sync from ' + source + ': localTotal=' + localTotal + ', globalTotal=' + globalTotal);
+          // console.log('[Notifications] Manual badge sync from ' + source + ': localTotal=' + localTotal + ', globalTotal=' + globalTotal);
           tabBar.applyBadge(globalCounts, globalVersion, source);
         }
       }
@@ -70,7 +69,7 @@ Page({
     // 防止2秒内重复加载
     const now = Date.now();
     if (this.data._isLoading || (now - this.data._lastLoadTime < 2000)) {
-      console.log('[Notifications] Skip duplicate load');
+      // console.log('[Notifications] Skip duplicate load');
       return;
     }
     // 加载消息数据
@@ -83,7 +82,7 @@ Page({
   async loadMessageData() {
     if (this.data._isLoading) return;
 
-    console.log('[Notifications] Loading message data...');
+    // console.log('[Notifications] Loading message data...');
     this.setData({ _isLoading: true });
 
     try {
@@ -184,7 +183,7 @@ Page({
    */
   navigateToList(e) {
     const moduleId = e.currentTarget.dataset.module;
-    console.log('[Notifications] Navigate to list:', moduleId);
+    // console.log('[Notifications] Navigate to list:', moduleId);
 
     // 模块名称映射
     const moduleNames = {

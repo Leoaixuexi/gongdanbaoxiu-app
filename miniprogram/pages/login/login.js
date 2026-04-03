@@ -32,16 +32,16 @@ Page({
         // 关键修复：自动登录时也需要等待未读数加载完成
         const app = getApp();
         if (app && typeof app.refreshUnreadCounts === 'function') {
-          console.log('[Login] AutoLogin: Awaiting refreshUnreadCounts');
+          // console.log('[Login] AutoLogin: Awaiting refreshUnreadCounts');
           await app.refreshUnreadCounts();
-          console.log('[Login] AutoLogin: refreshUnreadCounts completed');
+          // console.log('[Login] AutoLogin: refreshUnreadCounts completed');
         }
 
         const userInfo = wx.getStorageSync(STORAGE_KEYS.USER_INFO);
         if (userInfo && userInfo.role_id == ROLES.ADMIN) {
           wx.reLaunch({ url: '/pages/admin/dashboard/index' });
         } else {
-          wx.switchTab({ url: '/pages/index/index' });
+          wx.switchTab({ url: '/pages/home/index' });
         }
       }
     } catch (error) {
@@ -86,17 +86,44 @@ Page({
   },
 
   openUserAgreement() {
-    wx.showToast({ title: '《用户协议》', icon: 'none' });
+    wx.navigateTo({ url: '/pages/agreement/user/index' });
   },
 
   openPrivacyAgreement() {
-    wx.showToast({ title: '《隐私协议》', icon: 'none' });
+    wx.navigateTo({ url: '/pages/agreement/privacy/index' });
   },
 
   async onLogin() {
-    const { username, password, isLoading } = this.data;
+    const { username, password, isLoading, agreed } = this.data;
 
     if (isLoading) return;
+
+    // 未勾选协议时，弹窗确认
+    if (!agreed) {
+      wx.showModal({
+        title: '用户协议与隐私政策',
+        content: '请阅读并同意《用户服务协议》和《隐私政策》后继续使用',
+        confirmText: '同意',
+        cancelText: '取消',
+        success: (res) => {
+          if (res.confirm) {
+            // 用户点击同意，自动勾选并继续登录
+            this.setData({ agreed: true });
+            this.doLogin();
+          }
+        }
+      });
+      return;
+    }
+
+    this.doLogin();
+  },
+
+  /**
+   * 执行实际登录逻辑
+   */
+  async doLogin() {
+    const { username, password } = this.data;
 
     if (!username) {
       return wx.showToast({ title: '请输入用户名或手机号', icon: 'none' });
@@ -110,14 +137,14 @@ Page({
     try {
       const user = await auth.loginWithPassword(username, password);
 
-      console.log('[Login] Login successful:', user);
+      // console.log('[Login] Login successful:', user);
 
       // 登录成功后，等待未读数获取完成再跳转（关键修复）
       const app = getApp();
       if (app && typeof app.refreshUnreadCounts === 'function') {
-        console.log('[Login] Awaiting refreshUnreadCounts');
+        // console.log('[Login] Awaiting refreshUnreadCounts');
         await app.refreshUnreadCounts();
-        console.log('[Login] refreshUnreadCounts completed');
+        // console.log('[Login] refreshUnreadCounts completed');
       }
 
       wx.showToast({
@@ -129,7 +156,7 @@ Page({
         if (user.role_id == ROLES.ADMIN) {
           wx.reLaunch({ url: '/pages/admin/dashboard/index' });
         } else {
-          wx.switchTab({ url: '/pages/index/index' });
+          wx.switchTab({ url: '/pages/home/index' });
         }
       }, 1000);  // 缩短到1秒，因为数据已加载完成
 

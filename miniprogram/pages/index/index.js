@@ -7,7 +7,12 @@ const app = getApp();
 const workOrderService = require('../../services/workOrder');
 const auth = require('../../services/auth');
 const dictionary = require('../../services/dictionary');
+const userService = require('../../services/userService');
 const { formatRelativeTime } = require('../../utils/formatter');
+const { getStatusButtonsByRole, getFilterRowsByRole } = require('../../config/statusButtons');
+const { getNavBarInfo } = require('../../utils/navigation');
+const { filterByUserRole, filterByTimeRange, filterByStatus, filterByAdvancedCriteria } = require('./orderFilters');
+const { enrichOrderData } = require('./orderEnricher');
 
 Page({
   data: {
@@ -58,8 +63,8 @@ Page({
     categoryOptions: [],
     reporterOptions: [],
     priorityOptions: ['普通', '紧急'],
-    // 自定义导航栏高度
-    headerHeight: 0,
+    // 状态栏高度
+    statusBarHeight: 0,
     // 用户角色信息
     userRole: null, // 2=行政经理, 3=维修员, 4=办美员工
     userDepartment: null,
@@ -75,21 +80,20 @@ Page({
     touchStartX: 0,
     touchStartY: 0,
     // 防重复加载
-    _isRefreshing: false
+    _isRefreshing: false,
+    // 滚动位置相关
+    scrollTop: 0,
+    showBackToTop: false
   },
 
   /**
    * Lifecycle - Page Load
    */
   onLoad: function (options) {
-    console.log('[Index] Page load');
-    // 计算自定义导航栏高度
-    const systemInfo = wx.getSystemInfoSync();
-    const statusBarHeight = systemInfo.statusBarHeight;
-    // 导航栏内容高度 88rpx 转换为 px
-    const navBarHeight = 88 * systemInfo.windowWidth / 750;
+    // console.log('[Index] Page load');
+    const { statusBarHeight } = getNavBarInfo();
     this.setData({
-      headerHeight: Math.ceil(statusBarHeight + navBarHeight)
+      statusBarHeight: Math.ceil(statusBarHeight)
     });
     this.checkAuth();
     this.loadDictionaries();
@@ -105,15 +109,12 @@ Page({
         dictionary.getOptions('floor'),
         dictionary.getOptions('order_category'),
         dictionary.getOptions('responsible_party'),
-        wx.cloud.callFunction({
-          name: 'userAuth',
-          data: { action: 'getPropertyStaffList' }
-        })
+        userService.getPropertyStaffList()
       ]);
 
-      const reporters = staffResult.result?.success ? staffResult.result.data : [];
+      const reporters = staffResult.data || [];
 
-      console.log('[Index] Dictionaries loaded:', { floors, categories, parties, reporters });
+      // console.log('[Index] Dictionaries loaded:', { floors, categories, parties, reporters });
 
       this.setData({
         floorOptions: floors.length > 0 ? floors : this.data.floorOptions,
@@ -123,6 +124,12 @@ Page({
       });
     } catch (error) {
       console.error('[Index] Load dictionaries error:', error);
+      // 提示用户筛选选项加载失败
+      wx.showToast({
+        title: '筛选选项加载失败',
+        icon: 'none',
+        duration: 2000
+      });
     }
   },
 
@@ -137,54 +144,30 @@ Page({
     }
   },
 
+  // 返回首页
+  goBack() {
+    wx.navigateBack({ delta: 1 });
+  },
+
   /**
    * Lifecycle - Page Show
    */
   onShow: async function () {
-    console.log('[Index] Page show');
+    // console.log('[Index] Page show');
 
-    // 页面滚动到顶部
-    wx.pageScrollTo({
-      scrollTop: 0,
-      duration: 0
-    });
-
-    // 关键修复：如果徽章数据未加载（直接打开首页场景），先等待加载完成
-    const app = getApp();
-    if (app && app.globalData._badgeVersion === 0) {
-      console.log('[Index] Badge data not loaded, awaiting refreshUnreadCounts');
-      if (app.refreshUnreadCounts) {
-        await app.refreshUnreadCounts();
-        console.log('[Index] refreshUnreadCounts completed');
-      }
+    // 从子页面返回时不滚动到顶部，保持原位置
+    if (!this.data.isNavigatingToSubPage) {
+      wx.pageScrollTo({
+        scrollTop: 0,
+        duration: 0
+      });
     }
 
-    // 设置自定义 tabBar 选中状态，并同步徽章数据
-    if (typeof this.getTabBar === 'function' && this.getTabBar()) {
-      const tabBar = this.getTabBar();
-      tabBar.setData({ selected: 0 });
-
-      // 使用公共函数同步徽章数据
-      if (app && app.syncTabBarBadge) {
-        app.syncTabBarBadge(tabBar, 'index-onShow');
-      }
-    } else {
-      // TabBar 可能还未初始化，延迟重试
-      setTimeout(() => {
-        if (typeof this.getTabBar === 'function' && this.getTabBar()) {
-          const tabBar = this.getTabBar();
-          tabBar.setData({ selected: 0 });
-          const app = getApp();
-          if (app && app.syncTabBarBadge) {
-            app.syncTabBarBadge(tabBar, 'index-onShow-delayed');
-          }
-        }
-      }, 100);
-    }
+    // 页面已从 TabBar 移除，不再设置 TabBar 状态
 
     // 判断是否从子页面返回
     const isBackFromSubPage = this.data.isNavigatingToSubPage;
-    console.log('[Index] isBackFromSubPage:', isBackFromSubPage);
+    // console.log('[Index] isBackFromSubPage:', isBackFromSubPage);
     // 重置标记
     if (isBackFromSubPage) {
       this.setData({ isNavigatingToSubPage: false });
@@ -199,10 +182,10 @@ Page({
         const isManager = userInfo.role_id === 2;
 
         // 根据角色配置状态按钮
-        const statusButtons = this.getStatusButtonsByRole(isPropertyStaff, isMaintenanceWorker, isManager);
+        const statusButtons = getStatusButtonsByRole(isPropertyStaff, isMaintenanceWorker, isManager);
 
         // 根据角色配置筛选行
-        const filterRows = this.getFilterRowsByRole(isManager, isMaintenanceWorker);
+        const filterRows = getFilterRowsByRole(isManager, isMaintenanceWorker);
 
         // 根据角色设置默认状态
         let defaultStatus = 'all';  // 经理默认为"全部"
@@ -219,112 +202,63 @@ Page({
         const currentStatus = this.data.activeStatus;
         const shouldResetToDefault = !currentStatus || !isBackFromSubPage;
 
-        this.setData({
+        // 构建数据对象，从子页面返回时不更新 statusButtons（保持原有计数）
+        const dataToUpdate = {
           userRole: userInfo.role_id,
           userDepartment: userInfo.department,
           userId: userInfo.id,
           isPropertyStaff,
           isMaintenanceWorker,
           isManager,
-          statusButtons,
           filterRows,
-          activeTab: '',
-          // 首次加载或从 tab 切换回来时，重置为"全部"；否则保持用户选择的状态
+          // 首次加载或从 tab 切换回来时，重置为默认状态；否则保持用户选择的状态
           activeStatus: shouldResetToDefault ? defaultStatus : currentStatus,
           scrollIntoView: shouldResetToDefault ? ('status-' + defaultStatus) : ('status-' + currentStatus)
-        });
+        };
 
-        console.log('[Index] User role:', {
-          role_id: userInfo.role_id,
-          department: userInfo.department,
-          isPropertyStaff,
-          isMaintenanceWorker,
-          isManager
-        });
+        // 只在非返回场景时更新 statusButtons 和 activeTab
+        if (!isBackFromSubPage) {
+          dataToUpdate.statusButtons = statusButtons;
+          dataToUpdate.activeTab = '';
+        }
+
+        this.setData(dataToUpdate);
+
+        // console.log('[Index] User role:', {
+        //   role_id: userInfo.role_id,
+        //   department: userInfo.department,
+        //   isPropertyStaff,
+        //   isMaintenanceWorker,
+        //   isManager
+        // });
       }
     } catch (error) {
       console.error('[Index] Get user info error:', error);
     }
 
-    // 每次 onShow 都刷新数据
-    this.loadWorkOrders();
+    // 从子页面返回时不刷新数据，保持原列表
+    if (!isBackFromSubPage) {
+      this.loadWorkOrders();
+    }
   },
 
   /**
    * 根据角色获取状态按钮配置
    */
-  getStatusButtonsByRole: function (isPropertyStaff, isMaintenanceWorker, isManager) {
-    if (isManager) {
-      // 行政经理状态按钮
-      return [
-        { key: 'all', label: '全部', status: null },
-        { key: 'reported', label: '已提报', status: 'Pending Repair' },
-        { key: 'maintenance', label: '维修中', status: 'In Progress' },
-        { key: 'repaired', label: '已修复', status: 'Repaired' },
-        // 云函数没有单独的 "Pending Review" 状态：已修复即待复核
-        { key: 'review', label: '待复核', status: 'Repaired' },
-        { key: 'rework', label: '需返工', status: 'Needs Rework' },
-        { key: 'completed', label: '已完成', status: 'Completed' }
-      ];
-    } else if (isPropertyStaff) {
-      // 办美员工状态按钮
-      return [
-        { key: 'reported', label: '已提报', status: 'Pending Repair' },
-        { key: 'maintenance', label: '维修中', status: 'In Progress' },
-        { key: 'review', label: '待复核', status: 'Repaired' },
-        { key: 'rework', label: '需返工', status: 'Needs Rework' },
-        { key: 'completed', label: '已完成', status: 'Completed' }
-      ];
-    } else if (isMaintenanceWorker) {
-      // 维修员状态按钮
-      return [
-        { key: 'pending_accept', label: '待接单', status: 'Pending Repair' },
-        { key: 'maintenance', label: '维修中', status: 'In Progress' },
-        { key: 'repaired', label: '已修复', status: 'Repaired' },
-        { key: 'rework', label: '需返工', status: 'Needs Rework' },
-        { key: 'completed', label: '已完成', status: 'Completed' }
-      ];
-    }
-    return [];
-  },
-
-  /**
-   * 根据角色获取筛选行配置
-   * - 行政经理：显示所有筛选字段（楼层、责任方、工单类别、报修人、优先级）
-   * - 办美员工：显示楼层、责任方、工单类别、优先级（隐藏报修人）
-   * - 维修员：显示楼层、工单类别、优先级（隐藏责任方、报修人）
-   */
-  getFilterRowsByRole: function (isManager, isMaintenanceWorker) {
-    const rows = [
-      { id: "floor", label: "楼层", hasArrow: true, value: '', placeholder: '' }
-    ];
-
-    // 维修员隐藏责任方筛选
-    if (!isMaintenanceWorker) {
-      rows.push({ id: "owner", label: "责任方", hasArrow: true, value: '', placeholder: '' });
-    }
-
-    rows.push({ id: "category", label: "工单类别", hasArrow: true, value: '', placeholder: '' });
-
-    // 只有行政经理显示报修人筛选
-    if (isManager) {
-      rows.push({ id: "reporter", label: "报修人", hasArrow: true, value: '', placeholder: '' });
-    }
-
-    rows.push({ id: "priority", label: "优先级", hasArrow: true, value: '', placeholder: '' });
-
-    return rows;
-  },
-
   /**
    * Pull down to refresh
    */
   onPullDownRefresh: function () {
+    // 非顶部时不刷新，直接停止下拉动画
+    if (this.data.scrollTop > 10) {
+      wx.stopPullDownRefresh();
+      return;
+    }
     if (this.data._isRefreshing) {
       wx.stopPullDownRefresh();
       return;
     }
-    console.log('[Index] Pull down refresh');
+    // console.log('[Index] Pull down refresh');
     this.setData({ _isRefreshing: true });
     this.loadWorkOrders().finally(() => {
       this.setData({ _isRefreshing: false });
@@ -338,7 +272,7 @@ Page({
   onReachBottom: function () {
     // 先加载更多工单
     if (this.data.hasMore) {
-      console.log('[Index] Reach bottom, loading more orders');
+      // console.log('[Index] Reach bottom, loading more orders');
       this.loadMoreOrders();
       return;
     }
@@ -346,9 +280,35 @@ Page({
     // 如果所有工单已加载，继续预加载图片
     const { workOrders, preloadedIndex } = this.data;
     if (preloadedIndex < workOrders.length) {
-      console.log('[Index] Reach bottom, loading more photos from index', preloadedIndex);
+      // console.log('[Index] Reach bottom, loading more photos from index', preloadedIndex);
       this.preloadPhotoUrls(preloadedIndex, 5);
     }
+  },
+
+  /**
+   * 页面滚动事件 - 记录滚动位置，控制回到顶部按钮显示
+   */
+  onPageScroll: function (e) {
+    const scrollTop = e.scrollTop;
+    const showBackToTop = scrollTop > 300;
+
+    // 只在状态变化时更新，避免频繁 setData
+    if (this.data.showBackToTop !== showBackToTop) {
+      this.setData({ showBackToTop, scrollTop });
+    } else if (Math.abs(this.data.scrollTop - scrollTop) > 50) {
+      // 滚动距离较大时更新 scrollTop（用于下拉刷新判断）
+      this.setData({ scrollTop });
+    }
+  },
+
+  /**
+   * 回到顶部
+   */
+  scrollToTop: function () {
+    wx.pageScrollTo({
+      scrollTop: 0,
+      duration: 300
+    });
   },
 
   /**
@@ -390,23 +350,26 @@ Page({
 
       // 等待统计数据先返回，立即更新状态计数
       const stats = await statsPromise;
-      console.log('[Index] Stage 1 - Statistics received:', stats.total);
+      // console.log('[Index] Stage 1 - Statistics received:', stats.total);
 
       // 从后端统计更新状态按钮计数（快速显示）
       this.updateStatusButtonCountsFromStats(stats.statistics);
 
       // ===== Stage 2: 加载工单详情 =====
       const allOrders = await ordersPromise;
-      console.log('[Index] Stage 2 - Orders received:', allOrders.length);
+      // console.log('[Index] Stage 2 - Orders received:', allOrders.length);
+
+      const { isPropertyStaff, isMaintenanceWorker, isManager, userDepartment, userId,
+              activeTab, startDate, endDate, filterRows } = this.data;
 
       // Filter by user role
-      let filteredOrders = this.filterByUserRole(allOrders);
+      let filteredOrders = filterByUserRole(allOrders, { isPropertyStaff, isMaintenanceWorker, isManager, userDepartment, userId });
 
       // Filter by time range
-      filteredOrders = this.filterByTimeRange(filteredOrders);
+      filteredOrders = filterByTimeRange(filteredOrders, { activeTab, startDate, endDate });
 
       // Filter by advanced criteria (from filter panel)
-      filteredOrders = this.filterByAdvancedCriteria(filteredOrders);
+      filteredOrders = filterByAdvancedCriteria(filteredOrders, filterRows);
 
       // Filter by search text
       if (this.data.searchText) {
@@ -427,10 +390,10 @@ Page({
       this.updateStatusButtonCounts(statusCounts);
 
       // Filter by status (最后应用状态过滤，显示特定状态的工单)
-      filteredOrders = this.filterByStatus(filteredOrders);
+      filteredOrders = filterByStatus(filteredOrders, { activeStatus: this.data.activeStatus, statusButtons: this.data.statusButtons });
 
       // Add display properties
-      filteredOrders = filteredOrders.map(order => this.enrichOrderData(order));
+      filteredOrders = filteredOrders.map(order => enrichOrderData(order, { isMaintenanceWorker, isManager }));
 
       // Sort by created_at descending (newest first)
       filteredOrders.sort((a, b) => {
@@ -452,10 +415,10 @@ Page({
         preloadedIndex: 0
       });
 
-      // 预加载前5个工单的图片（异步执行，不阻塞列表显示）
-      this.preloadPhotoUrls(0, 5);
+      // 预加载所有已加载工单的图片（异步执行，不阻塞列表显示）
+      this.preloadPhotoUrls(0, firstBatch.length);
 
-      console.log('[Index] Work orders loaded:', firstBatch.length, '/', filteredOrders.length);
+      // console.log('[Index] Work orders loaded:', firstBatch.length, '/', filteredOrders.length);
 
     } catch (error) {
       console.error('[Index] Load work orders error:', error);
@@ -494,7 +457,7 @@ Page({
       // 继续预加载新加载工单的图片
       this.preloadPhotoUrls(loadedCount, nextBatch.length);
 
-      console.log('[Index] Loaded more orders:', newLoadedCount, '/', this._allFilteredOrders.length);
+      // console.log('[Index] Loaded more orders:', newLoadedCount, '/', this._allFilteredOrders.length);
     } else {
       this.setData({
         hasMore: false,
@@ -531,275 +494,7 @@ Page({
    * 办美员工：共享可见所有工单，但"已完成"状态只能看自己提交的
    * 维修员：只看责任方=自己部门的工单
    */
-  filterByUserRole: function (orders) {
-    const { isPropertyStaff, isMaintenanceWorker, isManager, userDepartment, userId } = this.data;
 
-    if (isManager) {
-      // 行政经理：可见所有工单（不受已完成限制）
-      return orders;
-    } else if (isPropertyStaff) {
-      // 办美员工：共享可见所有工单，但"已完成"状态只能看自己提交的
-      return orders.filter(order => {
-        // 非已完成状态：全部可见
-        if (order.status !== 'Completed') {
-          return true;
-        }
-        // 已完成状态：只能看自己提交的
-        return order.submitter?.user_id === userId;
-      });
-    } else if (isMaintenanceWorker && userDepartment) {
-      // 维修员：只显示责任方与自己部门匹配的工单
-      return orders.filter(order => {
-        return order.responsible_party === userDepartment;
-      });
-    }
-
-    // 默认返回所有工单
-    return orders;
-  },
-
-  /**
-   * Filter orders by time range
-   */
-  filterByTimeRange: function (orders) {
-    const now = new Date();
-    const { activeTab, startDate, endDate } = this.data;
-
-    // 如果未选中任何时间筛选,返回所有工单
-    if (!activeTab || activeTab === '') {
-      return orders;
-    }
-
-    if (activeTab === 'today') {
-      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      return orders.filter(order => {
-        const createdAt = order.created_at;
-        if (!createdAt) return false;
-        const orderDate = createdAt.$date ? new Date(createdAt.$date) : new Date(createdAt);
-        return orderDate >= today;
-      });
-    } else if (activeTab === 'week') {
-      const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-      return orders.filter(order => {
-        const createdAt = order.created_at;
-        if (!createdAt) return false;
-        const orderDate = createdAt.$date ? new Date(createdAt.$date) : new Date(createdAt);
-        return orderDate >= weekAgo;
-      });
-    } else if (activeTab === 'month') {
-      const monthAgo = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
-      return orders.filter(order => {
-        const createdAt = order.created_at;
-        if (!createdAt) return false;
-        const orderDate = createdAt.$date ? new Date(createdAt.$date) : new Date(createdAt);
-        return orderDate >= monthAgo;
-      });
-    } else if (activeTab === 'date' && startDate && endDate) {
-      // 自定义日期范围筛选
-      const start = new Date(startDate);
-      start.setHours(0, 0, 0, 0);
-      const end = new Date(endDate);
-      end.setHours(23, 59, 59, 999);
-
-      return orders.filter(order => {
-        const createdAt = order.created_at;
-        if (!createdAt) return false;
-        const orderDate = createdAt.$date ? new Date(createdAt.$date) : new Date(createdAt);
-        return orderDate >= start && orderDate <= end;
-      });
-    }
-
-    return orders;
-  },
-
-  /**
-   * Filter orders by status
-   */
-  filterByStatus: function (orders) {
-    const { activeStatus } = this.data;
-
-    // 如果 activeStatus 为空或为 'all',返回所有工单
-    if (!activeStatus || activeStatus === 'all') {
-      return orders;
-    }
-
-    // 找到对应的状态按钮配置
-    const statusButton = this.data.statusButtons.find(btn => btn.key === activeStatus);
-    if (statusButton && statusButton.status) {
-      const targetStatus = statusButton.status;
-      return orders.filter(order => order.status === targetStatus);
-    }
-
-    return orders;
-  },
-
-  /**
-   * Filter orders by advanced criteria (from filter panel)
-   */
-  filterByAdvancedCriteria: function (orders) {
-    const { filterRows } = this.data;
-
-    // Get filter values
-    const floorFilter = filterRows.find(r => r.id === 'floor')?.value;
-    const ownerFilter = filterRows.find(r => r.id === 'owner')?.value;
-    const categoryFilter = filterRows.find(r => r.id === 'category')?.value;
-    const reporterFilter = filterRows.find(r => r.id === 'reporter')?.value;
-    const priorityFilter = filterRows.find(r => r.id === 'priority')?.value;
-
-    console.log('[Index] Advanced filter criteria:', { floorFilter, ownerFilter, categoryFilter, reporterFilter, priorityFilter });
-
-    // 如果所有筛选条件都为空,直接返回原始数据
-    if (!floorFilter && !ownerFilter && !categoryFilter && !reporterFilter && !priorityFilter) {
-      return orders;
-    }
-
-    const filteredOrders = orders.filter(order => {
-      // Floor filter
-      if (floorFilter && order.floor !== floorFilter) {
-        return false;
-      }
-
-      // Owner (responsible_party) filter
-      if (ownerFilter && order.responsible_party !== ownerFilter) {
-        return false;
-      }
-
-      // Category (fault_type_name) filter
-      if (categoryFilter && order.fault_type_name !== categoryFilter) {
-        return false;
-      }
-
-      // Reporter (submitter name) filter - exact match
-      if (reporterFilter && order.submitter?.name !== reporterFilter) {
-        return false;
-      }
-
-      // Priority filter
-      if (priorityFilter) {
-        const isEmergency = order.priority === 'Emergency';
-        if (priorityFilter === '紧急' && !isEmergency) {
-          return false;
-        }
-        if (priorityFilter === '普通' && isEmergency) {
-          return false;
-        }
-      }
-
-      return true;
-    });
-
-    console.log('[Index] After advanced filter:', filteredOrders.length, 'orders');
-    return filteredOrders;
-  },
-
-  /**
-   * Enrich order data with display properties
-   */
-  enrichOrderData: function (order) {
-    const statusColorMap = {
-      'Pending Repair': 'blue',
-      'In Progress': 'orange',
-      'Repaired': 'amber',
-      'Needs Rework': 'red',
-      'Completed': 'green'
-    };
-
-    // 根据角色显示不同的状态文本
-    const { isMaintenanceWorker, isManager } = this.data;
-    let statusTextMap;
-
-    if (isManager) {
-      // 行政经理视角的状态文本
-      statusTextMap = {
-        'Pending Repair': '已提报',
-        'In Progress': '维修中',
-        'Repaired': '已修复',
-        'Pending Review': '待复核',
-        'Needs Rework': '需返工',
-        'Completed': '已完成'
-      };
-    } else if (isMaintenanceWorker) {
-      // 维修员视角的状态文本
-      statusTextMap = {
-        'Pending Repair': '待接单',
-        'In Progress': '维修中',
-        'Repaired': '已修复',
-        'Needs Rework': '需返工',
-        'Completed': '已完成'
-      };
-    } else {
-      // 办美员工视角的状态文本
-      statusTextMap = {
-        'Pending Repair': '已提报',
-        'In Progress': '维修中',
-        'Repaired': '待复核',
-        'Needs Rework': '需返工',
-        'Completed': '已完成'
-      };
-    }
-
-    // 根据角色设置不同的状态样式类
-    let statusClassMap;
-    if (isManager || isMaintenanceWorker) {
-      // 行政经理和维修员：Repaired 显示为"已修复"样式
-      statusClassMap = {
-        'Pending Repair': 'status-reported',
-        'In Progress': 'status-maintenance',
-        'Repaired': 'status-repaired',
-        'Pending Review': 'status-review',
-        'Needs Rework': 'status-rework',
-        'Completed': 'status-completed'
-      };
-    } else {
-      // 办美员工：Repaired 显示为"待复核"样式
-      statusClassMap = {
-        'Pending Repair': 'status-reported',
-        'In Progress': 'status-maintenance',
-        'Repaired': 'status-review',
-        'Needs Rework': 'status-rework',
-        'Completed': 'status-completed'
-      };
-    }
-
-    // Format created_at time for display
-    let formattedTime = '未知时间';
-    if (order.created_at) {
-      const createdAt = order.created_at.$date ? new Date(order.created_at.$date) : new Date(order.created_at);
-      const year = createdAt.getFullYear();
-      const month = String(createdAt.getMonth() + 1).padStart(2, '0');
-      const day = String(createdAt.getDate()).padStart(2, '0');
-      const hour = String(createdAt.getHours()).padStart(2, '0');
-      const minute = String(createdAt.getMinutes()).padStart(2, '0');
-      formattedTime = `${year}-${month}-${day}\u2003${hour}:${minute}`;
-    }
-
-    // 过滤照片路径：保留 http/https 和 cloud:// 开头的有效路径
-    let validPhotos = [];
-    if (order.photos && Array.isArray(order.photos)) {
-      validPhotos = order.photos.filter(photo => {
-        return photo && (photo.startsWith('http://') || photo.startsWith('https://') || photo.startsWith('cloud://'));
-      });
-    }
-
-    // 初始化照片加载状态
-    const photoLoaded = {};
-    const photoError = {};
-    validPhotos.forEach((_, idx) => {
-      photoLoaded[idx] = false;
-      photoError[idx] = false;
-    });
-
-    return {
-      ...order,
-      statusColor: statusColorMap[order.status] || 'gray',
-      statusText: statusTextMap[order.status] || order.status,
-      statusClass: statusClassMap[order.status] || 'status-processing',
-      created_at: formattedTime,
-      photos: validPhotos,
-      photoLoaded: photoLoaded,
-      photoError: photoError
-    };
-  },
 
   /**
    * 预加载图片临时 URL（分批加载）
@@ -838,30 +533,57 @@ Page({
         return;
       }
 
-      console.log('[Index] Preloading photos for orders', startIndex, '-', endIndex - 1, ':', cloudFileIds.length, 'photos');
+      // console.log('[Index] Preloading photos for orders', startIndex, '-', endIndex - 1, ':', cloudFileIds.length, 'photos');
 
-      // 批量获取临时 URL
-      const result = await wx.cloud.getTempFileURL({
-        fileList: cloudFileIds
+      // 批量获取临时 URL（添加10秒超时）
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('timeout')), 10000);
       });
+
+      let result;
+      try {
+        result = await Promise.race([
+          wx.cloud.getTempFileURL({ fileList: cloudFileIds }),
+          timeoutPromise
+        ]);
+      } catch (err) {
+        // 超时或请求失败，标记所有照片为错误状态
+        console.error('[Index] getTempFileURL failed:', err);
+        const errorUpdates = {};
+        Object.keys(fileIdToOrderMap).forEach(fileId => {
+          const mapping = fileIdToOrderMap[fileId];
+          errorUpdates[`workOrders[${mapping.orderIndex}].photoError[${mapping.photoIndex}]`] = true;
+        });
+        this.setData(errorUpdates);
+        this.setData({ preloadedIndex: endIndex });
+        return;
+      }
 
       if (result.fileList && result.fileList.length > 0) {
         const updates = {};
+        const errorUpdates = {};
         const timestamp = Date.now(); // 添加时间戳，强制重新加载图片
         result.fileList.forEach(item => {
-          if (item.tempFileURL && item.status === 0) {
-            const mapping = fileIdToOrderMap[item.fileID];
-            if (mapping) {
-              const key = `workOrders[${mapping.orderIndex}].photos[${mapping.photoIndex}]`;
-              // 添加时间戳参数，避免缓存导致加载失败后无法恢复
-              updates[key] = item.tempFileURL + '?t=' + timestamp;
-            }
+          const mapping = fileIdToOrderMap[item.fileID];
+          if (!mapping) return;
+
+          // 使用宽松比较，因为微信API可能返回字符串"0"或数字0
+          if (item.tempFileURL && item.status == 0) {
+            const key = `workOrders[${mapping.orderIndex}].photos[${mapping.photoIndex}]`;
+            // 添加时间戳参数，避免缓存导致加载失败后无法恢复
+            updates[key] = item.tempFileURL + '?t=' + timestamp;
+          } else {
+            // 转换失败，标记为错误状态
+            errorUpdates[`workOrders[${mapping.orderIndex}].photoError[${mapping.photoIndex}]`] = true;
           }
         });
 
         if (Object.keys(updates).length > 0) {
           this.setData(updates);
-          console.log('[Index] Preloaded', Object.keys(updates).length, 'photo URLs');
+          // console.log('[Index] Preloaded', Object.keys(updates).length, 'photo URLs');
+        }
+        if (Object.keys(errorUpdates).length > 0) {
+          this.setData(errorUpdates);
         }
       }
 
@@ -999,7 +721,7 @@ Page({
     const row = this.data.filterRows.find(r => r.id === id);
     if (!row) return;
 
-    console.log('[Index] Filter row tap:', id, 'floorOptions:', this.data.floorOptions, 'ownerOptions:', this.data.ownerOptions, 'categoryOptions:', this.data.categoryOptions, 'reporterOptions:', this.data.reporterOptions);
+    // console.log('[Index] Filter row tap:', id, 'floorOptions:', this.data.floorOptions, 'ownerOptions:', this.data.ownerOptions, 'categoryOptions:', this.data.categoryOptions, 'reporterOptions:', this.data.reporterOptions);
 
     // 所有筛选项都使用选择器
     let options = [];
@@ -1023,7 +745,7 @@ Page({
         break;
     }
 
-    console.log('[Index] Picker options for', id, ':', options);
+    // console.log('[Index] Picker options for', id, ':', options);
 
     if (options.length === 0) {
       wx.showToast({ title: '暂无可选项', icon: 'none' });
@@ -1289,7 +1011,7 @@ Page({
    */
   navigateToDetail: function (e) {
     const id = e.currentTarget.dataset.id;
-    console.log('[Index] Navigate to detail, order_id:', id);
+    // console.log('[Index] Navigate to detail, order_id:', id);
 
     if (!id) {
       wx.showToast({
@@ -1344,12 +1066,12 @@ Page({
       }
     });
 
-    console.log('[Index] Export with filters:', filters);
+    // console.log('[Index] Export with filters:', filters);
 
     try {
       // 调用导出服务
       const result = await workOrderService.exportWorkOrders(filters);
-      console.log('[Index] Export result:', result);
+      // console.log('[Index] Export result:', result);
 
       // 下载并打开文件
       await workOrderService.downloadAndOpenFile(result.downloadUrl, result.fileName);

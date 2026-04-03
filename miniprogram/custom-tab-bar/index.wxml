@@ -10,7 +10,7 @@
     <view class="tab-icon-wrapper">
       <image class="tab-icon" src="{{selected === index ? item.selectedIconPath : item.iconPath}}" mode="aspectFit"></image>
       <!-- 消息Tab显示未读徽章 -->
-      <view class="badge" wx:if="{{index === 2 && totalUnread > 0}}">{{totalUnread > 99 ? '99+' : totalUnread}}</view>
+      <view class="badge" wx:if="{{index === 1 && totalUnread > 0}}">{{totalUnread > 99 ? '99+' : totalUnread}}</view>
     </view>
     <text class="tab-text" style="color: {{selected === index ? selectedColor : color}}">{{item.text}}</text>
   </view>

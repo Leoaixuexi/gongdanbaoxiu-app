@@ -4,9 +4,12 @@
 
 const auth = require('../../services/auth');
 const workOrderService = require('../../services/workOrder');
+const analyticsService = require('../../services/analyticsService');
 const dateUtils = require('../../utils/dateUtils');
 const chartUtils = require('../../utils/chartUtils');
 const animationUtils = require('../../utils/animationUtils');
+const { convertCloudUrls } = require('../../utils/cloudUtils');
+const { getNavBarInfo } = require('../../utils/navigation');
 
 // 引入 echarts
 import * as echarts from '../../components/ec-canvas/echarts';
@@ -93,26 +96,25 @@ Page({
 
     // 防重复加载和缓存
     _lastFetchTime: 0,
-    _cacheValidMs: 30000  // 30秒缓存有效期
+    _cacheValidMs: 30000,  // 30秒缓存有效期
+
+    // 空状态图标临时URL
+    emptyIconUrl: ''
   },
 
   onLoad() {
     // 计算自定义导航栏高度
-    const systemInfo = wx.getSystemInfoSync();
-    const statusBarHeight = systemInfo.statusBarHeight;
-    const navBarHeight = 88 * systemInfo.windowWidth / 750;
+    const { headerHeight } = getNavBarInfo();
     this.setData({
-      headerHeight: statusBarHeight + navBarHeight
+      headerHeight: Math.ceil(headerHeight)
     });
+
+    // 加载空状态图标
+    this.loadEmptyIcon();
   },
 
   async onShow() {
-    // 设置自定义 tabBar 选中状态
-    if (typeof this.getTabBar === 'function' && this.getTabBar()) {
-      this.getTabBar().setData({
-        selected: 1
-      });
-    }
+    // 页面已从 TabBar 移除，不再设置 TabBar 状态
 
     // 获取用户角色信息
     try {
@@ -131,13 +133,13 @@ Page({
           isManager
         });
 
-        console.log('[Data] User role:', {
-          role_id: userInfo.role_id,
-          department: userInfo.department,
-          isPropertyStaff,
-          isMaintenanceWorker,
-          isManager
-        });
+        // console.log('[Data] User role:', {
+        //   role_id: userInfo.role_id,
+        //   department: userInfo.department,
+        //   isPropertyStaff,
+        //   isMaintenanceWorker,
+        //   isManager
+        // });
 
         // 根据角色加载不同的数据
         if (isManager) {
@@ -145,7 +147,7 @@ Page({
           const now = Date.now();
           const cacheValid = (now - this.data._lastFetchTime) < this.data._cacheValidMs;
           if (cacheValid && this.data.kpiData.totalOrders > 0) {
-            console.log('[Data] Using cached manager data');
+            // console.log('[Data] Using cached manager data');
             this.setData({ loading: false });
           } else {
             // 初始化全局分析视图
@@ -403,14 +405,14 @@ Page({
         loading: false
       });
 
-      console.log('[Data] Statistics loaded:', stats);
-      console.log('[Data] KPI Data:', {
-        totalOrders,
-        completedOrders,
-        completionRate: parseFloat(completionRate),
-        inProgressOrders,
-        avgCompletionTime: parseFloat(avgCompletionTime)
-      });
+      // console.log('[Data] Statistics loaded:', stats);
+      // console.log('[Data] KPI Data:', {
+      //   totalOrders,
+      //   completedOrders,
+      //   completionRate: parseFloat(completionRate),
+      //   inProgressOrders,
+      //   avgCompletionTime: parseFloat(avgCompletionTime)
+      // });
 
     } catch (error) {
       console.error('[Data] Load statistics error:', error);
@@ -503,32 +505,27 @@ Page({
       const lastDay = new Date(rankingYear, rankingMonth, 0).getDate();
       const endDate = `${rankingYear}-${String(rankingMonth).padStart(2, '0')}-${lastDay}`;
 
-      console.log('[Data] Loading rankings for:', { rankingYear, rankingMonth, startDate, endDate });
+      // console.log('[Data] Loading rankings for:', { rankingYear, rankingMonth, startDate, endDate });
 
-      // 调用云函数获取员工排名
-      const res = await wx.cloud.callFunction({
-        name: 'getEmployeeRanking',
-        data: { startDate, endDate }
-      });
+      // 调用服务获取员工排名
+      const res = await analyticsService.getEmployeeRanking(startDate, endDate);
 
-      if (res.result && res.result.success) {
-        // 转换排名数据，标记当前用户
-        const rankings = (res.result.data || [])
-          .filter(item => item.totalCompleted > 0)
-          .map((item, index) => ({
-            rank: index + 1,
-            name: item.employeeName,
-            completedOrders: item.totalCompleted,
-            avatar: item.avatar || '',
-            isCurrentUser: item.employeeId === userId
-          }));
+      // 转换排名数据，标记当前用户
+      const rankings = (res.data || [])
+        .filter(item => item.totalCompleted > 0)
+        .map((item, index) => ({
+          rank: index + 1,
+          name: item.employeeName,
+          completedOrders: item.totalCompleted,
+          avatar: item.avatar || '',
+          isCurrentUser: item.employeeId === userId
+        }));
 
-        this.setData({ rankings });
-        console.log('[Data] Rankings loaded:', rankings.length);
-      } else {
-        console.error('[Data] Load rankings failed:', res.result);
-        this.setData({ rankings: [] });
-      }
+      // 转换头像URL
+      await convertCloudUrls(rankings, 'avatar');
+
+      this.setData({ rankings });
+      // console.log('[Data] Rankings loaded:', rankings.length);
     } catch (error) {
       console.error('[Data] Load rankings error:', error);
       this.setData({ rankings: [] });
@@ -541,7 +538,7 @@ Page({
    * 初始化行政经理视图
    */
   initManagerView() {
-    console.log('[Manager] Initializing manager view');
+    // console.log('[Manager] Initializing manager view');
 
     // 初始化日期范围为"全部"
     this.setData({
@@ -719,47 +716,33 @@ Page({
       const trendStartDate = `${weekAgo.getFullYear()}-${String(weekAgo.getMonth() + 1).padStart(2, '0')}-${String(weekAgo.getDate()).padStart(2, '0')}`;
       const trendEndDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 
-      // 并行调用所有云函数（7个）
+      // 并行调用所有分析服务（7个）
       const [
         kpiRes, employeeRes,
         statusRes, trendRes, categoryRes, responsibleRes,
         floorRes
       ] = await Promise.all([
         // Tab1 数据
-        wx.cloud.callFunction({
-          name: 'getAnalyticsOverview',
-          data: { startDate, endDate }
-        }).catch(err => ({ result: { success: false, data: null } })),
-        wx.cloud.callFunction({
-          name: 'getEmployeeRanking',
-          data: { startDate, endDate }
-        }).catch(err => ({ result: { success: false, data: [] } })),
+        analyticsService.getOverview(startDate, endDate)
+          .catch(err => ({ data: null })),
+        analyticsService.getEmployeeRanking(startDate, endDate)
+          .catch(err => ({ data: [] })),
         // Tab2 图表数据（5个图表）
-        wx.cloud.callFunction({
-          name: 'getAnalyticsByStatus',
-          data: { startDate, endDate }
-        }).catch(err => ({ result: { success: false, data: [] } })),
+        analyticsService.getByStatus(startDate, endDate)
+          .catch(err => ({ data: [] })),
         // 一周工单趋势使用固定的最近7天日期，不受日期筛选控制
-        wx.cloud.callFunction({
-          name: 'getAnalyticsTrends',
-          data: { startDate: trendStartDate, endDate: trendEndDate }
-        }).catch(err => ({ result: { success: false, data: { categories: [], reported: [], completed: [] } } })),
-        wx.cloud.callFunction({
-          name: 'getAnalyticsByCategory',
-          data: { startDate, endDate }
-        }).catch(err => ({ result: { success: false, data: [] } })),
-        wx.cloud.callFunction({
-          name: 'getAnalyticsByResponsible',
-          data: { startDate, endDate }
-        }).catch(err => ({ result: { success: false, data: [] } })),
-        wx.cloud.callFunction({
-          name: 'getAnalyticsByFloor',
-          data: { startDate, endDate }
-        }).catch(err => ({ result: { success: false, data: { categories: [], values: [] } } }))
+        analyticsService.getTrends(trendStartDate, trendEndDate)
+          .catch(err => ({ data: { categories: [], reported: [], completed: [] } })),
+        analyticsService.getByCategory(startDate, endDate)
+          .catch(err => ({ data: [] })),
+        analyticsService.getByResponsible(startDate, endDate)
+          .catch(err => ({ data: [] })),
+        analyticsService.getByFloor(startDate, endDate)
+          .catch(err => ({ data: { categories: [], values: [] } }))
       ]);
 
       // 安全地提取数据，提供默认值
-      const kpiData = kpiRes.result?.data || {
+      const kpiData = kpiRes?.data || {
         totalOrders: 0,
         completedOrders: 0,
         completionRate: 0,
@@ -769,7 +752,7 @@ Page({
 
       // 转换员工排名数据为统一的 rankings 格式
       // 过滤掉完成工单数为0的员工，只显示有完成工单的排名
-      const rankings = (employeeRes.result?.data || [])
+      const rankings = (employeeRes?.data || [])
         .filter(item => item.totalCompleted > 0)
         .map((item, index) => ({
           rank: index + 1,
@@ -779,15 +762,18 @@ Page({
           isCurrentUser: false
         }));
 
+      // 转换头像URL
+      await convertCloudUrls(rankings, 'avatar');
+
       // 更新数据
       this.setData({
         kpiData: kpiData,
         rankings: rankings,
-        statusChartData: statusRes.result?.data || [],
-        trendChartData: trendRes.result?.data || { categories: [], reported: [], completed: [] },
-        categoryChartData: categoryRes.result?.data || [],
-        responsibleChartData: responsibleRes.result?.data || [],
-        floorChartData: floorRes.result?.data || { categories: [], values: [] },
+        statusChartData: statusRes?.data || [],
+        trendChartData: trendRes?.data || { categories: [], reported: [], completed: [] },
+        categoryChartData: categoryRes?.data || [],
+        responsibleChartData: responsibleRes?.data || [],
+        floorChartData: floorRes?.data || { categories: [], values: [] },
         loading: false,
         _lastFetchTime: Date.now()  // 更新缓存时间戳
       });
@@ -826,11 +812,11 @@ Page({
    * 初始化ECharts图表（5个图表）
    */
   initCharts() {
-    console.log('[Manager] Initializing 5 charts');
+    // console.log('[Manager] Initializing 5 charts');
 
     // 检查是否在图表Tab
     if (this.data.activeTab !== 'charts') {
-      console.log('[Manager] Not in charts tab, skip initialization');
+      // console.log('[Manager] Not in charts tab, skip initialization');
       return;
     }
 
@@ -974,6 +960,22 @@ Page({
 
       return chart;
     });
+  },
+
+  /**
+   * 加载空状态图标
+   */
+  async loadEmptyIcon() {
+    try {
+      const res = await wx.cloud.getTempFileURL({
+        fileList: ['cloud://cloud1-7glfhm4r06e030bd.636c-cloud1-7glfhm4r06e030bd-1386591973/icons/03.png']
+      });
+      if (res.fileList && res.fileList[0] && res.fileList[0].tempFileURL) {
+        this.setData({ emptyIconUrl: res.fileList[0].tempFileURL });
+      }
+    } catch (e) {
+      console.error('[Data] 加载空状态图标失败:', e);
+    }
   },
 
   /**

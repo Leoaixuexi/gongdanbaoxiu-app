@@ -1,7 +1,7 @@
 <!-- 数据统计页面 -->
 <view class="container gradient-bg">
   <!-- 自定义导航栏 -->
-  <custom-header title="数据" showBack="{{false}}" />
+  <custom-header title="数据" showBack="{{true}}" />
 
   <!-- ========== 办美员工/维修员视图 ========== -->
   <view wx:if="{{!isManager}}" class="main px-5" style="padding-top: {{headerHeight + 20}}px;">
@@ -43,9 +43,9 @@
       </view>
 
       <view class="kpi-grid">
-        <!-- 1. 维修工单数/提报工单数 -->
+        <!-- 1. 已接工单数/提报工单数 -->
         <view class="kpi-card">
-          <text class="kpi-label">{{isMaintenanceWorker ? '维修工单数' : '提报工单数'}}</text>
+          <text class="kpi-label">{{isMaintenanceWorker ? '已接工单数' : '提报工单数'}}</text>
           <text class="kpi-value" style="color: #10b981;">{{staffKpiData.totalOrders}}</text>
           <view class="absolute" style="right: 8rpx; top: 8rpx;">
             <text class="iconfont icon-icon_zonggongdan" style="font-size: 64rpx; opacity: 0.6; color: #10b981;"></text>
@@ -91,14 +91,14 @@
           <text class="text-base font-bold text-foreground tracking-tight">完成工单排名</text>
         </view>
 
-        <view class="flex items-center gap-2" style="align-items: flex-start;">
-          <text class="arrow-icon" bindtap="prevMonth" style="margin-top: -8rpx;">‹</text>
+        <view class="flex items-center gap-2">
+          <text class="arrow-icon" bindtap="prevMonth">‹</text>
           <picker mode="date" fields="month" value="{{rankingYear}}-{{rankingMonth < 10 ? '0' + rankingMonth : rankingMonth}}" bindchange="onMonthPickerChange">
-            <view class="badge" style="background-color: #f5f5f5; padding: 8rpx 24rpx; margin-top: 4rpx;">
+            <view class="badge" style="background-color: #f5f5f5; padding: 8rpx 24rpx;">
               <text class="text-xs font-semibold">{{rankingMonth}}月</text>
             </view>
           </picker>
-          <text class="arrow-icon" bindtap="nextMonth" style="margin-top: -8rpx;">›</text>
+          <text class="arrow-icon" bindtap="nextMonth">›</text>
         </view>
       </view>
 
@@ -142,7 +142,7 @@
         </block>
         <!-- 无排名数据时显示缺省图 -->
         <view wx:else class="empty-ranking">
-          <image class="empty-ranking-icon" src="cloud://cloud1-7glfhm4r06e030bd.636c-cloud1-7glfhm4r06e030bd-1386591973/icons/03.png" mode="aspectFit"></image>
+          <image class="empty-ranking-icon" src="{{emptyIconUrl}}" mode="aspectFit"></image>
           <text class="empty-ranking-text">暂无排名</text>
         </view>
       </view>
@@ -248,7 +248,8 @@
         <view class="card card-backdrop">
           <!-- 有排名数据时显示列表 -->
           <block wx:if="{{rankings.length > 0}}">
-            <view wx:for="{{rankings}}" wx:key="rank">
+            <!-- 只显示前3名 -->
+            <view wx:for="{{rankings}}" wx:key="rank" wx:if="{{index < 3}}">
               <view class="p-4 flex items-center gap-3"
                     style="border-bottom: 1rpx solid var(--border);">
                 <view style="width: 60rpx; text-align: center; display: flex; align-items: center; justify-content: center;">
@@ -273,10 +274,15 @@
                 </view>
               </view>
             </view>
+
+            <!-- 查看全部 - 只在排名超过3个时显示 -->
+            <view wx:if="{{rankings.length > 3}}" class="view-all-button" bindtap="viewAllRankings">
+              <text class="text-base font-semibold">查看全部</text>
+            </view>
           </block>
           <!-- 无排名数据时显示缺省图 -->
           <view wx:else class="empty-ranking">
-            <image class="empty-ranking-icon" src="cloud://cloud1-7glfhm4r06e030bd.636c-cloud1-7glfhm4r06e030bd-1386591973/icons/03.png" mode="aspectFit"></image>
+            <image class="empty-ranking-icon" src="{{emptyIconUrl}}" mode="aspectFit"></image>
             <text class="empty-ranking-text">暂无排名</text>
           </view>
         </view>
@@ -333,7 +339,7 @@
           <text class="text-base font-bold">工单状态</text>
         </view>
         <view class="chart-divider"></view>
-        <view class="chart-container">
+        <view class="chart-container chart-container-pie">
           <ec-canvas id="statusChart" canvas-id="statusChart" ec="{{ ecStatus }}" class="chart-canvas"></ec-canvas>
         </view>
       </view>
@@ -343,10 +349,10 @@
         <view class="section-title mb-2">
           <text class="text-base font-bold">故障类型</text>
         </view>
-        <view class="chart-container">
+        <view class="chart-container chart-container-pie">
           <ec-canvas wx:if="{{categoryChartData.length > 0}}" id="categoryChart" canvas-id="categoryChart" ec="{{ ecCategory }}" class="chart-canvas"></ec-canvas>
           <view wx:else class="chart-empty-state">
-            <image class="chart-empty-icon" src="cloud://cloud1-7glfhm4r06e030bd.636c-cloud1-7glfhm4r06e030bd-1386591973/icons/03.png" mode="aspectFit"></image>
+            <image class="chart-empty-icon" src="{{emptyIconUrl}}" mode="aspectFit"></image>
             <text class="chart-empty-text">暂无数据</text>
           </view>
         </view>
@@ -357,10 +363,10 @@
         <view class="section-title mb-2">
           <text class="text-base font-bold">责任方</text>
         </view>
-        <view class="chart-container">
+        <view class="chart-container chart-container-pie">
           <ec-canvas wx:if="{{responsibleChartData.length > 0}}" id="responsibleChart" canvas-id="responsibleChart" ec="{{ ecResponsible }}" class="chart-canvas"></ec-canvas>
           <view wx:else class="chart-empty-state">
-            <image class="chart-empty-icon" src="cloud://cloud1-7glfhm4r06e030bd.636c-cloud1-7glfhm4r06e030bd-1386591973/icons/03.png" mode="aspectFit"></image>
+            <image class="chart-empty-icon" src="{{emptyIconUrl}}" mode="aspectFit"></image>
             <text class="chart-empty-text">暂无数据</text>
           </view>
         </view>
@@ -374,7 +380,7 @@
         <view class="chart-container">
           <ec-canvas wx:if="{{floorChartData.categories && floorChartData.categories.length > 0}}" id="floorChart" canvas-id="floorChart" ec="{{ ecFloor }}" class="chart-canvas"></ec-canvas>
           <view wx:else class="chart-empty-state">
-            <image class="chart-empty-icon" src="cloud://cloud1-7glfhm4r06e030bd.636c-cloud1-7glfhm4r06e030bd-1386591973/icons/03.png" mode="aspectFit"></image>
+            <image class="chart-empty-icon" src="{{emptyIconUrl}}" mode="aspectFit"></image>
             <text class="chart-empty-text">暂无数据</text>
           </view>
         </view>
@@ -425,12 +431,20 @@
   </van-popup>
 
   <!-- 全部排名弹窗 -->
-  <view wx:if="{{showAllRankings}}" class="modal-overlay" catchtap="closeAllRankings">
-    <view class="modal-content" catchtap="stopPropagation" style="max-height: 70vh; display: flex; flex-direction: column;">
+  <view wx:if="{{showAllRankings}}" class="modal-overlay" catchtap="closeAllRankings" catchtouchmove="stopPropagation">
+    <view class="modal-content" catchtap="stopPropagation" catchtouchmove="stopPropagation" style="max-height: 70vh; display: flex; flex-direction: column;">
       <!-- 弹窗标题 -->
       <view style="padding: 32rpx 32rpx 24rpx; border-bottom: 1rpx solid var(--color-divider);">
         <text class="text-lg font-bold">完成工单排名</text>
-        <text class="text-sm text-muted-foreground ml-2">({{rankingMonth}}月)</text>
+        <!-- 办美员工：显示选择的月份 -->
+        <text wx:if="{{!isManager}}" class="text-sm text-muted-foreground ml-2">({{rankingMonth}}月)</text>
+        <!-- 行政经理：根据日期筛选显示 -->
+        <text wx:elif="{{timeFilter === 'all'}}" class="text-sm text-muted-foreground ml-2">(全部)</text>
+        <text wx:elif="{{timeFilter === 'yesterday'}}" class="text-sm text-muted-foreground ml-2">(昨日)</text>
+        <text wx:elif="{{timeFilter === 'today'}}" class="text-sm text-muted-foreground ml-2">(今日)</text>
+        <text wx:elif="{{timeFilter === 'week'}}" class="text-sm text-muted-foreground ml-2">(本周)</text>
+        <text wx:elif="{{timeFilter === 'month'}}" class="text-sm text-muted-foreground ml-2">({{rankingMonth}}月)</text>
+        <text wx:elif="{{timeFilter === 'custom'}}" class="text-sm text-muted-foreground ml-2">({{startDate}} ~ {{endDate}})</text>
       </view>
 
       <!-- 排名列表 - 可滚动 -->

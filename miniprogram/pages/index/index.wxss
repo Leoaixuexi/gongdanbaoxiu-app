@@ -22,26 +22,34 @@
 /* 绿色渐变头部 */
 .header {
   background: linear-gradient(to right, #10b981, #14b8a6);
-  padding: 20rpx 32rpx 36rpx;
+  padding: 10rpx 32rpx 36rpx;
+  position: relative;
+}
+
+/* 返回按钮 */
+.back-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64rpx;
+  height: 64rpx;
+  margin-bottom: 12rpx;
 }
 
 /* 搜索栏 */
 .search-bar {
-  display: flex;
-  align-items: center;
-  gap: 16rpx;
   margin-bottom: 20rpx;
 }
 
 .search-input-wrapper {
-  width: 580rpx;
+  width: 420rpx;
   position: relative;
   display: flex;
   align-items: center;
   background-color: white;
   border-radius: 24rpx;
   box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
-  height: 72rpx;
+  height: 60rpx;
   padding: 0 16rpx 0 24rpx;
 }
 
@@ -71,19 +79,44 @@
 .icon-buttons {
   display: flex;
   flex-direction: row;
-  gap: 20rpx;
+  gap: 12rpx;
 }
 
 .scan-button,
 .filter-button {
-  width: 72rpx;
-  height: 72rpx;
-  background-color: white;
-  border-radius: 24rpx;
+  height: 60rpx;
+  padding: 0 12rpx;
+  background-color: transparent;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+  gap: 6rpx;
+}
+
+.export-button {
+  height: 60rpx;
+  padding: 0 12rpx;
+  background-color: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6rpx;
+}
+
+.filter-icon-svg {
+  width: 32rpx;
+  height: 32rpx;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2' stroke-linecap='round'%3E%3Cline x1='4' y1='8' x2='20' y2='8'/%3E%3Ccircle cx='9' cy='8' r='2.5' fill='none'/%3E%3Cline x1='4' y1='16' x2='20' y2='16'/%3E%3Ccircle cx='15' cy='16' r='2.5' fill='none'/%3E%3C/svg%3E");
+}
+
+.btn-label {
+  font-size: 24rpx;
+  color: #ffffff;
+  font-weight: 500;
+  line-height: 1;
 }
 
 .scan-button-inline {
@@ -129,22 +162,33 @@
   height: 40rpx;
 }
 
+/* 日期筛选 + 按钮行 */
+.filter-row-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
 /* 时间筛选标签 */
 .time-tabs {
   display: flex;
+  align-items: center;
   gap: 0;
   background-color: rgba(245, 245, 245, 0.95);
-  border-radius: 24rpx;
-  padding: 4rpx;
+  border-radius: 18rpx;
+  padding: 0 4rpx;
   backdrop-filter: blur(10rpx);
-  width: 52%;
+  width: 46%;
+  height: 50rpx;
+  overflow: hidden;
 }
 
 .time-tab {
   flex: 1;
-  padding: 8rpx 0;
+  height: 42rpx;
+  line-height: 42rpx;
   text-align: center;
-  border-radius: 24rpx;
+  border-radius: 14rpx;
   transition: all 0.2s;
 }
 
@@ -154,7 +198,7 @@
 }
 
 .time-tab-text {
-  font-size: 24rpx;
+  font-size: 22rpx;
   font-weight: 500;
   color: #666;
 }
@@ -180,7 +224,7 @@
 
 .status-tabs-inner {
   display: inline-flex;
-  gap: 24rpx;
+  gap: 10rpx;
 }
 
 .status-tab {
@@ -375,20 +419,6 @@
   font-weight: 400;
   color: #9ca3af;
   white-space: nowrap;
-  transition: all 0.3s;
-}
-
-/* 按钮选中动画 */
-@keyframes status-select {
-  0% {
-    transform: scale(0.95);
-  }
-  50% {
-    transform: scale(1.05);
-  }
-  100% {
-    transform: scale(1);
-  }
 }
 
 /* 工单列表 */
@@ -396,7 +426,7 @@
   padding: 20rpx 32rpx;
   display: flex;
   flex-direction: column;
-  gap: 20rpx;
+  gap: 3rpx;
 }
 
 /* 工单卡片 */
@@ -605,7 +635,7 @@
 }
 
 .icon-user {
-  background-image: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23999" stroke-width="2"%3E%3Cpath d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/%3E%3Ccircle cx="12" cy="7" r="4"/%3E%3C/svg%3E');
+  background-image: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23707070" stroke-width="2"%3E%3Cpath d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/%3E%3Ccircle cx="12" cy="7" r="4"/%3E%3C/svg%3E');
 }
 
 .icon-time {
@@ -831,12 +861,59 @@
   text-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.1); /* 提升图标立体度 */
 }
 
+/* 回到顶部按钮 - 毛玻璃胶囊 */
+.back-to-top {
+  position: fixed;
+  right: 56rpx;
+  bottom: 416rpx;
+  width: 96rpx;
+  height: 96rpx;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(16px);
+  border-radius: 28rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2rpx;
+  box-shadow:
+    0 4rpx 16rpx rgba(0, 0, 0, 0.08),
+    inset 0 1rpx 0 rgba(255, 255, 255, 0.6);
+  border: 1rpx solid rgba(0, 0, 0, 0.06);
+  z-index: 99;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.back-to-top:active {
+  transform: scale(0.92);
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.back-to-top-arrow {
+  width: 16rpx;
+  height: 16rpx;
+  border-left: 4rpx solid #6b7280;
+  border-top: 4rpx solid #6b7280;
+  transform: rotate(45deg);
+  margin-top: 4rpx;
+  pointer-events: none;
+}
+
+.back-to-top-label {
+  font-size: 20rpx;
+  color: #6b7280;
+  font-weight: 600;
+  line-height: 1;
+  pointer-events: none;
+  margin-top: 2rpx;
+}
+
 /* ==================== 新工单卡片样式 (3D立体视觉) ==================== */
 .ticket-card {
   position: relative;
   background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%);
   border-radius: 24rpx;
-  padding: 10rpx 20rpx 12rpx 20rpx;
+  padding: 10rpx 20rpx 6rpx 20rpx;
   /* 3D多层阴影效果 - 模拟立体感 */
   box-shadow:
     /* 顶层高光 */
@@ -888,7 +965,7 @@
     0 2rpx 0 rgba(0, 0, 0, 0.02);
 }
 
-/* 状态标签 */
+/* 状态标签 - 右上角与卡片右上角重合 */
 .status-badge {
   position: absolute;
   top: 0;
@@ -896,7 +973,7 @@
   padding: 10rpx 26rpx;
   font-size: 26rpx;
   font-weight: bold;
-  border-radius: 24rpx;
+  border-radius: 0 24rpx 0 16rpx; /* 右上角与卡片圆角一致，左下角圆角美观 */
   z-index: 10;
 }
 
@@ -953,7 +1030,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12rpx;
+  margin-bottom: 6rpx;
   padding-top: 0;
   border-bottom: none;
   padding-bottom: 0;
@@ -1015,9 +1092,9 @@
 .description-box {
   background-color: #E5E7EB;
   border-radius: 24rpx;
-  padding: 10rpx 20rpx;
+  padding: 2rpx 20rpx;
   margin-top: 10rpx;
-  margin-bottom: 24rpx;
+  margin-bottom: 14rpx;
   color: #111827;
   font-size: 28rpx;
   line-height: 1.5;
@@ -1033,8 +1110,39 @@
   justify-content: space-between;
   align-items: flex-start;
   font-size: 26rpx;
-  margin-bottom: 20rpx;
-  gap: 16rpx;
+  margin-bottom: 12rpx;
+}
+
+/* 新的两行元数据布局 */
+.metadata-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 10rpx;
+  font-size: 26rpx;
+  margin-bottom: 12rpx;
+  padding-right: 32rpx; /* 约2字符宽度的右边距 */
+}
+
+.metadata-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* 第二行三列对齐 */
+.metadata-left {
+  flex: 1;
+  justify-content: flex-start;
+}
+
+.metadata-center {
+  flex: 1;
+  justify-content: center;
+}
+
+.metadata-right {
+  flex: 1;
+  justify-content: flex-end;
 }
 
 .metadata-col {
@@ -1073,6 +1181,10 @@
   align-items: center;
   gap: 8rpx;
   color: #777;
+}
+
+.metadata-item-placeholder {
+  visibility: hidden;
 }
 
 .icon {
@@ -1477,22 +1589,130 @@
 }
 
 /* ==================== 接单按钮 ==================== */
+/* ===== 卡片底部操作栏 ===== */
+.card-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 16rpx;
+  margin-top: 8rpx;
+}
+
+/* 分享按钮 */
+.share-btn {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  padding: 12rpx 24rpx;
+  background: #f5f5f5;
+  color: #666;
+  font-size: 24rpx;
+  border-radius: 32rpx;
+  border: none;
+  line-height: 1;
+}
+
+.share-btn::after {
+  border: none;
+}
+
+.share-btn:active {
+  background: #e8e8e8;
+}
+
+.share-icon {
+  font-family: 'iconfont';
+  font-size: 28rpx;
+}
+
+/* 接单按钮 */
 .accept-order-btn {
-  position: absolute;
-  right: 20rpx;
-  bottom: 20rpx;
-  padding: 14rpx 36rpx;
+  padding: 12rpx 32rpx;
   background: linear-gradient(to right, #F5A623, #F57C00);
   color: white;
-  font-size: 26rpx;
+  font-size: 24rpx;
   font-weight: 600;
   border-radius: 32rpx;
   box-shadow: 0 4rpx 12rpx rgba(245, 124, 0, 0.35);
-  z-index: 20;
 }
 
 .accept-order-btn:active {
   transform: scale(0.95);
   opacity: 0.9;
+}
+
+/* ===== 加载更多指示器 ===== */
+.load-more-indicator {
+  padding: 32rpx 0;
+  text-align: center;
+}
+
+.loading-more {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.has-more-hint,
+.no-more-hint {
+  color: #969799;
+  font-size: 26rpx;
+}
+
+.no-more-hint {
+  color: #c8c9cc;
+}
+
+/* ===== 分享撤回提示 ===== */
+.revoke-toast {
+  position: fixed;
+  bottom: 200rpx;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+}
+
+.revoke-toast-content {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+  background: rgba(0, 0, 0, 0.8);
+  padding: 20rpx 28rpx;
+  border-radius: 40rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.2);
+}
+
+.revoke-toast-text {
+  color: white;
+  font-size: 26rpx;
+}
+
+.revoke-toast-actions {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.revoke-btn {
+  color: #10b981;
+  font-size: 26rpx;
+  font-weight: 600;
+  padding: 4rpx 16rpx;
+  background: rgba(16, 185, 129, 0.15);
+  border-radius: 20rpx;
+}
+
+.revoke-btn:active {
+  opacity: 0.7;
+}
+
+.revoke-close {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 32rpx;
+  padding: 0 8rpx;
+}
+
+.revoke-close:active {
+  color: white;
 }
 

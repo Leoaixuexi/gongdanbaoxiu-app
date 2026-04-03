@@ -1,0 +1,299 @@
+<!-- 新首页 - 仪表板风格 -->
+<view class="page" style="padding-top: {{statusBarHeight}}px;">
+  <!-- 顶部标签栏 -->
+  <view class="tab-header">
+    <view class="tab-list">
+      <view
+        wx:for="{{tabs}}"
+        wx:key="index"
+        class="tab-item {{activeTab === index ? 'tab-active' : ''}}"
+        data-index="{{index}}"
+        bindtap="onTabChange"
+      >
+        <text class="tab-text">{{item}}</text>
+        <view class="tab-underline" wx:if="{{activeTab === index}}"></view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 内容区域 - swiper 实现滑动切换 -->
+  <swiper
+    class="content-swiper"
+    current="{{activeTab}}"
+    bindchange="onSwiperChange"
+    duration="{{300}}"
+  >
+    <!-- Tab 1: 工单维修 -->
+    <swiper-item>
+      <scroll-view scroll-y class="tab-content">
+        <!-- 统计卡片 -->
+        <view class="kpi-grid">
+          <view class="kpi-card">
+            <text class="kpi-label">待维修</text>
+            <text class="kpi-value" style="color: #EA580C;">{{workOrderStats.pending}}</text>
+            <view class="kpi-icon-wrapper">
+              <van-icon name="setting-o" size="40rpx" color="#EA580C" custom-style="opacity:0.6" />
+            </view>
+          </view>
+          <view class="kpi-card">
+            <text class="kpi-label">维修中</text>
+            <text class="kpi-value" style="color: #2563EB;">{{workOrderStats.inProgress}}</text>
+            <view class="kpi-icon-wrapper">
+              <van-icon name="clock-o" size="40rpx" color="#2563EB" custom-style="opacity:0.6" />
+            </view>
+          </view>
+          <view class="kpi-card">
+            <text class="kpi-label">已完成</text>
+            <text class="kpi-value" style="color: #16A34A;">{{workOrderStats.completed}}</text>
+            <view class="kpi-icon-wrapper">
+              <van-icon name="passed" size="40rpx" color="#16A34A" custom-style="opacity:0.6" />
+            </view>
+          </view>
+        </view>
+
+        <!-- 功能入口 -->
+        <view class="func-card">
+          <view class="func-row">
+            <view
+              wx:for="{{workOrderFunctions}}"
+              wx:key="label"
+              class="func-item"
+              data-module="workOrder"
+              data-label="{{item.label}}"
+              bindtap="onFunctionTap"
+            >
+              <view class="func-icon" style="background: {{item.bg}};">
+                <van-icon name="{{item.icon}}" size="22px" color="{{item.color}}" />
+              </view>
+              <text class="func-label">{{item.label}}</text>
+            </view>
+          </view>
+        </view>
+
+        <!-- 快捷入口 -->
+        <view class="quick-section">
+          <text class="section-title">快捷入口</text>
+          <view class="quick-row">
+            <view class="quick-btn quick-btn-primary" data-action="新建工单" bindtap="onQuickAction">
+              <van-icon name="plus" size="16px" color="#fafafa" />
+              <text class="quick-btn-text-light">新建工单</text>
+            </view>
+            <view class="quick-btn quick-btn-secondary" data-action="待办事项" bindtap="onQuickAction">
+              <van-icon name="todo-list-o" size="16px" color="#0a0a0a" />
+              <text class="quick-btn-text-dark">待办事项</text>
+            </view>
+          </view>
+        </view>
+
+        <!-- 最近记录 -->
+        <view class="recent-section">
+          <view class="recent-header">
+            <text class="section-title">最近记录</text>
+            <text class="view-all" data-module="workOrder" bindtap="onViewAll">查看全部</text>
+          </view>
+          <view class="recent-list">
+            <view
+              wx:for="{{workOrderRecords}}"
+              wx:key="title"
+              class="record-item"
+              data-module="workOrder"
+              data-index="{{index}}"
+              bindtap="onRecordTap"
+            >
+              <view class="record-dot" style="background: {{item.dotColor}};"></view>
+              <view class="record-content">
+                <text class="record-title">{{item.title}}</text>
+                <text class="record-subtitle">{{item.subtitle}}</text>
+              </view>
+              <van-icon name="arrow" size="16px" color="#737373" />
+            </view>
+          </view>
+        </view>
+      </scroll-view>
+    </swiper-item>
+
+    <!-- Tab 2: 耗品管理 -->
+    <swiper-item>
+      <scroll-view scroll-y class="tab-content">
+        <!-- 统计卡片 - 4张 -->
+        <view class="kpi-grid kpi-grid-4">
+          <view class="kpi-card kpi-card-sm">
+            <text class="kpi-label">待审批</text>
+            <text class="kpi-value" style="color: #EA580C;">{{consumableStats.pendingApproval}}</text>
+            <view class="kpi-icon-wrapper">
+              <van-icon name="edit" size="28rpx" color="#EA580C" custom-style="opacity:0.6" />
+            </view>
+          </view>
+          <view class="kpi-card kpi-card-sm">
+            <text class="kpi-label">库存预警</text>
+            <text class="kpi-value" style="color: #DC2626;">{{consumableStats.stockWarning}}</text>
+            <view class="kpi-icon-wrapper">
+              <van-icon name="warning-o" size="28rpx" color="#DC2626" custom-style="opacity:0.6" />
+            </view>
+          </view>
+          <view class="kpi-card kpi-card-sm">
+            <text class="kpi-label">今日出库</text>
+            <text class="kpi-value" style="color: #2563EB;">{{consumableStats.todayOut}}</text>
+            <view class="kpi-icon-wrapper">
+              <van-icon name="upgrade" size="28rpx" color="#2563EB" custom-style="opacity:0.6" />
+            </view>
+          </view>
+          <view class="kpi-card kpi-card-sm">
+            <text class="kpi-label">今日入库</text>
+            <text class="kpi-value" style="color: #16A34A;">{{consumableStats.todayIn}}</text>
+            <view class="kpi-icon-wrapper">
+              <van-icon name="down" size="28rpx" color="#16A34A" custom-style="opacity:0.6" />
+            </view>
+          </view>
+        </view>
+
+        <!-- 功能入口 - 2行 -->
+        <view class="func-card">
+          <view class="func-row" wx:for="{{consumableFunctions}}" wx:key="index" wx:for-item="row">
+            <view
+              wx:for="{{row}}"
+              wx:key="label"
+              wx:for-item="func"
+              class="func-item"
+              data-module="consumable"
+              data-label="{{func.label}}"
+              bindtap="onFunctionTap"
+            >
+              <view class="func-icon func-icon-sm" style="background: {{func.bg}};">
+                <van-icon name="{{func.icon}}" size="20px" color="{{func.color}}" />
+              </view>
+              <text class="func-label func-label-sm">{{func.label}}</text>
+            </view>
+            <!-- 占位元素（第二行只有2个） -->
+            <view class="func-item func-item-placeholder" wx:if="{{row.length === 2}}"></view>
+          </view>
+        </view>
+
+        <!-- 快捷入口 -->
+        <view class="quick-section">
+          <text class="section-title">快捷入口</text>
+          <view class="quick-row">
+            <view class="quick-btn quick-btn-primary" data-action="发起申领" bindtap="onQuickAction">
+              <van-icon name="fire-o" size="16px" color="#fafafa" />
+              <text class="quick-btn-text-light">发起申领</text>
+            </view>
+            <view class="quick-btn quick-btn-secondary" data-action="新增入库" bindtap="onQuickAction">
+              <van-icon name="plus" size="16px" color="#0a0a0a" />
+              <text class="quick-btn-text-dark">新增入库</text>
+            </view>
+          </view>
+        </view>
+
+        <!-- 最近记录 -->
+        <view class="recent-section">
+          <view class="recent-header">
+            <text class="section-title">最近记录</text>
+            <text class="view-all" data-module="consumable" bindtap="onViewAll">查看全部</text>
+          </view>
+          <view class="recent-list">
+            <view
+              wx:for="{{consumableRecords}}"
+              wx:key="title"
+              class="record-item"
+              data-module="consumable"
+              data-index="{{index}}"
+              bindtap="onRecordTap"
+            >
+              <view class="record-dot" style="background: {{item.dotColor}};"></view>
+              <view class="record-content">
+                <text class="record-title">{{item.title}}</text>
+                <text class="record-subtitle">{{item.subtitle}}</text>
+              </view>
+              <van-icon name="arrow" size="16px" color="#737373" />
+            </view>
+          </view>
+        </view>
+      </scroll-view>
+    </swiper-item>
+
+    <!-- Tab 3: 楼宇巡检 -->
+    <swiper-item>
+      <scroll-view scroll-y class="tab-content">
+        <!-- 统计卡片 -->
+        <view class="kpi-grid">
+          <view class="kpi-card">
+            <text class="kpi-label">待整改</text>
+            <text class="kpi-value" style="color: #2563EB;">{{inspectionStats.pendingFix}}</text>
+            <view class="kpi-icon-wrapper">
+              <van-icon name="warning-o" size="40rpx" color="#2563EB" custom-style="opacity:0.6" />
+            </view>
+          </view>
+          <view class="kpi-card">
+            <text class="kpi-label">已整改</text>
+            <text class="kpi-value" style="color: #16A34A;">{{inspectionStats.fixed}}</text>
+            <view class="kpi-icon-wrapper">
+              <van-icon name="passed" size="40rpx" color="#16A34A" custom-style="opacity:0.6" />
+            </view>
+          </view>
+          <view class="kpi-card">
+            <text class="kpi-label">延期整改</text>
+            <text class="kpi-value" style="color: #DC2626;">{{inspectionStats.overdue}}</text>
+            <view class="kpi-icon-wrapper">
+              <van-icon name="clock-o" size="40rpx" color="#DC2626" custom-style="opacity:0.6" />
+            </view>
+          </view>
+        </view>
+
+        <!-- 功能入口 -->
+        <view class="func-card">
+          <view class="func-row">
+            <view
+              wx:for="{{inspectionFunctions}}"
+              wx:key="label"
+              class="func-item"
+              data-module="inspection"
+              data-label="{{item.label}}"
+              bindtap="onFunctionTap"
+            >
+              <view class="func-icon" style="background: {{item.bg}};">
+                <van-icon name="{{item.icon}}" size="22px" color="{{item.color}}" />
+              </view>
+              <text class="func-label">{{item.label}}</text>
+            </view>
+          </view>
+        </view>
+
+        <!-- 快捷入口 -->
+        <view class="quick-section">
+          <text class="section-title">快捷入口</text>
+          <view class="quick-row">
+            <view class="quick-btn quick-btn-primary quick-btn-full" data-action="快速上报" bindtap="onQuickAction">
+              <van-icon name="fire-o" size="16px" color="#fafafa" />
+              <text class="quick-btn-text-light">快速上报</text>
+            </view>
+          </view>
+        </view>
+
+        <!-- 最近记录 -->
+        <view class="recent-section">
+          <view class="recent-header">
+            <text class="section-title">最近记录</text>
+            <text class="view-all" data-module="inspection" bindtap="onViewAll">查看全部</text>
+          </view>
+          <view class="recent-list">
+            <view
+              wx:for="{{inspectionRecords}}"
+              wx:key="title"
+              class="record-item"
+              data-module="inspection"
+              data-index="{{index}}"
+              bindtap="onRecordTap"
+            >
+              <view class="record-dot" style="background: {{item.dotColor}};"></view>
+              <view class="record-content">
+                <text class="record-title">{{item.title}}</text>
+                <text class="record-subtitle">{{item.subtitle}}</text>
+              </view>
+              <van-icon name="arrow" size="16px" color="#737373" />
+            </view>
+          </view>
+        </view>
+      </scroll-view>
+    </swiper-item>
+  </swiper>
+</view>
