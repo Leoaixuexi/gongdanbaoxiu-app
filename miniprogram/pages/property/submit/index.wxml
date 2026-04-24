@@ -104,7 +104,7 @@
         <text class="label">问题描述</text>
       </view>
       <textarea
-        class="textarea-box"
+        class="textarea-box textarea-box-desc"
         placeholder="请详细描述遇到的问题，包括故障现象、影响范围等..."
         placeholder-class="custom-placeholder"
         value="{{description}}"

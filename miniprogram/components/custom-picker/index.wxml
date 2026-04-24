@@ -16,6 +16,7 @@
       default-index="{{ defaultIndex }}"
       bind:confirm="onConfirm"
       bind:cancel="onClose"
+      bind:change="onPickerChange"
       confirm-button-text="确定"
       cancel-button-text="取消"
       visible-item-count="{{ visibleCount }}"

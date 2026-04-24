@@ -1,0 +1,64 @@
+<!-- 出入库记录详情页 -->
+<view class="rd-page">
+  <!-- 配件信息 -->
+  <view class="rd-group">
+    <text class="rd-group-title">配件信息</text>
+    <view class="rd-card">
+      <view class="rd-row">
+        <text class="rd-label">配件名</text>
+        <text class="rd-value">{{record.material_name}}</text>
+      </view>
+      <view class="rd-row">
+        <text class="rd-label">配件编号</text>
+        <text class="rd-value">{{record.material_number || '-'}}</text>
+      </view>
+      <view class="rd-row">
+        <text class="rd-label">类别</text>
+        <text class="rd-value">{{record.category || '-'}}</text>
+      </view>
+      <view class="rd-row">
+        <text class="rd-label">规格</text>
+        <text class="rd-value">{{record.spec || '-'}}</text>
+      </view>
+      <view class="rd-row rd-row-last">
+        <text class="rd-label">型号</text>
+        <text class="rd-value">{{record.model || '-'}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 入库/出库信息 -->
+  <view class="rd-group">
+    <text class="rd-group-title">{{record.type === 'in' ? '入库信息' : '出库信息'}}</text>
+    <view class="rd-card">
+      <view class="rd-row">
+        <text class="rd-label">{{record.type === 'in' ? '入库数量' : '出库数量'}}</text>
+        <text class="rd-value {{record.type === 'in' ? 'qty-in' : 'qty-out'}}">{{record.type === 'in' ? '+' : '-'}}{{record.quantity}} {{record.unit || '个'}}</text>
+      </view>
+      <view class="rd-row">
+        <text class="rd-label">{{record.type === 'in' ? '配件来源' : '使用区域'}}</text>
+        <text class="rd-value">{{record.type === 'in' ? (record.source || '采购入库') : (record.usage_area || '-')}}</text>
+      </view>
+      <view wx:if="{{record.type === 'in'}}" class="rd-row">
+        <text class="rd-label">出库位置</text>
+        <text class="rd-value">{{record.usage_area || '-'}}</text>
+      </view>
+      <view class="rd-row">
+        <text class="rd-label">{{record.type === 'in' ? '入库时间' : '出库时间'}}</text>
+        <text class="rd-value">{{record.fullTime}}</text>
+      </view>
+      <view class="rd-row rd-row-last">
+        <text class="rd-label">{{record.type === 'in' ? '入库人' : '领用人'}}</text>
+        <text class="rd-value">{{record.operator.name}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 备注 -->
+  <view wx:if="{{record.remark}}" class="rd-group">
+    <text class="rd-group-title">备注</text>
+    <view class="rd-card">
+      <view class="rd-remark">{{record.remark}}</view>
+    </view>
+  </view>
+</view>

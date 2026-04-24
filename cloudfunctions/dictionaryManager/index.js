@@ -206,6 +206,14 @@ exports.main = async (event, context) => {
   console.log(`[DictionaryManager] Action: ${action}, OpenID: ${OPENID}`);
 
   try {
+    // 身份验证：确保用户已登录
+    if (!OPENID) {
+      return {
+        success: false,
+        error: '请先登录后再操作'
+      };
+    }
+
     // 需要管理员权限的操作
     const adminActions = ['create', 'update', 'delete'];
     if (adminActions.includes(action)) {

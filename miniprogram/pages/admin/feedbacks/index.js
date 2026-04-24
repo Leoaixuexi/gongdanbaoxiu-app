@@ -1,17 +1,29 @@
 /**
- * 管理员-用户反馈列表页面（只读）
+ * 管理员-用户反馈列表页面
  */
+
+const feedbackService = require('../../../services/feedbackService');
 
 Page({
   data: {
-    list: [],
+    allList: [],      // 全部反馈数据
+    list: [],         // 当前显示的列表（筛选后）
     loading: true,
     loadingMore: false,
     hasMore: true,
     page: 1,
     limit: 20,
     statusBarHeight: 0,
-    navBarHeight: 0
+    navBarHeight: 0,
+    // 分类筛选
+    filterTabs: [
+      { label: '全部', value: 'all' },
+      { label: '系统BUG', value: '系统BUG' },
+      { label: '新增功能建议', value: '新增功能建议' },
+      { label: '现有模块优化', value: '现有模块优化' },
+      { label: '个人想法', value: '个人想法' }
+    ],
+    currentFilter: 'all'
   },
 
   onLoad() {
@@ -26,8 +38,20 @@ Page({
     this.loadList();
   },
 
+  onShow() {
+    // 每次显示时刷新列表
+    this.setData({
+      allList: [],
+      list: [],
+      page: 1,
+      hasMore: true
+    });
+    this.loadList();
+  },
+
   onPullDownRefresh() {
     this.setData({
+      allList: [],
       list: [],
       page: 1,
       hasMore: true
@@ -39,33 +63,28 @@ Page({
 
   async loadList() {
     try {
-      this.setData({ loading: this.data.list.length === 0 });
+      this.setData({ loading: this.data.allList.length === 0 });
 
-      const res = await wx.cloud.callFunction({
-        name: 'feedbackManager',
-        data: {
-          action: 'list',
-          data: {
-            filters: {
-              page: this.data.page,
-              limit: this.data.limit
-            }
-          }
+      const result = await feedbackService.listFeedbacks({
+        filters: {
+          page: this.data.page,
+          limit: this.data.limit,
+          admin: true  // 管理员模式，获取所有用户反馈
         }
       });
 
-      if (res.result && res.result.success) {
-        const newList = (res.result.list || []).map(item => this.formatItem(item));
-        const hasMore = this.data.page < res.result.totalPages;
+      const newList = (result.list || []).map(item => this.formatItem(item));
+      const hasMore = this.data.page < result.totalPages;
+      const allList = [...this.data.allList, ...newList];
 
-        this.setData({
-          list: [...this.data.list, ...newList],
-          hasMore,
-          loading: false
-        });
-      } else {
-        throw new Error(res.result?.error || '加载失败');
-      }
+      this.setData({
+        allList,
+        hasMore,
+        loading: false
+      });
+
+      // 应用当前筛选
+      this.applyFilter();
     } catch (error) {
       console.error('[AdminFeedbacks] Load error:', error);
       this.setData({ loading: false });
@@ -88,15 +107,51 @@ Page({
       created_at_str = `${year}-${month}-${day} ${hour}:${minute}`;
     }
 
-    const content_summary = item.content && item.content.length > 80
-      ? item.content.substring(0, 80) + '...'
+    const content_summary = item.content && item.content.length > 100
+      ? item.content.substring(0, 100) + '...'
       : item.content || '';
+
+    // 类型到样式类的映射
+    const typeClass = this.getTypeClass(item.type);
 
     return {
       ...item,
       created_at_str,
-      content_summary
+      content_summary,
+      typeClass
     };
+  },
+
+  // 根据类型返回对应的样式类
+  getTypeClass(type) {
+    const typeMap = {
+      '系统BUG': 'type-bug',
+      '新增功能建议': 'type-feature',
+      '现有模块优化': 'type-optimize',
+      '个人想法': 'type-idea'
+    };
+    return typeMap[type] || 'type-default';
+  },
+
+  // 分类筛选切换
+  onFilterChange(e) {
+    const value = e.currentTarget.dataset.value;
+    if (value === this.data.currentFilter) return;
+
+    this.setData({ currentFilter: value });
+    this.applyFilter();
+  },
+
+  // 应用筛选
+  applyFilter() {
+    const { allList, currentFilter } = this.data;
+
+    if (currentFilter === 'all') {
+      this.setData({ list: allList });
+    } else {
+      const filteredList = allList.filter(item => item.type === currentFilter);
+      this.setData({ list: filteredList });
+    }
   },
 
   loadMore() {

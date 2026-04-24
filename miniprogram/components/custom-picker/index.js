@@ -92,6 +92,11 @@ Component({
       this.triggerEvent('cancel');
     },
 
+    // 滚动切换选项时触感反馈
+    onPickerChange: function() {
+      wx.vibrateShort({ type: 'light' });
+    },
+
     // 阻止滚动穿透
     noop: function() {}
   }

@@ -4,9 +4,10 @@
  * 支持滑动显示删除和取消操作
  */
 
-const cloudDB = require('../../services/cloudDatabase');
+const announcementService = require('../../services/announcementService');
 const notificationService = require('../../services/notification');
 const { STORAGE_KEYS } = require('../../utils/constants');
+const { getNavBarInfo } = require('../../utils/navigation');
 
 Page({
   data: {
@@ -16,7 +17,9 @@ Page({
     loading: true,
     refreshing: false,
     statusBarHeight: 0,
-    headerHeight: 0
+    headerHeight: 0,
+    // 空状态图标临时URL
+    emptyIconUrl: ''
   },
 
   // 滑动相关变量
@@ -26,25 +29,26 @@ Page({
 
   onLoad(options) {
     const { moduleId, moduleName } = options;
-    console.log('[Message List] Page load, moduleId:', moduleId, 'moduleName:', moduleName);
+    // console.log('[Message List] Page load, moduleId:', moduleId, 'moduleName:', moduleName);
 
     // 计算导航栏高度
-    const systemInfo = wx.getSystemInfoSync();
-    const statusBarHeight = systemInfo.statusBarHeight;
-    const navBarHeight = 88 * systemInfo.windowWidth / 750;
+    const { statusBarHeight, headerHeight } = getNavBarInfo();
 
     this.setData({
       moduleId: moduleId || 'notification',
       moduleName: moduleName || '消息列表',
       statusBarHeight,
-      headerHeight: statusBarHeight + navBarHeight
+      headerHeight: Math.ceil(headerHeight)
     });
+
+    // 加载空状态图标
+    this.loadEmptyIcon();
 
     this.loadMessages();
   },
 
   onShow() {
-    console.log('[Message List] Page show');
+    // console.log('[Message List] Page show');
   },
 
   /**
@@ -61,10 +65,11 @@ Page({
         try {
           const userInfo = wx.getStorageSync(STORAGE_KEYS.USER_INFO);
           const roleId = userInfo?.role_id || 4;
-          const result = await cloudDB.announcements.listForUser(roleId);
+          const result = await announcementService.listAnnouncementsForUser(roleId);
 
           messages = (result.list || []).map(item => ({
             id: item._id,
+            announcementId: item._id, // 用于删除时调用隐藏接口
             titlePrefix: item.title,
             orderNumber: '',
             content: this.stripHtml(item.content || ''),
@@ -134,7 +139,7 @@ Page({
         refreshing: false
       });
 
-      console.log('[Message List] Loaded:', messages.length, 'messages');
+      // console.log('[Message List] Loaded:', messages.length, 'messages');
 
     } catch (error) {
       console.error('[Message List] Load error:', error);
@@ -298,6 +303,24 @@ Page({
             }
           }
 
+          // 对于通知公告，调用隐藏接口
+          if (this.data.moduleId === 'notification' && message?.announcementId) {
+            try {
+              wx.showLoading({ title: '删除中...', mask: true });
+              await announcementService.hideAnnouncement(message.announcementId);
+              wx.hideLoading();
+            } catch (error) {
+              wx.hideLoading();
+              console.error('[Message List] Hide announcement error:', error);
+              wx.showToast({
+                title: '删除失败',
+                icon: 'error',
+                duration: 2000
+              });
+              return;
+            }
+          }
+
           // 更新本地列表
           const messages = this.data.messages.filter(m => m.id !== messageId);
           this.setData({ messages });
@@ -401,7 +424,7 @@ Page({
       if ((this.data.moduleId === 'workorder' || this.data.moduleId === 'reminder') && message.notificationId) {
         try {
           await notificationService.markAsRead(message.notificationId);
-          console.log('[Message List] Mark as read success:', message.notificationId);
+          // console.log('[Message List] Mark as read success:', message.notificationId);
 
           // 只有成功后才更新本地状态和 TabBar
           const messages = this.data.messages.map(m => {
@@ -472,31 +495,49 @@ Page({
    * 由于当前页面是子页面，需要通过页面栈获取 tabBar 页面实例
    * @param {number} delta - 未读数变化量（负数表示减少）
    */
+  /**
+   * 加载空状态图标
+   */
+  async loadEmptyIcon() {
+    try {
+      const res = await wx.cloud.getTempFileURL({
+        fileList: ['cloud://cloud1-7glfhm4r06e030bd.636c-cloud1-7glfhm4r06e030bd-1386591973/icons/08.png']
+      });
+      if (res.fileList && res.fileList[0] && res.fileList[0].tempFileURL) {
+        this.setData({ emptyIconUrl: res.fileList[0].tempFileURL });
+      }
+    } catch (e) {
+      console.error('[Message List] 加载空状态图标失败:', e);
+    }
+  },
+
   updateTabBarUnreadCount(delta = 0) {
-    // 立即乐观更新 globalData，避免切换 Tab 时显示旧值
-    if (delta !== 0) {
-      const app = getApp();
-      if (app && app.globalData.unreadCounts) {
-        const counts = app.globalData.unreadCounts;
-        const newTotal = Math.max(0, (counts.totalUnread || 0) + delta);
+    const app = getApp();
 
-        // 根据模块类型更新对应的分类计数
-        const moduleKey = this.data.moduleId === 'workorder' ? 'workorderCount'
-                        : this.data.moduleId === 'reminder' ? 'reminderCount'
-                        : 'notificationCount';
-        const newModuleCount = Math.max(0, (counts[moduleKey] || 0) + delta);
+    // 立即乐观更新 - 使用 app.updateBadge 保持版本号同步
+    if (delta !== 0 && app && app.globalData.unreadCounts) {
+      const counts = app.globalData.unreadCounts;
+      const newTotal = Math.max(0, (counts.totalUnread || 0) + delta);
 
-        app.globalData.unreadCounts = {
+      // 根据模块类型更新对应的分类计数
+      const moduleKey = this.data.moduleId === 'workorder' ? 'workorderCount'
+                      : this.data.moduleId === 'reminder' ? 'reminderCount'
+                      : 'notificationCount';
+      const newModuleCount = Math.max(0, (counts[moduleKey] || 0) + delta);
+
+      // 使用统一入口更新，确保版本号同步
+      if (app.updateBadge) {
+        app.updateBadge({
           ...counts,
           totalUnread: newTotal,
           [moduleKey]: newModuleCount
-        };
+        }, 'message-list-optimistic');
+        return; // 乐观更新完成，无需再调用 updateUnreadCount
       }
     }
 
-    // 获取当前页面栈
+    // 如果没有 delta 或乐观更新失败，则通过 API 刷新
     const pages = getCurrentPages();
-    // 找到 tabBar 页面（notifications 或 index）
     const tabBarPage = pages.find(p =>
       p.route === 'pages/notifications/index' ||
       p.route === 'pages/index/index'
@@ -504,7 +545,7 @@ Page({
 
     if (tabBarPage && typeof tabBarPage.getTabBar === 'function') {
       const tabBar = tabBarPage.getTabBar();
-      if (tabBar) {
+      if (tabBar && tabBar.updateUnreadCount) {
         tabBar.updateUnreadCount();
       }
     }

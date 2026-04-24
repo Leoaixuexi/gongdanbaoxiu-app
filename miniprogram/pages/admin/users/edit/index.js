@@ -5,7 +5,8 @@
 
 const { ROLE_DISPLAY_NAMES } = require('../../../../utils/constants');
 const dictionary = require('../../../../services/dictionary');
-const cloudDB = require('../../../../services/cloudDatabase');
+const userService = require('../../../../services/userService');
+const { convertSingleCloudUrl } = require('../../../../utils/cloudUtils');
 
 Page({
   data: {
@@ -86,24 +87,13 @@ Page({
         throw new Error('用户ID缺失');
       }
 
-      // 调用云函数获取用户信息
-      const result = await wx.cloud.callFunction({
-        name: 'userAuth',
-        data: {
-          action: 'getUserById',
-          data: {
-            user_id: parseInt(this.data.userId)
-          }
-        }
-      });
-
-      if (!result.result.success) {
-        throw new Error(result.result.error || '获取用户信息失败');
-      }
-
-      const user = result.result.user;
+      // 调用用户服务获取用户信息（返回用户对象）
+      const user = await userService.getUserById(parseInt(this.data.userId));
       const app = getApp();
       const currentUserId = app.globalData.userInfo?.user_id;
+
+      // 转换头像URL
+      const avatarUrl = await convertSingleCloudUrl(user.avatar || '');
 
       this.setData({
         originalData: { ...user },
@@ -115,7 +105,7 @@ Page({
           contact_phone: user.contact_phone || '',
           department: user.department || '',
           is_active: user.active,
-          avatar: user.avatar || ''
+          avatar: avatarUrl
         },
         selectedRoleName: ROLE_DISPLAY_NAMES[user.role_id] || '未知',
         isSelf: user.user_id === currentUserId,
@@ -138,22 +128,15 @@ Page({
    */
   async loadRoles() {
     try {
-      // 调用云函数获取角色列表
-      const result = await wx.cloud.callFunction({
-        name: 'userAuth',
-        data: {
-          action: 'listRoles'
-        }
-      });
+      // 调用用户服务获取角色列表（返回角色数组）
+      const roles = await userService.listRoles();
 
-      if (result.result.success) {
-        this.setData({
-          roles: result.result.roles.map(role => ({
-            id: role.role_id,
-            name: ROLE_DISPLAY_NAMES[role.role_id] || role.role_name
-          }))
-        });
-      }
+      this.setData({
+        roles: roles.map(role => ({
+          id: role.role_id,
+          name: ROLE_DISPLAY_NAMES[role.role_id] || role.role_name
+        }))
+      });
     } catch (error) {
       console.error('Failed to load roles:', error);
     }
@@ -379,18 +362,8 @@ Page({
         data.department = this.data.formData.department;
       }
 
-      // 调用云函数更新用户
-      const result = await wx.cloud.callFunction({
-        name: 'userAuth',
-        data: {
-          action: 'updateUser',
-          data: data
-        }
-      });
-
-      if (!result.result.success) {
-        throw new Error(result.result.error || '更新失败');
-      }
+      // 调用用户服务更新用户（失败时会自动抛出异常）
+      await userService.updateUser(data);
 
       wx.showToast({
         title: '保存成功',
@@ -448,7 +421,7 @@ Page({
         if (res.confirm) {
           try {
             wx.showLoading({ title: '处理中...' });
-            const result = await cloudDB.users.resetPassword(parseInt(this.data.userId));
+            const result = await userService.resetPassword(parseInt(this.data.userId));
             wx.hideLoading();
 
             wx.showModal({
@@ -490,9 +463,9 @@ Page({
           try {
             wx.showLoading({ title: '处理中...' });
             if (isActive) {
-              await cloudDB.users.disable(parseInt(this.data.userId));
+              await userService.disableUser(parseInt(this.data.userId));
             } else {
-              await cloudDB.users.enable(parseInt(this.data.userId));
+              await userService.enableUser(parseInt(this.data.userId));
             }
             wx.hideLoading();
             wx.showToast({ title: `已${actionText}`, icon: 'success' });

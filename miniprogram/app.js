@@ -5,7 +5,7 @@
 
 const auth = require('./services/auth');
 const storage = require('./services/storage');
-const { API_BASE_URL, CLOUD_ENV_ID } = require('./utils/constants');
+const { CLOUD_ENV_ID } = require('./utils/constants');
 
 App({
   /**
@@ -14,7 +14,6 @@ App({
   globalData: {
     userInfo: null,
     systemInfo: null,
-    apiBaseUrl: API_BASE_URL,
     isLoggedIn: false,
     // 未读消息数缓存（全局统一状态源）
     unreadCounts: {

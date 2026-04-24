@@ -5,24 +5,24 @@
   <view class="sticky-header" style="padding-top: {{statusBarHeight}}px;">
     <!-- 绿色渐变头部 -->
     <view class="header">
-      <!-- 返回按钮 -->
-      <view class="back-btn" bindtap="goBack">
-        <van-icon name="arrow-left" size="20px" color="#ffffff" />
-      </view>
-      <!-- 搜索栏（独占一行） -->
-      <view class="search-bar">
-        <view class="search-input-wrapper">
-          <view class="icon-search"></view>
-          <input
-            class="search-input"
-            placeholder="编号/位置/问题描述"
-            placeholder-class="search-placeholder"
-            value="{{searchText}}"
-            bindinput="onSearchInput"
-          />
-          <!-- 清空按钮 - 有输入时显示 -->
-          <view wx:if="{{searchText}}" class="clear-button-inline" bindtap="clearSearch">
-            <text class="clear-icon">×</text>
+      <!-- 返回按钮 + 搜索框（同行） -->
+      <view class="header-top-row">
+        <view class="back-btn" bindtap="goBack">
+          <van-icon name="arrow-left" size="20px" color="#ffffff" />
+        </view>
+        <view class="search-bar">
+          <view class="search-input-wrapper">
+            <view class="icon-search"></view>
+            <input
+              class="search-input"
+              placeholder="编号/位置/问题描述"
+              placeholder-class="search-placeholder"
+              value="{{searchText}}"
+              bindinput="onSearchInput"
+            />
+            <view wx:if="{{searchText}}" class="clear-button-inline" bindtap="clearSearch">
+              <text class="clear-icon">×</text>
+            </view>
           </view>
         </view>
       </view>
@@ -157,37 +157,35 @@
           </view>
         </view>
 
-        <!-- 照片列表 - 有照片才显示，最多3张 -->
-        <view class="photo-list" wx:if="{{item.photos && item.photos.length > 0}}">
-          <block wx:for="{{item.photos}}" wx:key="photoIndex" wx:for-item="photo" wx:for-index="photoIndex" wx:if="{{photoIndex < 3}}">
-            <view class="photo-placeholder">
-              <!-- 加载中状态 -->
-              <view class="photo-loading" wx:if="{{!item.photoLoaded[photoIndex] && !item.photoError[photoIndex]}}">
-                <van-loading size="20px" color="#10b981" />
+        <!-- 照片列表 + 接单按钮同行，底部对齐 -->
+        <view class="photo-action-row">
+          <view class="photo-list" wx:if="{{item.photos && item.photos.length > 0}}">
+            <block wx:for="{{item.photos}}" wx:key="photoIndex" wx:for-item="photo" wx:for-index="photoIndex" wx:if="{{photoIndex < 3}}">
+              <view class="photo-placeholder">
+                <!-- 加载中状态 -->
+                <view class="photo-loading" wx:if="{{!item.photoLoaded[photoIndex] && !item.photoError[photoIndex]}}">
+                  <van-loading size="20px" color="#10b981" />
+                </view>
+                <!-- 加载失败状态 -->
+                <view class="photo-error" wx:if="{{item.photoError[photoIndex]}}">
+                  <text class="photo-error-icon">!</text>
+                  <text class="photo-error-text">加载失败</text>
+                </view>
+                <!-- 图片（仅当 URL 有效时渲染，cloud:// 需要先转换） -->
+                <image
+                  wx:if="{{utils.isValidImageUrl(photo)}}"
+                  src="{{photo}}"
+                  class="photo-image {{item.photoLoaded[photoIndex] ? 'photo-loaded' : 'photo-hidden'}}"
+                  mode="aspectFill"
+                  lazy-load="{{true}}"
+                  binderror="onPhotoError"
+                  bindload="onPhotoLoad"
+                  data-order-index="{{index}}"
+                  data-photo-index="{{photoIndex}}"
+                />
               </view>
-              <!-- 加载失败状态 -->
-              <view class="photo-error" wx:if="{{item.photoError[photoIndex]}}">
-                <text class="photo-error-icon">!</text>
-                <text class="photo-error-text">加载失败</text>
-              </view>
-              <!-- 图片（仅当 URL 有效时渲染，cloud:// 需要先转换） -->
-              <image
-                wx:if="{{utils.isValidImageUrl(photo)}}"
-                src="{{photo}}"
-                class="photo-image {{item.photoLoaded[photoIndex] ? 'photo-loaded' : 'photo-hidden'}}"
-                mode="aspectFill"
-                lazy-load="{{true}}"
-                binderror="onPhotoError"
-                bindload="onPhotoLoad"
-                data-order-index="{{index}}"
-                data-photo-index="{{photoIndex}}"
-              />
-            </view>
-          </block>
-        </view>
-
-        <!-- 底部操作栏 -->
-        <view class="card-actions">
+            </block>
+          </view>
           <!-- 接单按钮 - 维修员 + 待接单状态 -->
           <view
             wx:if="{{isMaintenanceWorker && item.status === 'Pending Repair'}}"
@@ -295,8 +293,13 @@
         <view class="space"></view>
       </scroll-view>
       <view class="sheet-footer">
-        <van-button plain type="default" bindtap="handleReset" custom-style="flex: 1; margin-right: 12rpx; border-radius: 16rpx; height: 88rpx;">重置</van-button>
-        <van-button type="info" bindtap="handleConfirm" custom-style="flex: 1; background: linear-gradient(to right, #10b981, #14b8a6); border: none; border-radius: 16rpx; height: 88rpx;">确定</van-button>
+        <view class="footer-btn footer-btn-reset" bindtap="handleReset">
+          <van-icon name="replay" size="30rpx" color="#64748b" />
+          <text class="footer-btn-text">重置</text>
+        </view>
+        <view class="footer-btn footer-btn-confirm" bindtap="handleConfirm">
+          <text class="footer-btn-text footer-btn-text-white">确定</text>
+        </view>
       </view>
     </view>
   </van-popup>

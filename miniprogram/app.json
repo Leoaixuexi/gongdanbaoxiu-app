@@ -18,7 +18,15 @@
     "pages/feedback/detail/index",
     "pages/feedback/index/index",
     "pages/agreement/user/index",
-    "pages/agreement/privacy/index"
+    "pages/agreement/privacy/index",
+    "pages/material/index",
+    "pages/material/add/index",
+    "pages/material/edit/index",
+    "pages/material/detail/index",
+    "pages/material/record-detail/index",
+    "pages/charge-order/index",
+    "pages/charge-order/detail",
+    "pages/charge-order/edit"
   ],
   "subPackages": [
     {

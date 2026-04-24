@@ -1,26 +1,55 @@
 <!--意见反馈系统入口页-->
 <view class="feedback-entry-page">
-  <!-- 内容区域 -->
-  <view class="content-area">
-    <!-- 图标 -->
-    <view class="icon-wrapper">
-      <view class="icon-bg">
-        <text class="icon-text">+</text>
+  <!-- 自定义导航栏 -->
+  <view class="nav-bar" style="padding-top: {{statusBarHeight}}px;">
+    <view class="nav-content">
+      <view class="nav-left" bindtap="goBack">
+        <van-icon name="arrow-left" size="40rpx" color="#fff" />
       </view>
+      <view class="nav-right"></view>
+    </view>
+  </view>
+
+  <!-- 内容区域 -->
+  <view class="content-area" style="padding-top: {{navBarHeight + 30}}px;">
+    <!-- 标题区域 -->
+    <view class="title-area">
+      <text class="main-title">意见反馈</text>
+      <text class="sub-title">您的反馈是阿哲进步的动力</text>
     </view>
 
-    <!-- 标题 -->
-    <text class="main-title">意见反馈系统</text>
-    <text class="sub-title">您的反馈是我们进步的动力</text>
-
-    <!-- 按钮区域 -->
-    <view class="btn-area">
-      <view class="btn-primary" bindtap="goToSubmit">
-        <text class="btn-text">提交反馈</text>
-        <text class="btn-arrow">></text>
+    <!-- 功能卡片区域 -->
+    <view class="card-area">
+      <!-- 提交反馈卡片 -->
+      <view class="action-card primary-card" bindtap="goToSubmit">
+        <view class="card-left">
+          <view class="card-icon-wrapper primary-icon">
+            <van-icon name="edit" size="44rpx" color="#fff" />
+          </view>
+          <view class="card-info">
+            <text class="card-title">提交反馈</text>
+            <text class="card-desc">告诉阿哲您的想法和建议</text>
+          </view>
+        </view>
+        <view class="card-arrow">
+          <van-icon name="arrow" size="36rpx" color="#3b82f6" />
+        </view>
       </view>
-      <view class="btn-secondary" bindtap="goToList">
-        <text class="btn-text">查看我的反馈</text>
+
+      <!-- 查看我的反馈卡片 -->
+      <view class="action-card secondary-card" bindtap="goToList">
+        <view class="card-left">
+          <view class="card-icon-wrapper secondary-icon">
+            <van-icon name="orders-o" size="44rpx" color="#fff" />
+          </view>
+          <view class="card-info">
+            <text class="card-title">我的反馈</text>
+            <text class="card-desc">查看已提交的反馈记录</text>
+          </view>
+        </view>
+        <view class="card-arrow">
+          <van-icon name="arrow" size="36rpx" color="#10b981" />
+        </view>
       </view>
     </view>
   </view>

@@ -1,8 +1,8 @@
-<view class="filter-row" bindtap="onTap">
+<view class="filter-row {{value ? 'filter-row-selected' : ''}}" bindtap="onTap">
   <text class="label">{{label}}</text>
   <view class="info">
     <text wx:if="{{placeholder && !value}}" class="placeholder">{{placeholder}}</text>
-    <text wx:if="{{value}}" class="value">{{value}}</text>
-    <view wx:if="{{hasArrow}}" class="arrow"></view>
+    <text wx:if="{{value}}" class="value value-selected">{{value}}</text>
+    <view wx:if="{{hasArrow}}" class="arrow {{value ? 'arrow-selected' : ''}}"></view>
   </view>
 </view>

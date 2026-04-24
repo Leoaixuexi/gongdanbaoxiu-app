@@ -1,5 +1,10 @@
 {
   "navigationBarTitleText": "审计日志",
   "navigationBarBackgroundColor": "#0CA77D",
-  "usingComponents": {}
+  "usingComponents": {
+    "van-icon": "@vant/weapp/icon/index",
+    "van-popup": "@vant/weapp/popup/index",
+    "van-picker": "@vant/weapp/picker/index",
+    "van-datetime-picker": "@vant/weapp/datetime-picker/index"
+  }
 }

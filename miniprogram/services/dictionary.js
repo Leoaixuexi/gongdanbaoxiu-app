@@ -3,6 +3,8 @@
  * 字典服务 - 获取和缓存字典数据
  */
 
+const { callCloudSilent } = require('../utils/cloudCall');
+
 // 缓存配置
 const CACHE_DURATION = 5 * 60 * 1000; // 5分钟
 
@@ -43,21 +45,18 @@ const getDictionary = async (dictKey) => {
   const fetchPromise = (async () => {
     try {
       console.log(`[Dictionary] Fetching: ${dictKey}`);
-      const result = await wx.cloud.callFunction({
-        name: 'dictionaryManager',
-        data: {
-          action: 'get',
-          data: { dict_key: dictKey }
-        }
+      const result = await callCloudSilent('dictionaryManager', {
+        action: 'get',
+        data: { dict_key: dictKey }
       });
 
-      if (result.result && result.result.success) {
+      if (result.success) {
         // 更新缓存
         cache[dictKey] = {
-          data: result.result.data,
+          data: result.data,
           timestamp: Date.now()
         };
-        return result.result.data;
+        return result.data;
       }
 
       console.warn(`[Dictionary] Not found: ${dictKey}`);
@@ -105,21 +104,18 @@ const getDictionaries = async (dictKeys) => {
 
   try {
     console.log(`[Dictionary] Fetching batch: ${needFetch.join(', ')}`);
-    const res = await wx.cloud.callFunction({
-      name: 'dictionaryManager',
-      data: {
-        action: 'getBatch',
-        data: { keys: needFetch }
-      }
+    const res = await callCloudSilent('dictionaryManager', {
+      action: 'getBatch',
+      data: { keys: needFetch }
     });
 
-    if (res.result && res.result.success) {
+    if (res.success) {
       for (const key of needFetch) {
-        if (res.result.data[key]) {
-          result[key] = res.result.data[key];
+        if (res.data[key]) {
+          result[key] = res.data[key];
           // 更新缓存
           cache[key] = {
-            data: { items: res.result.data[key].map(item => ({ value: item.value, label: item.label })) },
+            data: { items: res.data[key].map(item => ({ value: item.value, label: item.label })) },
             timestamp: Date.now()
           };
         }

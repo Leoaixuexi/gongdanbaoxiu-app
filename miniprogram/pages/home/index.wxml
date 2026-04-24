@@ -36,29 +36,37 @@
         <!-- 统计卡片 -->
         <view class="kpi-grid kpi-grid-4">
           <view class="kpi-card kpi-card-sm" bindtap="onStatCardTap" data-status="reported">
-            <text class="kpi-label">待维修</text>
-            <text class="kpi-value" style="color: #EA580C;">{{workOrderStats.pending}}</text>
+            <view class="kpi-text-group">
+              <text class="kpi-label">已提报</text>
+              <text class="kpi-value" style="color: #000000;">{{workOrderStats.pending}}</text>
+            </view>
             <view class="kpi-icon-wrapper">
               <van-icon name="setting-o" size="28rpx" color="#EA580C" custom-style="opacity:0.6" />
             </view>
           </view>
           <view class="kpi-card kpi-card-sm" bindtap="onStatCardTap" data-status="maintenance">
-            <text class="kpi-label">维修中</text>
-            <text class="kpi-value" style="color: #2563EB;">{{workOrderStats.inProgress}}</text>
+            <view class="kpi-text-group">
+              <text class="kpi-label">维修中</text>
+              <text class="kpi-value" style="color: #000000;">{{workOrderStats.inProgress}}</text>
+            </view>
             <view class="kpi-icon-wrapper">
               <van-icon name="clock-o" size="28rpx" color="#2563EB" custom-style="opacity:0.6" />
             </view>
           </view>
           <view class="kpi-card kpi-card-sm" bindtap="onStatCardTap" data-status="review">
-            <text class="kpi-label">待复核</text>
-            <text class="kpi-value" style="color: #7C3AED;">{{workOrderStats.review}}</text>
+            <view class="kpi-text-group">
+              <text class="kpi-label">待复核</text>
+              <text class="kpi-value" style="color: #000000;">{{workOrderStats.review}}</text>
+            </view>
             <view class="kpi-icon-wrapper">
               <van-icon name="eye-o" size="28rpx" color="#7C3AED" custom-style="opacity:0.6" />
             </view>
           </view>
           <view class="kpi-card kpi-card-sm" bindtap="onStatCardTap" data-status="completed">
-            <text class="kpi-label">已完成</text>
-            <text class="kpi-value" style="color: #16A34A;">{{workOrderStats.completed}}</text>
+            <view class="kpi-text-group">
+              <text class="kpi-label">已完成</text>
+              <text class="kpi-value" style="color: #000000;">{{workOrderStats.completed}}</text>
+            </view>
             <view class="kpi-icon-wrapper">
               <van-icon name="passed" size="28rpx" color="#16A34A" custom-style="opacity:0.6" />
             </view>
@@ -76,16 +84,16 @@
               data-label="{{item.label}}"
               bindtap="onFunctionTap"
             >
-              <view class="func-icon" style="background: {{item.bg}};">
-                <van-icon name="{{item.icon}}" size="22px" color="{{item.color}}" />
+              <view class="func-icon">
+                <van-icon name="{{item.icon}}" size="22px" color="#4F6DF5" />
               </view>
               <text class="func-label">{{item.label}}</text>
             </view>
           </view>
         </view>
 
-        <!-- 快捷入口 -->
-        <view class="quick-section">
+        <!-- 快捷入口（维修员不显示） -->
+        <view class="quick-section" wx:if="{{!isMaintenanceWorker}}">
           <text class="section-title">快捷入口</text>
           <view class="quick-row">
             <view class="quick-btn quick-btn-primary" data-action="新建工单" bindtap="onQuickAction">
@@ -115,7 +123,6 @@
               bindtap="onRecordTap"
             >
               <text class="record-status-badge" style="background: {{item.statusBg}}; color: {{item.statusColor}};">{{item.statusText}}</text>
-              <view class="record-dot" style="background: {{item.dotColor}};"></view>
               <view class="record-content">
                 <text class="record-info">{{item.info}}</text>
                 <text class="record-time">{{item.timeText}}</text>
@@ -127,7 +134,7 @@
     </swiper-item>
 
     <!-- Tab 2: 耗品管理 -->
-    <swiper-item>
+    <swiper-item wx:if="{{!isMaintenanceWorker}}">
       <scroll-view
         scroll-y
         class="tab-content"
@@ -203,8 +210,8 @@
               data-label="{{func.label}}"
               bindtap="onFunctionTap"
             >
-              <view class="cs-func-icon" style="background: {{func.bg}};">
-                <van-icon name="{{func.icon}}" size="22px" color="#FFFFFF" />
+              <view class="cs-func-icon">
+                <van-icon name="{{func.icon}}" size="22px" color="#4F6DF5" />
               </view>
               <text class="cs-func-label">{{func.label}}</text>
             </view>
@@ -268,7 +275,7 @@
     </swiper-item>
 
     <!-- Tab 3: 楼宇巡检 -->
-    <swiper-item>
+    <swiper-item wx:if="{{!isMaintenanceWorker}}">
       <scroll-view
         scroll-y
         class="tab-content"
@@ -313,8 +320,8 @@
               data-label="{{item.label}}"
               bindtap="onFunctionTap"
             >
-              <view class="func-icon" style="background: {{item.bg}};">
-                <van-icon name="{{item.icon}}" size="22px" color="{{item.color}}" />
+              <view class="func-icon">
+                <van-icon name="{{item.icon}}" size="22px" color="#4F6DF5" />
               </view>
               <text class="func-label">{{item.label}}</text>
             </view>

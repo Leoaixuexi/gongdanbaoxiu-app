@@ -26,23 +26,31 @@
   position: relative;
 }
 
-/* 返回按钮 */
+/* 返回按钮 + 搜索框同行 */
+.header-top-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20rpx;
+}
+
 .back-btn {
   display: flex;
   align-items: center;
   justify-content: center;
   width: 64rpx;
   height: 64rpx;
-  margin-bottom: 12rpx;
+  flex-shrink: 0;
+  margin-left: -30rpx;
 }
 
 /* 搜索栏 */
 .search-bar {
-  margin-bottom: 20rpx;
+  flex: 1;
+  min-width: 0;
 }
 
 .search-input-wrapper {
-  width: 420rpx;
+  width: 60%;
   position: relative;
   display: flex;
   align-items: center;
@@ -167,6 +175,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  margin-left: 34rpx;
 }
 
 /* 时间筛选标签 */
@@ -370,7 +379,7 @@
   font-weight: 600;
 }
 
-/* 已修复状态 - 底部紫色横线 */
+/* 待复核状态 - 底部紫色横线 */
 .status-tab-repaired {
   background: transparent;
 }
@@ -431,11 +440,21 @@
 
 /* 工单卡片 */
 .order-card {
-  background-color: white;
+  background: linear-gradient(165deg, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0.6) 100%);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border-radius: 24rpx;
   overflow: hidden;
-  border: 1rpx solid #f0f0f0;
-  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+  border-top: 1rpx solid rgba(255,255,255,0.95);
+  border-left: 1rpx solid rgba(255,255,255,0.6);
+  border-right: 1rpx solid rgba(255,255,255,0.6);
+  border-bottom: 1rpx solid rgba(0,0,0,0.05);
+  box-shadow:
+    inset 0 2rpx 4rpx rgba(255,255,255,0.8),
+    inset 0 -1rpx 3rpx rgba(0,0,0,0.015),
+    0 2rpx 4rpx rgba(0,0,0,0.02),
+    0 8rpx 16rpx rgba(0,0,0,0.035),
+    0 16rpx 32rpx -8rpx rgba(0,0,0,0.04);
   transition: all 0.3s;
   position: relative;
 }
@@ -827,7 +846,7 @@
 /* 浮动按钮 - 高级质感升级 (橙色版) */
 .fab {
   position: fixed;
-  bottom: 280rpx;
+  bottom: 140rpx;
   right: 48rpx;
   width: 112rpx;
   height: 112rpx;
@@ -865,7 +884,7 @@
 .back-to-top {
   position: fixed;
   right: 56rpx;
-  bottom: 416rpx;
+  bottom: 276rpx;
   width: 96rpx;
   height: 96rpx;
   background: rgba(255, 255, 255, 0.85);
@@ -911,26 +930,21 @@
 /* ==================== 新工单卡片样式 (3D立体视觉) ==================== */
 .ticket-card {
   position: relative;
-  background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%);
+  background: linear-gradient(165deg, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0.6) 100%);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border-radius: 24rpx;
   padding: 10rpx 20rpx 6rpx 20rpx;
-  /* 3D多层阴影效果 - 模拟立体感 */
   box-shadow:
-    /* 顶层高光 */
-    inset 0 2rpx 4rpx rgba(255, 255, 255, 0.9),
-    /* 内部柔和阴影 */
-    inset 0 -2rpx 6rpx rgba(0, 0, 0, 0.02),
-    /* 外层阴影 - 浅层 */
-    0 2rpx 4rpx rgba(0, 0, 0, 0.04),
-    /* 外层阴影 - 中层 */
-    0 8rpx 16rpx rgba(0, 0, 0, 0.06),
-    /* 外层阴影 - 深层 (产生3D浮起效果) */
-    0 20rpx 40rpx rgba(0, 0, 0, 0.08),
-    /* 底部接触阴影 - 增强立体感 */
-    0 4rpx 0 rgba(0, 0, 0, 0.02);
-  /* 底部厚度边框 - 模拟卡片厚度 */
-  border: 1px solid rgba(255, 255, 255, 0.6);
-  border-bottom: 3rpx solid rgba(0, 0, 0, 0.05);
+    inset 0 2rpx 4rpx rgba(255,255,255,0.8),
+    inset 0 -1rpx 3rpx rgba(0,0,0,0.015),
+    0 2rpx 4rpx rgba(0,0,0,0.02),
+    0 8rpx 16rpx rgba(0,0,0,0.035),
+    0 16rpx 32rpx -8rpx rgba(0,0,0,0.04);
+  border-top: 1rpx solid rgba(255,255,255,0.95);
+  border-left: 1rpx solid rgba(255,255,255,0.6);
+  border-right: 1rpx solid rgba(255,255,255,0.6);
+  border-bottom: 1rpx solid rgba(0,0,0,0.05);
   margin-bottom: 16rpx;
   overflow: hidden;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -991,7 +1005,7 @@
   box-shadow: 0 2px 8px rgba(8, 145, 178, 0.2);
 }
 
-/* 已修复状态 - 浅紫色背景+深紫色字体 */
+/* 待复核状态 - 浅紫色背景+深紫色字体 */
 .status-repaired {
   background-color: #ede9fe;
   color: #7c3aed;
@@ -1254,6 +1268,13 @@
   font-size: 26rpx;
 }
 
+/* 照片 + 接单按钮同行容器 */
+.photo-action-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+
 /* 照片列表 */
 .photo-list {
   display: flex;
@@ -1458,13 +1479,52 @@
 
 .sheet-footer {
   flex-shrink: 0;
-  padding: 12rpx 32rpx;
-  padding-bottom: calc(12rpx + env(safe-area-inset-bottom));
+  padding: 16rpx 32rpx;
+  padding-bottom: calc(16rpx + env(safe-area-inset-bottom));
   background: #ffffff;
   display: flex;
   gap: 24rpx;
   box-sizing: border-box;
   width: 100%;
+  border-top: 1rpx solid #f3f4f6;
+}
+
+.footer-btn {
+  flex: 1;
+  height: 88rpx;
+  border-radius: 16rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10rpx;
+}
+
+.footer-btn-reset {
+  background: #f8fafc;
+  border: 1rpx solid #e2e8f0;
+}
+
+.footer-btn-reset:active {
+  background: #e2e8f0;
+}
+
+.footer-btn-confirm {
+  background: linear-gradient(to right, #10b981, #14b8a6);
+  box-shadow: 0 4rpx 16rpx rgba(16, 185, 129, 0.25);
+}
+
+.footer-btn-confirm:active {
+  opacity: 0.88;
+}
+
+.footer-btn-text {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.footer-btn-text-white {
+  color: #ffffff;
 }
 
 .btn {

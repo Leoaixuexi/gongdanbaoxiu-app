@@ -1,12 +1,14 @@
 /**
  * Audit Logs Page
- * 审计日志页面
+ * 审计日志页面 - 支持多维度筛选和CSV导出
  */
 
-const cloudDB = require('../../../services/cloudDatabase');
-const { ROLES, STORAGE_KEYS } = require('../../../utils/constants');
+const auditService = require('../../../services/auditService');
+const userService = require('../../../services/userService');
 
 Page({
+  behaviors: [require('../../../behaviors/adminPage')],
+
   data: {
     logs: [],
     loading: true,
@@ -18,16 +20,36 @@ Page({
     pageSize: 20,
     total: 0,
 
-    // 筛选
+    // 操作类型筛选
     showFilter: false,
     actions: [],
     selectedAction: '',
-    selectedActionLabel: '全部操作'
+    selectedActionLabel: '全部操作',
+
+    // 日期筛选
+    showStartDate: false,
+    showEndDate: false,
+    startDate: '',
+    endDate: '',
+    startDateText: '',
+    endDateText: '',
+    startDateValue: Date.now(),
+    endDateValue: Date.now(),
+    minDate: new Date(2024, 0, 1).getTime(),
+    maxDate: Date.now(),
+
+    // 操作人筛选
+    showUserSelect: false,
+    users: [],
+    userColumns: ['全部'],
+    selectedUserId: '',
+    selectedUserLabel: '全部'
   },
 
   onLoad() {
-    this.checkAdminPermission();
+    if (!this.checkAdminPermission()) return;
     this.loadActions();
+    this.loadUsers();
   },
 
   onShow() {
@@ -47,27 +69,11 @@ Page({
   },
 
   /**
-   * 检查管理员权限
-   */
-  checkAdminPermission() {
-    const userInfo = wx.getStorageSync(STORAGE_KEYS.USER_INFO);
-    if (!userInfo || userInfo.role_id !== ROLES.ADMIN) {
-      wx.showToast({
-        title: '无权限访问',
-        icon: 'none'
-      });
-      setTimeout(() => {
-        wx.navigateBack();
-      }, 1500);
-    }
-  },
-
-  /**
    * 加载操作类型列表
    */
   async loadActions() {
     try {
-      const actions = await cloudDB.auditLogs.getActions();
+      const actions = await auditService.getAuditActions();
       this.setData({
         actions: [{ value: '', label: '全部操作' }, ...actions]
       });
@@ -90,11 +96,27 @@ Page({
   },
 
   /**
+   * 加载用户列表（用于操作人筛选）
+   */
+  async loadUsers() {
+    try {
+      const users = await userService.listUsers({ limit: 100 });
+      const userColumns = ['全部', ...users.map(u => u.name || u.username || `用户${u.user_id}`)];
+      this.setData({
+        users: [{ user_id: '', name: '全部' }, ...users],
+        userColumns
+      });
+    } catch (error) {
+      console.error('[AuditLogs] Load users error:', error);
+    }
+  },
+
+  /**
    * 加载审计日志
    */
   async loadLogs() {
     try {
-      const { page, pageSize, selectedAction } = this.data;
+      const { page, pageSize, selectedAction, startDate, endDate, selectedUserId } = this.data;
 
       const filters = {
         page,
@@ -104,8 +126,17 @@ Page({
       if (selectedAction) {
         filters.action = selectedAction;
       }
+      if (startDate) {
+        filters.startDate = startDate;
+      }
+      if (endDate) {
+        filters.endDate = endDate;
+      }
+      if (selectedUserId) {
+        filters.user_id = selectedUserId;
+      }
 
-      const result = await cloudDB.auditLogs.list(filters);
+      const result = await auditService.listAuditLogs(filters);
 
       const formattedLogs = (result.logs || []).map(log => ({
         ...log,
@@ -198,6 +229,7 @@ Page({
   getActionLabel(action) {
     const actionMap = {
       'user_login': '用户登录',
+      'login_failed': '登录失败',
       'user_registered': '用户注册',
       'user_created': '创建用户',
       'user_updated': '更新用户',
@@ -304,5 +336,202 @@ Page({
   /**
    * 阻止事件冒泡
    */
-  stopPropagation() {}
+  stopPropagation() {},
+
+  // ==================== 日期选择器 ====================
+
+  showStartDatePicker() {
+    this.setData({ showStartDate: true });
+  },
+
+  hideStartDatePicker() {
+    this.setData({ showStartDate: false });
+  },
+
+  onStartDateConfirm(e) {
+    const date = new Date(e.detail);
+    const dateStr = this.formatDateStr(date);
+    this.setData({
+      showStartDate: false,
+      startDate: dateStr,
+      startDateText: dateStr,
+      startDateValue: date.getTime()
+    });
+  },
+
+  showEndDatePicker() {
+    this.setData({ showEndDate: true });
+  },
+
+  hideEndDatePicker() {
+    this.setData({ showEndDate: false });
+  },
+
+  onEndDateConfirm(e) {
+    const date = new Date(e.detail);
+    const dateStr = this.formatDateStr(date);
+    this.setData({
+      showEndDate: false,
+      endDate: dateStr,
+      endDateText: dateStr,
+      endDateValue: date.getTime()
+    });
+  },
+
+  formatDateStr(date) {
+    const y = date.getFullYear();
+    const m = this.padZero(date.getMonth() + 1);
+    const d = this.padZero(date.getDate());
+    return `${y}-${m}-${d}`;
+  },
+
+  // ==================== 用户选择器 ====================
+
+  showUserPicker() {
+    this.setData({ showUserSelect: true });
+  },
+
+  hideUserPicker() {
+    this.setData({ showUserSelect: false });
+  },
+
+  onUserConfirm(e) {
+    const { index } = e.detail;
+    const user = this.data.users[index];
+    this.setData({
+      showUserSelect: false,
+      selectedUserId: user ? user.user_id : '',
+      selectedUserLabel: user ? user.name : '全部'
+    });
+  },
+
+  // ==================== 筛选操作 ====================
+
+  /**
+   * 执行搜索
+   */
+  doSearch() {
+    this.resetAndLoad();
+  },
+
+  /**
+   * 重置所有筛选条件
+   */
+  resetFilters() {
+    this.setData({
+      selectedAction: '',
+      selectedActionLabel: '全部操作',
+      startDate: '',
+      endDate: '',
+      startDateText: '',
+      endDateText: '',
+      selectedUserId: '',
+      selectedUserLabel: '全部'
+    });
+    this.resetAndLoad();
+  },
+
+  // ==================== CSV导出 ====================
+
+  /**
+   * 导出CSV
+   */
+  async exportCSV() {
+    const { logs, total } = this.data;
+
+    if (total === 0) {
+      wx.showToast({ title: '暂无数据可导出', icon: 'none' });
+      return;
+    }
+
+    wx.showLoading({ title: '正在导出...' });
+
+    try {
+      // 如果当前加载的数据不完整，先加载全部数据
+      let allLogs = logs;
+      if (logs.length < total && total <= 500) {
+        const result = await auditService.listAuditLogs({
+          page: 1,
+          pageSize: 500,
+          action: this.data.selectedAction || undefined,
+          startDate: this.data.startDate || undefined,
+          endDate: this.data.endDate || undefined,
+          user_id: this.data.selectedUserId || undefined
+        });
+        allLogs = result.logs || [];
+      }
+
+      // 生成CSV内容
+      const csvContent = this.generateCSV(allLogs);
+
+      // 写入文件
+      const fs = wx.getFileSystemManager();
+      const fileName = `审计日志_${this.formatDateStr(new Date())}.csv`;
+      const filePath = `${wx.env.USER_DATA_PATH}/${fileName}`;
+
+      // 添加BOM以支持Excel正确显示中文
+      const bom = '\uFEFF';
+      fs.writeFileSync(filePath, bom + csvContent, 'utf8');
+
+      wx.hideLoading();
+
+      // 分享文件
+      wx.shareFileMessage({
+        filePath: filePath,
+        fileName: fileName,
+        success: () => {
+          wx.showToast({ title: '导出成功', icon: 'success' });
+        },
+        fail: (err) => {
+          console.error('[AuditLogs] Share file error:', err);
+          // 如果分享失败，尝试打开文件
+          wx.openDocument({
+            filePath: filePath,
+            showMenu: true,
+            fail: () => {
+              wx.showToast({ title: '导出失败', icon: 'none' });
+            }
+          });
+        }
+      });
+    } catch (error) {
+      wx.hideLoading();
+      console.error('[AuditLogs] Export error:', error);
+      wx.showToast({ title: '导出失败', icon: 'none' });
+    }
+  },
+
+  /**
+   * 生成CSV内容
+   */
+  generateCSV(logs) {
+    const headers = ['时间', '操作人', '操作类型', '资源类型', '资源ID', '详情'];
+    const rows = [headers.join(',')];
+
+    for (const log of logs) {
+      const time = this.formatDetailTime(log.created_at);
+      const userName = log.user_name || '系统';
+      const actionLabel = this.getActionLabel(log.action);
+      const resourceType = log.resource_type || '';
+      const resourceId = log.resource_id || '';
+
+      // 处理详情，避免CSV格式问题
+      let detail = '';
+      if (log.new_value) {
+        detail = JSON.stringify(log.new_value).replace(/"/g, '""');
+      }
+
+      const row = [
+        time,
+        userName,
+        actionLabel,
+        resourceType,
+        resourceId,
+        `"${detail}"`
+      ];
+      rows.push(row.join(','));
+    }
+
+    return rows.join('\n');
+  }
 });

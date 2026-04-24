@@ -3,10 +3,12 @@
  * 公告管理列表页面
  */
 
-const cloudDB = require('../../../services/cloudDatabase');
-const { ROLES, ANNOUNCEMENT_STATUS_NAMES, ROLE_DISPLAY_NAMES, STORAGE_KEYS } = require('../../../utils/constants');
+const announcementService = require('../../../services/announcementService');
+const { ANNOUNCEMENT_STATUS_NAMES, ROLE_DISPLAY_NAMES } = require('../../../utils/constants');
 
 Page({
+  behaviors: [require('../../../behaviors/adminPage')],
+
   data: {
     announcements: [],
     loading: true,
@@ -15,7 +17,7 @@ Page({
   },
 
   onLoad() {
-    this.checkAdminPermission();
+    if (!this.checkAdminPermission()) return;
   },
 
   onShow() {
@@ -26,22 +28,6 @@ Page({
     this.loadAnnouncements().then(() => {
       wx.stopPullDownRefresh();
     });
-  },
-
-  /**
-   * 检查管理员权限
-   */
-  checkAdminPermission() {
-    const userInfo = wx.getStorageSync(STORAGE_KEYS.USER_INFO);
-    if (!userInfo || userInfo.role_id !== ROLES.ADMIN) {
-      wx.showToast({
-        title: '无权限访问',
-        icon: 'none'
-      });
-      setTimeout(() => {
-        wx.navigateBack();
-      }, 1500);
-    }
   },
 
   /**
@@ -56,7 +42,7 @@ Page({
         filters.status = this.data.currentStatus;
       }
 
-      const result = await cloudDB.announcements.list(filters);
+      const result = await announcementService.listAnnouncements(filters);
       const announcements = (result.list || []).map(item => ({
         ...item,
         created_at_text: this.formatDate(item.created_at),
@@ -147,7 +133,7 @@ Page({
         if (res.confirm) {
           try {
             wx.showLoading({ title: '发布中...' });
-            await cloudDB.announcements.publish(id);
+            await announcementService.publishAnnouncement(id);
             wx.hideLoading();
             wx.showToast({
               title: '发布成功',
@@ -179,7 +165,7 @@ Page({
         if (res.confirm) {
           try {
             wx.showLoading({ title: '处理中...' });
-            await cloudDB.announcements.offline(id);
+            await announcementService.offlineAnnouncement(id);
             wx.hideLoading();
             wx.showToast({
               title: '已下线',
@@ -212,7 +198,7 @@ Page({
         if (res.confirm) {
           try {
             wx.showLoading({ title: '删除中...' });
-            await cloudDB.announcements.delete(id);
+            await announcementService.deleteAnnouncement(id);
             wx.hideLoading();
             wx.showToast({
               title: '已删除',

@@ -1,0 +1,20 @@
+/**
+ * WXS 模块 - 图片 URL 检查
+ */
+
+/**
+ * 检查图片 URL 是否可直接显示
+ * cloud:// 链接需要先转换，不能直接显示
+ * @param {string} url - 图片 URL
+ * @returns {boolean} 是否可显示
+ */
+function isValidImageUrl(url) {
+  if (!url) return false;
+  // cloud:// 链接不能直接显示
+  if (url.indexOf('cloud://') === 0) return false;
+  return true;
+}
+
+module.exports = {
+  isValidImageUrl: isValidImageUrl
+};

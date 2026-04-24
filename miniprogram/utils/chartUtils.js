@@ -22,51 +22,35 @@ function getRingChartOption(data) {
 
   return {
     color: statusColors,
-    tooltip: {
-      trigger: 'item',
-      formatter: '{b}: {c}单'
-    },
-    legend: {
-      orient: 'horizontal',
-      top: 10,
-      left: 0,
-      itemWidth: 24,
-      itemHeight: 14,
-      itemGap: 12,
-      textStyle: {
-        fontSize: 12,
-        color: '#333'
-      },
-      data: data.map(item => item.name)
-    },
+    tooltip: { show: false },
+    legend: { show: false },
     series: [{
       name: '工单状态',
       type: 'pie',
-      radius: ['35%', '58%'],
-      center: ['50%', '62%'],
-      avoidLabelOverlap: true,
+      selectedMode: 'single',
+      selectedOffset: 12,
+      radius: ['48%', '85%'],
+      center: ['50%', '50%'],
+      avoidLabelOverlap: false,
       label: {
         show: true,
-        position: 'outside',
-        formatter: '{b}: {c}',
-        fontSize: 13,
-        color: '#333'
+        position: 'inside',
+        formatter: function(p) { return p.percent > 0 ? p.percent + '%' : ''; },
+        fontSize: 8,
+        color: '#ffffff',
+        fontWeight: 'bold'
       },
-      labelLine: {
-        show: true,
-        length: 8,
-        length2: 12
-      },
+      labelLine: { show: false },
       data: data
     }],
     graphic: [{
       type: 'group',
       left: 'center',
-      top: '60%',
+      top: 'center',
       children: [{
         type: 'text',
         left: 'center',
-        top: -15,
+        top: -14,
         style: {
           text: '总数',
           textAlign: 'center',
@@ -76,7 +60,7 @@ function getRingChartOption(data) {
       }, {
         type: 'text',
         left: 'center',
-        top: 5,
+        top: 6,
         style: {
           text: String(total),
           textAlign: 'center',
@@ -103,7 +87,14 @@ function getLineChartOption(dates, submittedData, completedData) {
       trigger: 'axis',
       backgroundColor: '#fff',
       borderColor: '#fff',
-      borderWidth: 1
+      borderWidth: 1,
+      formatter: function (params) {
+        let result = params[0].axisValue;
+        params.forEach(function (item) {
+          result += '\n' + item.seriesName + '：' + item.value + '单';
+        });
+        return result;
+      }
     },
     legend: {
       data: ['已提报', '已完成'],
@@ -192,7 +183,9 @@ function getLineChartOption(dates, submittedData, completedData) {
  */
 function getPieChartOption(data, title = '') {
   return {
-    color: ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6'],
+    color: ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6',
+            '#06B6D4', '#F97316', '#EC4899', '#14B8A6', '#6366F1',
+            '#84CC16', '#A855F7'],
     tooltip: {
       trigger: 'item',
       backgroundColor: '#ffffff',
@@ -203,12 +196,14 @@ function getPieChartOption(data, title = '') {
         color: '#1f2937',
         fontSize: 12
       },
-      formatter: '{b}: {c} ({d}%)'
+      formatter: '{b}: {c}单 ({d}%)'
     },
     legend: {
+      type: 'plain',
       orient: 'horizontal',
-      top: 10,
+      top: 4,
       left: 0,
+      right: 0,
       itemWidth: 24,
       itemHeight: 14,
       itemGap: 12,
@@ -221,8 +216,8 @@ function getPieChartOption(data, title = '') {
     series: [{
       name: title,
       type: 'pie',
-      radius: ['35%', '58%'],
-      center: ['50%', '62%'],
+      radius: ['28%', '48%'],
+      center: ['50%', '70%'],
       avoidLabelOverlap: true,
       itemStyle: {
         borderRadius: 8,
@@ -232,14 +227,14 @@ function getPieChartOption(data, title = '') {
       label: {
         show: true,
         position: 'outside',
-        formatter: '{b}: {c}',
+        formatter: '{b}',
         fontSize: 13,
         color: '#333'
       },
       labelLine: {
         show: true,
-        length: 8,
-        length2: 12
+        length: 6,
+        length2: 8
       },
       data: data
     }]
@@ -255,54 +250,30 @@ function getPieChartOption(data, title = '') {
 function getSolidPieChartOption(data, title = '') {
   return {
     color: ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#06B6D4'],
-    tooltip: {
-      trigger: 'item',
-      backgroundColor: '#ffffff',
-      borderColor: 'transparent',
-      borderWidth: 0,
-      padding: [8, 12],
-      textStyle: {
-        color: '#1f2937',
-        fontSize: 12
-      },
-      formatter: '{b}: {c} ({d}%)'
-    },
-    legend: {
-      orient: 'horizontal',
-      top: 10,
-      left: 0,
-      itemWidth: 24,
-      itemHeight: 14,
-      itemGap: 12,
-      textStyle: {
-        fontSize: 12,
-        color: '#333'
-      },
-      data: data.map(item => item.name)
-    },
+    tooltip: { show: false },
+    legend: { show: false },
     series: [{
       name: title,
       type: 'pie',
-      radius: '65%',
-      center: ['50%', '58%'],
-      avoidLabelOverlap: true,
+      selectedMode: 'single',
+      selectedOffset: 12,
+      radius: '86%',
+      center: ['50%', '50%'],
+      avoidLabelOverlap: false,
       itemStyle: {
-        borderRadius: 8,
+        borderRadius: 6,
         borderColor: '#fff',
         borderWidth: 2
       },
       label: {
         show: true,
-        position: 'outside',
-        formatter: '{b}: {c}',
-        fontSize: 13,
-        color: '#333'
+        position: 'inside',
+        formatter: function(p) { return p.percent > 0 ? p.percent + '%' : ''; },
+        fontSize: 9,
+        color: '#ffffff',
+        fontWeight: 'bold'
       },
-      labelLine: {
-        show: true,
-        length: 8,
-        length2: 12
-      },
+      labelLine: { show: false },
       data: data
     }]
   };
@@ -325,7 +296,7 @@ function getBarChartOption(categories, data, title = '') {
       borderWidth: 1,
       textStyle: { color: '#1f2937' },
       formatter: function (params) {
-        return params.name + '：' + params.value;
+        return params.name + '：' + params.value + '单';
       }
     },
     grid: {

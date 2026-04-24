@@ -126,6 +126,12 @@ const updateWorkOrderStatus = async (orderId, status, notes = '') => {
 };
 
 /**
+ * 维修员接单（封装 updateWorkOrderStatus → In Progress）
+ */
+const acceptOrder = (orderId) =>
+  updateWorkOrderStatus(parseInt(orderId, 10), 'In Progress', '维修员接单开始维修');
+
+/**
  * 获取故障类型列表
  * @returns {Promise<Array>} 故障类型列表
  */
@@ -139,46 +145,16 @@ const getFaultTypes = async () => {
 };
 
 /**
- * 根据状态获取工单统计
- * @returns {Promise<Object>} 工单统计
- */
-const getWorkOrderStats = async () => {
-  const allOrders = await getWorkOrders();
-  const stats = {
-    total: allOrders.length,
-    pending: 0,
-    inProgress: 0,
-    repaired: 0,
-    completed: 0,
-    needsRework: 0,
-    overdue: 0
-  };
-
-  allOrders.forEach(order => {
-    switch (order.status) {
-      case 'Pending Repair': stats.pending++; break;
-      case 'In Progress': stats.inProgress++; break;
-      case 'Repaired': stats.repaired++; break;
-      case 'Completed': stats.completed++; break;
-      case 'Needs Rework': stats.needsRework++; break;
-    }
-    if (order.is_overdue) stats.overdue++;
-  });
-
-  return stats;
-};
-
-/**
  * 完成维修
  * @param {Number} orderId - 工单ID
  * @param {String} completionNotes - 完成描述（选填）
  * @returns {Promise<Object>} 更新结果
  */
-const completeRepair = async (orderId, completionNotes) => {
-  console.log('[WorkOrder] Completing repair:', orderId);
+const completeRepair = async (orderId, completionNotes, partsUsed = []) => {
+  console.log('[WorkOrder] Completing repair:', orderId, 'parts:', partsUsed.length);
   const result = await callCloud('workOrderManager', {
     action: 'completeRepair',
-    data: { order_id: orderId, completion_notes: completionNotes }
+    data: { order_id: orderId, completion_notes: completionNotes, parts_used: partsUsed }
   }, { loadingText: '提交中...' });
   console.log('[WorkOrder] Repair completed');
   return result;
@@ -396,10 +372,10 @@ module.exports = {
   getWorkOrderByNumber,
   checkOrderNumberExists,
   updateWorkOrderStatus,
+  acceptOrder,
   updateWorkOrderDetails,
   deleteWorkOrder,
   getFaultTypes,
-  getWorkOrderStats,
   completeRepair,
   reviewWorkOrder,
   // 懒加载优化

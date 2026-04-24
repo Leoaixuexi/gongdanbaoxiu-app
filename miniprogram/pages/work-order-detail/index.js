@@ -5,9 +5,72 @@
 
 const app = getApp();
 const workOrderService = require('../../services/workOrder');
+const materialService = require('../../services/materialService');
 const auth = require('../../services/auth');
 const { ROLES, PRIORITY_DISPLAY_NAMES, MAX_CONCURRENT_ORDERS_PER_TECHNICIAN } = require('../../utils/constants');
 const { formatDateTime, formatRelativeTime, formatSLATimeRemaining, getSLAColorClass } = require('../../utils/formatter');
+const { getButtonConfig, STATUS_TEXT_MAP, STEPPER_CONFIG } = require('../../config/workOrderButtons');
+const { getNavBarInfo } = require('../../utils/navigation');
+
+/**
+ * 解析时间字段，返回时间戳
+ */
+function parseTimeField(timeValue) {
+  if (!timeValue) return null;
+
+  if (timeValue.$date) {
+    return new Date(timeValue.$date).getTime();
+  }
+  if (typeof timeValue === 'string') {
+    return new Date(timeValue).getTime();
+  }
+  if (typeof timeValue === 'number') {
+    return timeValue;
+  }
+  if (timeValue instanceof Date) {
+    return timeValue.getTime();
+  }
+  return null;
+}
+
+/**
+ * 获取工单创建时间
+ */
+function getOrderStartTime(order) {
+  // 优先使用 created_at 字段
+  if (order.created_at) {
+    const time = parseTimeField(order.created_at);
+    if (time) return time;
+  }
+
+  // 从 status_history 获取
+  if (order.status_history && Array.isArray(order.status_history) && order.status_history.length > 0) {
+    const firstHistory = order.status_history.find(h => h.notes && h.notes.includes('工单创建'))
+      || order.status_history[0];
+
+    if (firstHistory && firstHistory.changed_at) {
+      const time = parseTimeField(firstHistory.changed_at);
+      if (time) return time;
+    }
+  }
+
+  console.warn('[Detail] No created_at or status_history found, using current time');
+  return Date.now();
+}
+
+/**
+ * 获取工单完成时间
+ */
+function getOrderEndTime(order) {
+  if (order.status !== 'Completed') return null;
+  if (!order.status_history || !Array.isArray(order.status_history)) return null;
+
+  const completedRecord = order.status_history.find(h => h.to_status === 'Completed');
+  if (completedRecord && completedRecord.changed_at) {
+    return parseTimeField(completedRecord.changed_at);
+  }
+  return null;
+}
 
 Page({
   data: {
@@ -29,7 +92,7 @@ Page({
       'Pending Repair': '已提报',
       'Pending Assignment': '待接单',
       'In Progress': '维修中',
-      'Repaired': '已修复',
+      'Repaired': '待复核',
       'Under Review': '待复核',
       'Completed': '已完成',
       'Needs Rework': '需返工'
@@ -39,7 +102,7 @@ Page({
       '已提报': '#2563eb',
       '待接单': '#ea580c',
       '维修中': '#0891b2',
-      '已修复': '#7c3aed',
+      '待复核': '#7c3aed',
       '待复核': '#dc2626',
       '已完成': '#059669',
       '需返工': '#334155'
@@ -49,7 +112,7 @@ Page({
       '已提报': 'status-reported',
       '待接单': 'status-reported',
       '维修中': 'status-maintenance',
-      '已修复': 'status-repaired',
+      '待复核': 'status-review',
       '待复核': 'status-review',
       '已完成': 'status-completed',
       '需返工': 'status-rework'
@@ -87,10 +150,20 @@ Page({
     showDeleteInMenu: false, // 菜单显示删除
     showNeedsReworkInMenu: false, // 菜单显示需重修
     showEmptyMenu: false, // 菜单显示空白卡片
+    showUrgeAcceptInMenu: false, // 菜单显示催接单
+    showTransferToChargeBtn: false, // 显示「转收费工单」按钮
     // Repair completion form - T091-T092
     showRepairForm: false,
     completionNotes: '',
     submittingRepair: false,
+
+    // 配件选择
+    selectedParts: [],        // [{material_id, material_name, unit, quantity, stock}]
+    showPartsPicker: false,
+    partsSearchKey: '',
+    availableParts: [],       // 从云端加载的配件列表
+    filteredParts: [],        // 经 partsSearchKey 过滤后的可选列表
+    partsLoading: false,
     // Review form - T107
     showReviewForm: false,
     reviewDecision: '',
@@ -104,26 +177,28 @@ Page({
     availableStatuses: [
       { value: 'Pending Repair', label: '已提报', color: '#6B7280' },
       { value: 'In Progress', label: '维修中', color: '#3B82F6' },
-      { value: 'Repaired', label: '已修复', color: '#10B981' },
+      { value: 'Repaired', label: '待复核', color: '#10B981' },
       { value: 'Completed', label: '已完成', color: '#059669' },
       { value: 'Needs Rework', label: '需返工', color: '#EF4444' }
     ],
     // 防重复刷新
-    _isRefreshing: false
+    _isRefreshing: false,
+    // 只读模式（未登录用户通过分享链接访问）
+    isReadOnlyMode: false
   },
 
   /**
    * Lifecycle - Page Load
    */
   onLoad: function (options) {
-    console.log('[Detail] Page load with options:', options);
+    // console.log('[Detail] Page load with options:', options);
     // 计算自定义导航栏高度
-    const systemInfo = wx.getSystemInfoSync();
-    const statusBarHeight = systemInfo.statusBarHeight;
-    const navBarHeight = 88 * systemInfo.windowWidth / 750;
+    const { headerHeight } = getNavBarInfo();
     this.setData({
-      headerHeight: statusBarHeight + navBarHeight
+      headerHeight: Math.ceil(headerHeight)
     });
+
+    // 加载工单
     if (options.id) {
       this.setData({ orderId: options.id });
       this.loadWorkOrder();
@@ -139,7 +214,7 @@ Page({
    * Lifecycle - Page Show
    */
   onShow: function () {
-    console.log('[Detail] Page show');
+    // console.log('[Detail] Page show');
   },
 
   /**
@@ -150,7 +225,7 @@ Page({
       wx.stopPullDownRefresh();
       return;
     }
-    console.log('[Detail] Pull down refresh');
+    // console.log('[Detail] Pull down refresh');
     this.setData({ _isRefreshing: true });
     this.loadWorkOrder().finally(() => {
       this.setData({ _isRefreshing: false });
@@ -159,16 +234,23 @@ Page({
   },
 
   /**
-   * Share functionality
+   * Share functionality - 微信原生分享
    */
   onShareAppMessage: function () {
+    // 分享后关闭弹窗
+    this.setData({ showMoreActions: false });
+
     const workOrder = this.data.workOrder;
+    const floor = workOrder.floor || '';
+    const location = workOrder.location || '';
+    const description = workOrder.description || '工单详情';
+    // 微信分享标题限制32字符，需要截断
+    const title = `${floor}-${location}-${description}`.substring(0, 32);
+    
     return {
-      title: `工单 ${workOrder.order_number} - ${workOrder.order_category || '报修'}`,
+      title: title,
       path: `/pages/work-order-detail/index?id=${workOrder.order_id}`,
-      imageUrl: workOrder.photos && workOrder.photos.length > 0
-        ? workOrder.photos[0]
-        : ''
+      imageUrl: workOrder.photos && workOrder.photos.length > 0 ? workOrder.photos[0] : ''
     };
   },
 
@@ -179,22 +261,52 @@ Page({
     try {
       this.setData({ loading: true });
 
-      console.log('[Detail] Loading work order with ID:', this.data.orderId);
+      // 检查登录状态
+      const isLoggedIn = await auth.isAuthenticated();
 
-      const workOrder = await workOrderService.getWorkOrderById(this.data.orderId);
+      let workOrder;
+
+      if (isLoggedIn) {
+        // 已登录：使用原有接口
+        workOrder = await workOrderService.getWorkOrderById(this.data.orderId);
+      } else {
+        // 未登录：使用公开只读接口
+        const result = await workOrderService.getWorkOrderByIdPublic(this.data.orderId);
+        workOrder = result.order;
+      }
 
       if (!workOrder) {
         throw new Error('Work order not found');
       }
 
-      console.log('[Detail] Work order data received:', workOrder);
-
       // Process work order data
       const processedOrder = this.processWorkOrder(workOrder);
 
-      // Get current user info
+      // 未登录用户：设置只读模式，隐藏所有操作按钮
+      if (!isLoggedIn) {
+        this.setData({
+          workOrder: processedOrder,
+          loading: false,
+          isReadOnlyMode: true,
+          showActions: false,
+          showThreeDots: false,
+          showEditBtn: false,
+          showAcceptBtn: false,
+          showConfirmRepairBtn: false,
+          showUrgeRepairBtn: false,
+          showUrgeReviewBtn: false,
+          showReviewedBtn: false,
+          showDeleteInMenu: false,
+          showNeedsReworkInMenu: false,
+          showEmptyMenu: false,
+          showUrgeAcceptInMenu: false,
+        });
+        this.startDurationTimer();
+        return;
+      }
+
+      // 已登录用户：原有权限逻辑
       const userInfo = await auth.getCurrentUser();
-      console.log('[Detail] Current user:', userInfo);
 
       // Determine user permissions
       // 行政经理和办美员工享有相同的按钮权限
@@ -204,24 +316,18 @@ Page({
       // Determine action buttons visibility with null checks
       const isPropertyManager = userInfo.role_id === ROLES.PROPERTY_MANAGER;
 
-      // Debug: 打印用户和工单信息
-      console.log('[Detail] Permission check:', {
-        userRoleId: userInfo.role_id,
-        userId: userInfo.id,
-        isPropertyStaff,
-        isPropertyManager,
-        submitterUserId: workOrder.submitter?.user_id,
-        orderStatus: processedOrder.status
-      });
-
-      // 修改按钮：只在"已提报"状态显示
-      // 行政经理可操作所有工单，办美员工只能操作自己提交的
+      // 修改按钮：只在已提交状态显示
+      // 行政经理可操作所有工单，办美员工可操作所有工单（等同提交人权限）
       // 注意：userInfo.id 和 submitter.user_id 需要统一比较
       const currentUserId = userInfo.id || userInfo.user_id;
       const submitterUserId = workOrder.submitter?.user_id;
       const isSubmitter = currentUserId && submitterUserId && currentUserId === submitterUserId;
 
-      const canEdit = (isPropertyManager || (isPropertyStaff && isSubmitter)) &&
+      // 办美员工拥有等同提交人的权限（可操作所有工单，包括经理提交的）
+      const hasSubmitterPermission = isSubmitter || (userInfo.role_id === ROLES.PROPERTY_STAFF);
+
+      // 经理和办美员工都可以编辑所有工单
+      const canEdit = (isPropertyManager || userInfo.role_id === ROLES.PROPERTY_STAFF) &&
         processedOrder.status === 'Pending Repair';
 
       // 判断维修员是否有权限操作该工单 - 使用部门匹配（新权限模型）
@@ -233,13 +339,13 @@ Page({
       // 保留旧变量名以兼容后续代码
       const isAssignedTechnician = isTechnicianWithAccess;
 
-      console.log('[Detail] Technician check:', {
-        currentUserId,
-        userDepartment,
-        responsibleParty: processedOrder.responsible_party,
-        isMaintenanceWorker,
-        isAssignedTechnician
-      });
+      // console.log('[Detail] Technician check:', {
+      //   currentUserId,
+      //   userDepartment,
+      //   responsibleParty: processedOrder.responsible_party,
+      //   isMaintenanceWorker,
+      //   isAssignedTechnician
+      // });
 
       // 接单/开始返工：维修员 && 分配给自己 && (待维修/需返工)
       const canAcceptOrder = isMaintenanceWorker &&
@@ -251,80 +357,40 @@ Page({
         isAssignedTechnician &&
         processedOrder.status === 'In Progress';
 
-      // 验收：提交者 && 待复核（Repaired）
-      const canReview = isPropertyStaff && isSubmitter && processedOrder.status === 'Repaired';
+      // 验收：经理和办美员工都可以验收所有工单
+      const canReview = (isPropertyManager || userInfo.role_id === ROLES.PROPERTY_STAFF) &&
+        processedOrder.status === 'Repaired';
 
       // 统一显示：所有状态特定按钮都不显示
       const canStart = false;
       // canUpdate / canReview are computed above
 
-      // 根据状态和角色计算按钮显示
+      // 使用配置表获取按钮显示状态
       const status = processedOrder.status;
-      let showThreeDots = false;
-      let showEditBtn = false;
-      let showAcceptBtn = false;
-      let showConfirmRepairBtn = false;
-      let showUrgeRepairBtn = false;
-      let showUrgeReviewBtn = false;
-      let showReviewedBtn = false;
-      let showDeleteInMenu = false;
-      let showNeedsReworkInMenu = false;
-      let showEmptyMenu = false;
+      const buttonConfig = getButtonConfig(status, {
+        isPropertyManager,
+        isPropertyStaff,
+        isSubmitter: hasSubmitterPermission,  // 办美员工视为拥有提交人权限
+        isAssignedTechnician
+      });
 
-      if (status === 'Pending Repair') {
-        // 已提报/待接单状态
-        if (isPropertyManager || (isPropertyStaff && isSubmitter)) {
-          showThreeDots = true;
-          showEditBtn = canEdit; // 只有提交者或经理可编辑
-          showDeleteInMenu = true;
-        } else if (isAssignedTechnician) {
-          showAcceptBtn = true;
-          // 维修员无三个点菜单
-        }
-      } else if (status === 'In Progress') {
-        // 维修中状态
-        if (isAssignedTechnician) {
-          showThreeDots = true;
-          showConfirmRepairBtn = true;
-          showEmptyMenu = true;
-        } else if (isPropertyManager || (isPropertyStaff && isSubmitter)) {
-          showThreeDots = true;
-          showUrgeRepairBtn = true;
-          showDeleteInMenu = true;
-        }
-      } else if (status === 'Repaired') {
-        // 已修复状态
-        if (isAssignedTechnician) {
-          showThreeDots = true;
-          showUrgeReviewBtn = true;
-          showEmptyMenu = true;
-        } else if (isPropertyManager) {
-          showThreeDots = true;
-          showUrgeReviewBtn = true;
-          showDeleteInMenu = true;
-        } else if (isPropertyStaff && isSubmitter) {
-          // 办美员工（提交者）- 待复核
-          showThreeDots = true;
-          showReviewedBtn = true;
-          showDeleteInMenu = true;
-          showNeedsReworkInMenu = true;
-        }
-      } else if (status === 'Needs Rework') {
-        // 需重修状态
-        if (isAssignedTechnician) {
-          showThreeDots = true;
-          showConfirmRepairBtn = true;
-          showEmptyMenu = true;
-        } else if (isPropertyManager || (isPropertyStaff && isSubmitter)) {
-          showThreeDots = true;
-          showUrgeRepairBtn = true;
-          showDeleteInMenu = true;
-        }
-      } else if (status === 'Completed') {
-        // 已完成状态
-        showThreeDots = true;
-        showEmptyMenu = true;
-      }
+      // 转收费工单按钮：经理/办美员工 + 已提报(待维修)状态
+      const showTransferToChargeBtn = (isPropertyManager || isPropertyStaff) &&
+        processedOrder.status === 'Pending Repair';
+
+      // 从配置中提取按钮状态，showEditBtn 需要结合 canEdit
+      // 若可转单则强制显示三点按钮，作为入口
+      const showThreeDots = (buttonConfig.showThreeDots || false) || showTransferToChargeBtn;
+      const showEditBtn = buttonConfig.showEditBtn ? canEdit : false;
+      const showAcceptBtn = buttonConfig.showAcceptBtn || false;
+      const showConfirmRepairBtn = buttonConfig.showConfirmRepairBtn || false;
+      const showUrgeRepairBtn = buttonConfig.showUrgeRepairBtn || false;
+      const showUrgeReviewBtn = buttonConfig.showUrgeReviewBtn || false;
+      const showReviewedBtn = buttonConfig.showReviewedBtn || false;
+      const showDeleteInMenu = buttonConfig.showDeleteInMenu || false;
+      const showNeedsReworkInMenu = buttonConfig.showNeedsReworkInMenu || false;
+      const showEmptyMenu = buttonConfig.showEmptyMenu || false;
+      const showUrgeAcceptInMenu = buttonConfig.showUrgeAcceptInMenu || false;
 
       const showActions = showThreeDots || showEditBtn || showAcceptBtn || showConfirmRepairBtn ||
         showUrgeRepairBtn || showUrgeReviewBtn || showReviewedBtn;
@@ -353,12 +419,14 @@ Page({
         showDeleteInMenu,
         showNeedsReworkInMenu,
         showEmptyMenu,
+        showUrgeAcceptInMenu,
+        showTransferToChargeBtn,
       });
 
       // Start work order duration timer after data is set
       this.startDurationTimer();
 
-      console.log('[Detail] Work order loaded successfully');
+      // console.log('[Detail] Work order loaded successfully');
 
     } catch (error) {
       console.error('[Detail] Load work order error:', error);
@@ -380,16 +448,15 @@ Page({
    * Add display fields for UI
    */
   processWorkOrder: function (order) {
-    // Ensure photos field exists (handle both photos and photos_json)
+    // Ensure photos field exists
     if (!order.photos && order.photos_json) {
       order.photos = order.photos_json;
     }
-    // Ensure photos is always an array
     if (!order.photos) {
       order.photos = [];
     }
 
-    // 收集所有需要更新的数据，最后统一setData
+    // 收集所有需要更新的数据
     const dataToUpdate = {};
 
     // 初始化照片加载状态
@@ -402,212 +469,82 @@ Page({
     dataToUpdate.photoLoaded = photoLoaded;
     dataToUpdate.photoError = photoError;
 
-    // 预加载图片临时 URL
+    // 预加载图片临时URL
     this.preloadPhotoUrls(order.photos);
 
-    console.log('[processWorkOrder] Photos:', order.photos);
-    console.log('[processWorkOrder] Photos length:', order.photos.length);
-    console.log('[processWorkOrder] Full order:', order);
-
-    // Priority display
+    // 处理基础显示字段
     dataToUpdate.priorityDisplay = PRIORITY_DISPLAY_NAMES[order.priority] || order.priority;
-
-    // Created time
     dataToUpdate.createdTime = formatDateTime(order.created_at);
 
-    // Report time (故障发生时间) - 拆分为日期和时间
+    // 处理报修时间
     if (order.report_time) {
       const reportDate = new Date(order.report_time);
-      const year = reportDate.getFullYear();
-      const month = String(reportDate.getMonth() + 1).padStart(2, '0');
-      const day = String(reportDate.getDate()).padStart(2, '0');
-      const hour = String(reportDate.getHours()).padStart(2, '0');
-      const minute = String(reportDate.getMinutes()).padStart(2, '0');
       dataToUpdate.reportTime = formatDateTime(order.report_time);
-      dataToUpdate.reportDate = `${year}-${month}-${day}`;
-      dataToUpdate.reportTimeOnly = `${hour}:${minute}`;
+      dataToUpdate.reportDate = `${reportDate.getFullYear()}-${String(reportDate.getMonth() + 1).padStart(2, '0')}-${String(reportDate.getDate()).padStart(2, '0')}`;
+      dataToUpdate.reportTimeOnly = `${String(reportDate.getHours()).padStart(2, '0')}:${String(reportDate.getMinutes()).padStart(2, '0')}`;
     }
 
-    // Assigned time
+    // 处理分配时间
     if (order.assigned_at) {
       dataToUpdate.assignedTime = formatDateTime(order.assigned_at);
     }
 
-    // T175 - Enhanced SLA deadline display with progress and real-time updates
+    // 处理 SLA 显示
     if (order.time_remaining !== undefined && order.time_remaining !== null) {
       this.updateSLADisplay(order);
-      // Start real-time countdown timer
       this.startSLATimer();
     }
 
-    // Process status history
-    console.log('[Detail] Raw status_history:', order.status_history);
-    console.log('[Detail] status_history length:', order.status_history?.length);
-    console.log('[Detail] Raw status_history JSON:', JSON.stringify(order.status_history, null, 2));
+    // 处理状态历史和时间线数据
+    dataToUpdate.timelineData = this.processStatusHistory(order);
 
-    // Generate timeline data for timeline-item component
-    let timelineData = [];
-
-    if (order.status_history && Array.isArray(order.status_history)) {
-      console.log('[Detail] Processing', order.status_history.length, 'status history items');
-      // Add status text mapping
-      const statusTextMap = {
-        'Pending Repair': '已提报',
-        'Pending Assignment': '待接单',
-        'In Progress': '维修中',
-        'Repaired': '已修复',
-        'Completed': '已完成',
-        'Needs Rework': '需返工',
-        'Under Review': '待复核',
-        // 中文状态也添加映射（以防万一）
-        '已提报': '已提报',
-        '待接单': '待接单',
-        '维修中': '维修中',
-        '已修复': '已修复',
-        '待复核': '待复核',
-        '已完成': '已完成',
-        '需返工': '需返工'
-      };
-
-      order.status_history = order.status_history.map(item => {
-        return {
-          ...item,
-          time_display: formatDateTime(item.changed_at),
-          to_status_text: statusTextMap[item.to_status] || item.to_status
-        };
-      });
-
-      // Convert status_history to timeline data format
-      timelineData = order.status_history.map((item, index) => {
-        // 处理描述文字
-        let description = item.notes || '';
-        // 去掉"工单创建"字样
-        if (description === '工单创建') {
-          description = '';
-        }
-
-        const statusText = item.to_status_text || item.to_status;
-
-        return {
-          id: String(index + 1),
-          title: statusText,
-          titleColor: this.data.statusColorMap[statusText] || '#374151',
-          statusClass: this.data.statusClassMap[statusText] || '',
-          description: description,
-          timestamp: item.time_display || formatDateTime(item.changed_at),
-          user: item.changed_by ? {
-            name: item.changed_by.name || '系统',
-            avatar: item.changed_by.avatar || ''
-          } : null
-        };
-      });
-
-      console.log('[Detail] Processed status_history:', order.status_history);
-      console.log('[Detail] Generated timelineData:', timelineData);
-    } else {
-      console.log('[Detail] No status_history found or not an array');
-    }
-
-    dataToUpdate.timelineData = timelineData;
-
-    // Generate stepper data for work-order-stepper component
-    const steps = ['已提报', '维修中', '已修复', '待复核', '已完成'];
-    const statusStepMap = {
-      'Pending Repair': 0,
-      'Pending Assignment': 0,
-      'In Progress': 1,
-      'Repaired': 2,
-      'Under Review': 3,
-      'Completed': 4,
-      'Needs Rework': 1 // 返工状态对应维修中
-    };
-
-    const currentStep = statusStepMap[order.status] || 0;
-
-    // 处理工单创建时间，确保转换为时间戳
-    let startTime = Date.now();
-    let timeSource = 'fallback'; // 用于调试
-
-    // 优先使用 created_at 字段
-    if (order.created_at) {
-      console.log('[Detail] Raw created_at:', order.created_at);
-      console.log('[Detail] created_at type:', typeof order.created_at);
-
-      if (order.created_at.$date) {
-        // MongoDB Date 格式
-        startTime = new Date(order.created_at.$date).getTime();
-        timeSource = 'created_at.$date';
-      } else if (typeof order.created_at === 'string') {
-        // 字符串格式
-        startTime = new Date(order.created_at).getTime();
-        timeSource = 'created_at.string';
-      } else if (typeof order.created_at === 'number') {
-        // 已经是时间戳
-        startTime = order.created_at;
-        timeSource = 'created_at.timestamp';
-      } else if (order.created_at instanceof Date) {
-        // Date 对象
-        startTime = order.created_at.getTime();
-        timeSource = 'created_at.Date';
-      }
-    }
-    // 如果没有 created_at，从 status_history 的第一条记录获取
-    else if (order.status_history && Array.isArray(order.status_history) && order.status_history.length > 0) {
-      // status_history 是按时间倒序排列的，最后一条是最早的（工单创建时间）
-      // 但从日志来看，第一条就是工单创建记录，所以我们找 notes ���含"工单创建"的记录
-      let firstHistory = order.status_history.find(h => h.notes && h.notes.includes('工单创建'));
-
-      // 如果没找到"工单创建"记录，使用第一条
-      if (!firstHistory) {
-        firstHistory = order.status_history[0];
-      }
-
-      if (firstHistory && firstHistory.changed_at) {
-        console.log('[Detail] Using status_history changed_at:', firstHistory.changed_at);
-        console.log('[Detail] History notes:', firstHistory.notes);
-        startTime = new Date(firstHistory.changed_at).getTime();
-        timeSource = 'status_history';
-      } else {
-        console.warn('[Detail] No created_at or status_history.changed_at found, using current time');
-      }
-    } else {
-      console.warn('[Detail] No created_at or status_history found, using current time');
-    }
-
-    console.log('[Detail] Time source:', timeSource);
-    console.log('[Detail] Converted startTime:', startTime);
-    console.log('[Detail] startTime date:', new Date(startTime).toLocaleString());
-    console.log('[Detail] Current time:', Date.now());
-    console.log('[Detail] Time diff (seconds):', Math.floor((Date.now() - startTime) / 1000));
-
-    // 获取完成时间（从 status_history 中查找 Completed 状态的记录）
-    let endTime = null;
-    if (order.status === 'Completed' && order.status_history && Array.isArray(order.status_history)) {
-      const completedRecord = order.status_history.find(h => h.to_status === 'Completed');
-      if (completedRecord && completedRecord.changed_at) {
-        if (completedRecord.changed_at.$date) {
-          endTime = new Date(completedRecord.changed_at.$date).getTime();
-        } else if (typeof completedRecord.changed_at === 'string') {
-          endTime = new Date(completedRecord.changed_at).getTime();
-        } else if (typeof completedRecord.changed_at === 'number') {
-          endTime = completedRecord.changed_at;
-        }
-        console.log('[Detail] Found endTime:', endTime, new Date(endTime).toLocaleString());
-      }
-    }
-
-    // stepperData也收集到dataToUpdate
+    // 处理步骤数据
     dataToUpdate.stepperData = {
-      steps: steps,
-      currentStep: currentStep,
-      startTime: startTime,
-      endTime: endTime
+      steps: STEPPER_CONFIG.steps,
+      currentStep: STEPPER_CONFIG.statusStepMap[order.status] || 0,
+      startTime: getOrderStartTime(order),
+      endTime: getOrderEndTime(order)
     };
 
-    // 统一setData，将7次调用合并为1次
+    // 统一 setData
     this.setData(dataToUpdate);
 
     return order;
+  },
+
+  /**
+   * 处理状态历史，生成时间线数据
+   */
+  processStatusHistory: function (order) {
+    if (!order.status_history || !Array.isArray(order.status_history)) {
+      return [];
+    }
+
+    // 添加显示字段
+    order.status_history = order.status_history.map(item => ({
+      ...item,
+      time_display: formatDateTime(item.changed_at),
+      to_status_text: STATUS_TEXT_MAP[item.to_status] || item.to_status
+    }));
+
+    // 转换为时间线数据格式
+    return order.status_history.map((item, index) => {
+      const description = item.notes === '工单创建' ? '' : (item.notes || '');
+      const statusText = item.to_status_text || item.to_status;
+
+      return {
+        id: String(index + 1),
+        title: statusText,
+        titleColor: this.data.statusColorMap[statusText] || '#374151',
+        statusClass: this.data.statusClassMap[statusText] || '',
+        description: description,
+        timestamp: item.time_display || formatDateTime(item.changed_at),
+        user: item.changed_by ? {
+          name: item.changed_by.name || '系统',
+          avatar: item.changed_by.avatar || ''
+        } : null
+      };
+    });
   },
 
   /**
@@ -646,10 +583,13 @@ Page({
   },
 
   /**
-   * 预加载图片临时 URL
+   * 预加载图片临时URL
    */
   preloadPhotoUrls: async function (photos) {
     if (!photos || photos.length === 0) return;
+
+    // 未登录用户（只读模式）跳过前端转换，云函数已处理
+    if (this.data.isReadOnlyMode) return;
 
     try {
       // 收集所有 cloud:// 开头的图片 FileID
@@ -657,7 +597,7 @@ Page({
 
       if (cloudFileIds.length === 0) return;
 
-      console.log('[Detail] Preloading', cloudFileIds.length, 'cloud photos');
+      // console.log('[Detail] Preloading', cloudFileIds.length, 'cloud photos');
 
       // 批量获取临时 URL
       const result = await wx.cloud.getTempFileURL({
@@ -667,9 +607,12 @@ Page({
       if (result.fileList && result.fileList.length > 0) {
         // 创建 fileID 到临时 URL 的映射
         const urlMap = {};
+        const timestamp = Date.now(); // 添加时间戳，强制重新加载图片
         result.fileList.forEach(item => {
-          if (item.tempFileURL && item.status === 0) {
-            urlMap[item.fileID] = item.tempFileURL;
+          // 使用宽松比较，因为微信API可能返回字符串"0"或数字0
+          if (item.tempFileURL && item.status == 0) {
+            // 添加时间戳参数，避免缓存导致加载失败后无法恢复
+            urlMap[item.fileID] = item.tempFileURL + '?t=' + timestamp;
           }
         });
 
@@ -680,7 +623,7 @@ Page({
           this.setData({
             'workOrder.photos': newPhotos
           });
-          console.log('[Detail] Preloaded photo URLs');
+          // console.log('[Detail] Preloaded photo URLs');
         }
       }
     } catch (error) {
@@ -702,18 +645,26 @@ Page({
   },
 
   /**
+   * 转收费工单 - 把当前工单加入收费工单 store 并跳转
+   */
+  handleTransferToCharge: function () {
+    const wo = this.data.workOrder;
+    if (!wo) return;
+    this.setData({ showMoreActions: false });
+    const store = require('../charge-order/store');
+    const added = store.addFromWorkOrder(wo);
+    const id = added.id;
+    wx.showToast({ title: '已转为收费工单', icon: 'success' });
+    setTimeout(() => {
+      wx.navigateTo({ url: `/pages/charge-order/detail?id=${id}` });
+    }, 500);
+  },
+
+  /**
    * Handle More - 显示更多操作菜单
    */
   handleMore: function () {
-    // 如果没有可用功能，显示提示后自动消失
-    if (this.data.showEmptyMenu && !this.data.showDeleteInMenu && !this.data.showNeedsReworkInMenu) {
-      this.setData({ showMoreActions: true });
-      setTimeout(() => {
-        this.setData({ showMoreActions: false });
-      }, 1500);
-    } else {
-      this.setData({ showMoreActions: true });
-    }
+    this.setData({ showMoreActions: true });
   },
 
   /**
@@ -846,12 +797,7 @@ Page({
                 mask: true
               });
 
-              // Update status to In Progress
-              await workOrderService.updateWorkOrderStatus(
-                parseInt(this.data.orderId),
-                'In Progress',
-                '维修员接单开始维修'
-              );
+              await workOrderService.acceptOrder(this.data.orderId);
 
               wx.hideLoading();
 
@@ -990,8 +936,116 @@ Page({
   cancelRepairForm: function () {
     this.setData({
       showRepairForm: false,
-      completionNotes: ''
+      completionNotes: '',
+      selectedParts: []
     });
+  },
+
+  // ==== 配件选择相关方法 ====
+
+  openPartsPicker: async function () {
+    this.setData({ showPartsPicker: true, partsLoading: true, partsSearchKey: '' });
+    try {
+      const res = await materialService.listMaterials('', 1, 200);
+      const selectedDocIds = new Set((this.data.selectedParts || []).map(p => p._doc_id));
+      const list = (res.materials || []).map(m => ({
+        ...m,
+        _added: selectedDocIds.has(m._id)
+      }));
+      this.setData({
+        availableParts: list,
+        filteredParts: list,
+        partsLoading: false
+      });
+    } catch (e) {
+      console.error('[Detail] Load parts error:', e);
+      this.setData({ partsLoading: false });
+      wx.showToast({ title: '加载配件失败', icon: 'none' });
+    }
+  },
+
+  closePartsPicker: function () {
+    this.setData({ showPartsPicker: false });
+  },
+
+  onPartsSearchInput: function (e) {
+    const key = (e.detail.value || '').trim().toLowerCase();
+    this.setData({ partsSearchKey: key });
+    this._filterParts(key);
+  },
+
+  _filterParts: function (key) {
+    const { availableParts } = this.data;
+    if (!key) {
+      this.setData({ filteredParts: availableParts });
+      return;
+    }
+    const filtered = availableParts.filter(m => {
+      const name = (m.name || '').toLowerCase();
+      const number = (m.material_number || '').toLowerCase();
+      const spec = (m.spec || '').toLowerCase();
+      const model = (m.model || '').toLowerCase();
+      return name.indexOf(key) >= 0
+        || number.indexOf(key) >= 0
+        || spec.indexOf(key) >= 0
+        || model.indexOf(key) >= 0;
+    });
+    this.setData({ filteredParts: filtered });
+  },
+
+  onPickPart: function (e) {
+    const part = e.currentTarget.dataset.part;
+    if (!part || part.stock <= 0) return;
+
+    // 使用云数据库原生 _id 作为唯一标识（material_id 可能重复）
+    const partDocId = part._id;
+    const existingIdx = this.data.selectedParts.findIndex(p => p._doc_id === partDocId);
+
+    if (existingIdx >= 0) {
+      // 已存在：自动 +1（库存不足提示）
+      const existing = this.data.selectedParts[existingIdx];
+      if (existing.quantity >= existing.stock) {
+        wx.showToast({ title: `库存仅 ${existing.stock}`, icon: 'none' });
+        return;
+      }
+      const newSelected = [...this.data.selectedParts];
+      newSelected[existingIdx] = { ...existing, quantity: existing.quantity + 1 };
+      this.setData({ selectedParts: newSelected, showPartsPicker: false });
+      wx.showToast({ title: `数量 +1`, icon: 'none', duration: 1000 });
+    } else {
+      // 新增
+      const newSelected = [...this.data.selectedParts, {
+        _doc_id: partDocId,
+        material_id: part.material_id,
+        material_name: part.name,
+        unit: part.unit || '个',
+        quantity: 1,
+        stock: part.stock
+      }];
+      this.setData({ selectedParts: newSelected, showPartsPicker: false });
+    }
+  },
+
+  onRemovePart: function (e) {
+    const idx = e.currentTarget.dataset.index;
+    const newSelected = this.data.selectedParts.filter((_, i) => i !== idx);
+    this.setData({ selectedParts: newSelected });
+  },
+
+  onAdjustPartQty: function (e) {
+    const idx = e.currentTarget.dataset.index;
+    const delta = e.currentTarget.dataset.delta;
+    const part = this.data.selectedParts[idx];
+    if (!part) return;
+    const newQty = part.quantity + Number(delta);
+    if (newQty < 1) return;
+    if (newQty > part.stock) {
+      wx.showToast({ title: `库存仅 ${part.stock}`, icon: 'none' });
+      return;
+    }
+    const newSelected = [...this.data.selectedParts];
+    newSelected[idx] = { ...part, quantity: newQty };
+    this.setData({ selectedParts: newSelected });
   },
 
   /**
@@ -999,12 +1053,27 @@ Page({
    */
   submitRepairCompletion: async function () {
     try {
+      // 提交前再次校验：出库数量 ≤ 库存
+      const overflow = (this.data.selectedParts || []).find(p => p.quantity > p.stock);
+      if (overflow) {
+        wx.showToast({ title: `${overflow.material_name} 数量超过库存`, icon: 'none' });
+        return;
+      }
+
       this.setData({ submittingRepair: true });
+
+      // 构造 parts_used 参数（仅传必要字段）
+      const partsUsed = (this.data.selectedParts || []).map(p => ({
+        _doc_id: p._doc_id,
+        material_id: p.material_id,
+        quantity: p.quantity
+      }));
 
       // Call cloud function to complete repair (固定状态为 Repaired)
       await workOrderService.completeRepair(
         parseInt(this.data.orderId),
-        this.data.completionNotes.trim()
+        this.data.completionNotes.trim(),
+        partsUsed
       );
 
       this.setData({ submittingRepair: false });
@@ -1019,7 +1088,8 @@ Page({
       // Reset form
       this.setData({
         showRepairForm: false,
-        completionNotes: ''
+        completionNotes: '',
+        selectedParts: []
       });
 
       // 跳转到工作台页面
@@ -1073,7 +1143,7 @@ Page({
   updateWorkOrderDuration: function () {
     const workOrder = this.data.workOrder;
     if (!workOrder || !workOrder.created_at) {
-      console.log('[Detail] Cannot update duration - no workOrder or created_at');
+      // console.log('[Detail] Cannot update duration - no workOrder or created_at');
       return;
     }
 
@@ -1087,7 +1157,7 @@ Page({
     const seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
     const duration = `${days}天${hours}时${minutes}分${seconds}秒`;
-    console.log('[Detail] Work order duration:', duration);
+    // console.log('[Detail] Work order duration:', duration);
     this.setData({ workOrderDuration: duration });
   },
 
@@ -1095,7 +1165,7 @@ Page({
    * Start Duration Timer
    */
   startDurationTimer: function () {
-    console.log('[Detail] Starting duration timer');
+    // console.log('[Detail] Starting duration timer');
 
     // Stop existing timer
     this.stopDurationTimer();
@@ -1109,7 +1179,7 @@ Page({
     }, 60000);
 
     this.setData({ durationTimerInterval: interval });
-    console.log('[Detail] Duration timer started');
+    // console.log('[Detail] Duration timer started');
   },
 
   /**
@@ -1141,7 +1211,7 @@ Page({
   handleApprove: function () {
     wx.showModal({
       title: '确认复核',
-      content: '是否确认该故障已修复？',
+      content: '是否确认复核通过？',
       confirmText: '确认',
       cancelText: '取消',
       success: async (res) => {
@@ -1217,37 +1287,67 @@ Page({
   },
 
   /**
-   * Handle Urge Repair - 催维修
+   * Handle Urge Accept - 催接单
    */
-  handleUrgeRepair: async function () {
-    try {
-      wx.showLoading({ title: '发送中...', mask: true });
+  handleUrgeAccept: async function () {
+    this.setData({ showMoreActions: false });
 
-      const result = await wx.cloud.callFunction({
-        name: 'workOrderManager',
-        data: {
-          action: 'urgeRepair',
-          data: { order_id: parseInt(this.data.orderId) }
-        }
+    // 确认弹窗
+    const confirmed = await new Promise(resolve => {
+      wx.showModal({
+        title: '催接单',
+        content: '确定要发送催接单通知吗？',
+        confirmText: '确定',
+        cancelText: '取消',
+        success: (res) => resolve(res.confirm)
       });
+    });
 
-      wx.hideLoading();
+    if (!confirmed) return;
 
-      if (!result.result?.success) {
-        throw new Error(result.result?.error || '发送失败');
-      }
+    try {
+      const result = await workOrderService.urgeAccept(parseInt(this.data.orderId));
 
-      // 检查是否被频控
-      if (result.result.throttled) {
+      if (result.throttled) {
         wx.showModal({
           title: '提示',
-          content: result.result.message,
+          content: result.message,
           showCancel: false
         });
         return;
       }
 
-      // 成功
+      wx.showToast({
+        title: '催接单通知已发送',
+        icon: 'success',
+        duration: 2000
+      });
+
+    } catch (error) {
+      console.error('[Detail] Urge accept error:', error);
+      wx.showToast({
+        title: error.message || '发送失败',
+        icon: 'none'
+      });
+    }
+  },
+
+  /**
+   * Handle Urge Repair - 催维修
+   */
+  handleUrgeRepair: async function () {
+    try {
+      const result = await workOrderService.urgeRepair(parseInt(this.data.orderId));
+
+      if (result.throttled) {
+        wx.showModal({
+          title: '提示',
+          content: result.message,
+          showCancel: false
+        });
+        return;
+      }
+
       wx.showToast({
         title: '催促通知已发送',
         icon: 'success',
@@ -1255,7 +1355,6 @@ Page({
       });
 
     } catch (error) {
-      wx.hideLoading();
       console.error('[Detail] Urge repair error:', error);
       wx.showToast({
         title: error.message || '发送失败',
@@ -1269,26 +1368,12 @@ Page({
    */
   handleUrgeReview: async function () {
     try {
-      wx.showLoading({ title: '发送中...', mask: true });
+      const result = await workOrderService.urgeReview(parseInt(this.data.orderId));
 
-      const result = await wx.cloud.callFunction({
-        name: 'workOrderManager',
-        data: {
-          action: 'urgeReview',
-          data: { order_id: parseInt(this.data.orderId) }
-        }
-      });
-
-      wx.hideLoading();
-
-      if (!result.result?.success) {
-        throw new Error(result.result?.error || '发送失败');
-      }
-
-      if (result.result.throttled) {
+      if (result.throttled) {
         wx.showModal({
           title: '提示',
-          content: result.result.message,
+          content: result.message,
           showCancel: false
         });
         return;
@@ -1301,7 +1386,6 @@ Page({
       });
 
     } catch (error) {
-      wx.hideLoading();
       console.error('[Detail] Urge review error:', error);
       wx.showToast({
         title: error.message || '发送失败',

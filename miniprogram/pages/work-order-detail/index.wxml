@@ -1,7 +1,7 @@
 <!--工单详情页面 (基于 Taro 设计)-->
 <view class="order-detail-container">
   <!-- 自定义导航栏 -->
-  <custom-header title="工单详情" />
+  <custom-header title="工单详情" showBack="{{!isReadOnlyMode}}" />
 
   <!-- Loading State -->
   <view class="loading-state" wx:if="{{loading}}" style="padding-top: {{headerHeight}}px;">
@@ -33,7 +33,6 @@
     <view class="content-area" wx:if="{{activeTab === 'info'}}">
       <view class="info-content">
         <view class="info-card">
-          <!-- 基本信息区域 - 按照提报页面顺序 -->
           <view class="info-row">
             <text class="info-label">工单编号</text>
             <text class="info-value">{{workOrder.order_number}}</text>
@@ -102,18 +101,28 @@
             </view>
           </view>
 
-          <!-- 系统信息区域 -->
           <view class="info-row">
             <text class="info-label">报修人</text>
             <text class="info-value">{{workOrder.submitter.name || workOrder.submitter_name || '未知'}}</text>
           </view>
 
-          <!-- 备注信息 -->
+          <!-- 备注 -->
           <view class="remark-row">
-            <text class="remark-label">备注</text>
+            <text class="info-label">备注</text>
             <view class="remark-box {{workOrder.remark ? '' : 'remark-box-empty'}}">
               <text wx:if="{{workOrder.remark}}" class="remark-text">{{workOrder.remark}}</text>
               <text wx:else class="remark-placeholder">暂无备注信息</text>
+            </view>
+          </view>
+
+          <!-- 使用配件 -->
+          <view wx:if="{{workOrder.parts_used && workOrder.parts_used.length > 0}}" class="parts-used-row">
+            <text class="info-label">使用配件</text>
+            <view class="parts-used-list">
+              <view wx:for="{{workOrder.parts_used}}" wx:key="material_id" class="parts-used-item">
+                <text class="parts-used-name">{{item.material_name}}</text>
+                <text class="parts-used-qty">×{{item.quantity}} {{item.unit || '个'}}</text>
+              </view>
             </view>
           </view>
         </view>
@@ -217,11 +226,40 @@
   <view class="modal-overlay" wx:if="{{showRepairForm}}" catchtap="cancelRepairForm">
     <view class="modal-container modal-container-simple" catchtap="stopPropagation">
       <view class="modal-body">
+        <!-- 使用配件 -->
+        <view class="form-group parts-section">
+          <view class="parts-section-title">
+            <text>使用配件</text>
+            <text class="parts-section-hint">（选填）</text>
+          </view>
+          <view wx:if="{{selectedParts.length > 0}}" class="selected-parts-list">
+            <view wx:for="{{selectedParts}}" wx:key="material_id" class="selected-part-row">
+              <text class="selected-part-name">{{item.material_name}}</text>
+              <view class="qty-stepper">
+                <view class="stepper-btn {{item.quantity <= 1 ? 'stepper-btn-disabled' : ''}}"
+                      data-index="{{index}}" data-delta="-1" bindtap="onAdjustPartQty">−</view>
+                <text class="stepper-num">{{item.quantity}}</text>
+                <view class="stepper-btn {{item.quantity >= item.stock ? 'stepper-btn-disabled' : ''}}"
+                      data-index="{{index}}" data-delta="1" bindtap="onAdjustPartQty">+</view>
+              </view>
+              <text class="part-remove" data-index="{{index}}" bindtap="onRemovePart">×</text>
+            </view>
+          </view>
+          <view class="add-part-btn" bindtap="openPartsPicker">
+            <van-icon name="plus" size="14px" color="#10b981" />
+            <text>添加配件</text>
+          </view>
+        </view>
+
         <!-- 完成描述 -->
         <view class="form-group">
+          <view class="parts-section-title">
+            <text>完成描述</text>
+            <text class="parts-section-hint">（选填）</text>
+          </view>
           <textarea
             class="form-textarea rework-textarea"
-            placeholder="请填写完成描述（选填）"
+            placeholder="请填写完成描述"
             placeholder-class="rework-placeholder"
             value="{{completionNotes}}"
             bindinput="onNotesInput"
@@ -242,6 +280,49 @@
           {{submittingRepair ? '提交中...' : '确认提交'}}
         </button>
       </view>
+    </view>
+  </view>
+
+  <!-- 配件选择器弹层 -->
+  <view class="modal-overlay" wx:if="{{showPartsPicker}}" catchtap="closePartsPicker">
+    <view class="parts-picker-drawer" catchtap="stopPropagation">
+      <view class="parts-picker-header">
+        <text class="parts-picker-title">选择配件</text>
+        <text class="parts-picker-close" bindtap="closePartsPicker">×</text>
+      </view>
+      <view class="parts-picker-search">
+        <van-icon name="search" size="14px" color="#a3a3a3" />
+        <input
+          class="parts-picker-input"
+          placeholder="搜索配件名称"
+          placeholder-class="parts-picker-placeholder"
+          value="{{partsSearchKey}}"
+          bindinput="onPartsSearchInput"
+        />
+      </view>
+      <scroll-view scroll-y class="parts-picker-list">
+        <view wx:if="{{partsLoading}}" class="parts-picker-loading">加载中...</view>
+        <view wx:elif="{{filteredParts.length === 0}}" class="parts-picker-empty">
+          <van-icon name="search" size="40px" color="#d4d4d4" />
+          <text class="parts-picker-empty-text">{{partsSearchKey ? '没有匹配的配件' : '暂无配件'}}</text>
+        </view>
+        <block wx:else>
+          <view
+            wx:for="{{filteredParts}}"
+            wx:key="_id"
+            class="parts-picker-item {{item.stock <= 0 ? 'parts-picker-item-disabled' : ''}}"
+            data-part="{{item}}"
+            bindtap="onPickPart"
+          >
+            <view class="parts-picker-info">
+              <text class="parts-picker-name">{{item.name}}</text>
+              <text class="parts-picker-meta">规格 {{item.spec || '-'}} · 型号 {{item.model || '-'}}</text>
+            </view>
+            <text wx:if="{{item._added}}" class="parts-picker-added">已添加</text>
+            <text wx:else class="parts-picker-stock {{item.stock <= 0 ? 'stock-out' : ''}}">库存 {{item.stock}}</text>
+          </view>
+        </block>
+      </scroll-view>
     </view>
   </view>
 
@@ -282,6 +363,20 @@
   <!-- 更多操作弹窗 - 底部抽屉 -->
   <view wx:if="{{showMoreActions}}" class="modal-overlay" catchtap="closeMoreActions">
     <view class="more-actions-drawer" catchtap="stopPropagation">
+      <!-- 催接单按钮 - 经理或提交者 + 已提报状态 -->
+      <view wx:if="{{showUrgeAcceptInMenu}}" class="drawer-action-item urge-action" catchtap="handleUrgeAccept">
+        <view class="icon-wrapper">
+          <van-icon name="bell" size="28px" color="#10b981" />
+        </view>
+        <text class="action-label">催接单</text>
+      </view>
+      <!-- 转收费工单按钮 - 经理/办美员工 + 已提报(待维修)状态 -->
+      <view wx:if="{{showTransferToChargeBtn}}" class="drawer-action-item" catchtap="handleTransferToCharge">
+        <view class="icon-wrapper">
+          <van-icon name="gold-coin-o" size="28px" color="#f59e0b" />
+        </view>
+        <text class="action-label">转收费工单</text>
+      </view>
       <!-- 删除按钮 - 物业人员可见 -->
       <view wx:if="{{showDeleteInMenu}}" class="drawer-action-item delete-action" catchtap="handleDelete">
         <view class="icon-wrapper">
@@ -289,9 +384,13 @@
         </view>
         <text class="action-label">删除</text>
       </view>
-      <!-- 空白提示 -->
-      <view wx:if="{{showEmptyMenu && !showDeleteInMenu && !showNeedsReworkInMenu}}" class="drawer-action-item empty-action">
-        <text class="empty-text">暂无可用功能</text>
+      <!-- 分享按钮 -->
+      <view class="drawer-action-item share-action">
+        <button class="hidden-share-btn" open-type="share"></button>
+        <view class="icon-wrapper">
+          <van-icon name="share-o" size="32px" color="#10b981" />
+        </view>
+        <text class="action-label">分享</text>
       </view>
     </view>
   </view>

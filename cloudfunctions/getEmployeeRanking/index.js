@@ -62,10 +62,10 @@ exports.main = async (event, context) => {
       dateCondition = { created_at: _.gte(start).and(_.lte(end)) };
     }
 
-    // 查询办美员工（role_id=4）的用户
+    // 查询办美员工（role_id=4）和行政经理（role_id=2）的用户
     const usersResult = await db.collection('users')
       .where({
-        role_id: 4  // 办美员工
+        role_id: _.in([2, 4])  // 行政经理(2) + 办美员工(4)
       })
       .get();
 

@@ -10,7 +10,6 @@ cloud.init({
 });
 
 const db = cloud.database();
-const _ = db.command;
 
 /**
  * 获取用户信息
@@ -42,12 +41,12 @@ async function createFeedback(openid, feedbackData) {
     throw new Error('账号已被停用');
   }
 
-  // 验证必填字段
-  const title = (feedbackData.title || '').trim();
+  // 验证必填字段 - type替代原来的title
+  const type = (feedbackData.type || '').trim();
   const content = (feedbackData.content || '').trim();
 
-  if (!title) {
-    throw new Error('请填写标题');
+  if (!type) {
+    throw new Error('请选择反馈类型');
   }
   if (!content) {
     throw new Error('请填写内容');
@@ -63,7 +62,7 @@ async function createFeedback(openid, feedbackData) {
 
   const newFeedback = {
     feedback_id: feedbackId,
-    title,
+    type,
     content,
     photos,
     // 用户信息
@@ -112,7 +111,7 @@ async function getFeedbackList(openid, filters = {}) {
 
   // 权限控制：管理员看全部，其他用户只看自己的
   if (user.role_id !== 1) {
-    conditions._openid = openid;
+    conditions.user_id = user.user_id;  // 基于 user_id 过滤，支持账号切换场景
   }
 
   const [{ total }, { data }] = await Promise.all([
@@ -132,6 +131,40 @@ async function getFeedbackList(openid, filters = {}) {
     limit,
     totalPages: total > 0 ? Math.ceil(total / limit) : 0
   };
+}
+
+/**
+ * 删除反馈
+ */
+async function deleteFeedback(openid, feedbackId) {
+  const user = await getUserByOpenId(openid);
+  if (!user) {
+    throw new Error('用户不存在');
+  }
+  if (user.active === false) {
+    throw new Error('账号已被停用');
+  }
+
+  const numericId = parseInt(feedbackId, 10);
+  if (Number.isNaN(numericId)) {
+    throw new Error('反馈ID不正确');
+  }
+
+  const { data } = await db.collection('feedbacks').where({ feedback_id: numericId }).get();
+  if (data.length === 0) {
+    throw new Error('反馈不存在');
+  }
+
+  const feedback = data[0];
+
+  // 权限控制：只能删除自己的反馈（管理员可删除任意反馈）
+  if (user.role_id !== 1 && feedback.user_id !== user.user_id) {
+    throw new Error('无权限删除此反馈');
+  }
+
+  await db.collection('feedbacks').where({ feedback_id: numericId }).remove();
+
+  return { feedback_id: numericId };
 }
 
 /**
@@ -159,7 +192,7 @@ async function getFeedbackById(openid, feedbackId) {
   const feedback = data[0];
 
   // 权限控制：管理员可查看全部，其他用户只能查看自己的
-  if (user.role_id !== 1 && feedback._openid !== openid) {
+  if (user.role_id !== 1 && feedback.user_id !== user.user_id) {
     throw new Error('无权限查看此反馈');
   }
 
@@ -205,6 +238,14 @@ exports.main = async (event, context) => {
         return {
           success: true,
           feedback
+        };
+
+      case 'delete':
+        const deleteResult = await deleteFeedback(openid, data.feedback_id);
+        return {
+          success: true,
+          ...deleteResult,
+          message: '删除成功'
         };
 
       default:

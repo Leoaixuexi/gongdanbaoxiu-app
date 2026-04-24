@@ -1,0 +1,257 @@
+<!-- 编辑收费工单（填写已维修字段） -->
+<view class="page">
+
+  <custom-header title="编辑收费工单" />
+
+  <scroll-view scroll-y class="scroll-area" style="padding-top: {{headerHeight}}px;">
+    <view class="edit-info">
+
+      <!-- 维修方信息 -->
+      <view class="rd-group">
+        <text class="rd-group-title">维修方信息</text>
+        <view class="rd-card">
+          <view class="rd-row">
+            <text class="rd-label">确认单编号</text>
+            <input class="rd-input" placeholder-class="rd-input-placeholder" value="{{form.confirmNo}}" placeholder="如 RC-2026-0412"
+              data-field="confirmNo" bindinput="onInput" />
+          </view>
+          <view class="rd-row">
+            <text class="rd-label required">维修方</text>
+            <input class="rd-input" placeholder-class="rd-input-placeholder" value="{{form.repairVendor}}" placeholder="如 上海格力售后"
+              data-field="repairVendor" bindinput="onInput" />
+          </view>
+          <view class="rd-row">
+            <text class="rd-label required">维修员</text>
+            <input class="rd-input" placeholder-class="rd-input-placeholder" value="{{form.repairer}}" placeholder="手动填写"
+              data-field="repairer" bindinput="onInput" />
+          </view>
+          <view class="rd-row rd-row-last">
+            <text class="rd-label">跟进员</text>
+            <input class="rd-input" placeholder-class="rd-input-placeholder" value="{{form.follower}}" placeholder="手动填写"
+              data-field="follower" bindinput="onInput" />
+          </view>
+        </view>
+      </view>
+
+      <!-- 维修信息 -->
+      <view class="rd-group">
+        <text class="rd-group-title">维修信息</text>
+        <view class="rd-card">
+          <view class="rd-row" bindtap="openDateTimePicker" data-target="start">
+            <text class="rd-label">维修开始</text>
+            <view class="rd-picker-value {{form.startDate && form.startClock ? '' : 'placeholder'}}">
+              {{form.startDate && form.startClock ? form.startDate + ' ' + form.startClock : '请选择日期时间'}}
+            </view>
+          </view>
+          <view class="rd-row" bindtap="openDateTimePicker" data-target="end">
+            <text class="rd-label">维修结束</text>
+            <view class="rd-picker-value {{form.endDate && form.endClock ? '' : 'placeholder'}}">
+              {{form.endDate && form.endClock ? form.endDate + ' ' + form.endClock : '请选择日期时间'}}
+            </view>
+          </view>
+          <view class="rd-row">
+            <text class="rd-label">维修时长</text>
+            <text class="rd-picker-value readonly">{{form.duration || '—（开始/结束后自动计算）'}}</text>
+          </view>
+          <view class="rd-row">
+            <text class="rd-label required">单价（元/小时）</text>
+            <input class="rd-input" placeholder-class="rd-input-placeholder" type="digit" value="{{form.hourlyRate}}" placeholder="如 200"
+              data-field="hourlyRate" bindinput="onInput" />
+          </view>
+          <view class="rd-row rd-row-last">
+            <text class="rd-label">合计金额</text>
+            <text class="rd-value rd-value-blue">¥{{laborFee}}</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 配件更换 -->
+      <view class="rd-group">
+        <text class="rd-group-title">配件更换</text>
+        <view class="rd-card">
+          <view class="switch-row {{form.partsChanged ? 'with-border' : ''}}">
+            <text class="rd-label">是否更换配件</text>
+            <van-switch checked="{{form.partsChanged}}" bind:change="onPartsChange" size="22px" active-color="#1d4ed8" />
+          </view>
+
+          <block wx:if="{{form.partsChanged}}">
+            <view wx:for="{{form.parts}}" wx:key="index" class="part-wrap">
+              <view class="part-head">
+                <text class="part-no">配件 #{{index + 1}}</text>
+                <view class="part-remove" data-index="{{index}}" bindtap="onRemovePart">
+                  <van-icon name="delete-o" size="14px" color="#dc2626" />
+                  <text class="part-remove-text">移除</text>
+                </view>
+              </view>
+              <view class="part-grid">
+                <view class="part-field part-field-wide">
+                  <text class="field-label-sm">配件名称</text>
+                  <input class="field-input-sm" value="{{item.name}}" placeholder="配件名称"
+                    data-index="{{index}}" data-field="name" bindinput="onPartInput" />
+                </view>
+                <view class="part-field">
+                  <text class="field-label-sm">数量</text>
+                  <input class="field-input-sm" type="number" value="{{item.qty}}"
+                    data-index="{{index}}" data-field="qty" bindinput="onPartInput" />
+                </view>
+                <view class="part-field">
+                  <text class="field-label-sm">单价（元）</text>
+                  <input class="field-input-sm" type="digit" value="{{item.price}}"
+                    data-index="{{index}}" data-field="price" bindinput="onPartInput" />
+                </view>
+              </view>
+              <view class="part-img-row">
+                <view class="img-thumb-wrap" data-index="{{index}}" bindtap="onUploadPartImage">
+                  <image wx:if="{{item.image}}" class="img-thumb" src="{{item.image}}" mode="aspectFill" />
+                  <view wx:else class="img-placeholder">
+                    <van-icon name="plus" size="20px" color="#a3a3a3" />
+                  </view>
+                </view>
+              </view>
+            </view>
+            <view class="add-part-btn" bindtap="onAddPart">
+              <van-icon name="plus" size="14px" color="#1d4ed8" />
+              <text class="add-part-text">添加配件</text>
+            </view>
+            <view class="parts-total-row">
+              <text class="rd-label">合计金额</text>
+              <text class="parts-total-value">¥{{partsFee}}</text>
+            </view>
+          </block>
+        </view>
+      </view>
+
+      <!-- 附件图片 -->
+      <view class="rd-group">
+        <text class="rd-group-title">附件图片</text>
+        <view class="rd-card">
+          <view class="img-group">
+            <text class="img-group-title">维修前</text>
+            <view class="img-row">
+              <view wx:for="{{form.photosBefore}}" wx:key="*this" class="img-thumb-wrap">
+                <image class="img-thumb" src="{{item}}" mode="aspectFill" />
+                <view class="img-remove" data-group="photosBefore" data-index="{{index}}" catchtap="onRemovePhoto">
+                  <van-icon name="cross" size="10px" color="#ffffff" />
+                </view>
+              </view>
+              <view wx:if="{{form.photosBefore.length < 3}}" class="img-add" data-group="photosBefore" bindtap="onUploadPhoto">
+                <van-icon name="plus" size="24px" color="#a3a3a3" />
+              </view>
+            </view>
+          </view>
+
+          <view class="img-group">
+            <text class="img-group-title">维修后</text>
+            <view class="img-row">
+              <view wx:for="{{form.photosAfter}}" wx:key="*this" class="img-thumb-wrap">
+                <image class="img-thumb" src="{{item}}" mode="aspectFill" />
+                <view class="img-remove" data-group="photosAfter" data-index="{{index}}" catchtap="onRemovePhoto">
+                  <van-icon name="cross" size="10px" color="#ffffff" />
+                </view>
+              </view>
+              <view wx:if="{{form.photosAfter.length < 3}}" class="img-add" data-group="photosAfter" bindtap="onUploadPhoto">
+                <van-icon name="plus" size="24px" color="#a3a3a3" />
+              </view>
+            </view>
+          </view>
+
+          <view class="img-group img-group-last">
+            <text class="img-group-title">维修确认单</text>
+            <view class="img-row">
+              <view wx:for="{{form.photosConfirm}}" wx:key="*this" class="img-thumb-wrap">
+                <image class="img-thumb" src="{{item}}" mode="aspectFill" />
+                <view class="img-remove" data-group="photosConfirm" data-index="{{index}}" catchtap="onRemovePhoto">
+                  <van-icon name="cross" size="10px" color="#ffffff" />
+                </view>
+              </view>
+              <view wx:if="{{form.photosConfirm.length < 3}}" class="img-add" data-group="photosConfirm" bindtap="onUploadPhoto">
+                <van-icon name="plus" size="24px" color="#a3a3a3" />
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 费用明细 -->
+      <view class="rd-group">
+        <text class="rd-group-title">费用明细</text>
+        <view class="rd-card">
+          <view class="rd-row">
+            <text class="rd-label">维修费用</text>
+            <text class="rd-value">¥{{laborFee || 0}}</text>
+          </view>
+          <view class="rd-row">
+            <text class="rd-label">配件费</text>
+            <text class="rd-value">¥{{partsFee}}</text>
+          </view>
+          <view class="rd-row">
+            <text class="rd-label">优惠金额（元）</text>
+            <input class="rd-input" placeholder-class="rd-input-placeholder" type="digit" value="{{form.discount}}" placeholder="0"
+              data-field="discount" bindinput="onInput" />
+          </view>
+          <view class="rd-row rd-row-last total-grand">
+            <text class="rd-label">总费用</text>
+            <text class="rd-value">¥{{totalFee}}</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 备注 -->
+      <view class="rd-group">
+        <text class="rd-group-title">备注</text>
+        <view class="rd-card">
+          <textarea class="rd-textarea" value="{{form.chargeRemark}}" placeholder="选填" maxlength="200"
+            data-field="chargeRemark" bindinput="onInput" auto-height />
+        </view>
+      </view>
+
+      <view style="height: 16px;"></view>
+    </view>
+  </scroll-view>
+
+  <!-- 底部保存 -->
+  <view class="bottom-bar">
+    <view class="btn-secondary" bindtap="onCancel">
+      <text class="btn-secondary-text">取消</text>
+    </view>
+    <view class="btn-primary" bindtap="onSave">
+      <text class="btn-primary-text">确认</text>
+    </view>
+  </view>
+
+  <!-- 日期时间选择弹窗 -->
+  <view wx:if="{{isDateTimePickerOpen}}" class="modal-overlay" catchtap="closeDateTimePicker">
+    <view class="modal-content" catchtap="stopPropagation">
+      <view class="modal-header">
+        <text class="modal-title">选择日期时间</text>
+      </view>
+      <view class="datetime-picker-content">
+        <view class="picker-row">
+          <text class="picker-label">日期</text>
+          <picker mode="date" value="{{tempDate}}" bindchange="onTempDateChange">
+            <view class="datetime-picker-display">
+              <text class="datetime-picker-text">{{tempDate || '请选择日期'}}</text>
+            </view>
+          </picker>
+        </view>
+        <view class="picker-row">
+          <text class="picker-label">时间</text>
+          <picker mode="time" value="{{tempClock}}" bindchange="onTempClockChange">
+            <view class="datetime-picker-display">
+              <text class="datetime-picker-text">{{tempClock || '请选择时间'}}</text>
+            </view>
+          </picker>
+        </view>
+      </view>
+      <view class="modal-actions">
+        <view class="modal-button modal-button-cancel" bindtap="cancelDateTimePicker">
+          <text class="modal-button-text">取消</text>
+        </view>
+        <view class="modal-button modal-button-confirm" bindtap="confirmDateTimePicker">
+          <text class="modal-button-text modal-button-text-white">确定</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+</view>

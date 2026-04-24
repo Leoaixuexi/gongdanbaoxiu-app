@@ -115,7 +115,7 @@
 }
 
 /* ========== 维修员KPI卡片图标 ========== */
-/* 已修复 */
+/* 待复核 */
 .icon-yixiufu_huaban:before {
   content: "\e604";
 }

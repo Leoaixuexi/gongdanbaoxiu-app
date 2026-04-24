@@ -3,8 +3,7 @@
  * 系统配置页面
  */
 
-const cloudDB = require('../../../services/cloudDatabase');
-const { ROLES, STORAGE_KEYS } = require('../../../utils/constants');
+const configService = require('../../../services/configService');
 
 // 配置项定义
 const CONFIG_ITEMS = [
@@ -67,6 +66,8 @@ const CONFIG_ITEMS = [
 ];
 
 Page({
+  behaviors: [require('../../../behaviors/adminPage')],
+
   data: {
     configItems: [],
     loading: true,
@@ -78,27 +79,11 @@ Page({
   },
 
   onLoad() {
-    this.checkAdminPermission();
+    if (!this.checkAdminPermission()) return;
   },
 
   onShow() {
     this.loadConfig();
-  },
-
-  /**
-   * 检查管理员权限
-   */
-  checkAdminPermission() {
-    const userInfo = wx.getStorageSync(STORAGE_KEYS.USER_INFO);
-    if (!userInfo || userInfo.role_id !== ROLES.ADMIN) {
-      wx.showToast({
-        title: '无权限访问',
-        icon: 'none'
-      });
-      setTimeout(() => {
-        wx.navigateBack();
-      }, 1500);
-    }
   },
 
   /**
@@ -108,7 +93,7 @@ Page({
     this.setData({ loading: true });
 
     try {
-      const result = await cloudDB.systemConfig.get();
+      const result = await configService.getSystemConfig();
       const serverConfig = result.config || {};
 
       // 合并服务器配置和默认配置
@@ -205,7 +190,7 @@ Page({
         description: item.desc
       }));
 
-      await cloudDB.systemConfig.batchUpdate(configs);
+      await configService.batchUpdateSystemConfig(configs);
 
       wx.showToast({
         title: '保存成功',

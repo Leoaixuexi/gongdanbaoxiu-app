@@ -177,6 +177,16 @@
   position: relative;
 }
 
+/* 密码字段的横线缩短，不延伸到"忘记密码？"下方 */
+.password-field .line {
+  width: 500rpx;  /* 在"忘记密码？"左侧停止，留出约 16rpx 间距 */
+}
+
+/* 密码输入框缩短，避免挡住"忘记密码？"点击区域 */
+.password-field .input {
+  width: 500rpx;
+}
+
 .forget {
   position: absolute;
   right: 0;
@@ -258,40 +268,6 @@
   text-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.15);
 }
 
-/* 快捷登录 */
-.quick-login {
-  margin-top: 60rpx;
-  padding: 0 40rpx;
-}
-
-.quick-login-title {
-  font-size: 26rpx;
-  color: #999;
-  text-align: center;
-  margin-bottom: 24rpx;
-}
-
-.quick-login-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16rpx;
-  justify-content: center;
-}
-
-.quick-login-btn {
-  padding: 16rpx 28rpx;
-  background: #f5f5f5;
-  border-radius: 32rpx;
-  font-size: 26rpx;
-  color: #666;
-  transition: all 0.2s ease;
-}
-
-.quick-login-btn:active {
-  background: #e8e8e8;
-  transform: scale(0.96);
-}
-
 /* 协议区 */
 .agreement {
   position: fixed;
@@ -302,7 +278,12 @@
   align-items: center;
   justify-content: center;
   gap: 8rpx;
-  font-size: 24rpx;
+  font-size: 20rpx;
+  color: #b0b0b0;
+}
+
+.agreement-text .link {
+  color: #999;
 }
 
 .check {
@@ -320,7 +301,18 @@
   background: #ffffff;
 }
 
-.checked {
+.checkbox {
+  width: 24rpx;
+  height: 24rpx;
+  border: 2rpx solid #cbcbcb;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+}
+
+.checkbox.checked {
   border-color: #11bdA7;
   background: #11bdA7;
 }

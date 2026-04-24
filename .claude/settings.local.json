@@ -47,7 +47,21 @@
       "Bash(unzip:*)",
       "Bash(npm test:*)",
       "Bash(echo:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(git checkout:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git merge 002-homepage-redesign -m ':*)",
+      "Bash(git stash:*)",
+      "Bash(claude plugin:*)",
+      "Read(//dev/**)",
+      "Read(//Users/lvleo/.claude/**)",
+      "Read(//Users/lvleo/.claude/skills/**)",
+      "Read(//Users/lvleo/.claude/plugins/**)",
+      "Bash(curl -sSI --max-time 10 https://github.com/obra/superpowers)",
+      "Skill(update-config)",
+      "Bash(python3 -c \"import json; d=json.load\\(open\\('/Users/lvleo/.claude.json'\\)\\); m=d.get\\('mcpServers',{}\\); print\\('Global MCP servers:', list\\(m.keys\\(\\)\\)\\)\")",
+      "Bash(python3 *)"
     ],
     "deny": [],
     "ask": []

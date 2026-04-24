@@ -75,6 +75,15 @@
           <view class="icon-arrow"></view>
         </view>
       </view>
+
+      <!-- 意见反馈 - 仅非管理员可见 -->
+      <view wx:if="{{!isAdmin}}" class="profile-row border-top clickable" bindtap="goToFeedbackList">
+        <view class="profile-row-left">
+          <view class="profile-icon"><van-icon name="comment-o" size="36rpx" color="#838BA7" /></view>
+          <text class="profile-label text-foreground">意见反馈</text>
+        </view>
+        <view class="icon-arrow"></view>
+      </view>
     </view>
   </view>
 

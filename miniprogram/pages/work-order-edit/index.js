@@ -127,9 +127,9 @@ Page({
       const order = await workOrderService.getWorkOrderById(this.data.orderId);
 
       const statusTextMap = {
-        'Pending Repair': '待维修',
+        'Pending Repair': '已提报',
         'In Progress': '维修中',
-        'Repaired': '已维修',
+        'Repaired': '待复核',
         'Needs Rework': '需返工',
         'Completed': '已完成',
       };

@@ -5,6 +5,7 @@
 
 const { ROLE_DISPLAY_NAMES } = require('../../../../utils/constants');
 const dictionary = require('../../../../services/dictionary');
+const userService = require('../../../../services/userService');
 
 Page({
   data: {
@@ -54,22 +55,15 @@ Page({
    */
   async loadRoles() {
     try {
-      // 调用云函数获取角色列表
-      const result = await wx.cloud.callFunction({
-        name: 'userAuth',
-        data: {
-          action: 'listRoles'
-        }
-      });
+      // 调用用户服务获取角色列表（返回角色数组）
+      const roles = await userService.listRoles();
 
-      if (result.result.success) {
-        this.setData({
-          roles: result.result.roles.map(role => ({
-            id: role.role_id,
-            name: ROLE_DISPLAY_NAMES[role.role_id] || role.role_name
-          }))
-        });
-      }
+      this.setData({
+        roles: roles.map(role => ({
+          id: role.role_id,
+          name: ROLE_DISPLAY_NAMES[role.role_id] || role.role_name
+        }))
+      });
     } catch (error) {
       console.error('Failed to load roles:', error);
     }
@@ -343,18 +337,8 @@ Page({
         data.department = this.data.formData.department;
       }
 
-      // 调用云函数创建用户
-      const result = await wx.cloud.callFunction({
-        name: 'userAuth',
-        data: {
-          action: 'createUser',
-          data: data
-        }
-      });
-
-      if (!result.result.success) {
-        throw new Error(result.result.error || '创建失败');
-      }
+      // 调用用户服务创建用户（失败时会自动抛出异常）
+      await userService.createUser(data);
 
       wx.showToast({
         title: '创建成功',

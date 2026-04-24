@@ -1,0 +1,254 @@
+page { background: #F2F4F8; }
+.page { min-height: 100vh; background: #F2F4F8; display: flex; flex-direction: column; }
+
+.scroll-area { flex: 1; }
+
+/* ===== 编辑页：毛玻璃风格 ===== */
+.edit-info { padding: 24rpx 32rpx 0; box-sizing: border-box; }
+.edit-info .rd-group { margin-bottom: 32rpx; }
+.edit-info .rd-group-title {
+  font-size: 24rpx;
+  font-weight: 500;
+  color: #a3a3a3;
+  display: block;
+  margin-bottom: 16rpx;
+}
+.edit-info .rd-card {
+  background: linear-gradient(165deg, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0.6) 100%);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 20rpx;
+  border-top: 1rpx solid rgba(255,255,255,0.95);
+  border-left: 1rpx solid rgba(255,255,255,0.6);
+  border-right: 1rpx solid rgba(255,255,255,0.6);
+  border-bottom: 1rpx solid rgba(0,0,0,0.03);
+  box-shadow:
+    inset 0 2rpx 4rpx rgba(255,255,255,0.8),
+    inset 0 -1rpx 3rpx rgba(0,0,0,0.015),
+    0 2rpx 4rpx rgba(0,0,0,0.02),
+    0 8rpx 16rpx rgba(0,0,0,0.035),
+    0 16rpx 32rpx -8rpx rgba(0,0,0,0.04);
+  overflow: hidden;
+  width: 100%;
+  box-sizing: border-box;
+}
+.edit-info .rd-card + .rd-card { margin-top: 16rpx; }
+
+.edit-info .rd-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24rpx 28rpx;
+  border-bottom: 1rpx solid rgba(0,0,0,0.04);
+  gap: 20rpx;
+}
+.edit-info .rd-row-last { border-bottom: none; }
+.edit-info .rd-label {
+  font-size: 26rpx;
+  color: #737373;
+  flex-shrink: 0;
+}
+.edit-info .rd-label.required::after { content: ' *'; color: #dc2626; }
+
+/* 输入框（右对齐、透明底，贴合 value 风格） */
+.edit-info .rd-input {
+  flex: 1;
+  font-size: 26rpx;
+  color: #1a1a1a;
+  font-weight: 500;
+  text-align: right;
+  min-height: 40rpx;
+}
+.edit-info .rd-input-placeholder { color: #c7c7c7; font-weight: 400; }
+
+/* Picker 右对齐值文本 */
+.edit-info .rd-picker-value {
+  flex: 1;
+  font-size: 26rpx;
+  color: #1a1a1a;
+  font-weight: 500;
+  text-align: right;
+}
+.edit-info .rd-picker-value.placeholder { color: #c7c7c7; font-weight: 400; }
+.edit-info .rd-picker-value.readonly { color: #a3a3a3; font-weight: 400; }
+
+/* 日期时间选择弹窗 */
+.modal-overlay {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5); z-index: 1000;
+  display: flex; align-items: flex-end; justify-content: center;
+}
+.modal-content {
+  width: 100%; background-color: white;
+  border-radius: 32rpx 32rpx 0 0; padding: 32rpx;
+  animation: slide-up 0.3s ease-out;
+}
+@keyframes slide-up { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.modal-header { display: flex; align-items: center; justify-content: center; margin-bottom: 48rpx; }
+.modal-title { font-size: 36rpx; font-weight: 500; color: #333; }
+.datetime-picker-content { margin-bottom: 64rpx; }
+.picker-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 24rpx 0; border-bottom: 1rpx solid #f0f0f0;
+}
+.picker-row:last-child { border-bottom: none; }
+.picker-label { font-size: 32rpx; color: #333; font-weight: 500; }
+.datetime-picker-display {
+  flex: 1; display: flex; justify-content: flex-end;
+  padding: 16rpx 24rpx; background-color: #f9fafb;
+  border-radius: 12rpx; margin-left: 32rpx;
+}
+.datetime-picker-text { font-size: 30rpx; color: #333; }
+.modal-actions { display: flex; gap: 32rpx; }
+.modal-button {
+  flex: 1; height: 88rpx; display: flex;
+  align-items: center; justify-content: center; border-radius: 16rpx;
+}
+.modal-button-cancel { background-color: white; border: 1rpx solid #DDDDDD; }
+.modal-button-confirm { background: linear-gradient(to right, #10b981, #14b8a6); }
+.modal-button-text { font-size: 32rpx; font-weight: 500; color: #666; }
+.modal-button-text-white { color: white; }
+
+/* Switch 行 */
+.edit-info .switch-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24rpx 28rpx;
+}
+.edit-info .switch-row.with-border { border-bottom: 1rpx solid rgba(0,0,0,0.04); }
+
+/* 配件分段（去灰色嵌套，用浅分隔线） */
+.edit-info .part-wrap {
+  padding: 24rpx 28rpx;
+  border-bottom: 1rpx solid rgba(0,0,0,0.04);
+}
+.edit-info .part-wrap-last { border-bottom: none; }
+.edit-info .part-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16rpx;
+}
+.edit-info .part-no { font-size: 26rpx; color: #1a1a1a; font-weight: 600; }
+.edit-info .part-remove { display: flex; align-items: center; gap: 4rpx; }
+.edit-info .part-remove-text { font-size: 24rpx; color: #dc2626; }
+.edit-info .part-grid { display: flex; gap: 16rpx; margin-bottom: 16rpx; }
+.edit-info .part-field { flex: 1; display: flex; flex-direction: column; gap: 8rpx; }
+.edit-info .part-field-wide { flex: 2; }
+.edit-info .field-label-sm { font-size: 22rpx; color: #737373; }
+.edit-info .field-input-sm {
+  font-size: 26rpx;
+  color: #1a1a1a;
+  background: transparent;
+  border-bottom: 1rpx solid rgba(0,0,0,0.12);
+  padding: 8rpx 0;
+}
+.edit-info .part-img-row { display: flex; align-items: center; gap: 16rpx; }
+
+/* 添加配件按钮 */
+.edit-info .add-part-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8rpx;
+  margin: 16rpx 28rpx;
+  padding: 20rpx;
+  border: 1rpx dashed rgba(29, 78, 216, 0.4);
+  border-radius: 12rpx;
+}
+.edit-info .add-part-text { font-size: 26rpx; color: #1d4ed8; font-weight: 500; }
+
+/* 配件合计 */
+.edit-info .parts-total-row {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 16rpx;
+  padding: 24rpx 28rpx;
+  border-top: 1rpx solid rgba(0,0,0,0.04);
+}
+.edit-info .parts-total-value { font-size: 30rpx; color: #1d4ed8; font-weight: 600; }
+
+/* 图片组（rd-card 内分段） */
+.edit-info .img-group {
+  padding: 24rpx 28rpx;
+  border-bottom: 1rpx solid rgba(0,0,0,0.04);
+}
+.edit-info .img-group-last { border-bottom: none; }
+.edit-info .img-group-title { font-size: 26rpx; color: #737373; display: block; margin-bottom: 16rpx; }
+.edit-info .img-row { display: flex; flex-wrap: wrap; gap: 16rpx; }
+.edit-info .img-thumb-wrap {
+  width: 144rpx;
+  height: 144rpx;
+  border-radius: 12rpx;
+  position: relative;
+  overflow: hidden;
+  background: rgba(255,255,255,0.5);
+}
+.edit-info .img-thumb { width: 100%; height: 100%; border-radius: 12rpx; }
+.edit-info .img-remove {
+  position: absolute;
+  top: 4rpx;
+  right: 4rpx;
+  width: 32rpx;
+  height: 32rpx;
+  background: rgba(0,0,0,0.6);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.edit-info .img-add {
+  width: 144rpx;
+  height: 144rpx;
+  border-radius: 12rpx;
+  background: rgba(255,255,255,0.3);
+  border: 1rpx dashed rgba(0,0,0,0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 配件块内的小缩略图 */
+.edit-info .part-img-row .img-thumb-wrap {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 10rpx;
+}
+.edit-info .part-img-row .img-thumb { border-radius: 10rpx; }
+.edit-info .part-img-row .img-placeholder {
+  width: 120rpx;
+  height: 120rpx;
+  background: rgba(255,255,255,0.3);
+  border: 1rpx dashed rgba(0,0,0,0.12);
+  border-radius: 10rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 费用总额（合计行大字） */
+.edit-info .total-grand .rd-label { font-size: 28rpx; color: #1a1a1a; font-weight: 600; }
+.edit-info .total-grand .rd-value { font-size: 40rpx; color: #ef4444; font-weight: 700; }
+.edit-info .rd-value { font-size: 26rpx; color: #1a1a1a; font-weight: 500; text-align: right; }
+.edit-info .rd-value-blue { color: #1d4ed8; font-weight: 600; }
+.edit-info .rd-value-green { color: #16a34a; }
+
+/* 备注 textarea（高度由内容自适应） */
+.edit-info .rd-textarea {
+  width: 100%;
+  padding: 24rpx 28rpx;
+  font-size: 26rpx;
+  color: #1a1a1a;
+  background: transparent;
+  box-sizing: border-box;
+  line-height: 1.6;
+}
+
+/* 底部栏 */
+.bottom-bar { display: flex; gap: 10px; padding: 12px 16px 34px; background: #ffffff; border-top: 1rpx solid #f0f0f0; }
+.btn-secondary { flex: 1; display: flex; align-items: center; justify-content: center; height: 44px; background: #f5f5f5; border-radius: 10px; }
+.btn-secondary-text { font-size: 14px; font-weight: 500; color: #525252; }
+.btn-primary { flex: 2; display: flex; align-items: center; justify-content: center; gap: 6px; height: 44px; background: #1d4ed8; border-radius: 10px; }
+.btn-primary-text { font-size: 14px; font-weight: 600; color: #ffffff; }

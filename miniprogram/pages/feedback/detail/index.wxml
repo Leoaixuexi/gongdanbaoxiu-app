@@ -4,49 +4,62 @@
   <view class="nav-bar" style="padding-top: {{statusBarHeight}}px;">
     <view class="nav-content">
       <view class="nav-left" bindtap="goBack">
-        <van-icon name="arrow-left" size="40rpx" color="#333" />
+        <van-icon name="arrow-left" size="40rpx" color="#fff" />
       </view>
-      <text class="nav-title">反馈详情</text>
       <view class="nav-right"></view>
     </view>
   </view>
 
   <!-- 加载中 -->
-  <view wx:if="{{loading}}" class="loading-wrapper" style="padding-top: {{navBarHeight}}px;">
-    <van-loading size="48rpx" color="#0CA77D">加载中...</van-loading>
+  <view wx:if="{{loading}}" class="loading-wrapper" style="padding-top: {{navBarHeight + 20}}px;">
+    <view class="loading-card">
+      <van-loading size="48rpx" color="#10b981" />
+      <text class="loading-text">加载中...</text>
+    </view>
   </view>
 
   <!-- 详情内容 -->
-  <view wx:else class="detail-content" style="padding-top: {{navBarHeight}}px;">
+  <view wx:else class="detail-content" style="padding-top: {{navBarHeight + 20}}px;">
     <!-- 基本信息卡片 -->
     <view class="info-card">
       <view class="info-row">
-        <text class="info-label">提交时间</text>
+        <view class="info-left">
+          <van-icon name="clock-o" size="32rpx" color="#10b981" />
+          <text class="info-label">提交时间</text>
+        </view>
         <text class="info-value">{{feedback.created_at_str}}</text>
       </view>
       <view class="info-row">
-        <text class="info-label">提交者</text>
+        <view class="info-left">
+          <van-icon name="user-o" size="32rpx" color="#10b981" />
+          <text class="info-label">提交者</text>
+        </view>
         <text class="info-value">{{feedback.user_name}}</text>
       </view>
       <view wx:if="{{isAdmin && feedback.user_role_name}}" class="info-row">
-        <text class="info-label">用户角色</text>
+        <view class="info-left">
+          <van-icon name="certificate" size="32rpx" color="#10b981" />
+          <text class="info-label">用户角色</text>
+        </view>
         <text class="info-value role-badge">{{feedback.user_role_name}}</text>
       </view>
     </view>
 
-    <!-- 标题卡片 -->
-    <view class="content-card">
-      <view class="card-header">
-        <text class="card-title">标题</text>
-      </view>
-      <view class="card-body">
-        <text class="title-text">{{feedback.title}}</text>
+    <!-- 类型卡片 -->
+    <view class="info-card">
+      <view class="info-row">
+        <view class="info-left">
+          <van-icon name="apps-o" size="32rpx" color="#10b981" />
+          <text class="info-label">类型</text>
+        </view>
+        <text class="info-value content-value">{{feedback.type || feedback.title}}</text>
       </view>
     </view>
 
-    <!-- 内容卡片 -->
+    <!-- 详细描述卡片 -->
     <view class="content-card">
       <view class="card-header">
+        <van-icon name="notes-o" size="32rpx" color="#10b981" />
         <text class="card-title">详细描述</text>
       </view>
       <view class="card-body">
@@ -57,6 +70,7 @@
     <!-- 照片卡片 -->
     <view wx:if="{{feedback.photos && feedback.photos.length > 0}}" class="content-card">
       <view class="card-header">
+        <van-icon name="photo-o" size="32rpx" color="#10b981" />
         <text class="card-title">问题截图</text>
         <text class="photo-count">{{feedback.photos.length}}张</text>
       </view>
@@ -78,6 +92,7 @@
     <!-- 管理员查看时显示上下文信息 -->
     <view wx:if="{{isAdmin && feedback.context_info}}" class="content-card">
       <view class="card-header">
+        <van-icon name="info-o" size="32rpx" color="#10b981" />
         <text class="card-title">上下文信息</text>
       </view>
       <view class="card-body context-info">

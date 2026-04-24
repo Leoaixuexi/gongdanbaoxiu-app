@@ -16,7 +16,7 @@
       <!-- 用户名输入 -->
       <view class="field">
         <view class="label">用户名/手机号</view>
-        <input class="input" type="text" placeholder="请输入您的用户名" placeholder-class="placeholder" value="{{username}}" bindinput="onUsernameInput" />
+        <input class="input" type="text" placeholder="请输入用户名或手机号" placeholder-class="placeholder" value="{{username}}" bindinput="onUsernameInput" />
         <view class="line"></view>
       </view>
 
@@ -36,19 +36,16 @@
         </view>
       </view>
 
-      <!-- 快捷登录 -->
-      <view class="quick-login">
-        <view class="quick-login-title">快捷登录</view>
-        <view class="quick-login-grid">
-          <view
-            wx:for="{{quickAccounts}}"
-            wx:key="username"
-            class="quick-login-btn"
-            bindtap="onQuickLogin"
-            data-index="{{index}}"
-          >
-            <text>{{item.label}}</text>
-          </view>
+      <!-- 协议勾选 -->
+      <view class="agreement">
+        <view class="checkbox {{agreed ? 'checked' : ''}}" bindtap="toggleAgree">
+          <view wx:if="{{agreed}}" class="check-icon">✓</view>
+        </view>
+        <view class="agreement-text">
+          <text>我已阅读并同意</text>
+          <text class="link" bindtap="openUserAgreement">《用户服务协议》</text>
+          <text>和</text>
+          <text class="link" bindtap="openPrivacyAgreement">《隐私政策》</text>
         </view>
       </view>
     </view>

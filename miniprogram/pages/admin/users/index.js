@@ -3,10 +3,13 @@
  * 账号管理列表页面 - 增强版
  */
 
-const cloudDB = require('../../../services/cloudDatabase');
-const { ROLES, ROLE_DISPLAY_NAMES, STORAGE_KEYS } = require('../../../utils/constants');
+const userService = require('../../../services/userService');
+const { ROLE_DISPLAY_NAMES, STORAGE_KEYS } = require('../../../utils/constants');
+const { convertCloudUrls } = require('../../../utils/cloudUtils');
 
 Page({
+  behaviors: [require('../../../behaviors/adminPage')],
+
   data: {
     users: [],
     loading: true,
@@ -33,7 +36,7 @@ Page({
   },
 
   onLoad() {
-    this.checkAdminPermission();
+    if (!this.checkAdminPermission()) return;
     this.getCurrentUser();
   },
 
@@ -51,22 +54,6 @@ Page({
     this.loadUsers().then(() => {
       wx.stopPullDownRefresh();
     });
-  },
-
-  /**
-   * 检查管理员权限
-   */
-  checkAdminPermission() {
-    const userInfo = wx.getStorageSync(STORAGE_KEYS.USER_INFO);
-    if (!userInfo || userInfo.role_id !== ROLES.ADMIN) {
-      wx.showToast({
-        title: '无权限访问',
-        icon: 'none'
-      });
-      setTimeout(() => {
-        wx.navigateBack();
-      }, 1500);
-    }
   },
 
   /**
@@ -103,7 +90,7 @@ Page({
         filters.search = this.data.searchKeyword;
       }
 
-      const users = await cloudDB.users.list(filters);
+      const users = await userService.listUsers(filters);
 
       // 处理用户数据
       const processedUsers = users.map(user => ({
@@ -111,6 +98,9 @@ Page({
         roleName: ROLE_DISPLAY_NAMES[user.role_id] || '未知',
         isCurrentUser: user.user_id === this.data.currentUserId
       }));
+
+      // 转换头像URL
+      await convertCloudUrls(processedUsers, 'avatar');
 
       // 前端搜索过滤（如果云端搜索不够精确）
       let filteredUsers = processedUsers;
@@ -240,7 +230,7 @@ Page({
         if (res.confirm) {
           try {
             wx.showLoading({ title: '处理中...' });
-            await cloudDB.users.enable(userId);
+            await userService.enableUser(userId);
             wx.hideLoading();
             wx.showToast({
               title: '已启用',
@@ -273,7 +263,7 @@ Page({
         if (res.confirm) {
           try {
             wx.showLoading({ title: '处理中...' });
-            await cloudDB.users.disable(userId);
+            await userService.disableUser(userId);
             wx.hideLoading();
             wx.showToast({
               title: '已停用',
@@ -305,7 +295,7 @@ Page({
         if (res.confirm) {
           try {
             wx.showLoading({ title: '处理中...' });
-            const result = await cloudDB.users.resetPassword(userId);
+            const result = await userService.resetPassword(userId);
             wx.hideLoading();
 
             // 显示新密码

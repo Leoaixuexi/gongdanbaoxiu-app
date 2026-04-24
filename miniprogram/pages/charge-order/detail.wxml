@@ -1,0 +1,303 @@
+<!-- 收费工单详情（两态） -->
+<view class="page">
+
+  <custom-header title="工单详情" />
+
+  <scroll-view scroll-y class="scroll-area" style="padding-top: {{headerHeight}}px;" wx:if="{{order}}">
+
+    <!-- 待维修态 -->
+    <block wx:if="{{order.status === 'Pending Repair'}}">
+      <view class="pending-info">
+
+        <view class="rd-group">
+          <text class="rd-group-title">工单信息</text>
+          <view class="rd-card">
+            <view class="rd-row">
+              <text class="rd-label">工单编号</text>
+              <text class="rd-value">{{order.order_number}}</text>
+            </view>
+            <view class="rd-row">
+              <text class="rd-label">楼层</text>
+              <text class="rd-value">{{order.floor || '—'}}</text>
+            </view>
+            <view class="rd-row">
+              <text class="rd-label">具体位置</text>
+              <text class="rd-value">{{order.location || '—'}}</text>
+            </view>
+            <view class="rd-row">
+              <text class="rd-label">工单类别</text>
+              <text class="rd-value">{{order.order_category || '—'}}</text>
+            </view>
+            <view class="rd-row">
+              <text class="rd-label">责任方</text>
+              <text class="rd-value">{{order.responsible_party || '—'}}</text>
+            </view>
+            <view class="rd-row">
+              <text class="rd-label">优先级</text>
+              <view class="priority-tag {{order.priority === 'Emergency' ? 'priority-red' : 'priority-green'}}">
+                {{order.priority === 'Emergency' ? '紧急' : '普通'}}
+              </view>
+            </view>
+            <view class="rd-row">
+              <text class="rd-label">报修时间</text>
+              <text class="rd-value">{{order.created_at}}</text>
+            </view>
+            <view class="rd-row">
+              <text class="rd-label">问题描述</text>
+              <text class="rd-value">{{order.description || '—'}}</text>
+            </view>
+            <view class="rd-row">
+              <text class="rd-label">报修人</text>
+              <text class="rd-value">{{order.submitter.name || '—'}}</text>
+            </view>
+            <view class="rd-row rd-row-last">
+              <text class="rd-label">备注</text>
+              <text class="rd-value">{{order.remark || '暂无备注信息'}}</text>
+            </view>
+          </view>
+        </view>
+
+        <view wx:if="{{order.photos.length > 0}}" class="rd-group">
+          <text class="rd-group-title">现场照片</text>
+          <view class="rd-card">
+            <view class="photo-grid-inline">
+              <view wx:for="{{order.photos}}" wx:key="*this" class="photo-item-wrapper">
+                <image class="photo-item-inline" src="{{item}}" mode="aspectFill"
+                  data-url="{{item}}" data-urls="{{order.photos}}" bindtap="onPreviewImage" />
+              </view>
+            </view>
+          </view>
+        </view>
+
+
+      </view>
+
+      <view class="bottom-spacer"></view>
+    </block>
+
+    <!-- 已完成态 -->
+    <block wx:else>
+      <view class="completed-info">
+
+        <!-- 报修信息 -->
+        <view class="rd-group">
+          <text class="rd-group-title">报修信息</text>
+          <view class="rd-card">
+            <view class="rd-row">
+              <text class="rd-label">工单编号</text>
+              <text class="rd-value">{{order.order_number}}</text>
+            </view>
+            <view class="rd-row">
+              <text class="rd-label">楼层</text>
+              <text class="rd-value">{{order.floor || '—'}}</text>
+            </view>
+            <view class="rd-row">
+              <text class="rd-label">具体位置</text>
+              <text class="rd-value">{{order.location || '—'}}</text>
+            </view>
+            <view class="rd-row">
+              <text class="rd-label">工单类别</text>
+              <text class="rd-value">{{order.order_category || '—'}}</text>
+            </view>
+            <view class="rd-row">
+              <text class="rd-label">责任方</text>
+              <text class="rd-value">{{order.responsible_party || '—'}}</text>
+            </view>
+            <view class="rd-row">
+              <text class="rd-label">优先级</text>
+              <view class="priority-tag {{order.priority === 'Emergency' ? 'priority-red' : 'priority-green'}}">
+                {{order.priority === 'Emergency' ? '紧急' : '普通'}}
+              </view>
+            </view>
+            <view class="rd-row">
+              <text class="rd-label">报修时间</text>
+              <text class="rd-value">{{order.created_at}}</text>
+            </view>
+            <view class="rd-row">
+              <text class="rd-label">报修人</text>
+              <text class="rd-value">{{order.submitter.name || '—'}}</text>
+            </view>
+            <view class="rd-row">
+              <text class="rd-label">故障描述</text>
+              <text class="rd-value">{{order.description || '—'}}</text>
+            </view>
+            <view class="rd-row rd-row-last">
+              <text class="rd-label">备注</text>
+              <text class="rd-value">{{order.remark || '暂无备注信息'}}</text>
+            </view>
+          </view>
+        </view>
+
+        <!-- 维修信息 -->
+        <view class="rd-group">
+          <text class="rd-group-title">维修信息</text>
+          <view class="rd-card">
+            <view class="rd-row">
+              <text class="rd-label">确认单编号</text>
+              <text class="rd-value">{{order.confirmNo || '—'}}</text>
+            </view>
+            <view class="rd-row">
+              <text class="rd-label">维修方</text>
+              <text class="rd-value">{{order.repairVendor || '—'}}</text>
+            </view>
+            <view class="rd-row">
+              <text class="rd-label">维修员</text>
+              <text class="rd-value">{{order.repairer || '—'}}</text>
+            </view>
+            <view class="rd-row">
+              <text class="rd-label">跟进员</text>
+              <text class="rd-value">{{order.follower || '—'}}</text>
+            </view>
+            <view class="rd-row">
+              <text class="rd-label">开始时间</text>
+              <text class="rd-value">{{order.startTime || '—'}}</text>
+            </view>
+            <view class="rd-row">
+              <text class="rd-label">结束时间</text>
+              <text class="rd-value">{{order.endTime || '—'}}</text>
+            </view>
+            <view class="rd-row">
+              <text class="rd-label">维修时长</text>
+              <text class="rd-value rd-value-blue">{{order.duration || '—'}}</text>
+            </view>
+            <view class="rd-row">
+              <text class="rd-label">单价</text>
+              <text class="rd-value rd-value-blue">{{order.hourlyRateText}}</text>
+            </view>
+            <view class="rd-row rd-row-last">
+              <text class="rd-label">合计金额</text>
+              <text class="rd-value rd-value-blue">{{order.laborFeeText}}</text>
+            </view>
+          </view>
+        </view>
+
+        <!-- 配件信息 -->
+        <view wx:if="{{order.partsChanged && order.parts.length > 0}}" class="rd-group">
+          <text class="rd-group-title">配件信息</text>
+          <view class="rd-card">
+            <view wx:for="{{order.partsEnriched}}" wx:key="name" class="parts-list-row">
+              <view>
+                <text class="parts-name">{{item.name}}</text>
+                <text class="parts-meta">× {{item.qty}} · 单价 {{item.priceText}}</text>
+              </view>
+              <text class="parts-subtotal">{{item.subtotal}}</text>
+            </view>
+            <view class="rd-row rd-row-last">
+              <text class="rd-label">合计金额</text>
+              <text class="rd-value rd-value-blue">{{order.partsFeeText}}</text>
+            </view>
+          </view>
+        </view>
+        <view wx:elif="{{order.status === 'Completed'}}" class="rd-group">
+          <text class="rd-group-title">配件信息</text>
+          <view class="rd-card">
+            <view class="rd-remark">本次维修未更换配件</view>
+          </view>
+        </view>
+
+        <!-- 费用明细 -->
+        <view class="rd-group">
+          <text class="rd-group-title">费用明细</text>
+          <view class="rd-card">
+            <view class="rd-row">
+              <text class="rd-label">维修费用</text>
+              <text class="rd-value">{{order.laborFeeText}}</text>
+            </view>
+            <view class="rd-row">
+              <text class="rd-label">配件费</text>
+              <text class="rd-value">{{order.partsFeeText}}</text>
+            </view>
+            <view class="rd-row">
+              <text class="rd-label">优惠金额</text>
+              <text class="rd-value rd-value-green">{{order.discountText}}</text>
+            </view>
+            <view class="rd-row rd-row-last fee-grand">
+              <text class="rd-label">总费用</text>
+              <text class="rd-value">{{order.totalAmountText}}</text>
+            </view>
+          </view>
+        </view>
+
+        <!-- 附件图片 -->
+        <view class="rd-group">
+          <text class="rd-group-title">附件图片</text>
+          <view class="rd-card">
+            <view class="img-block">
+              <text class="img-block-title">维修前</text>
+              <view class="img-row">
+                <block wx:if="{{order.photosBefore.length > 0}}">
+                  <image wx:for="{{order.photosBefore}}" wx:key="*this" class="img-thumb" src="{{item}}" mode="aspectFill"
+                    data-url="{{item}}" data-urls="{{order.photosBefore}}" bindtap="onPreviewImage" />
+                </block>
+                <view wx:else class="img-placeholder"><van-icon name="photograph" size="22px" color="#d4d4d4" /></view>
+              </view>
+            </view>
+            <view class="img-block">
+              <text class="img-block-title">维修后</text>
+              <view class="img-row">
+                <block wx:if="{{order.photosAfter.length > 0}}">
+                  <image wx:for="{{order.photosAfter}}" wx:key="*this" class="img-thumb" src="{{item}}" mode="aspectFill"
+                    data-url="{{item}}" data-urls="{{order.photosAfter}}" bindtap="onPreviewImage" />
+                </block>
+                <view wx:else class="img-placeholder"><van-icon name="photograph" size="22px" color="#d4d4d4" /></view>
+              </view>
+            </view>
+            <view class="img-block img-block-last">
+              <text class="img-block-title">维修确认单</text>
+              <view class="img-row">
+                <block wx:if="{{order.photosConfirm.length > 0}}">
+                  <image wx:for="{{order.photosConfirm}}" wx:key="*this" class="img-thumb" src="{{item}}" mode="aspectFill"
+                    data-url="{{item}}" data-urls="{{order.photosConfirm}}" bindtap="onPreviewImage" />
+                </block>
+                <view wx:else class="img-placeholder"><van-icon name="photograph" size="22px" color="#d4d4d4" /></view>
+              </view>
+            </view>
+          </view>
+        </view>
+
+        <!-- 备注 -->
+        <view wx:if="{{order.chargeRemark}}" class="rd-group">
+          <text class="rd-group-title">备注</text>
+          <view class="rd-card">
+            <view class="rd-remark">{{order.chargeRemark}}</view>
+          </view>
+        </view>
+
+      </view>
+      <view class="bottom-spacer"></view>
+    </block>
+
+  </scroll-view>
+
+  <!-- 底部操作栏（已完成态） -->
+  <view wx:if="{{order && order.status === 'Completed' && canEdit}}" class="bottom-actions">
+    <button class="action-button action-button-more" bindtap="onChargeMore">
+      <text class="more-icon">⋯</text>
+    </button>
+    <button class="action-button action-button-edit" bindtap="onEdit">
+      <text class="action-button-text">修改</text>
+    </button>
+  </view>
+
+  <!-- 底部操作栏（待维修态） -->
+  <view wx:if="{{order && order.status === 'Pending Repair' && canEdit}}" class="bottom-actions">
+    <button class="action-button action-button-more" bindtap="onMore">
+      <text class="more-icon">⋯</text>
+    </button>
+    <button class="action-button action-button-success" bindtap="onEdit">
+      <text class="action-button-text">确认维修</text>
+    </button>
+  </view>
+  <!-- 更多操作抽屉 -->
+  <view wx:if="{{showMoreActions}}" class="modal-overlay" catchtap="closeMoreActions">
+    <view class="more-actions-drawer" catchtap="stopPropagation">
+      <view class="drawer-action-item" catchtap="onReturnToNormal">
+        <view class="icon-wrapper">
+          <van-icon name="replay" size="28px" color="#10b981" />
+        </view>
+        <text class="action-label">转回常规工单</text>
+      </view>
+    </view>
+  </view>
+
+</view>

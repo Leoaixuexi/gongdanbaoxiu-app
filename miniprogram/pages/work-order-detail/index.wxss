@@ -47,7 +47,7 @@
 /* ==================== Header ==================== */
 .header {
   background: linear-gradient(to right, #10b981, #14b8a6);
-  padding: 32rpx 32rpx 24rpx;
+  padding: 20rpx 24rpx 16rpx;
   box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
 }
 
@@ -68,15 +68,11 @@
 }
 
 .tab-item {
-  position: relative;
-  padding: 16rpx 32rpx;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: inline-block;
+  padding: 12rpx 16rpx;
   background: transparent;
+  position: relative;
+  overflow: visible;
 }
 
 .tab-item:first-child.tab-item-active,
@@ -93,28 +89,25 @@
 .tab-text {
   font-size: 30rpx;
   font-weight: 500;
-  color: #9CA3AF; /* Gray for inactive */
-  transition: all 0.3s;
+  color: #9CA3AF;
 }
 
 .tab-item-active .tab-text,
 .tab-text-active {
-  color: #374151; /* Softer dark gray */
-  font-weight: 600; /* Reduced weight */
-  font-size: 32rpx; /* Slightly larger */
-  transform: scale(1.05);
-}
-
-/* Custom indicator removed to match Data page style (text only) 
-   or we can keep a very subtle dot if needed, but per request implies matching exactly.
-   Data page has active-indicator display: none.
-*/
-.tab-indicator {
-  display: none;
+  color: #374151;
+  font-weight: 600;
 }
 
 .tab-item-active::after {
-  content: none;
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 64rpx;
+  height: 6rpx;
+  background: linear-gradient(to right, #10b981, #14b8a6);
+  border-radius: 3rpx;
 }
 
 
@@ -124,7 +117,7 @@
   width: 100%;
 }
 
-/* ==================== Info Content (Reference Style) ==================== */
+/* ==================== Info Content (Apple Grouped Card Style) ==================== */
 .info-content {
   width: 100%;
   box-sizing: border-box;
@@ -132,22 +125,42 @@
   padding-bottom: 220rpx;
 }
 
+/* 分组标题 */
+.section-header {
+  display: block;
+  font-size: 26rpx;
+  color: #999999;
+  padding-left: 16rpx;
+  margin-bottom: 8rpx;
+  margin-top: 4rpx;
+}
+
 .info-card {
-  background-color: white;
-  border-radius: 16rpx; /* 稍微减小圆角，更显商务 */
-  padding: 32rpx 24rpx; /* 增加内边距 */
-  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.03); /* 极淡的阴影 */
+  background: linear-gradient(165deg, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0.6) 100%);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 24rpx;
+  padding: 0 24rpx;
+  box-shadow:
+    inset 0 2rpx 0 rgba(255,255,255,0.5),
+    0 2rpx 4rpx rgba(0,0,0,0.008),
+    0 6rpx 14rpx rgba(0,0,0,0.018),
+    0 12rpx 24rpx -6rpx rgba(0,0,0,0.02);
+  border-top: 1rpx solid rgba(255,255,255,0.95);
+  border-left: 1rpx solid rgba(255,255,255,0.6);
+  border-right: 1rpx solid rgba(255,255,255,0.6);
+  border-bottom: 1rpx solid rgba(0,0,0,0.03);
   width: 100%;
   box-sizing: border-box;
+  margin-bottom: 24rpx;
 }
 
 .info-row {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start; /* 顶部对齐，适应多行文字 */
-  padding: 20rpx 12rpx; /* 增加垂直间距 */
-  border-bottom: none; /* 【重点】去除分割线 */
-  transition: background-color 0.2s;
+  align-items: flex-start;
+  padding: 24rpx 0;
+  border-bottom: 1rpx solid #ECECEC;
   box-sizing: border-box;
   width: 100%;
 }
@@ -157,8 +170,8 @@
 }
 
 .info-label {
-  font-size: 30rpx; /* 字号适中 */
-  color: #999999;   /* 【重点】浅灰色 Label */
+  font-size: 30rpx;
+  color: #333333;
   flex-shrink: 0;
   min-width: 160rpx; /* 稍微加宽 Label 区域 */
   margin-right: 20rpx;
@@ -168,7 +181,7 @@
 
 .info-value {
   font-size: 30rpx;
-  color: #333333;   /* 【重点】深黑色 Value */
+  color: #999999;
   font-weight: 400; /* 保持正常粗细，清晰即可 */
   text-align: right;
   line-height: 1.5;
@@ -250,12 +263,12 @@
 
 .datetime-date {
   font-size: 30rpx;
-  color: #333333;
+  color: #999999;
 }
 
 .datetime-time {
   font-size: 30rpx;
-  color: #333333;
+  color: #999999;
 }
 
 /* 内联照片网格 */
@@ -332,33 +345,21 @@
 /* 备注模块 */
 .remark-row {
   display: flex;
-  align-items: flex-start;
   justify-content: space-between;
-  padding: 20rpx 12rpx;
-  border-bottom: none;
+  align-items: flex-start;
+  padding: 24rpx 0;
   box-sizing: border-box;
   width: 100%;
-  gap: 24rpx;
-}
-
-.remark-label {
-  font-size: 30rpx;
-  color: #999999;
-  min-width: 160rpx;
-  flex-shrink: 0;
-  margin-right: 24rpx;
 }
 
 .remark-box {
-  background-color: transparent; /* 去除背景色 */
-  border: none;                  /* 去除边框 */
+  background-color: transparent;
+  border: none;
   padding: 0;
   min-height: auto;
   line-height: 1.5;
   flex: 1;
-  width: auto;
-  margin-right: 0;
-  text-align: right; /* 备注文字右对齐 */
+  text-align: right;
 }
 
 .remark-box-empty {
@@ -380,11 +381,21 @@
 
 /* ==================== Photo Section ==================== */
 .photo-section {
-  background-color: white;
+  background: linear-gradient(165deg, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0.6) 100%);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border-radius: 24rpx;
   padding: 32rpx;
   margin-top: 32rpx;
-  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+  box-shadow:
+    inset 0 2rpx 0 rgba(255,255,255,0.5),
+    0 2rpx 4rpx rgba(0,0,0,0.008),
+    0 6rpx 14rpx rgba(0,0,0,0.018),
+    0 12rpx 24rpx -6rpx rgba(0,0,0,0.02);
+  border-top: 1rpx solid rgba(255,255,255,0.95);
+  border-left: 1rpx solid rgba(255,255,255,0.6);
+  border-right: 1rpx solid rgba(255,255,255,0.6);
+  border-bottom: 1rpx solid rgba(0,0,0,0.03);
 }
 
 .section-title {
@@ -1393,6 +1404,10 @@
   padding: 32rpx;
   padding-bottom: calc(32rpx + env(safe-area-inset-bottom));
   animation: slideUp 0.3s ease-out;
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+  gap: 24rpx;
 }
 
 @keyframes slideUp {
@@ -1421,6 +1436,14 @@
   background-color: #F5F5F5;
   border: 2rpx solid #E5E5E5;
   border-radius: 16rpx;
+  line-height: 1;
+}
+
+/* 修复 van-icon 对齐 */
+.drawer-action-item .icon-wrapper van-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .drawer-action-item .icon-wrapper:active {
@@ -1428,7 +1451,15 @@
 }
 
 .drawer-action-item.delete-action .icon-wrapper {
-  color: #FF3B30;
+  color: transparent;
+}
+
+/* 删除按钮 iconfont - 绿色渐变 */
+.drawer-action-item.delete-action .icon-wrapper .iconfont {
+  background: linear-gradient(to right, #10b981, #14b8a6);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 .drawer-action-item .iconfont {
@@ -1450,6 +1481,46 @@
   color: #999;
 }
 
+/* 分享按钮样式 */
+.drawer-action-item.share-action {
+  position: relative;
+}
+
+/* 防止子元素拦截点击 */
+.drawer-action-item.share-action .icon-wrapper,
+.drawer-action-item.share-action .action-label {
+  pointer-events: none;
+}
+
+.hidden-share-btn {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  background: transparent !important;
+  z-index: 999 !important;
+  line-height: normal;
+  pointer-events: auto;
+}
+
+.hidden-share-btn::after {
+  border: none !important;
+  display: none !important;
+  content: none !important;
+}
+
+/* 点击反馈 - 让用户知道点击生效了 */
+.drawer-action-item.share-action:active .icon-wrapper {
+  transform: scale(0.95);
+  background-color: #E0F2FE;
+  transition: all 0.1s;
+}
+
 .empty-action {
   color: #999;
 }
@@ -1457,3 +1528,291 @@
 .empty-action .empty-text {
   font-size: 24rpx;
 }
+
+/* ==================== 使用配件（维修完成弹窗内） ==================== */
+.parts-section {
+  margin-top: 24rpx;
+}
+
+.parts-section-title {
+  font-size: 28rpx;
+  font-weight: 500;
+  color: #1a1a1a;
+  margin-bottom: 16rpx;
+}
+
+.parts-section-hint {
+  font-size: 24rpx;
+  color: #a3a3a3;
+  font-weight: 400;
+  margin-left: 8rpx;
+}
+
+.selected-parts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+  margin-bottom: 16rpx;
+}
+
+.selected-part-row {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  padding: 16rpx 20rpx;
+  background: #F9FAFB;
+  border-radius: 16rpx;
+}
+
+.selected-part-name {
+  flex: 1;
+  font-size: 28rpx;
+  color: #1a1a1a;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.qty-stepper {
+  display: flex;
+  align-items: center;
+  background: white;
+  border-radius: 8rpx;
+  border: 1rpx solid #E5E7EB;
+}
+
+.stepper-btn {
+  width: 48rpx;
+  height: 48rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #10b981;
+}
+
+.stepper-btn-disabled {
+  color: #D1D5DB;
+}
+
+.stepper-num {
+  min-width: 48rpx;
+  text-align: center;
+  font-size: 28rpx;
+  color: #1a1a1a;
+  font-weight: 500;
+}
+
+.part-remove {
+  font-size: 32rpx;
+  color: #9CA3AF;
+  width: 40rpx;
+  height: 40rpx;
+  line-height: 40rpx;
+  text-align: center;
+}
+
+.add-part-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8rpx;
+  padding: 18rpx 0;
+  border: 2rpx dashed rgba(16, 185, 129, 0.4);
+  border-radius: 16rpx;
+  font-size: 26rpx;
+  color: #10b981;
+  font-weight: 500;
+}
+
+.add-part-btn:active {
+  opacity: 0.7;
+}
+
+/* ==================== 配件选择器抽屉 ==================== */
+.parts-picker-drawer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  max-height: 75vh;
+  background: white;
+  border-radius: 32rpx 32rpx 0 0;
+  padding: 32rpx;
+  padding-bottom: calc(32rpx + env(safe-area-inset-bottom));
+  animation: slideUp 0.3s ease-out;
+  display: flex;
+  flex-direction: column;
+}
+
+.parts-picker-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24rpx;
+}
+
+.parts-picker-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.parts-picker-close {
+  font-size: 44rpx;
+  color: #9CA3AF;
+  width: 60rpx;
+  height: 60rpx;
+  line-height: 60rpx;
+  text-align: center;
+}
+
+.parts-picker-search {
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+  padding: 16rpx 24rpx;
+  background: #F3F4F6;
+  border-radius: 28rpx;
+  margin-bottom: 20rpx;
+}
+
+.parts-picker-input {
+  flex: 1;
+  font-size: 26rpx;
+  color: #1a1a1a;
+}
+
+.parts-picker-placeholder {
+  color: #9CA3AF;
+}
+
+.parts-picker-list {
+  flex: 1;
+  max-height: 50vh;
+}
+
+.parts-picker-loading {
+  text-align: center;
+  padding: 40rpx;
+  color: #9CA3AF;
+  font-size: 26rpx;
+}
+
+.parts-picker-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80rpx 0;
+  gap: 16rpx;
+}
+
+.parts-picker-empty-text {
+  font-size: 26rpx;
+  color: #a3a3a3;
+}
+
+.parts-picker-item {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  padding: 24rpx 16rpx;
+  border-bottom: 1rpx solid rgba(0, 0, 0, 0.05);
+}
+
+.parts-picker-item:active {
+  background: #F9FAFB;
+}
+
+.parts-picker-item-disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.parts-picker-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6rpx;
+  overflow: hidden;
+}
+
+.parts-picker-name {
+  font-size: 28rpx;
+  color: #1a1a1a;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.parts-picker-meta {
+  font-size: 22rpx;
+  color: #a3a3a3;
+}
+
+.parts-picker-stock {
+  font-size: 24rpx;
+  color: #10b981;
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.parts-picker-stock.stock-out {
+  color: #EF4444;
+}
+
+.parts-picker-added {
+  font-size: 22rpx;
+  color: #10b981;
+  font-weight: 500;
+  padding: 4rpx 12rpx;
+  background: rgba(16, 185, 129, 0.12);
+  border-radius: 8rpx;
+  flex-shrink: 0;
+}
+
+/* ==================== 详情页使用配件区块 ==================== */
+.parts-used-row {
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+  margin-top: 24rpx;
+  padding-top: 24rpx;
+  border-top: 1rpx solid rgba(0, 0, 0, 0.05);
+}
+
+.parts-used-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+  padding-left: 0;
+}
+
+.parts-used-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12rpx 20rpx;
+  background: #F9FAFB;
+  border-radius: 12rpx;
+}
+
+.parts-used-name {
+  font-size: 26rpx;
+  color: #1a1a1a;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.parts-used-qty {
+  font-size: 26rpx;
+  color: #10b981;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+

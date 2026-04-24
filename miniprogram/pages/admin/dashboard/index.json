@@ -3,5 +3,8 @@
   "navigationBarBackgroundColor": "#0CA77D",
   "backgroundColor": "#F5F5F5",
   "enablePullDownRefresh": false,
-  "navigationStyle": "custom"
+  "navigationStyle": "custom",
+  "usingComponents": {
+    "van-icon": "@vant/weapp/icon/index"
+  }
 }
