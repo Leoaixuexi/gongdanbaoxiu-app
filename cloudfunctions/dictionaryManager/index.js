@@ -214,11 +214,17 @@ exports.main = async (event, context) => {
       };
     }
 
-    // 需要管理员权限的操作
+    // 需要写权限的操作
     const adminActions = ['create', 'update', 'delete'];
     if (adminActions.includes(action)) {
-      const admin = await isAdmin(OPENID);
-      if (!admin) {
+      const user = await getCurrentUser(OPENID);
+      // material_category 字典：放给 canManageMaterial（管理员/行政经理/办美员工）
+      const isMaterialCategory = data && data.dict_key === 'material_category';
+      const canManageMaterial = user && [1, 2, 4].includes(user.role_id) && user.active !== false;
+      const isAdminUser = user && user.role_id === 1 && user.active !== false;
+
+      const allowed = isAdminUser || (isMaterialCategory && canManageMaterial);
+      if (!allowed) {
         return {
           success: false,
           error: '无权限：只有管理员可以执行此操作'
