@@ -1,0 +1,54 @@
+<view class="stock-in-form">
+  <view class="info-card">
+    <view class="info-row">
+      <text class="info-label">商品名称</text>
+      <text class="info-value">{{material_name}}</text>
+    </view>
+    <view class="info-row" wx:if="{{material_number}}">
+      <text class="info-label">编号</text>
+      <text class="info-value">{{material_number}}</text>
+    </view>
+    <view class="info-row" wx:if="{{spec}}">
+      <text class="info-label">规格</text>
+      <text class="info-value">{{spec}}</text>
+    </view>
+    <view class="info-row">
+      <text class="info-label">当前库存</text>
+      <text class="info-value">{{current_stock}} {{unit}}</text>
+    </view>
+  </view>
+
+  <view class="form-card">
+    <view class="form-item">
+      <text class="form-label">入库数量 <text class="required">*</text></text>
+      <input
+        class="form-input"
+        type="number"
+        placeholder="请输入入库数量"
+        value="{{quantity}}"
+        bindinput="onQuantityInput"
+      />
+      <text class="form-unit">{{unit}}</text>
+    </view>
+    <view class="form-item">
+      <text class="form-label">备注</text>
+      <textarea
+        class="form-textarea"
+        placeholder="选填，最多 100 字"
+        maxlength="100"
+        value="{{remark}}"
+        bindinput="onRemarkInput"
+      />
+    </view>
+  </view>
+
+  <view class="footer">
+    <van-button
+      type="primary"
+      block
+      loading="{{submitting}}"
+      disabled="{{!quantity || submitting}}"
+      bind:click="onSubmit"
+    >确认入库</van-button>
+  </view>
+</view>
