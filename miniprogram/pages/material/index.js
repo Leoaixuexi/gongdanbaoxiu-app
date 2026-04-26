@@ -313,15 +313,111 @@ Page({
   },
 
   onAddCategoryTap() {
-    // Task 10 实现
+    wx.showModal({
+      title: '新增分类',
+      editable: true,
+      placeholderText: '输入分类名称',
+      success: (res) => {
+        if (!res.confirm) return;
+        const label = (res.content || '').trim();
+        if (!label) {
+          wx.showToast({ title: '名称不能为空', icon: 'none' });
+          return;
+        }
+        // 重名校验（只看 enabled 项）
+        const exists = this.data.categoryItems.some(
+          i => i.enabled !== false && i.label === label
+        );
+        if (exists) {
+          wx.showToast({ title: '该分类已存在', icon: 'none' });
+          return;
+        }
+        const next = [
+          ...this.data.categoryItems,
+          {
+            value: label,
+            label,
+            sort: this.data.categoryItems.length,
+            enabled: true,
+          },
+        ];
+        this._saveCategoryItems(next);
+      },
+    });
   },
 
-  onRenameCategoryTap() {
-    // Task 10 实现
+  onRenameCategoryTap(e) {
+    const index = parseInt(e.currentTarget.dataset.index, 10);
+    const item = this.data.categoryItems[index];
+    if (!item) return;
+    wx.showModal({
+      title: '重命名分类',
+      editable: true,
+      content: item.label,
+      placeholderText: '输入新的分类名称',
+      success: (res) => {
+        if (!res.confirm) return;
+        const label = (res.content || '').trim();
+        if (!label) {
+          wx.showToast({ title: '名称不能为空', icon: 'none' });
+          return;
+        }
+        if (label === item.label) return; // 没变
+        const dup = this.data.categoryItems.some(
+          (i, idx) => idx !== index && i.enabled !== false && i.label === label
+        );
+        if (dup) {
+          wx.showToast({ title: '该分类已存在', icon: 'none' });
+          return;
+        }
+        const next = this.data.categoryItems.map((i, idx) =>
+          idx === index ? { ...i, label, value: label } : i
+        );
+        this._saveCategoryItems(next);
+      },
+    });
   },
 
-  onDeleteCategoryTap() {
-    // Task 10 实现
+  onDeleteCategoryTap(e) {
+    const index = parseInt(e.currentTarget.dataset.index, 10);
+    const item = this.data.categoryItems[index];
+    if (!item) return;
+    wx.showModal({
+      title: '确认删除',
+      content: `删除分类「${item.label}」？已使用该分类的商品保留旧值。`,
+      success: (res) => {
+        if (!res.confirm) return;
+        const next = this.data.categoryItems.map((i, idx) =>
+          idx === index ? { ...i, enabled: false } : i
+        );
+        const remaining = next.filter(i => i.enabled !== false).length;
+        this._saveCategoryItems(next, () => {
+          if (remaining === 0) {
+            wx.showToast({ title: '已删除最后一个分类，新品入库无可选项', icon: 'none', duration: 2500 });
+          }
+        });
+      },
+    });
+  },
+
+  async _saveCategoryItems(items, onSuccess) {
+    const prev = this.data.categoryItems;
+    this.setData({ categoryItems: items });   // 乐观 UI
+    try {
+      const result = await dictionaryAdmin.updateDictionary('material_category', items);
+      if (result && result.success) {
+        dictionary.refreshCache('material_category');
+        if (typeof onSuccess === 'function') onSuccess();
+      } else {
+        // 失败回滚
+        this.setData({ categoryItems: prev });
+        wx.showToast({ title: (result && result.error) || '保存失败', icon: 'none' });
+      }
+    } catch (e) {
+      console.error('[Material] saveCategoryItems error:', e);
+      this.setData({ categoryItems: prev });
+      wx.showToast({ title: '网络错误', icon: 'none' });
+    }
   },
 
   _ensureTabLoaded(index) {
