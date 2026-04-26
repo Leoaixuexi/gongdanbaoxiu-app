@@ -250,6 +250,7 @@ Tab2 入库管理 → 切到 sub-tab[1] 分类管理 → onShow
 - 字典**软删**而非硬删：items[i].enabled=false 保留历史项；DB 大小不显著影响
 - 分类编辑**不做乐观锁**：耗品小团队并发风险低；"后写覆盖前写"已知；如未来出现冲突，再加 expected_updated_at 校验
 - `canManageMaterial` 判断在 dictionaryManager 里**复制一份**而非共享 require：保持云函数间解耦，2-3 行 role_id 检查重复可接受
+- 当前实现下 `canAccess === canManage`（都是 1/2/4），§6.5 中"非 canManageMaterial 进入 Tab2 → 分类管理子页隐藏"分支不会触发：因为非 canManageMaterial 的角色（仅维修员=3）已被 onLoad 拦截在 material/index 之外。`subTabsForRole` 数组目前写死，留给未来角色分化时调整。
 
 ## 9. 未做
 
