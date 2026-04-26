@@ -330,45 +330,6 @@
     <text class="back-to-top-label">顶部</text>
   </view>
 
-  <!-- 入库弹窗 -->
-  <van-popup show="{{showStockIn}}" position="bottom" round bind:close="closeStockInModal" custom-style="max-height: 80vh;">
-    <view class="modal-content">
-      <view class="modal-header">
-        <text class="modal-title">配件入库</text>
-        <view class="close-btn" bindtap="closeStockInModal">×</view>
-      </view>
-      <view class="modal-body">
-        <view class="form-item">
-          <text class="form-label">配件名称</text>
-          <text class="form-value">{{stockInForm.material_name}}</text>
-        </view>
-        <view class="form-item">
-          <text class="form-label">入库数量 <text class="required">*</text></text>
-          <input
-            class="form-input"
-            type="number"
-            placeholder="请输入入库数量"
-            value="{{stockInForm.quantity}}"
-            bindinput="onStockInQtyInput"
-          />
-        </view>
-        <view class="form-item">
-          <text class="form-label">备注</text>
-          <textarea
-            class="form-textarea"
-            placeholder="可选，入库原因或备注"
-            value="{{stockInForm.remark}}"
-            bindinput="onStockInRemarkInput"
-          />
-        </view>
-      </view>
-      <view class="modal-footer">
-        <view class="btn-cancel" bindtap="closeStockInModal">取消</view>
-        <view class="btn-confirm" bindtap="doStockIn">确认入库</view>
-      </view>
-    </view>
-  </van-popup>
-
   <!-- 出库弹窗 -->
   <van-popup show="{{showStockOut}}" position="bottom" round bind:close="closeStockOutModal" custom-style="max-height: 80vh;">
     <view class="modal-content">

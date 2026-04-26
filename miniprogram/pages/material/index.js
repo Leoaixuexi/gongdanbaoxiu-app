@@ -69,19 +69,8 @@ Page({
     outPage: 1,
     outTotal: 0,
 
-    // 弹窗
-    showStockIn: false,
+    // 出库弹窗
     showStockOut: false,
-
-    // 入库表单
-    stockInForm: {
-      material_id: 0,
-      material_name: '',
-      quantity: '',
-      remark: ''
-    },
-
-    // 出库表单
     stockOutForm: {
       material_id: 0,
       material_name: '',
@@ -104,17 +93,35 @@ Page({
     categoriesLoaded: false,
   },
 
-  onLoad() {
+  onLoad(query = {}) {
     const userInfo = wx.getStorageSync(STORAGE_KEYS.USER_INFO);
-    if (!userInfo || ![ROLES.ADMIN, ROLES.PROPERTY_MANAGER, ROLES.PROPERTY_STAFF, ROLES.MAINTENANCE_STAFF].includes(userInfo.role_id)) {
+    // 维修员（MAINTENANCE_STAFF=3）已被移除耗品访问权
+    const canAccess = userInfo && [ROLES.ADMIN, ROLES.PROPERTY_MANAGER, ROLES.PROPERTY_STAFF].includes(userInfo.role_id);
+    if (!canAccess) {
       wx.showToast({ title: '无权限访问', icon: 'none' });
       setTimeout(() => wx.navigateBack(), 1500);
       return;
     }
 
+    // canManage = 与 canAccess 同集合（ADMIN/PROPERTY_MANAGER/PROPERTY_STAFF）
+    const subTabsForRole = ['入库记录', '分类管理'];
     this.setData({
-      canManage: [ROLES.ADMIN, ROLES.PROPERTY_MANAGER, ROLES.PROPERTY_STAFF].includes(userInfo.role_id)
+      canManage: true,
+      subTabs: subTabsForRole,
     });
+
+    // 支持 ?tab= & ?sub= deeplink
+    const tab = parseInt(query.tab, 10);
+    const sub = parseInt(query.sub, 10);
+    if (!isNaN(tab) && tab >= 0 && tab <= 2) {
+      this.setData({ activeTab: tab });
+      if (tab === 1 && !isNaN(sub) && sub >= 0 && sub <= 1) {
+        this.setData({ activeSubTab: sub });
+        if (sub === 1) {
+          this._ensureCategoriesLoaded();
+        }
+      }
+    }
   },
 
   onShow() {
@@ -563,50 +570,6 @@ Page({
     wx.navigateTo({
       url: `/pages/material/record-detail/index?data=${encodeURIComponent(JSON.stringify(record))}`
     });
-  },
-
-  // ===== 入库弹窗 =====
-  showStockInModal(e) {
-    const material = e.currentTarget.dataset.material;
-    this.setData({
-      showStockIn: true,
-      stockInForm: {
-        material_id: material.material_id,
-        material_name: material.name,
-        quantity: '',
-        remark: ''
-      }
-    });
-  },
-
-  closeStockInModal() {
-    this.setData({ showStockIn: false });
-  },
-
-  onStockInQtyInput(e) {
-    this.setData({ 'stockInForm.quantity': e.detail.value });
-  },
-
-  onStockInRemarkInput(e) {
-    this.setData({ 'stockInForm.remark': e.detail.value });
-  },
-
-  async doStockIn() {
-    const { material_id, quantity, remark } = this.data.stockInForm;
-    if (!quantity || Number(quantity) <= 0) {
-      wx.showToast({ title: '请输入正确的数量', icon: 'none' });
-      return;
-    }
-
-    try {
-      await materialService.stockIn(material_id, Number(quantity), remark);
-      wx.showToast({ title: '入库成功', icon: 'success' });
-      this.closeStockInModal();
-      this.loadMaterials();
-      this.loadRecords('in');
-    } catch (e) {
-      // callCloud 已处理错误提示
-    }
   },
 
   // ===== 出库弹窗 =====
