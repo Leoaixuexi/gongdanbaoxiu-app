@@ -4,7 +4,14 @@
  */
 
 const materialService = require('../../services/materialService');
+const dictionaryAdmin = require('../../services/dictionaryAdmin');
+const dictionary = require('../../services/dictionary');
 const { ROLES, STORAGE_KEYS } = require('../../utils/constants');
+
+const DEFAULT_MATERIAL_CATEGORIES = [
+  '电气', '水暖', '门窗', '消防', '清洁', '五金',
+  '滤芯类', '轴承类', '密封类', '管路类', '油漆涂料', '通用',
+];
 
 function formatTime(dateVal) {
   if (!dateVal) return '';
@@ -90,6 +97,11 @@ Page({
     // 回到顶部
     showBackToTop: false,
     materialScrollTopTarget: -1,
+
+    // 分类管理（material_category 字典）
+    categoriesLoading: false,
+    categoryItems: [],
+    categoriesLoaded: false,
   },
 
   onLoad() {
@@ -234,8 +246,82 @@ Page({
     wx.navigateTo({ url });
   },
 
-  _ensureCategoriesLoaded() {
-    // Task 9 实现
+  async _ensureCategoriesLoaded() {
+    if (this.data.categoriesLoaded) return;
+    await this.loadCategories();
+  },
+
+  async loadCategories() {
+    this.setData({ categoriesLoading: true });
+    try {
+      const result = await dictionaryAdmin.getDictionary('material_category');
+      if (result && result.success && result.data) {
+        const items = (result.data.items || []).slice().sort((a, b) => (a.sort || 0) - (b.sort || 0));
+        this.setData({
+          categoryItems: items,
+          categoriesLoading: false,
+          categoriesLoaded: true,
+        });
+        return;
+      }
+      // 不存在 → 自动 seed
+      if (result && !result.success && (result.error || '').includes('不存在')) {
+        await this.seedCategories();
+        return;
+      }
+      // 其他错误
+      wx.showToast({ title: '加载失败', icon: 'none' });
+      this.setData({ categoriesLoading: false });
+    } catch (e) {
+      console.error('[Material] loadCategories error:', e);
+      wx.showToast({ title: '加载失败', icon: 'none' });
+      this.setData({ categoriesLoading: false });
+    }
+  },
+
+  async seedCategories() {
+    const items = DEFAULT_MATERIAL_CATEGORIES.map((label, idx) => ({
+      value: label,
+      label,
+      sort: idx,
+      enabled: true,
+    }));
+    try {
+      const result = await dictionaryAdmin.createDictionary({
+        dict_key: 'material_category',
+        dict_name: '物料分类',
+        description: '新品入库的商品分类',
+        items,
+      });
+      if (result && result.success) {
+        wx.showToast({ title: '已创建默认分类', icon: 'success' });
+        dictionary.refreshCache('material_category');
+        this.setData({
+          categoryItems: items,
+          categoriesLoading: false,
+          categoriesLoaded: true,
+        });
+      } else {
+        wx.showToast({ title: (result && result.error) || '初始化失败', icon: 'none' });
+        this.setData({ categoriesLoading: false });
+      }
+    } catch (e) {
+      console.error('[Material] seedCategories error:', e);
+      wx.showToast({ title: '网络错误', icon: 'none' });
+      this.setData({ categoriesLoading: false });
+    }
+  },
+
+  onAddCategoryTap() {
+    // Task 10 实现
+  },
+
+  onRenameCategoryTap() {
+    // Task 10 实现
+  },
+
+  onDeleteCategoryTap() {
+    // Task 10 实现
   },
 
   _ensureTabLoaded(index) {
