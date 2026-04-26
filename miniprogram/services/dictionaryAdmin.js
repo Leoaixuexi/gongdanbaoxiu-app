@@ -22,7 +22,7 @@ const listDictionaries = async () => {
 const getDictionary = async (dictKey) => {
   const result = await callCloudSilent('dictionaryManager', {
     action: 'get',
-    data: { dict_key: dictKey, includeDisabled: true }
+    data: { dict_key: dictKey, include_disabled: true }
   });
   return result;
 };

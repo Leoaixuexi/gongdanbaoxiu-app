@@ -80,9 +80,6 @@ Page({
       remark: ''
     },
 
-    categories: ['电气', '水暖', '门窗', '消防', '通用'],
-    units: ['个', '根', '箱', '套', '米', '卷'],
-
     // 回到顶部
     showBackToTop: false,
     materialScrollTopTarget: -1,
