@@ -26,14 +26,6 @@ async function getCurrentUser(openid) {
 }
 
 /**
- * 检查是否为管理员
- */
-async function isAdmin(openid) {
-  const user = await getCurrentUser(openid);
-  return user && user.role_id === 1;
-}
-
-/**
  * 获取字典列表
  */
 async function listDictionaries() {
