@@ -46,6 +46,17 @@ const stockOut = async (material_id, quantity, remark = '') => {
 };
 
 /**
+ * 按 material_number 查找配件（扫码入库用）
+ * @returns {Promise<{success: boolean, material: object | null}>}
+ */
+const getMaterialByNumber = async (material_number) => {
+  return callCloudSilent('materialManager', {
+    action: 'getMaterialByNumber',
+    data: { material_number }
+  });
+};
+
+/**
  * 获取出入库记录
  * @param {string} type - 'in' | 'out' | '' (全部)
  */
@@ -112,6 +123,7 @@ module.exports = {
   deleteMaterial,
   stockIn,
   stockOut,
+  getMaterialByNumber,
   listRecords,
   getWarnings,
   getMaterialStats,
