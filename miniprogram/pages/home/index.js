@@ -129,20 +129,28 @@ Page({
     })
   },
 
-  onShow() {
+  async onShow() {
     // 设置 TabBar 选中状态（首页 = index 0）
     if (typeof this.getTabBar === 'function' && this.getTabBar()) {
       this.getTabBar().setData({ selected: 0 })
     }
     // 按角色调整工单功能入口
-    const roleId = app.globalData.userInfo?.role_id
+    // 冷启动时 app.onLaunch 的 checkLoginStatus 未 await，globalData.userInfo 可能尚未就绪，主动补齐
+    let roleId = app.globalData.userInfo?.role_id
+    if (roleId === undefined && typeof app.getUserInfo === 'function') {
+      try {
+        const userInfo = await app.getUserInfo()
+        roleId = userInfo?.role_id
+      } catch (e) { /* 登录失败保持默认分支 */ }
+    }
     const isMaintenanceWorker = roleId === 3
-    const isManager = roleId === 2
+    const isManager = roleId === 2 || roleId === 4
     if (isMaintenanceWorker) {
       this.setData({
         isMaintenanceWorker: true,
         tabs: ['工单维修'],
-        workOrderFunctions: this.data.workOrderFunctions.filter(f => f.label !== '物料管理')
+        // 维修员无数据分析权限，且物料管理已下沉到列表页
+        workOrderFunctions: this.data.workOrderFunctions.filter(f => f.label !== '物料管理' && f.label !== '数据看板')
       })
     } else if (isManager) {
       const baseFuncs = this.data.workOrderFunctions.filter(f => f.label !== '收费工单')
@@ -282,6 +290,18 @@ Page({
 
     if (module === 'workOrder' && label === '收费工单') {
       wx.navigateTo({ url: '/pages/charge-order/index' })
+      return
+    }
+
+    // 耗品管理 - 入库管理
+    if (module === 'consumable' && label === '入库管理') {
+      wx.navigateTo({
+        url: '/pages/material/index?tab=1&sub=0',
+        fail: (err) => {
+          console.error('navigateTo failed:', err)
+          wx.reLaunch({ url: '/pages/material/index?tab=1&sub=0' })
+        }
+      })
       return
     }
 
