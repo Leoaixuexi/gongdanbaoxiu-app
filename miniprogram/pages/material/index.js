@@ -32,7 +32,10 @@ function formatDateTime(dateVal) {
 Page({
   data: {
     activeTab: 0,
-    tabs: ['配件列表', '入库记录', '出库记录'],
+    tabs: ['配件列表', '入库管理', '出库记录'],
+    // Tab2 入库管理 - 子页签
+    activeSubTab: 0,                       // 0 入库记录 / 1 分类管理
+    subTabs: ['入库记录', '分类管理'],
     canManage: false,
 
     // 配件列表
@@ -91,14 +94,14 @@ Page({
 
   onLoad() {
     const userInfo = wx.getStorageSync(STORAGE_KEYS.USER_INFO);
-    if (!userInfo || ![ROLES.ADMIN, ROLES.PROPERTY_MANAGER, ROLES.MAINTENANCE_STAFF].includes(userInfo.role_id)) {
+    if (!userInfo || ![ROLES.ADMIN, ROLES.PROPERTY_MANAGER, ROLES.PROPERTY_STAFF, ROLES.MAINTENANCE_STAFF].includes(userInfo.role_id)) {
       wx.showToast({ title: '无权限访问', icon: 'none' });
       setTimeout(() => wx.navigateBack(), 1500);
       return;
     }
 
     this.setData({
-      canManage: [ROLES.ADMIN, ROLES.PROPERTY_MANAGER].includes(userInfo.role_id)
+      canManage: [ROLES.ADMIN, ROLES.PROPERTY_MANAGER, ROLES.PROPERTY_STAFF].includes(userInfo.role_id)
     });
   },
 
@@ -133,6 +136,19 @@ Page({
     const index = e.detail.current;
     this.setData({ activeTab: index });
     this._ensureTabLoaded(index);
+  },
+
+  // ===== Tab2 sub-tabs =====
+  onSubTabChange(e) {
+    const sub = parseInt(e.currentTarget.dataset.sub, 10);
+    this.setData({ activeSubTab: sub });
+    if (sub === 1) {
+      this._ensureCategoriesLoaded();
+    }
+  },
+
+  _ensureCategoriesLoaded() {
+    // Task 9 实现
   },
 
   _ensureTabLoaded(index) {
