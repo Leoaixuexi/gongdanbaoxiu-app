@@ -7,6 +7,7 @@ const { ROLES, STORAGE_KEYS } = require('../../../utils/constants');
 const { smartCompress, COMPRESS_PRESETS } = require('../../../utils/imageUtils');
 const { uploadFiles } = require('../../../services/cloudStorage');
 const { getNavBarInfo } = require('../../../utils/navigation');
+const dictionary = require('../../../services/dictionary');
 
 Page({
   data: {
@@ -29,13 +30,13 @@ Page({
     },
 
     photos: ['', '', ''],
-    categories: ['电气', '水暖', '门窗', '消防', '通用'],
+    categories: [],
     units: ['个', '根', '箱', '套', '米', '卷']
   },
 
-  onLoad() {
+  async onLoad() {
     const userInfo = wx.getStorageSync(STORAGE_KEYS.USER_INFO);
-    if (!userInfo || ![ROLES.ADMIN, ROLES.PROPERTY_MANAGER].includes(userInfo.role_id)) {
+    if (!userInfo || ![ROLES.ADMIN, ROLES.PROPERTY_MANAGER, ROLES.PROPERTY_STAFF].includes(userInfo.role_id)) {
       wx.showToast({ title: '无权限', icon: 'none' });
       setTimeout(() => wx.navigateBack(), 1500);
       return;
@@ -45,6 +46,19 @@ Page({
     this.setData({
       headerHeight: Math.ceil(headerHeight),
       'form.stock_in_time': new Date().toISOString().split('T')[0]
+    });
+    await this.loadCategories();
+  },
+
+  async onShow() {
+    dictionary.refreshCache('material_category');
+    await this.loadCategories();
+  },
+
+  async loadCategories() {
+    const options = await dictionary.getOptions('material_category');
+    this.setData({
+      categories: options || [],
     });
   },
 
