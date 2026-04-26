@@ -286,8 +286,12 @@
     </swiper-item>
   </swiper>
 
-  <!-- FAB 新增配件按钮 -->
-  <view wx:if="{{canManage && activeTab === 0}}" class="fab-button" bindtap="goToAddMaterial">
+  <!-- FAB：Tab1 = 新增配件 / Tab2 入库记录子页 = 扫码/新品入库 ActionSheet -->
+  <view
+    wx:if="{{canManage && (activeTab === 0 || (activeTab === 1 && activeSubTab === 0))}}"
+    class="fab-button"
+    bindtap="onFabTap"
+  >
     <van-icon name="plus" size="24px" color="#FFFFFF" />
   </view>
 

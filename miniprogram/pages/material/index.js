@@ -106,9 +106,22 @@ Page({
   },
 
   onShow() {
-    this.loadMaterials();
-    // 其他 Tab 数据延迟到切换时加载
-    this._tabLoaded = { 0: true };
+    // 首次：只加载 Tab1
+    if (!this._tabLoaded) {
+      this._tabLoaded = { 0: true };
+      this.loadMaterials();
+      return;
+    }
+    // 从 stock-in-form 返回：当前在 Tab2 入库记录子页，强制刷新前 1 页
+    if (this.data.activeTab === 1 && this.data.activeSubTab === 0) {
+      this.loadRecords('in');
+    }
+    // 从 add 页返回：刷 Tab1 配件列表 + Tab2 入库记录
+    if (this.data.activeTab === 0) {
+      this.loadMaterials();
+      // Tab2 入库记录数据若已加载过，也刷
+      if (this._tabLoaded && this._tabLoaded[1]) this.loadRecords('in');
+    }
   },
 
   onPullDownRefresh() {
@@ -145,6 +158,80 @@ Page({
     if (sub === 1) {
       this._ensureCategoriesLoaded();
     }
+  },
+
+  // ===== FAB =====
+  onFabTap() {
+    const tab = this.data.activeTab;
+
+    // Tab1：保持原"新增配件"行为
+    if (tab === 0) {
+      this.goToAddMaterial();
+      return;
+    }
+
+    // Tab2 入库记录子页：弹 ActionSheet
+    wx.showActionSheet({
+      itemList: ['扫码入库', '新品入库'],
+      success: (res) => {
+        if (res.tapIndex === 0) {
+          this.scanAndStockIn();
+        } else if (res.tapIndex === 1) {
+          this.goToAddMaterial();
+        }
+      },
+    });
+  },
+
+  // 注：goToAddMaterial 已在文件 ~L374 定义，无需重定义
+
+  // ===== 扫码入库 =====
+  async scanAndStockIn() {
+    let scanResult;
+    try {
+      scanResult = await wx.scanCode({ scanType: ['qrCode', 'barCode'] });
+    } catch (e) {
+      // 用户取消，静默
+      return;
+    }
+    const code = (scanResult.result || '').trim();
+    if (!code) {
+      wx.showToast({ title: '扫码失败，请重试', icon: 'none' });
+      return;
+    }
+
+    let result;
+    try {
+      result = await materialService.getMaterialByNumber(code);
+    } catch (e) {
+      console.error('[Material] scan lookup error:', e);
+      wx.showToast({ title: '网络错误，请重试', icon: 'none' });
+      return;
+    }
+
+    if (!result || !result.success) {
+      wx.showToast({ title: (result && result.error) || '查询失败', icon: 'none' });
+      return;
+    }
+
+    if (!result.material) {
+      wx.showModal({
+        title: '未找到',
+        content: `编号「${code}」未登记，请先去新品入库`,
+        showCancel: false,
+      });
+      return;
+    }
+
+    const m = result.material;
+    const url = '/pages/material/stock-in-form/index'
+      + `?material_id=${m.material_id}`
+      + `&name=${encodeURIComponent(m.name || '')}`
+      + `&number=${encodeURIComponent(m.material_number || '')}`
+      + `&stock=${m.stock || 0}`
+      + `&unit=${encodeURIComponent(m.unit || '')}`
+      + `&spec=${encodeURIComponent(m.spec || '')}`;
+    wx.navigateTo({ url });
   },
 
   _ensureCategoriesLoaded() {
