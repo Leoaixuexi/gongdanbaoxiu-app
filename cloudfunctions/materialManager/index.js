@@ -37,6 +37,25 @@ exports.main = async (event, context) => {
     }
 
     switch (action) {
+      // ===== 按编号查询配件（扫码入库前置） =====
+      case 'getMaterialByNumber': {
+        const { material_number } = data;
+        if (!material_number) {
+          return { success: false, error: '缺少 material_number' };
+        }
+
+        const { data: list } = await db.collection('materials')
+          .where({ material_number })
+          .limit(1)
+          .get();
+
+        if (list.length === 0) {
+          return { success: true, material: null };
+        }
+
+        return { success: true, material: list[0] };
+      }
+
       // ===== 配件列表 =====
       case 'listMaterials': {
         const { keyword, page = 1, pageSize = 20 } = data;
