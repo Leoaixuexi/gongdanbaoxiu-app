@@ -21,7 +21,7 @@
 
 | 决策点 | 选择 | 备选 | 选择原因 |
 |---|---|---|---|
-| 落点 | 在 `pages/material/index` 内改造 Tab2 | 新建独立页面 / 重构整个 material 为 consumable | 改动最小，导航不变，复用既有云函数 |
+| 落点 | ~~在 `pages/material/index` 内改造 Tab2~~ → **改为新建独立页 `pages/material/stock-in`**（见 §8 已知局限"方向调整"） | 新建独立页面 / 重构整个 material 为 consumable | 初版选 A（改动最小），上线前发现两个入口共享同一页面、NavBar 与语义割裂，改为 B（拆独立页） |
 | 扫码入库目的页 | 轻量补单（仅数量+备注） | 复用 detail 页弹窗 / 完整表单 | 一屏一动作，最快 |
 | 扫不到编号的处理 | modal "未登记" | 自动跳新品入库 | 避免误触把扫码错误带入新品流程 |
 | 分类管理数据 | 复用 `dictionaryManager` + 新字典 key `material_category` | 新建独立 collection | 项目已有完整字典系统 |
@@ -250,7 +250,20 @@ Tab2 入库管理 → 切到 sub-tab[1] 分类管理 → onShow
 - 字典**软删**而非硬删：items[i].enabled=false 保留历史项；DB 大小不显著影响
 - 分类编辑**不做乐观锁**：耗品小团队并发风险低；"后写覆盖前写"已知；如未来出现冲突，再加 expected_updated_at 校验
 - `canManageMaterial` 判断在 dictionaryManager 里**复制一份**而非共享 require：保持云函数间解耦，2-3 行 role_id 检查重复可接受
-- 当前实现下 `canAccess === canManage`（都是 1/2/4），§6.5 中"非 canManageMaterial 进入 Tab2 → 分类管理子页隐藏"分支不会触发：因为非 canManageMaterial 的角色（仅维修员=3）已被 onLoad 拦截在 material/index 之外。`subTabsForRole` 数组目前写死，留给未来角色分化时调整。
+- 当前实现下 `canAccess === canManage`（都是 1/2/4），§6.5 中"非 canManageMaterial 进入分类管理子页隐藏"分支不会触发：因为非 canManageMaterial 的角色（仅维修员=3）已被 onLoad 拦截在页面之外。`subTabs` 数组目前写死，留给未来角色分化时调整。
+
+### 方向调整：A → B 拆独立页（落点变更）
+
+初版按 §2 选 A（在 `pages/material/index` 内改造 Tab2），完成 14 commits 后用户体验回归发现：
+- 首页 Tab1 工单维修 → "物料管理" 与 Tab2 耗品管理 → "入库管理" 都跳同一个 `pages/material/index`，NavBar 都显示"物料管理"，给人"两个入口看起来一样"
+- 从"耗品管理 → 入库管理"进入仍能左右滑切到"配件列表 / 出库记录"，与入口语义不符
+
+调整后落点：
+- **新建** `pages/material/stock-in/index.{js,wxml,wxss,json}`，仅 sub-tabs（入库记录 / 分类管理）+ FAB，NavBar 标题"入库管理"
+- **`pages/material/index` 缩为 2 Tab**（配件列表 / 出库记录），删除 Tab2 入库管理、移除 sub-tabs / FAB / 扫码 / 分类管理 全部代码
+- 首页"入库管理"宫格跳转改为 `/pages/material/stock-in/index`（不带 query）
+
+设计 §3 架构图保留以记录历史，但实际落地以本节为准。
 
 ## 9. 未做
 

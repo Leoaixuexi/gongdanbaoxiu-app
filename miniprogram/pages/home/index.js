@@ -293,13 +293,13 @@ Page({
       return
     }
 
-    // 耗品管理 - 入库管理
+    // 耗品管理 - 入库管理（独立页）
     if (module === 'consumable' && label === '入库管理') {
       wx.navigateTo({
-        url: '/pages/material/index?tab=1&sub=0',
+        url: '/pages/material/stock-in/index',
         fail: (err) => {
           console.error('navigateTo failed:', err)
-          wx.reLaunch({ url: '/pages/material/index?tab=1&sub=0' })
+          wx.reLaunch({ url: '/pages/material/stock-in/index' })
         }
       })
       return

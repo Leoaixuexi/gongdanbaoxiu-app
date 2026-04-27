@@ -1,0 +1,122 @@
+<!-- 入库管理（独立页） -->
+<view class="stock-in-page">
+  <!-- Sub-Tabs -->
+  <view class="sub-tabs">
+    <view
+      wx:for="{{subTabs}}"
+      wx:key="index"
+      class="sub-tab-item {{activeSubTab === index ? 'sub-tab-active' : ''}}"
+      data-sub="{{index}}"
+      bindtap="onSubTabChange"
+    >
+      <text class="sub-tab-text">{{item}}</text>
+    </view>
+  </view>
+
+  <!-- 子页 0：入库记录 -->
+  <scroll-view
+    wx:if="{{activeSubTab === 0}}"
+    scroll-y
+    class="sub-tab-content"
+    bindscrolltolower="onLoadMoreRecords"
+  >
+    <view wx:if="{{inLoading}}" class="loading-state">
+      <text>加载中...</text>
+    </view>
+    <view wx:elif="{{inRecords.length === 0}}" class="empty-state">
+      <van-icon name="orders-o" size="48px" color="#d4d4d4" />
+      <text class="empty-text">暂无入库记录</text>
+    </view>
+    <view wx:else class="card-list">
+      <view
+        wx:for="{{inRecords}}"
+        wx:key="record_id"
+        class="m-card"
+        bindtap="goToRecordDetail"
+        data-record="{{item}}"
+      >
+        <image
+          class="m-card-img"
+          src="{{item.material_image || '/images/placeholder.png'}}"
+          mode="aspectFill"
+        />
+        <view class="m-card-body">
+          <view class="m-card-title">{{item.material_name}}</view>
+          <view class="m-card-meta">
+            <view class="meta-item">
+              <van-icon name="apps-o" size="11px" color="#a3a3a3" />
+              <text class="meta-text">{{item.category || '-'}}</text>
+            </view>
+            <view class="meta-item">
+              <van-icon name="location-o" size="11px" color="#a3a3a3" />
+              <text class="meta-text">{{item.usage_area || '-'}}</text>
+            </view>
+          </view>
+          <view class="m-card-meta">
+            <view class="meta-item">
+              <van-icon name="clock-o" size="11px" color="#a3a3a3" />
+              <text class="meta-text">{{item.timeText}}</text>
+            </view>
+            <view class="meta-item">
+              <van-icon name="manager-o" size="11px" color="#a3a3a3" />
+              <text class="meta-text">{{item.operator.name}}</text>
+            </view>
+          </view>
+        </view>
+        <view class="m-card-qty qty-in">+{{item.quantity}}</view>
+      </view>
+    </view>
+    <view wx:if="{{inLoadingMore}}" class="loading-more">
+      <text>加载更多...</text>
+    </view>
+  </scroll-view>
+
+  <!-- 子页 1：分类管理 -->
+  <scroll-view
+    wx:if="{{activeSubTab === 1}}"
+    scroll-y
+    class="sub-tab-content"
+  >
+    <view class="cat-header" wx:if="{{canManage}}">
+      <view class="cat-add-btn" bindtap="onAddCategoryTap">
+        <van-icon name="plus" size="14px" color="#1677FF" />
+        <text class="cat-add-text">新增分类</text>
+      </view>
+    </view>
+
+    <view wx:if="{{categoriesLoading}}" class="loading-state">
+      <text>加载中...</text>
+    </view>
+    <view wx:elif="{{categoryItems.length === 0}}" class="empty-state">
+      <van-icon name="apps-o" size="48px" color="#d4d4d4" />
+      <text class="empty-text">暂无分类</text>
+    </view>
+    <view wx:else class="cat-list">
+      <view
+        wx:for="{{categoryItems}}"
+        wx:key="value"
+        class="cat-item"
+        wx:if="{{item.enabled !== false}}"
+      >
+        <text class="cat-name">{{item.label}}</text>
+        <view class="cat-actions" wx:if="{{canManage}}">
+          <view class="cat-btn" data-index="{{index}}" bindtap="onRenameCategoryTap">
+            <van-icon name="edit" size="16px" color="#6B7280" />
+          </view>
+          <view class="cat-btn cat-btn-danger" data-index="{{index}}" bindtap="onDeleteCategoryTap">
+            <van-icon name="delete-o" size="16px" color="#DC2626" />
+          </view>
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+
+  <!-- FAB（仅入库记录子页 + 有管理权限时显示） -->
+  <view
+    wx:if="{{canManage && activeSubTab === 0}}"
+    class="fab-button"
+    bindtap="onFabTap"
+  >
+    <van-icon name="plus" size="24px" color="#FFFFFF" />
+  </view>
+</view>
