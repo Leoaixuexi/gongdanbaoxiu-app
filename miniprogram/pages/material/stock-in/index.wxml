@@ -125,7 +125,7 @@
   <view
     wx:if="{{canManage && activeSubTab === 0}}"
     class="fab-button"
-    bindtap="onFabTap"
+    bindtap="directScan"
   >
     <van-icon name="plus" size="24px" color="#FFFFFF" />
   </view>

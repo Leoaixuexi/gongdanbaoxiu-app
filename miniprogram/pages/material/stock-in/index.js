@@ -102,26 +102,8 @@ Page({
     }
   },
 
-  // ===== FAB =====
-  onFabTap() {
-    wx.showActionSheet({
-      itemList: ['扫码入库', '新品入库'],
-      success: (res) => {
-        if (res.tapIndex === 0) {
-          this.scanAndStockIn();
-        } else if (res.tapIndex === 1) {
-          this.goToAddMaterial();
-        }
-      },
-    });
-  },
-
-  goToAddMaterial() {
-    wx.navigateTo({ url: '/pages/material/add/index' });
-  },
-
-  // ===== 扫码入库 =====
-  async scanAndStockIn() {
+  // ===== 直接扫码（替代旧 ActionSheet） =====
+  async directScan() {
     let scanResult;
     try {
       scanResult = await wx.scanCode({ scanType: ['qrCode', 'barCode'] });
@@ -150,23 +132,32 @@ Page({
     }
 
     if (!result.material) {
+      // 扫到不识别 → modal 双按钮引导添加
       wx.showModal({
-        title: '未找到',
-        content: `编号「${code}」未登记，请先去新品入库`,
-        showCancel: false,
+        title: '未识别',
+        content: `编号「${code}」未登记，是否去商品管理添加？`,
+        cancelText: '取消',
+        confirmText: '立即添加',
+        success: (modalRes) => {
+          if (modalRes.confirm) {
+            this.setData({ activeSubTab: 1 });
+            wx.navigateTo({
+              url: `/pages/material/add/index?material_number=${encodeURIComponent(code)}`,
+            });
+          }
+        },
       });
       return;
     }
 
-    const m = result.material;
-    const url = '/pages/material/stock-in-form/index'
-      + `?material_id=${m.material_id}`
-      + `&name=${encodeURIComponent(m.name || '')}`
-      + `&number=${encodeURIComponent(m.material_number || '')}`
-      + `&stock=${m.stock || 0}`
-      + `&unit=${encodeURIComponent(m.unit || '')}`
-      + `&spec=${encodeURIComponent(m.spec || '')}`;
-    wx.navigateTo({ url });
+    // 命中 → 弹 Modal（loadLocationOptions + openStockInModal 下 Task 实现）
+    await this.openStockInModal(result.material);
+  },
+
+  // 占位 — Task 10 实现
+  async openStockInModal(material) {
+    console.log('[StockIn] openStockInModal placeholder', material);
+    wx.showToast({ title: 'Modal 待实现', icon: 'none' });
   },
 
   // ===== 入库记录 =====
