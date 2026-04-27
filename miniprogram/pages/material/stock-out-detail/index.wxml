@@ -1,0 +1,91 @@
+<view class="detail-page">
+  <view wx:if="{{loading}}" class="loading">加载中...</view>
+
+  <block wx:elif="{{request}}">
+    <!-- 状态横幅 -->
+    <view class="status-banner status-{{request.status}}">
+      <text class="status-text">{{statusText}}</text>
+      <text class="status-num">单号 {{request.request_number}}</text>
+    </view>
+
+    <!-- 物资 -->
+    <view class="card">
+      <view class="card-row">
+        <image class="card-img" src="{{request.material_image || '/images/placeholder.png'}}" mode="aspectFill" />
+        <view class="card-info">
+          <text class="card-title">{{request.material_name}}</text>
+          <text class="card-meta">编号 {{request.material_number || '-'}}</text>
+          <text class="card-meta">规格 {{request.spec || '-'}} · 单位 {{request.unit || '-'}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 申请信息 -->
+    <view class="card">
+      <view class="row"><text class="row-key">申请数量</text><text class="row-val">{{request.requested_quantity}}</text></view>
+      <view wx:if="{{request.approved_quantity}}" class="row"><text class="row-key">实际出库</text><text class="row-val highlight">{{request.approved_quantity}}</text></view>
+      <view class="row"><text class="row-key">使用区域</text><text class="row-val">{{request.region}}</text></view>
+      <view class="row"><text class="row-key">使用场景</text><text class="row-val">{{request.scene}}</text></view>
+      <view class="row"><text class="row-key">申请人</text><text class="row-val">{{request.requester.name}}</text></view>
+      <view wx:if="{{request.remark}}" class="row row-multi"><text class="row-key">备注</text><text class="row-val">{{request.remark}}</text></view>
+    </view>
+
+    <!-- 审核结果 -->
+    <view wx:if="{{request.status === 'Approved' || request.status === 'Rejected'}}" class="card">
+      <view class="row"><text class="row-key">审核人</text><text class="row-val">{{request.reviewer.name}}</text></view>
+      <view wx:if="{{request.status === 'Rejected'}}" class="row row-multi"><text class="row-key">驳回原因</text><text class="row-val danger">{{request.reject_reason}}</text></view>
+    </view>
+
+    <!-- 状态时间线 -->
+    <view class="card">
+      <view class="timeline">
+        <view class="tl-item tl-done">
+          <view class="tl-dot"></view>
+          <view class="tl-body">
+            <text class="tl-title">提交申请</text>
+            <text class="tl-time">{{createdText}}</text>
+          </view>
+        </view>
+        <view wx:if="{{request.status === 'Approved'}}" class="tl-item tl-done">
+          <view class="tl-dot"></view>
+          <view class="tl-body">
+            <text class="tl-title">审核通过 · 已出库</text>
+            <text class="tl-time">{{approvedText}}</text>
+          </view>
+        </view>
+        <view wx:elif="{{request.status === 'Rejected'}}" class="tl-item tl-rejected">
+          <view class="tl-dot"></view>
+          <view class="tl-body">
+            <text class="tl-title">已驳回</text>
+            <text class="tl-time">{{rejectedText}}</text>
+          </view>
+        </view>
+        <view wx:elif="{{request.status === 'Cancelled'}}" class="tl-item tl-cancelled">
+          <view class="tl-dot"></view>
+          <view class="tl-body">
+            <text class="tl-title">已撤回</text>
+            <text class="tl-time">{{cancelledText}}</text>
+          </view>
+        </view>
+        <view wx:else class="tl-item tl-pending">
+          <view class="tl-dot"></view>
+          <view class="tl-body">
+            <text class="tl-title">等待审核</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </block>
+
+  <view wx:elif="{{!loading && !request}}" class="empty">
+    <text>申请单不存在或无权限查看</text>
+    <button class="btn-back" bindtap="onBack">返回</button>
+  </view>
+
+  <!-- 操作按钮（Task 16 接入实际逻辑） -->
+  <view wx:if="{{showActions}}" class="actions-bar">
+    <button wx:if="{{canCancel}}" class="action-btn action-btn-secondary" bindtap="onCancel">撤回</button>
+    <button wx:if="{{canApprove}}" class="action-btn action-btn-danger" bindtap="onReject">驳回</button>
+    <button wx:if="{{canApprove}}" class="action-btn action-btn-primary" bindtap="onApprove">审核通过</button>
+  </view>
+</view>
