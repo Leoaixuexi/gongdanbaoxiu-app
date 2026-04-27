@@ -29,6 +29,10 @@ Page({
     sceneOptions: [],
     submitting: false,
     canSubmit: false,
+    showPicker: false,
+    pickerKeyword: '',
+    pickerList: [],
+    pickerLoading: false,
   },
 
   onLoad() {
@@ -69,8 +73,47 @@ Page({
   },
 
   onPickMaterial() {
-    // Task 14 实现
-    wx.showToast({ title: '物资选择待实现', icon: 'none' });
+    this.setData({ showPicker: true, pickerKeyword: '' });
+    this._loadPickerList('');
+  },
+
+  onClosePicker() {
+    this.setData({ showPicker: false });
+  },
+
+  onPickerSearchInput(e) {
+    this.setData({ pickerKeyword: e.detail.value });
+  },
+
+  async onPickerSearch() {
+    await this._loadPickerList(this.data.pickerKeyword);
+  },
+
+  async _loadPickerList(keyword) {
+    this.setData({ pickerLoading: true });
+    const materialService = require('../../../services/materialService');
+    const res = await materialService.listMaterials(keyword || '', 1, 50);
+    this.setData({
+      pickerList: (res && res.success) ? res.materials : [],
+      pickerLoading: false,
+    });
+  },
+
+  onSelectMaterial(e) {
+    const m = e.currentTarget.dataset.mat;
+    if (!m || m.stock <= 0) {
+      wx.showToast({ title: '库存为 0，无法申请', icon: 'none' });
+      return;
+    }
+    this.setData({
+      'form.material_id': m.material_id,
+      'form.material_name': m.name,
+      'form.material_number': m.material_number || '',
+      'form.spec': m.spec || '',
+      'form.unit': m.unit || '',
+      'form.current_stock': m.stock,
+      showPicker: false,
+    }, this._refreshSubmit);
   },
 
   onQuantityInput(e) {
@@ -101,8 +144,31 @@ Page({
     this.setData({ canSubmit: ok });
   },
 
-  onSubmit() {
-    // Task 14 实现
-    wx.showToast({ title: '提交逻辑待实现', icon: 'none' });
+  async onSubmit() {
+    if (!this.data.canSubmit || this.data.submitting) return;
+
+    const { form } = this.data;
+    const qty = Number(form.requested_quantity);
+
+    if (qty > form.current_stock) {
+      wx.showToast({ title: `库存仅 ${form.current_stock}，请减少申请量`, icon: 'none' });
+      return;
+    }
+
+    this.setData({ submitting: true });
+    const materialService = require('../../../services/materialService');
+    const res = await materialService.createStockOutRequest({
+      material_id: form.material_id,
+      requested_quantity: qty,
+      region: form.region,
+      scene: form.scene,
+      remark: form.remark || '',
+    });
+    this.setData({ submitting: false });
+
+    if (res && res.success) {
+      wx.showToast({ title: '已提交', icon: 'success' });
+      setTimeout(() => wx.navigateBack(), 600);
+    }
   },
 });
