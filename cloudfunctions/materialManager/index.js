@@ -7,7 +7,7 @@ const {
 const crud = require('./handlers/crud');
 const stock = require('./handlers/stock');
 const seed = require('./handlers/seed');
-// const request = require('./handlers/request');  // Task 3 之后启用
+const request = require('./handlers/request');
 
 const ROUTES = {
   // CRUD
@@ -23,6 +23,8 @@ const ROUTES = {
   stockIn: stock.stockIn,
   stockOut: stock.stockOut,
   getWarnings: stock.getWarnings,
+  // Request actions
+  createStockOutRequest: request.createStockOutRequest,
   // Seed
   seedTestData: seed.seedTestData,
 };
