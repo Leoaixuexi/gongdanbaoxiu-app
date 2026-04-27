@@ -25,6 +25,7 @@ const ROUTES = {
   getWarnings: stock.getWarnings,
   // Request actions
   createStockOutRequest: request.createStockOutRequest,
+  approveStockOutRequest: request.approveStockOutRequest,
   // Seed
   seedTestData: seed.seedTestData,
 };

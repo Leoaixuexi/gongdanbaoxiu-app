@@ -59,6 +59,14 @@ function canRequestStockOut(user) {
 }
 
 /**
+ * 权限校验：是否可以审核出库申请
+ * 管理员(1)、物资专员(5) 可审核
+ */
+function canApproveStockOut(user) {
+  return user && [1, 5].includes(user.role_id) && user.active !== false;
+}
+
+/**
  * 生成自增ID
  */
 async function getNextId(collection) {
@@ -119,6 +127,7 @@ module.exports = {
   canAccessMaterial,
   canManageMaterial,
   canRequestStockOut,
+  canApproveStockOut,
   getNextId,
   createBatchNotifications,
 };
