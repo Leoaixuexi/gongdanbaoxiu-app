@@ -24,7 +24,6 @@
     "pages/material/edit/index",
     "pages/material/detail/index",
     "pages/material/record-detail/index",
-    "pages/material/stock-in-form/index",
     "pages/material/stock-in/index",
     "pages/charge-order/index",
     "pages/charge-order/detail",
