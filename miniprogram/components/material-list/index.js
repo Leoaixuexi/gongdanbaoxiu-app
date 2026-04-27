@@ -88,6 +88,71 @@ Component({
       this.triggerEvent('itemtap', { material });
     },
 
+    onCardMenuTap(e) {
+      const material = e.currentTarget.dataset.material;
+      wx.showActionSheet({
+        itemList: ['编辑', '删除'],
+        success: (res) => {
+          if (res.tapIndex === 0) {
+            wx.navigateTo({ url: `/pages/material/edit/index?id=${material.material_id}` });
+          } else if (res.tapIndex === 1) {
+            this._confirmDelete(material);
+          }
+        },
+      });
+    },
+
+    _confirmDelete(material) {
+      wx.showModal({
+        title: '确认删除',
+        content: `删除「${material.name}」？此操作不可撤销。`,
+        success: (res) => {
+          if (res.confirm) this._optimisticDelete(material);
+        },
+      });
+    },
+
+    async _optimisticDelete(material) {
+      const prev = this.data.materials;
+      const next = prev.filter(m => m.material_id !== material.material_id);
+      this.setData({ materials: next });
+      this._applyFilter();
+      try {
+        const result = await materialService.deleteMaterial(material.material_id);
+        if (!result || !result.success) {
+          this.setData({ materials: prev });
+          this._applyFilter();
+          wx.showToast({ title: (result && result.error) || '删除失败', icon: 'none' });
+        } else {
+          wx.showToast({ title: '已删除', icon: 'success' });
+        }
+      } catch (e) {
+        console.error('[MaterialList] delete error:', e);
+        this.setData({ materials: prev });
+        this._applyFilter();
+        wx.showToast({ title: '网络错误', icon: 'none' });
+      }
+    },
+
+    onAddTap() {
+      this.triggerEvent('additem', {});
+    },
+
+    onSearchInput(e) {
+      this.setData({ keyword: e.detail.value });
+    },
+
+    onSearchConfirm() {
+      this.loadMaterials();
+    },
+
+    onFilterTap(e) {
+      const filter = e.currentTarget.dataset.filter;
+      if (filter === this.data.materialFilter) return;
+      this.setData({ materialFilter: filter });
+      this._applyFilter();
+    },
+
     // 公开方法：父页 onShow 时主动刷新
     reload() {
       this.loadMaterials();
