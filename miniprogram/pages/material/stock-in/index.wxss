@@ -270,3 +270,11 @@ page {
     0 6rpx 16rpx rgba(234, 88, 12, 0.25),
     inset 0 2rpx 4rpx rgba(255, 255, 255, 0.2);
 }
+
+/* 商品管理 sub-tab 容器（无 padding，让组件填满） */
+.sub-tab-content-flex {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}

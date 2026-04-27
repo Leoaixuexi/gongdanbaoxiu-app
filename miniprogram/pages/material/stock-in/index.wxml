@@ -71,45 +71,55 @@
     </view>
   </scroll-view>
 
-  <!-- 子页 1：分类管理 -->
-  <scroll-view
-    wx:if="{{activeSubTab === 1}}"
-    scroll-y
-    class="sub-tab-content"
-  >
-    <view class="cat-header" wx:if="{{canManage}}">
-      <view class="cat-add-btn" bindtap="onAddCategoryTap">
-        <van-icon name="plus" size="14px" color="#1677FF" />
-        <text class="cat-add-text">新增分类</text>
-      </view>
+    <!-- 子页 1：商品管理 -->
+    <view wx:if="{{activeSubTab === 1}}" class="sub-tab-content sub-tab-content-flex">
+      <material-list
+        id="materialList"
+        canManage="{{canManage}}"
+        bind:itemtap="onMaterialTap"
+        bind:additem="onAddMaterialTap"
+      />
     </view>
 
-    <view wx:if="{{categoriesLoading}}" class="loading-state">
-      <text>加载中...</text>
-    </view>
-    <view wx:elif="{{categoryItems.length === 0}}" class="empty-state">
-      <van-icon name="apps-o" size="48px" color="#d4d4d4" />
-      <text class="empty-text">暂无分类</text>
-    </view>
-    <view wx:else class="cat-list">
-      <view
-        wx:for="{{categoryItems}}"
-        wx:key="value"
-        class="cat-item"
-        wx:if="{{item.enabled !== false}}"
-      >
-        <text class="cat-name">{{item.label}}</text>
-        <view class="cat-actions" wx:if="{{canManage}}">
-          <view class="cat-btn" data-index="{{index}}" bindtap="onRenameCategoryTap">
-            <van-icon name="edit" size="16px" color="#6B7280" />
-          </view>
-          <view class="cat-btn cat-btn-danger" data-index="{{index}}" bindtap="onDeleteCategoryTap">
-            <van-icon name="delete-o" size="16px" color="#DC2626" />
+    <!-- 子页 2：分类管理 -->
+    <scroll-view
+      wx:if="{{activeSubTab === 2}}"
+      scroll-y
+      class="sub-tab-content"
+    >
+      <view class="cat-header" wx:if="{{canManage}}">
+        <view class="cat-add-btn" bindtap="onAddCategoryTap">
+          <van-icon name="plus" size="14px" color="#1677FF" />
+          <text class="cat-add-text">新增分类</text>
+        </view>
+      </view>
+
+      <view wx:if="{{categoriesLoading}}" class="loading-state">
+        <text>加载中...</text>
+      </view>
+      <view wx:elif="{{categoryItems.length === 0}}" class="empty-state">
+        <van-icon name="apps-o" size="48px" color="#d4d4d4" />
+        <text class="empty-text">暂无分类</text>
+      </view>
+      <view wx:else class="cat-list">
+        <view
+          wx:for="{{categoryItems}}"
+          wx:key="value"
+          class="cat-item"
+          wx:if="{{item.enabled !== false}}"
+        >
+          <text class="cat-name">{{item.label}}</text>
+          <view class="cat-actions" wx:if="{{canManage}}">
+            <view class="cat-btn" data-index="{{index}}" bindtap="onRenameCategoryTap">
+              <van-icon name="edit" size="16px" color="#6B7280" />
+            </view>
+            <view class="cat-btn cat-btn-danger" data-index="{{index}}" bindtap="onDeleteCategoryTap">
+              <van-icon name="delete-o" size="16px" color="#DC2626" />
+            </view>
           </view>
         </view>
       </view>
-    </view>
-  </scroll-view>
+    </scroll-view>
 
   <!-- FAB（仅入库记录子页 + 有管理权限时显示） -->
   <view

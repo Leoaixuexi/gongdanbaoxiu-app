@@ -27,8 +27,8 @@ function formatDateTime(dateVal) {
 
 Page({
   data: {
-    activeSubTab: 0,                       // 0 入库记录 / 1 分类管理
-    subTabs: ['入库记录', '分类管理'],
+    activeSubTab: 0,                       // 0 入库记录 / 1 商品管理 / 2 分类管理
+    subTabs: ['入库记录', '商品管理', '分类管理'],
     canManage: false,
 
     // 入库记录
@@ -57,15 +57,17 @@ Page({
   },
 
   onShow() {
-    // 首次：加载入库记录
     if (!this._loaded) {
       this._loaded = true;
       this.loadRecords();
       return;
     }
-    // 从 stock-in-form / add 页返回：当前在入库记录子页 → 强制刷新
     if (this.data.activeSubTab === 0) {
       this.loadRecords();
+    }
+    if (this.data.activeSubTab === 1) {
+      const list = this.selectComponent('#materialList');
+      if (list) list.reload();
     }
   },
 
@@ -82,6 +84,10 @@ Page({
     const sub = parseInt(e.currentTarget.dataset.sub, 10);
     this.setData({ activeSubTab: sub });
     if (sub === 1) {
+      const list = this.selectComponent('#materialList');
+      if (list) list.reload();
+    }
+    if (sub === 2) {
       this._ensureCategoriesLoaded();
     }
   },
@@ -361,5 +367,14 @@ Page({
       this.setData({ categoryItems: prev });
       wx.showToast({ title: '网络错误', icon: 'none' });
     }
+  },
+
+  onMaterialTap(e) {
+    const material = e.detail.material;
+    wx.navigateTo({ url: `/pages/material/detail/index?id=${material.material_id}` });
+  },
+
+  onAddMaterialTap() {
+    wx.navigateTo({ url: '/pages/material/add/index' });
   },
 });
