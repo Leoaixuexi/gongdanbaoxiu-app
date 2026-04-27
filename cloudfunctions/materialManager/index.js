@@ -175,7 +175,7 @@ exports.main = async (event, context) => {
           return { success: false, error: '无权限执行入库操作' };
         }
 
-        const { material_id, quantity, remark = '' } = data;
+        const { material_id, quantity, remark = '', location = '' } = data;
         if (!material_id || !quantity || quantity <= 0) {
           return { success: false, error: '请填写正确的入库信息' };
         }
@@ -207,7 +207,7 @@ exports.main = async (event, context) => {
             category: material.category || '',
             spec: material.spec || '',
             model: material.model || '',
-            usage_area: material.usage_area || '',
+            usage_area: location || material.usage_area || '',
             material_image: (material.images && material.images[0]) || '',
             type: 'in',
             quantity: qty,
