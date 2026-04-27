@@ -14,6 +14,11 @@ const DEFAULT_MATERIAL_CATEGORIES = [
   '滤芯类', '轴承类', '密封类', '管路类', '油漆涂料', '通用',
 ];
 
+const DEFAULT_MATERIAL_LOCATIONS = [
+  '主仓库', '应急储备', '工程仓',
+  '办公耗材区', '外采暂存', '其它',
+];
+
 function formatDateTime(dateVal) {
   if (!dateVal) return '';
   const d = new Date(dateVal);
@@ -154,10 +159,150 @@ Page({
     await this.openStockInModal(result.material);
   },
 
-  // 占位 — Task 10 实现
   async openStockInModal(material) {
-    console.log('[StockIn] openStockInModal placeholder', material);
-    wx.showToast({ title: 'Modal 待实现', icon: 'none' });
+    // 首次扫码触发 loadLocationOptions（含 seed）
+    await this.loadLocationOptions();
+
+    // material.usage_area 在字典中找 idx；找不到 fallback 0
+    const usage = material.usage_area || '';
+    let idx = this.data.locationOptions.findIndex(o => o.value === usage);
+    if (idx < 0) idx = 0;
+    const initLocation = (this.data.locationOptions[idx] && this.data.locationOptions[idx].value) || '';
+
+    this.setData({
+      showStockInModal: true,
+      scannedMaterial: material,
+      modalQuantity: '',
+      modalLocation: initLocation,
+      modalRemark: '',
+      modalSubmitting: false,
+      locationIndex: idx,
+    });
+  },
+
+  async loadLocationOptions() {
+    if (this._locationLoaded && this.data.locationOptions.length > 0) return;
+    try {
+      const result = await dictionaryAdmin.getDictionary('material_location');
+      if (result && result.success && result.data) {
+        const items = (result.data.items || [])
+          .filter(i => i.enabled !== false)
+          .sort((a, b) => (a.sort || 0) - (b.sort || 0))
+          .map(i => ({ value: i.value, label: i.label || i.value }));
+        this.setData({ locationOptions: items });
+        this._locationLoaded = true;
+        return;
+      }
+      if (result && !result.success && (result.error || '').includes('不存在')) {
+        await this._seedLocations();
+        return;
+      }
+      throw new Error('加载位置失败');
+    } catch (e) {
+      console.error('[StockIn] loadLocationOptions error:', e);
+      wx.showToast({ title: '位置数据加载失败', icon: 'none' });
+      throw e;
+    }
+  },
+
+  async _seedLocations() {
+    const items = DEFAULT_MATERIAL_LOCATIONS.map((label, idx) => ({
+      value: label,
+      label,
+      sort: idx,
+      enabled: true,
+    }));
+    const result = await dictionaryAdmin.createDictionary({
+      dict_key: 'material_location',
+      dict_name: '物料位置',
+      description: '入库时的位置选项',
+      items,
+    });
+    if (result && result.success) {
+      wx.showToast({ title: '已创建默认位置', icon: 'success' });
+      dictionary.refreshCache('material_location');
+      this.setData({
+        locationOptions: items.map(i => ({ value: i.value, label: i.label })),
+      });
+      this._locationLoaded = true;
+    } else {
+      wx.showToast({ title: (result && result.error) || '初始化位置失败', icon: 'none' });
+      throw new Error('seed locations failed');
+    }
+  },
+
+  closeStockInModal() {
+    this.setData({
+      showStockInModal: false,
+      scannedMaterial: null,
+      modalQuantity: '',
+      modalLocation: '',
+      modalRemark: '',
+      modalSubmitting: false,
+    });
+  },
+
+  onModalQuantityInput(e) {
+    this.setData({ modalQuantity: e.detail.value });
+  },
+
+  onModalRemarkInput(e) {
+    this.setData({ modalRemark: e.detail.value });
+  },
+
+  onModalLocationChange(e) {
+    const idx = parseInt(e.detail.value, 10);
+    const opt = this.data.locationOptions[idx];
+    if (!opt) return;
+    this.setData({
+      locationIndex: idx,
+      modalLocation: opt.value,
+    });
+  },
+
+  async submitStockIn() {
+    const qty = parseInt(this.data.modalQuantity, 10);
+    if (!qty || qty <= 0) {
+      wx.showToast({ title: '请输入有效数量', icon: 'none' });
+      return;
+    }
+    if (qty > 999999) {
+      wx.showToast({ title: '数量不能超过 999999', icon: 'none' });
+      return;
+    }
+    if (!this.data.modalLocation) {
+      wx.showToast({ title: '请选择入库位置', icon: 'none' });
+      return;
+    }
+
+    this.setData({ modalSubmitting: true });
+    try {
+      const result = await materialService.stockIn(
+        this.data.scannedMaterial.material_id,
+        qty,
+        this.data.modalRemark || '',
+        this.data.modalLocation
+      );
+      if (result && result.success) {
+        wx.showToast({ title: '入库成功', icon: 'success' });
+        this.closeStockInModal();
+        this.loadRecords();
+      } else {
+        const err = (result && result.error) || '入库失败';
+        wx.showToast({ title: err, icon: 'none' });
+        this.setData({ modalSubmitting: false });
+        if (err.includes('配件不存在')) {
+          setTimeout(() => {
+            this.closeStockInModal();
+            this.loadRecords();
+          }, 1200);
+        }
+      }
+    } catch (e) {
+      console.error('[StockIn] submitStockIn error:', e);
+      wx.showToast({ title: '网络错误，请重试', icon: 'none' });
+      this.setData({ modalSubmitting: false });
+    }
   },
 
   // ===== 入库记录 =====
