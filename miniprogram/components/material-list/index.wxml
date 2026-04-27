@@ -1,0 +1,63 @@
+<view class="material-list">
+  <scroll-view scroll-y class="list-scroll" bindscrolltolower="onLoadMore">
+    <view wx:if="{{loading}}" class="loading-state">
+      <text>加载中...</text>
+    </view>
+
+    <view wx:elif="{{filteredMaterials.length === 0}}" class="empty-state">
+      <van-icon name="gift-o" size="48px" color="#d4d4d4" />
+      <text class="empty-text">暂无配件</text>
+    </view>
+
+    <view wx:else class="card-list">
+      <view
+        wx:for="{{filteredMaterials}}"
+        wx:key="material_id"
+        class="m-card"
+        bindtap="onCardTap"
+        data-material="{{item}}"
+      >
+        <image
+          class="m-card-img"
+          src="{{item.images[0] || '/images/placeholder.png'}}"
+          mode="aspectFill"
+        />
+        <view class="m-card-body">
+          <view class="m-card-title">{{item.name}} {{item.material_number || ''}}</view>
+          <view class="m-card-fields">
+            <view class="m-card-field-col">
+              <view class="m-card-meta" wx:if="{{item.spec}}">
+                <van-icon name="description-o" size="11px" color="#a3a3a3" />
+                <text style="margin-left: 4rpx;">{{item.spec}}</text>
+              </view>
+              <view class="m-card-meta" wx:if="{{item.usage_area}}">
+                <van-icon name="location-o" size="11px" color="#a3a3a3" />
+                <text style="margin-left: 4rpx;">{{item.usage_area}}</text>
+              </view>
+            </view>
+            <view class="m-card-field-col">
+              <view class="m-card-meta" wx:if="{{item.category}}">
+                <van-icon name="apps-o" size="11px" color="#a3a3a3" />
+                <text style="margin-left: 4rpx;">{{item.category}}</text>
+              </view>
+              <view class="m-card-meta" wx:if="{{item.model}}">
+                <van-icon name="label-o" size="11px" color="#a3a3a3" />
+                <text style="margin-left: 4rpx;">{{item.model}}</text>
+              </view>
+            </view>
+          </view>
+        </view>
+        <view class="m-card-stock {{item.stock === 0 ? 'stock-danger' : (item.stock <= item.min_stock && item.min_stock > 0 ? 'stock-warning' : 'stock-ok')}}">
+          {{item.stock}}
+        </view>
+        <view class="stock-tag {{item.stock === 0 ? 'stock-tag-danger' : (item.stock <= item.min_stock && item.min_stock > 0 ? 'stock-tag-warning' : 'stock-tag-ok')}}">
+          {{item.stock === 0 ? '缺货' : (item.stock <= item.min_stock && item.min_stock > 0 ? '预警' : '正常')}}
+        </view>
+      </view>
+    </view>
+
+    <view wx:if="{{loadingMore}}" class="loading-more">
+      <text>加载更多...</text>
+    </view>
+  </scroll-view>
+</view>
