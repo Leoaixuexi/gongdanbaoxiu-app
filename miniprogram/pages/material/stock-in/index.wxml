@@ -129,4 +129,81 @@
   >
     <van-icon name="plus" size="24px" color="#FFFFFF" />
   </view>
+
+  <!-- 扫码入库 Modal -->
+  <view wx:if="{{showStockInModal}}" class="modal-mask" bindtap="closeStockInModal"></view>
+  <view wx:if="{{showStockInModal}}" class="modal-sheet" catchtap="">
+    <view class="modal-header">
+      <text class="modal-title">入库登记</text>
+      <view class="modal-close" bindtap="closeStockInModal">×</view>
+    </view>
+
+    <view class="modal-body">
+      <!-- 商品信息只读 -->
+      <view class="modal-info">
+        <image
+          wx:if="{{scannedMaterial.images && scannedMaterial.images[0]}}"
+          src="{{scannedMaterial.images[0]}}"
+          class="modal-info-img"
+          mode="aspectFill"
+        />
+        <view wx:else class="modal-info-img modal-info-placeholder"></view>
+        <view class="modal-info-text">
+          <text class="modal-info-name">{{scannedMaterial.name || ''}}</text>
+          <text class="modal-info-meta">编号：{{scannedMaterial.material_number || '-'}}</text>
+          <text class="modal-info-meta" wx:if="{{scannedMaterial.spec}}">规格：{{scannedMaterial.spec}}</text>
+          <text class="modal-info-stock">当前库存：{{scannedMaterial.stock || 0}} {{scannedMaterial.unit || ''}}</text>
+        </view>
+      </view>
+
+      <view class="modal-form">
+        <view class="modal-field">
+          <text class="modal-label">入库数量 <text class="modal-required">*</text></text>
+          <input
+            class="modal-input"
+            type="number"
+            placeholder="请输入数量"
+            value="{{modalQuantity}}"
+            bindinput="onModalQuantityInput"
+          />
+          <text class="modal-unit">{{scannedMaterial.unit || ''}}</text>
+        </view>
+
+        <view class="modal-field">
+          <text class="modal-label">入库位置 <text class="modal-required">*</text></text>
+          <picker
+            mode="selector"
+            range="{{locationOptions}}"
+            range-key="label"
+            value="{{locationIndex}}"
+            bindchange="onModalLocationChange"
+          >
+            <view class="modal-picker">
+              <text class="modal-picker-text">{{modalLocation || '请选择位置'}}</text>
+              <van-icon name="arrow-down" size="14px" color="#9CA3AF" />
+            </view>
+          </picker>
+        </view>
+
+        <view class="modal-field">
+          <text class="modal-label">备注</text>
+          <textarea
+            class="modal-textarea"
+            placeholder="选填，最多 100 字"
+            maxlength="100"
+            value="{{modalRemark}}"
+            bindinput="onModalRemarkInput"
+          />
+        </view>
+      </view>
+    </view>
+
+    <view class="modal-footer">
+      <view class="modal-btn modal-btn-cancel" bindtap="closeStockInModal">取消</view>
+      <view
+        class="modal-btn modal-btn-confirm {{(!modalQuantity || !modalLocation || modalSubmitting) ? 'modal-btn-disabled' : ''}}"
+        bindtap="submitStockIn"
+      >{{modalSubmitting ? '提交中...' : '确认入库'}}</view>
+    </view>
+  </view>
 </view>

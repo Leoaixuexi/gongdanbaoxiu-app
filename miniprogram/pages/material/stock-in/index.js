@@ -42,6 +42,16 @@ Page({
     categoriesLoading: false,
     categoryItems: [],
     categoriesLoaded: false,
+
+    // === Modal: 扫码后入库表单 ===
+    showStockInModal: false,
+    scannedMaterial: null,    // { material_id, name, material_number, stock, unit, spec, images, usage_area }
+    modalQuantity: '',
+    modalLocation: '',        // 选中的位置（用于提交）
+    modalRemark: '',
+    modalSubmitting: false,
+    locationOptions: [],      // [{value, label}]
+    locationIndex: 0,
   },
 
   onLoad() {
