@@ -385,10 +385,29 @@ async function listStockOutRequests({ data, user }) {
   };
 }
 
+async function getStockOutRequest({ data, user }) {
+  if (!canAccessMaterial(user)) return { success: false, error: '无权限' };
+
+  const { request_id } = data;
+  if (!request_id) return { success: false, error: '缺少 request_id' };
+
+  const { data: reqs } = await db.collection('material_requests').where({ request_id }).get();
+  if (!reqs.length) return { success: false, error: '申请单不存在' };
+  const req = reqs[0];
+
+  // 办美只能看自己的
+  if (user.role_id === 4 && req.requester.user_id !== user.user_id) {
+    return { success: false, error: '无权限查看' };
+  }
+
+  return { success: true, request: req };
+}
+
 module.exports = {
   createStockOutRequest,
   approveStockOutRequest,
   rejectStockOutRequest,
   cancelStockOutRequest,
   listStockOutRequests,
+  getStockOutRequest,
 };
