@@ -24,16 +24,6 @@ Page({
     tabs: ['配件列表', '出库记录'],
     canManage: false,
 
-    // 配件列表
-    keyword: '',
-    materials: [],
-    filteredMaterials: [],
-    materialFilter: '全部',
-    loading: true,
-    loadingMore: false,
-    materialPage: 1,
-    materialTotal: 0,
-
     // 出库记录
     outRecords: [],
     outLoading: true,
@@ -51,10 +41,6 @@ Page({
       quantity: '',
       remark: ''
     },
-
-    // 回到顶部
-    showBackToTop: false,
-    materialScrollTopTarget: -1,
   },
 
   onLoad() {
@@ -72,24 +58,22 @@ Page({
   onShow() {
     if (!this._tabLoaded) {
       this._tabLoaded = { 0: true };
-      this.loadMaterials();
       return;
     }
-    // 从 add 页返回：刷配件列表 + 已加载过的出库记录
     if (this.data.activeTab === 0) {
-      this.loadMaterials();
+      const list = this.selectComponent('#materialList');
+      if (list) list.reload();
       if (this._tabLoaded && this._tabLoaded[1]) this.loadRecords('out');
     }
   },
 
   onPullDownRefresh() {
-    const refreshMap = {
-      0: () => this.loadMaterials(),
-      1: () => this.loadRecords('out'),
-    };
-    const refreshFn = refreshMap[this.data.activeTab];
-    if (refreshFn) {
-      refreshFn().then(() => wx.stopPullDownRefresh());
+    if (this.data.activeTab === 0) {
+      const list = this.selectComponent('#materialList');
+      if (list) list.reload();
+      setTimeout(() => wx.stopPullDownRefresh(), 300);
+    } else if (this.data.activeTab === 1) {
+      this.loadRecords('out').then(() => wx.stopPullDownRefresh());
     } else {
       wx.stopPullDownRefresh();
     }
@@ -113,78 +97,18 @@ Page({
     if (!this._tabLoaded) this._tabLoaded = {};
     this._tabLoaded[index] = true;
 
-    const loaders = {
-      0: () => this.loadMaterials(),
-      1: () => this.loadRecords('out'),
-    };
-    if (loaders[index]) loaders[index]();
+    if (index === 1) this.loadRecords('out');
+    // index 0 配件列表由组件自加载，无需 page 处理
   },
 
-  // ===== 配件列表 =====
-  async loadMaterials(append = false) {
-    if (!append) {
-      this.setData({ loading: true, materialPage: 1 });
-    }
-
-    try {
-      const result = await materialService.listMaterials(
-        this.data.keyword,
-        this.data.materialPage
-      );
-      const allMaterials = append
-          ? [...this.data.materials, ...result.materials]
-          : result.materials;
-      this.setData({
-        materials: allMaterials,
-        materialTotal: result.total,
-        loading: false,
-        loadingMore: false,
-      });
-      this._applyMaterialFilter();
-    } catch (e) {
-      console.error('[Material] Load error:', e);
-      this.setData({ loading: false, loadingMore: false });
-    }
+  // ===== material-list 组件事件 =====
+  onMaterialTap(e) {
+    const material = e.detail.material;
+    wx.navigateTo({ url: `/pages/material/detail/index?id=${material.material_id}` });
   },
 
-  onSearchChange(e) {
-    this.setData({ keyword: e.detail.value || e.detail });
-  },
-
-  onSearch() {
-    this.loadMaterials();
-  },
-
-  onLoadMore() {
-    if (this.data.loadingMore) return;
-    if (this.data.materials.length >= this.data.materialTotal) return;
-    this.setData({
-      loadingMore: true,
-      materialPage: this.data.materialPage + 1
-    });
-    this.loadMaterials(true);
-  },
-
-  // ===== 配件列表筛选 =====
-  onMaterialFilterChange(e) {
-    const filter = e.currentTarget.dataset.filter;
-    this.setData({ materialFilter: filter });
-    this._applyMaterialFilter();
-  },
-
-  _applyMaterialFilter() {
-    const { materials, materialFilter } = this.data;
-    const warningCount = materials.filter(m => m.min_stock > 0 && m.stock > 0 && m.stock <= m.min_stock).length;
-    const shortageCount = materials.filter(m => m.stock === 0).length;
-    let filtered;
-    if (materialFilter === '缺货') {
-      filtered = materials.filter(m => m.stock === 0);
-    } else if (materialFilter === '预警') {
-      filtered = materials.filter(m => m.min_stock > 0 && m.stock > 0 && m.stock <= m.min_stock);
-    } else {
-      filtered = materials;
-    }
-    this.setData({ filteredMaterials: filtered, warningCount, shortageCount });
+  onAddMaterialTap() {
+    wx.navigateTo({ url: '/pages/material/add/index' });
   },
 
   // ===== 出库记录 =====
@@ -230,14 +154,6 @@ Page({
   // ===== 筛选按钮 =====
   onFilterTap() {
     wx.showToast({ title: '筛选功能开发中', icon: 'none' });
-  },
-
-  // ===== 配件详情 =====
-  goToDetail(e) {
-    const material = e.currentTarget.dataset.material;
-    wx.navigateTo({
-      url: `/pages/material/detail/index?id=${material.material_id}`
-    });
   },
 
   // ===== 记录详情 =====
@@ -287,30 +203,11 @@ Page({
       await materialService.stockOut(material_id, Number(quantity), remark);
       wx.showToast({ title: '出库成功', icon: 'success' });
       this.closeStockOutModal();
-      this.loadMaterials();
+      const list = this.selectComponent('#materialList');
+      if (list) list.reload();
       this.loadRecords('out');
     } catch (e) {
       // callCloud 已处理错误提示
     }
-  },
-
-  // ===== 新增配件 =====
-  goToAddMaterial() {
-    wx.navigateTo({ url: '/pages/material/add/index' });
-  },
-
-  // ===== 回到顶部 =====
-  onMaterialScroll(e) {
-    const showBackToTop = e.detail.scrollTop > 200;
-    if (this.data.showBackToTop !== showBackToTop) {
-      this.setData({ showBackToTop });
-    }
-  },
-
-  scrollToTop() {
-    this.setData({ materialScrollTopTarget: 0, showBackToTop: false });
-    setTimeout(() => {
-      this.setData({ materialScrollTopTarget: -1 });
-    }, 300);
   },
 });
