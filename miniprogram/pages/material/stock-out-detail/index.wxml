@@ -88,4 +88,40 @@
     <button wx:if="{{canApprove}}" class="action-btn action-btn-danger" bindtap="onReject">驳回</button>
     <button wx:if="{{canApprove}}" class="action-btn action-btn-primary" bindtap="onApprove">审核通过</button>
   </view>
+
+  <!-- 审核通过确认弹窗 -->
+  <view wx:if="{{showApproveDialog}}" class="dlg-mask" bindtap="onCloseApprove"></view>
+  <view wx:if="{{showApproveDialog}}" class="dlg-sheet">
+    <view class="dlg-title">审核通过 · 出库</view>
+    <view class="dlg-row">
+      <text class="dlg-label">申请数量</text>
+      <text class="dlg-val">{{request.requested_quantity}}</text>
+    </view>
+    <view class="dlg-row">
+      <text class="dlg-label">当前库存</text>
+      <text class="dlg-val">{{currentStock}}</text>
+    </view>
+    <view class="dlg-row">
+      <text class="dlg-label">实际出库 *</text>
+      <input class="dlg-input" type="digit" value="{{approveQty}}" bindinput="onApproveQtyInput" />
+    </view>
+    <view class="dlg-actions">
+      <button class="dlg-btn dlg-btn-cancel" bindtap="onCloseApprove">取消</button>
+      <button class="dlg-btn dlg-btn-confirm" loading="{{approving}}" disabled="{{!approveQtyValid}}" bindtap="onConfirmApprove">确认出库</button>
+    </view>
+  </view>
+
+  <!-- 驳回原因弹窗 -->
+  <view wx:if="{{showRejectDialog}}" class="dlg-mask" bindtap="onCloseReject"></view>
+  <view wx:if="{{showRejectDialog}}" class="dlg-sheet">
+    <view class="dlg-title">驳回</view>
+    <view class="dlg-row dlg-row-textarea">
+      <text class="dlg-label">驳回原因 *</text>
+      <textarea class="dlg-textarea" placeholder="必填，≤200 字" maxlength="200" value="{{rejectReason}}" bindinput="onRejectReasonInput" />
+    </view>
+    <view class="dlg-actions">
+      <button class="dlg-btn dlg-btn-cancel" bindtap="onCloseReject">取消</button>
+      <button class="dlg-btn dlg-btn-danger" loading="{{rejecting}}" disabled="{{!rejectReasonValid}}" bindtap="onConfirmReject">确认驳回</button>
+    </view>
+  </view>
 </view>
