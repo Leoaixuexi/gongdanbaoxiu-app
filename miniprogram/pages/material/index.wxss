@@ -583,3 +583,150 @@ page {
 .btn-confirm:active {
   opacity: 0.85;
 }
+
+/* ========== sub-tabs ========== */
+.tab2-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.sub-tabs {
+  display: flex;
+  background: #fff;
+  border-bottom: 1rpx solid #f0f0f0;
+  padding: 0 24rpx;
+}
+.sub-tab-item {
+  flex: 1;
+  text-align: center;
+  padding: 24rpx 0;
+  position: relative;
+}
+.sub-tab-text {
+  font-size: 28rpx;
+  color: #7a7a7a;
+}
+.sub-tab-active .sub-tab-text {
+  color: #1d1d1f;
+  font-weight: 600;
+}
+.sub-tab-active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 48rpx;
+  height: 4rpx;
+  background: #0066cc;
+  border-radius: 2rpx;
+}
+.sub-tab-content {
+  flex: 1;
+  height: 100%;
+}
+
+/* ========== status chips ========== */
+.status-chip {
+  font-size: 22rpx;
+  padding: 4rpx 12rpx;
+  border-radius: 8rpx;
+}
+.status-chip-Pending { background: #FEF3C7; color: #B45309; }
+.status-chip-Approved { background: #D1FAE5; color: #065F46; }
+.status-chip-Rejected { background: #FEE2E2; color: #991B1B; }
+.status-chip-Cancelled { background: #F3F4F6; color: #4B5563; }
+
+/* ========== filter chips ========== */
+.filter-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+  padding: 0 24rpx 16rpx;
+}
+.filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8rpx;
+  background: #E0F2FE;
+  color: #0066cc;
+  font-size: 24rpx;
+  padding: 8rpx 16rpx;
+  border-radius: 24rpx;
+}
+.chip-x { font-size: 28rpx; line-height: 1; }
+
+/* ========== filter drawer ========== */
+.filter-mask { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 200; }
+.filter-drawer {
+  position: fixed;
+  top: 0; right: 0; bottom: 0;
+  width: 80vw; max-width: 600rpx;
+  background: #fff;
+  z-index: 201;
+  transform: translateX(100%);
+  transition: transform 0.25s ease;
+  display: flex;
+  flex-direction: column;
+}
+.filter-drawer-open { transform: translateX(0); }
+.filter-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24rpx;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+.filter-title { font-size: 32rpx; font-weight: 600; color: #1d1d1f; }
+.filter-close { font-size: 48rpx; color: #7a7a7a; line-height: 1; padding: 0 16rpx; }
+.filter-section {
+  padding: 24rpx;
+  border-bottom: 1rpx solid #f0f0f0;
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+.filter-label { font-size: 26rpx; color: #7a7a7a; }
+.filter-input {
+  height: 72rpx;
+  background: #f5f5f7;
+  border-radius: 12rpx;
+  padding: 0 20rpx;
+  font-size: 28rpx;
+  color: #1d1d1f;
+  display: flex;
+  align-items: center;
+}
+.status-pick-row { display: flex; gap: 16rpx; }
+.status-pick {
+  flex: 1;
+  text-align: center;
+  padding: 16rpx 0;
+  background: #f5f5f7;
+  border-radius: 12rpx;
+  font-size: 26rpx;
+  color: #1d1d1f;
+}
+.status-pick-on { background: #0066cc; color: #fff; }
+.filter-actions {
+  display: flex;
+  gap: 16rpx;
+  padding: 24rpx;
+  margin-top: auto;
+}
+.filter-btn-reset {
+  flex: 1;
+  height: 80rpx;
+  background: #f5f5f7;
+  color: #1d1d1f;
+  border-radius: 40rpx;
+  font-size: 28rpx;
+}
+.filter-btn-apply {
+  flex: 1;
+  height: 80rpx;
+  background: #0066cc;
+  color: #fff;
+  border-radius: 40rpx;
+  font-size: 28rpx;
+}
