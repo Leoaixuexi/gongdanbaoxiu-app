@@ -251,7 +251,54 @@ async function approveStockOutRequest({ data, user }) {
   };
 }
 
+async function rejectStockOutRequest({ data, user }) {
+  if (!canApproveStockOut(user)) return { success: false, error: '无权限驳回' };
+
+  const { request_id, reject_reason } = data;
+  if (!request_id) return { success: false, error: '缺少 request_id' };
+  if (!reject_reason || !reject_reason.trim()) return { success: false, error: '请填写驳回原因' };
+  if (reject_reason.length > 200) return { success: false, error: '驳回原因不能超过 200 字' };
+
+  const now = new Date();
+  const updateRes = await db.collection('material_requests')
+    .where({ request_id, status: 'Pending' })
+    .update({
+      data: {
+        status: 'Rejected',
+        reviewer: { user_id: user.user_id, name: user.name },
+        reject_reason,
+        rejected_at: now,
+        updated_at: now,
+      }
+    });
+
+  if (updateRes.stats.updated === 0) {
+    return { success: false, error: '单据已被处理' };
+  }
+
+  // 取单仅为通知用
+  const { data: reqs } = await db.collection('material_requests').where({ request_id }).get();
+  if (reqs.length) {
+    notifyRequester(
+      reqs[0].requester.user_id,
+      'stock_out_rejected',
+      '出库申请被驳回',
+      `${reqs[0].material_name} - ${reject_reason}`,
+      {
+        request_id: reqs[0].request_id,
+        request_number: reqs[0].request_number,
+        material_name: reqs[0].material_name,
+        reject_reason,
+        reviewer_name: user.name,
+      }
+    );
+  }
+
+  return { success: true, message: '已驳回' };
+}
+
 module.exports = {
   createStockOutRequest,
   approveStockOutRequest,
+  rejectStockOutRequest,
 };
