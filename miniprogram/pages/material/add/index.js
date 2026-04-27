@@ -34,7 +34,7 @@ Page({
     units: ['个', '根', '箱', '套', '米', '卷']
   },
 
-  async onLoad() {
+  async onLoad(query = {}) {
     const userInfo = wx.getStorageSync(STORAGE_KEYS.USER_INFO);
     if (!userInfo || ![ROLES.ADMIN, ROLES.PROPERTY_MANAGER, ROLES.PROPERTY_STAFF].includes(userInfo.role_id)) {
       wx.showToast({ title: '无权限', icon: 'none' });
@@ -45,8 +45,16 @@ Page({
     const { headerHeight } = getNavBarInfo();
     this.setData({
       headerHeight: Math.ceil(headerHeight),
-      'form.stock_in_time': new Date().toISOString().split('T')[0]
+      'form.stock_in_time': new Date().toISOString().split('T')[0],
     });
+
+    // 来自扫码失败引导 → prefill 编号
+    if (query.material_number) {
+      this.setData({
+        'form.material_number': decodeURIComponent(query.material_number),
+      });
+    }
+
     await this.loadCategories();
   },
 
