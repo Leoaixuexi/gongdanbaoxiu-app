@@ -28,10 +28,10 @@ const addMaterial = async (materialData) => {
 /**
  * 配件入库
  */
-const stockIn = async (material_id, quantity, remark = '') => {
+const stockIn = async (material_id, quantity, remark = '', location = '') => {
   return callCloud('materialManager', {
     action: 'stockIn',
-    data: { material_id, quantity, remark }
+    data: { material_id, quantity, remark, location }
   }, { loadingText: '入库中...' });
 };
 
