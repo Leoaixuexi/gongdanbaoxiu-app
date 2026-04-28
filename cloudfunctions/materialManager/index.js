@@ -425,6 +425,84 @@ exports.main = async (event, context) => {
         return { success: true, message: '已插入5条配件 + 3条入库记录 + 3条出库记录' };
       }
 
+      // ===== 库存查询列表 =====
+      case 'getInventoryList': {
+        const { status = 'all', keyword = '', category = '', page = 1, pageSize = 20 } = data;
+
+        // 注意：CloudBase 不支持字段间比较（stock <= min_stock），所以全量拉
+        // 后在 JS 中分组计数与过滤。耗品总量有限，可接受。
+        const baseConditions = {};
+        if (keyword) {
+          baseConditions.name = db.RegExp({ regexp: keyword, options: 'i' });
+        }
+        if (category) {
+          baseConditions.category = category;
+        }
+
+        // 全量拉（CloudBase 单次最多 100 条；这里项目耗品总量有限，取 1000 上限保守）
+        const MAX_FETCH = 1000;
+        const { data: allMaterials } = await db.collection('materials')
+          .where(baseConditions)
+          .orderBy('updated_at', 'desc')
+          .limit(MAX_FETCH)
+          .get();
+
+        // 内存分组（缺货 / 预警 / 正常）
+        const groupOf = (m) => {
+          const stock = Number(m.stock) || 0;
+          const min = Number(m.min_stock) || 0;
+          if (stock === 0) return 'empty';
+          if (stock <= min) return 'warning';
+          return 'normal';
+        };
+        const groups = { empty: [], warning: [], normal: [] };
+        allMaterials.forEach(m => groups[groupOf(m)].push(m));
+        const statusCounts = {
+          all: allMaterials.length,
+          warning: groups.warning.length,
+          empty: groups.empty.length,
+          normal: groups.normal.length,
+        };
+
+        // 按 status 取目标列表
+        let filtered;
+        if (status === 'warning') filtered = groups.warning;
+        else if (status === 'empty') filtered = groups.empty;
+        else if (status === 'normal') filtered = groups.normal;
+        else filtered = allMaterials;
+
+        // 分页
+        const total = filtered.length;
+        const start = (page - 1) * pageSize;
+        const pageItems = filtered.slice(start, start + pageSize);
+
+        // 关联最近一次入/出库时间（每条 2 次 limit(1) 查询，并行）
+        const enriched = await Promise.all(pageItems.map(async (m) => {
+          const [{ data: lastIn }, { data: lastOut }] = await Promise.all([
+            db.collection('material_records')
+              .where({ material_id: m.material_id, type: 'in' })
+              .orderBy('created_at', 'desc').limit(1).get(),
+            db.collection('material_records')
+              .where({ material_id: m.material_id, type: _.in(['out', 'adjust']) })
+              .orderBy('created_at', 'desc').limit(1).get(),
+          ]);
+          return {
+            ...m,
+            last_in_date: lastIn[0] ? lastIn[0].created_at : null,
+            last_out_date: lastOut[0] ? lastOut[0].created_at : null,
+          };
+        }));
+
+        return {
+          success: true,
+          materials: enriched,
+          statusCounts,
+          total,
+          page,
+          pageSize,
+        };
+      }
+
       default:
         return {
           success: false,
