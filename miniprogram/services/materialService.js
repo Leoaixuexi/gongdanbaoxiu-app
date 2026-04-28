@@ -116,76 +116,6 @@ const getWarnings = async () => {
   });
 };
 
-/**
- * 按 material_id 查找配件（出库审核取最新库存用）
- */
-const getMaterialById = async (material_id) => {
-  return callCloudSilent('materialManager', {
-    action: 'getMaterialById',
-    data: { material_id }
-  });
-};
-
-/**
- * 提交出库申请
- */
-const createStockOutRequest = async (params) => {
-  return callCloud('materialManager', {
-    action: 'createStockOutRequest',
-    data: params,
-  }, { loadingText: '提交中...' });
-};
-
-/**
- * 审核通过出库（=执行出库）
- */
-const approveStockOutRequest = async (request_id, approved_quantity) => {
-  return callCloud('materialManager', {
-    action: 'approveStockOutRequest',
-    data: { request_id, approved_quantity },
-  }, { loadingText: '审核中...' });
-};
-
-/**
- * 驳回出库申请
- */
-const rejectStockOutRequest = async (request_id, reject_reason) => {
-  return callCloud('materialManager', {
-    action: 'rejectStockOutRequest',
-    data: { request_id, reject_reason },
-  }, { loadingText: '提交中...' });
-};
-
-/**
- * 撤回自己的出库申请
- */
-const cancelStockOutRequest = async (request_id) => {
-  return callCloud('materialManager', {
-    action: 'cancelStockOutRequest',
-    data: { request_id },
-  }, { loadingText: '撤回中...' });
-};
-
-/**
- * 出库申请列表（多条件 + 分页）
- */
-const listStockOutRequests = async (params = {}) => {
-  return callCloudSilent('materialManager', {
-    action: 'listStockOutRequests',
-    data: { page: 1, pageSize: 20, ...params },
-  });
-};
-
-/**
- * 出库申请详情
- */
-const getStockOutRequest = async (request_id) => {
-  return callCloudSilent('materialManager', {
-    action: 'getStockOutRequest',
-    data: { request_id },
-  });
-};
-
 module.exports = {
   listMaterials,
   addMaterial,
@@ -194,15 +124,8 @@ module.exports = {
   stockIn,
   stockOut,
   getMaterialByNumber,
-  getMaterialById,
   listRecords,
   getWarnings,
   getMaterialStats,
   getMaterialRecords,
-  createStockOutRequest,
-  approveStockOutRequest,
-  rejectStockOutRequest,
-  cancelStockOutRequest,
-  listStockOutRequests,
-  getStockOutRequest,
 };
