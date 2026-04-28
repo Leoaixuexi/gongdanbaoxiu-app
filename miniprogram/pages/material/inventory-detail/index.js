@@ -102,7 +102,10 @@ Page({
     hasTrendData: false,
     trendType: 'in',
     ecTrend: { lazyLoad: true },
-    // 调整抽屉 Task 15 加
+    showAdjust: false,
+    adjForm: { type: '', quantity: 1, reason: '' },
+    adjSubmitting: false,
+    adjPreview: { tone: 'gain', opSymbol: '+', newStock: 0 },
   },
 
   onLoad(options) {
@@ -165,6 +168,77 @@ Page({
   },
 
   openAdjust() {
-    // Task 15 接通
+    this.setData({
+      showAdjust: true,
+      adjForm: { type: 'gain', quantity: 1, reason: '' },
+    });
+    this.refreshPreview();
+  },
+
+  closeAdjust() {
+    if (this.data.adjSubmitting) return;
+    this.setData({ showAdjust: false });
+  },
+
+  onAdjTypeTap(e) {
+    const type = e.currentTarget.dataset.type;
+    this.setData({ ['adjForm.type']: type });
+    this.refreshPreview();
+  },
+
+  onAdjQtyChange(e) {
+    const q = Number(e.detail) || 1;
+    this.setData({ ['adjForm.quantity']: q });
+    this.refreshPreview();
+  },
+
+  onAdjReasonChange(e) {
+    this.setData({ ['adjForm.reason']: e.detail || '' });
+  },
+
+  refreshPreview() {
+    const f = this.data.adjForm;
+    const cur = this.data.detail ? this.data.detail.currentStock : 0;
+    const op = f.type === 'gain' ? '+' : '-';
+    const tone = f.type === 'gain' ? 'gain' : 'loss';
+    const newStock = f.type === 'gain' ? cur + f.quantity : cur - f.quantity;
+    this.setData({
+      adjPreview: { tone, opSymbol: op, newStock },
+    });
+  },
+
+  async submitAdjust() {
+    const f = this.data.adjForm;
+    if (!f.type) {
+      wx.showToast({ title: '请选择调整类型', icon: 'none' });
+      return;
+    }
+    if (!f.quantity || f.quantity <= 0) {
+      wx.showToast({ title: '请输入调整数量', icon: 'none' });
+      return;
+    }
+    if (!f.reason || f.reason.trim().length < 2) {
+      wx.showToast({ title: '请填写调整原因', icon: 'none' });
+      return;
+    }
+    if (f.type !== 'gain' && f.quantity > this.data.detail.currentStock) {
+      wx.showToast({ title: `库存不足，当前 ${this.data.detail.currentStock}`, icon: 'none' });
+      return;
+    }
+
+    this.setData({ adjSubmitting: true });
+    const res = await materialService.adjustStock({
+      material_id: this.data.materialId,
+      adjust_type: f.type,
+      quantity: f.quantity,
+      reason: f.reason.trim(),
+    });
+    this.setData({ adjSubmitting: false });
+
+    if (res && res.success) {
+      wx.showToast({ title: '调整成功', icon: 'success' });
+      this.setData({ showAdjust: false });
+      this.loadDetail();
+    }
   },
 });
