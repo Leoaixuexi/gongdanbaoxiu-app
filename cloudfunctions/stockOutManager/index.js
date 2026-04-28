@@ -368,6 +368,41 @@ async function getStockOutRequest({ data, user }) {
   return { success: true, request: req };
 }
 
+async function getMaterialById({ data, user }) {
+  const { canAccessStockOut, db } = require('./helpers');
+  if (!canAccessStockOut(user)) return { success: false, error: '无权限' };
+
+  const { material_id } = data;
+  if (!material_id) return { success: false, error: '缺少 material_id' };
+
+  const { data: list } = await db.collection('materials').where({ material_id }).limit(1).get();
+  if (list.length === 0) return { success: false, error: '配件不存在' };
+  return { success: true, material: list[0] };
+}
+
+async function listMaterials({ data, user }) {
+  const { canAccessStockOut, db } = require('./helpers');
+  if (!canAccessStockOut(user)) return { success: false, error: '无权限' };
+
+  const { keyword, page = 1, pageSize = 50 } = data;
+  const conditions = {};
+  if (keyword) {
+    conditions.name = db.RegExp({ regexp: keyword, options: 'i' });
+  }
+  const query = db.collection('materials').where(conditions);
+  const [countRes, listRes] = await Promise.all([
+    query.count(),
+    query.orderBy('created_at', 'desc').skip((page - 1) * pageSize).limit(pageSize).get(),
+  ]);
+
+  return {
+    success: true,
+    materials: listRes.data,
+    total: countRes.total,
+    page, pageSize,
+  };
+}
+
 const ROUTES = {
   ping: async () => ({ success: true, message: 'stockOutManager pong' }),
   createStockOutRequest,
@@ -376,8 +411,8 @@ const ROUTES = {
   cancelStockOutRequest,
   listStockOutRequests,
   getStockOutRequest,
-  // Task 8 加入：
-  // getMaterialById, listMaterials
+  getMaterialById,
+  listMaterials,
 };
 
 exports.main = async (event, context) => {
