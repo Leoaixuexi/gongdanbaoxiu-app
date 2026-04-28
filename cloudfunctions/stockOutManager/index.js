@@ -268,14 +268,45 @@ async function rejectStockOutRequest({ data, user }) {
   return { success: true, message: '已驳回' };
 }
 
+async function cancelStockOutRequest({ data, user }) {
+  const { db } = require('./helpers');
+  const { request_id } = data;
+  if (!request_id) return { success: false, error: '缺少 request_id' };
+
+  const { data: reqs } = await db.collection('material_requests').where({ request_id }).get();
+  if (!reqs.length) return { success: false, error: '申请单不存在' };
+  const req = reqs[0];
+
+  if (req.requester.user_id !== user.user_id) {
+    return { success: false, error: '只能撤回自己提交的申请' };
+  }
+  if (req.status !== 'Pending') return { success: false, error: '仅待审核单据可撤回' };
+
+  const now = new Date();
+  const updateRes = await db.collection('material_requests')
+    .where({ request_id, status: 'Pending' })
+    .update({
+      data: {
+        status: 'Cancelled',
+        cancelled_at: now,
+        updated_at: now,
+      }
+    });
+
+  if (updateRes.stats.updated === 0) {
+    return { success: false, error: '单据已被处理' };
+  }
+  return { success: true, message: '已撤回' };
+}
+
 const ROUTES = {
   ping: async () => ({ success: true, message: 'stockOutManager pong' }),
   createStockOutRequest,
   approveStockOutRequest,
   rejectStockOutRequest,
-  // Task 5-8 加入：
-  // cancelStockOutRequest, listStockOutRequests,
-  // getStockOutRequest, getMaterialById, listMaterials
+  cancelStockOutRequest,
+  // Task 6-8 加入：
+  // listStockOutRequests, getStockOutRequest, getMaterialById, listMaterials
 };
 
 exports.main = async (event, context) => {
