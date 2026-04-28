@@ -36,20 +36,18 @@ async function getUserByOpenId(openid) {
 
 /**
  * 权限校验：是否可以访问物料管理
- * 管理员(1)、行政经理(2)、办美员工(4)、仓管员(5) 可访问
- * 维修员(3)排除
+ * 管理员(1)、行政经理(2)、办美员工(4) 可访问
  */
 function canAccessMaterial(user) {
-  return user && [1, 2, 4, 5].includes(user.role_id) && user.active !== false;
+  return user && [1, 2, 4].includes(user.role_id) && user.active !== false;
 }
 
 /**
- * 权限校验：是否可以管理物料（新增配件、入库、分类管理）
- * 管理员(1)、行政经理(2)、仓管员(5) 可管理
- * 办美员工(4) 已被收回（仅可申请出库）
+ * 权限校验：是否可以管理物料（新增配件、入库）
+ * 管理员(1)、行政经理(2)、办美员工(4) 可管理
  */
 function canManageMaterial(user) {
-  return user && [1, 2, 5].includes(user.role_id) && user.active !== false;
+  return user && [1, 2, 4].includes(user.role_id) && user.active !== false;
 }
 
 /**
