@@ -24,7 +24,6 @@ const ROLES = {
   PROPERTY_MANAGER: 2,       // 行政经理
   MAINTENANCE_STAFF: 3,      // 维修员
   PROPERTY_STAFF: 4,         // 办美员工
-  WAREHOUSE_KEEPER: 5,       // 仓管员
 };
 
 // Notification Types (mirrors backend)
@@ -71,29 +70,6 @@ const ROLE_DISPLAY_NAMES = {
   2: '行政经理',
   3: '维修员',
   4: '办美员工',
-  5: '仓管员',
-};
-
-// Stock-Out Request Status
-const STOCK_OUT_STATUS = {
-  PENDING: 'Pending',
-  APPROVED: 'Approved',
-  REJECTED: 'Rejected',
-  CANCELLED: 'Cancelled',
-};
-
-const STOCK_OUT_STATUS_DISPLAY_NAMES = {
-  Pending: '待审核',
-  Approved: '已出库',
-  Rejected: '已驳回',
-  Cancelled: '已撤回',
-};
-
-const STOCK_OUT_STATUS_COLORS = {
-  Pending: '#F59E0B',
-  Approved: '#10B981',
-  Rejected: '#DC2626',
-  Cancelled: '#6B7280',
 };
 
 // Status Colors for UI badges/tags
@@ -188,9 +164,6 @@ module.exports = {
   STATUS_DISPLAY_NAMES,
   PRIORITY_DISPLAY_NAMES,
   ROLE_DISPLAY_NAMES,
-  STOCK_OUT_STATUS,
-  STOCK_OUT_STATUS_DISPLAY_NAMES,
-  STOCK_OUT_STATUS_COLORS,
   STATUS_COLORS,
   PRIORITY_COLORS,
   DELIVERY_STATUS_DISPLAY_NAMES,
