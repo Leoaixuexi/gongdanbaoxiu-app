@@ -1,0 +1,272 @@
+/* 新增配件页面 - 完全复刻新增工单样式 */
+
+page {
+  font-family: "PingFang SC", -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 30rpx;
+  color: #333;
+}
+
+.submit-container {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #DCE4FF 0%, #DFF5F4 30%, #FAFAFA 55%);
+  padding-bottom: 200rpx;
+}
+
+.form-cards {
+  padding: 24rpx 32rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+/* 卡片 */
+.card {
+  background-color: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(10px);
+  border-radius: 20rpx;
+  padding: 16rpx 28rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
+  border: 1rpx solid rgba(255, 255, 255, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 64rpx;
+}
+
+/* 标签 */
+.card-label-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  flex-shrink: 0;
+  line-height: 30rpx;
+  height: 30rpx;
+  min-width: 128rpx;
+}
+
+.card-label-required {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  flex-shrink: 0;
+  line-height: 30rpx;
+  height: 30rpx;
+  min-width: 128rpx;
+}
+
+.star {
+  color: #FF3B30;
+  font-size: 24rpx;
+  line-height: 30rpx;
+}
+
+.label {
+  font-size: 30rpx;
+  color: #1F1F1F;
+  line-height: 30rpx;
+  height: 30rpx;
+  font-weight: 500;
+}
+
+/* 右侧 */
+.card-right {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  flex: 1;
+  justify-content: flex-end;
+}
+
+/* CSS 箭头 */
+.card-arrow {
+  width: 16rpx;
+  height: 16rpx;
+  border-top: 3rpx solid #CCCCCC;
+  border-right: 3rpx solid #CCCCCC;
+  transform: rotate(45deg);
+  margin-left: 8rpx;
+}
+
+/* 输入框 */
+.card-input {
+  flex: 1;
+  font-size: 30rpx;
+  color: #333;
+  text-align: right;
+  line-height: 30rpx;
+  min-height: 30rpx;
+}
+
+.custom-placeholder {
+  color: #CCCCCC !important;
+  font-weight: 400 !important;
+}
+
+/* 选择器文字 */
+.picker-text {
+  font-size: 30rpx;
+  color: #333;
+}
+
+.picker-text.placeholder {
+  color: #CCCCCC;
+  font-weight: 400 !important;
+}
+
+picker {
+  flex: 1;
+}
+
+/* 文本域卡片 */
+.card-textarea {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16rpx;
+}
+
+.textarea-box {
+  width: 100%;
+  min-height: 64rpx;
+  font-size: 30rpx;
+  color: #333;
+  line-height: 1.6;
+  background-color: #F9FAFB;
+  border: 1rpx solid #E5E7EB;
+  border-radius: 8rpx;
+  padding: 12rpx 20rpx;
+  box-sizing: border-box;
+}
+
+.textarea-box-remark {
+  min-height: 80rpx;
+  height: 80rpx;
+}
+
+/* 图片卡片 */
+.card-photos {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 24rpx;
+}
+
+.photos-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.photos-tip {
+  font-size: 26rpx;
+  color: #999;
+}
+
+.photos-row {
+  width: 100%;
+  display: flex;
+  gap: 20rpx;
+  justify-content: center;
+  align-items: center;
+}
+
+.photo-box {
+  width: 160rpx;
+  height: 160rpx;
+  flex-shrink: 0;
+}
+
+.photo-preview {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  border-radius: 12rpx;
+  overflow: hidden;
+}
+
+.photo-img {
+  width: 100%;
+  height: 100%;
+}
+
+.photo-del {
+  position: absolute;
+  top: 8rpx;
+  right: 8rpx;
+  width: 36rpx;
+  height: 36rpx;
+  background-color: rgba(0, 0, 0, 0.5);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.del-text {
+  font-size: 28rpx;
+  color: white;
+  line-height: 1;
+}
+
+.photo-add {
+  width: 100%;
+  height: 100%;
+  background-color: #F3F4F6;
+  border: 2rpx dashed #D1D5DB;
+  border-radius: 12rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.add-plus {
+  font-size: 56rpx;
+  color: #9CA3AF;
+  line-height: 1;
+  font-weight: 300;
+}
+
+/* 底部按钮 */
+.bottom-btns {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: white;
+  padding: 24rpx 32rpx;
+  padding-bottom: calc(24rpx + env(safe-area-inset-bottom));
+  box-shadow: 0 -2rpx 16rpx rgba(0, 0, 0, 0.05);
+  display: flex;
+  gap: 24rpx;
+}
+
+.btn-cancel {
+  flex: 1;
+  height: 88rpx;
+  background-color: #F3F4F6;
+  border-radius: 24rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-cancel-text {
+  font-size: 30rpx;
+  color: #4B5563;
+}
+
+.btn-submit {
+  flex: 1;
+  height: 88rpx;
+  background: linear-gradient(to right, #10b981, #14b8a6);
+  border-radius: 24rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4rpx 12rpx rgba(12, 167, 125, 0.3);
+}
+
+.btn-submit-text {
+  font-size: 30rpx;
+  color: white;
+  font-weight: 500;
+}

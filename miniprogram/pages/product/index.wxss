@@ -1,0 +1,37 @@
+/* 商品管理页面样式 */
+
+page {
+  background: linear-gradient(180deg, #EAF0FF 0%, #F2F4F8 40%, #F7F7F7 100%);
+}
+
+.product-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ========== FAB 新增按钮 ========== */
+.fab-button {
+  position: fixed;
+  right: 48rpx;
+  bottom: 80rpx;
+  width: 112rpx;
+  height: 112rpx;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #F5A623 0%, #EA580C 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    0 12rpx 32rpx rgba(234, 88, 12, 0.35),
+    inset 0 2rpx 4rpx rgba(255, 255, 255, 0.35);
+  z-index: 100;
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.fab-button:active {
+  transform: scale(0.9);
+  box-shadow:
+    0 6rpx 16rpx rgba(234, 88, 12, 0.25),
+    inset 0 2rpx 4rpx rgba(255, 255, 255, 0.2);
+}

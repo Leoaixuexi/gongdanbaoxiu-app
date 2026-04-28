@@ -32,7 +32,62 @@
       />
     </swiper-item>
 
-    <!-- Tab 2: 出库记录 -->
+    <!-- Tab 2: 入库记录 -->
+    <swiper-item>
+      <scroll-view scroll-y class="tab-content" bindscrolltolower="onLoadMoreRecords">
+        <view wx:if="{{inLoading}}" class="loading-state">
+          <text>加载中...</text>
+        </view>
+        <view wx:elif="{{inRecords.length === 0}}" class="empty-state">
+          <van-icon name="orders-o" size="48px" color="#d4d4d4" />
+          <text class="empty-text">暂无入库记录</text>
+        </view>
+        <view wx:else class="card-list">
+          <view
+            wx:for="{{inRecords}}"
+            wx:key="record_id"
+            class="m-card"
+            bindtap="goToRecordDetail"
+            data-record="{{item}}"
+          >
+            <image
+              class="m-card-img"
+              src="{{item.material_image || '/images/placeholder.png'}}"
+              mode="aspectFill"
+            />
+            <view class="m-card-body">
+              <view class="m-card-title">{{item.material_name}}</view>
+              <view class="m-card-meta">
+                <view class="meta-item">
+                  <van-icon name="apps-o" size="11px" color="#a3a3a3" />
+                  <text class="meta-text">{{item.category || '-'}}</text>
+                </view>
+                <view class="meta-item">
+                  <van-icon name="location-o" size="11px" color="#a3a3a3" />
+                  <text class="meta-text">{{item.usage_area || '-'}}</text>
+                </view>
+              </view>
+              <view class="m-card-meta">
+                <view class="meta-item">
+                  <van-icon name="clock-o" size="11px" color="#a3a3a3" />
+                  <text class="meta-text">{{item.timeText}}</text>
+                </view>
+                <view class="meta-item">
+                  <van-icon name="manager-o" size="11px" color="#a3a3a3" />
+                  <text class="meta-text">{{item.operator.name}}</text>
+                </view>
+              </view>
+            </view>
+            <view class="m-card-qty qty-in">+{{item.quantity}}</view>
+          </view>
+        </view>
+        <view wx:if="{{inLoadingMore}}" class="loading-more">
+          <text>加载更多...</text>
+        </view>
+      </scroll-view>
+    </swiper-item>
+
+    <!-- Tab 3: 出库记录 -->
     <swiper-item>
       <scroll-view scroll-y class="tab-content" bindscrolltolower="onLoadMoreRecords">
         <view class="search-row">

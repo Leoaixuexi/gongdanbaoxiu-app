@@ -21,8 +21,15 @@ function formatDateTime(dateVal) {
 Page({
   data: {
     activeTab: 0,
-    tabs: ['配件列表', '出库记录'],
+    tabs: ['配件列表', '入库记录', '出库记录'],
     canManage: false,
+
+    // 入库记录
+    inRecords: [],
+    inLoading: true,
+    inLoadingMore: false,
+    inPage: 1,
+    inTotal: 0,
 
     // 出库记录
     outRecords: [],
@@ -63,7 +70,8 @@ Page({
     if (this.data.activeTab === 0) {
       const list = this.selectComponent('#materialList');
       if (list) list.reload();
-      if (this._tabLoaded && this._tabLoaded[1]) this.loadRecords('out');
+      if (this._tabLoaded[1]) this.loadRecords('in');
+      if (this._tabLoaded[2]) this.loadRecords('out');
     }
   },
 
@@ -73,6 +81,8 @@ Page({
       if (list) list.reload();
       setTimeout(() => wx.stopPullDownRefresh(), 300);
     } else if (this.data.activeTab === 1) {
+      this.loadRecords('in').then(() => wx.stopPullDownRefresh());
+    } else if (this.data.activeTab === 2) {
       this.loadRecords('out').then(() => wx.stopPullDownRefresh());
     } else {
       wx.stopPullDownRefresh();
@@ -97,7 +107,8 @@ Page({
     if (!this._tabLoaded) this._tabLoaded = {};
     this._tabLoaded[index] = true;
 
-    if (index === 1) this.loadRecords('out');
+    if (index === 1) this.loadRecords('in');
+    if (index === 2) this.loadRecords('out');
     // index 0 配件列表由组件自加载，无需 page 处理
   },
 
@@ -145,6 +156,10 @@ Page({
   onLoadMoreRecords() {
     const tab = this.data.activeTab;
     if (tab === 1) {
+      if (this.data.inLoadingMore || this.data.inRecords.length >= this.data.inTotal) return;
+      this.setData({ inLoadingMore: true, inPage: this.data.inPage + 1 });
+      this.loadRecords('in', true);
+    } else if (tab === 2) {
       if (this.data.outLoadingMore || this.data.outRecords.length >= this.data.outTotal) return;
       this.setData({ outLoadingMore: true, outPage: this.data.outPage + 1 });
       this.loadRecords('out', true);

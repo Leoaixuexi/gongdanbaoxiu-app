@@ -1,0 +1,252 @@
+.product-list {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.list-scroll {
+  flex: 1;
+  min-height: 0;
+  padding: 0 24rpx 32rpx;
+  box-sizing: border-box;
+}
+
+.loading-state,
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 120rpx 0;
+  color: #a3a3a3;
+  font-size: 28rpx;
+}
+
+.empty-text {
+  margin-top: 16rpx;
+  color: #a3a3a3;
+  font-size: 28rpx;
+}
+
+.loading-more {
+  text-align: center;
+  padding: 24rpx;
+  color: #a3a3a3;
+  font-size: 24rpx;
+}
+
+.card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+
+.m-card {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(165deg, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.6) 100%);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 24rpx;
+  padding: 24rpx;
+  border-top: 1rpx solid rgba(255, 255, 255, 0.95);
+  border-left: 1rpx solid rgba(255, 255, 255, 0.6);
+  border-right: 1rpx solid rgba(255, 255, 255, 0.6);
+  border-bottom: 1rpx solid rgba(0, 0, 0, 0.03);
+  box-shadow:
+    inset 0 2rpx 4rpx rgba(255, 255, 255, 0.8),
+    inset 0 -1rpx 3rpx rgba(0, 0, 0, 0.015),
+    0 2rpx 4rpx rgba(0, 0, 0, 0.02),
+    0 8rpx 16rpx rgba(0, 0, 0, 0.035),
+    0 16rpx 32rpx -8rpx rgba(0, 0, 0, 0.04);
+  transition: all 0.2s ease;
+}
+
+.m-card:active {
+  transform: scale(0.98);
+  opacity: 0.85;
+}
+
+.m-card-img {
+  width: 148rpx;
+  height: 152rpx;
+  margin: -16rpx 0 -16rpx -16rpx;
+  border-radius: 10rpx 16rpx 16rpx 10rpx;
+  flex-shrink: 0;
+  background: #f0f0f0;
+}
+
+.m-card-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 24rpx;
+}
+
+.m-card-title {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-top: -6rpx;
+  display: flex;
+  align-items: center;
+  gap: 6rpx;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.m-card-meta {
+  font-size: 22rpx;
+  color: #a3a3a3;
+  display: flex;
+  align-items: center;
+  gap: 4rpx;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.m-card-fields {
+  display: flex;
+  gap: 48rpx;
+}
+
+.m-card-field-col {
+  display: flex;
+  flex-direction: column;
+  gap: 18rpx;
+}
+
+.m-card-stock {
+  font-size: 40rpx;
+  font-weight: 700;
+  flex-shrink: 0;
+  min-width: 60rpx;
+  text-align: right;
+}
+
+.stock-ok { color: #16A34A; }
+.stock-warning { color: #F59E0B; }
+.stock-danger { color: #DC2626; }
+
+.stock-tag {
+  position: absolute;
+  top: 0;
+  right: 0;
+  font-size: 20rpx;
+  font-weight: 500;
+  padding: 6rpx 16rpx;
+  border-radius: 0 24rpx 0 12rpx;
+}
+
+.stock-tag-ok { color: #16A34A; background: #ECFDF5; }
+.stock-tag-warning { color: #F59E0B; background: #FFFBEB; }
+.stock-tag-danger { color: #DC2626; background: #FEF2F2; }
+
+/* ====== Header ====== */
+.pl-header {
+  flex-shrink: 0;
+  padding: 16rpx 24rpx 0;
+}
+
+.pl-search-row {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  margin-bottom: 20rpx;
+}
+
+.pl-search-bar {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 20rpx;
+  padding: 0 24rpx;
+  height: 72rpx;
+  border: 1rpx solid rgba(255, 255, 255, 0.5);
+}
+
+.pl-search-input {
+  flex: 1;
+  font-size: 26rpx;
+  color: #0a0a0a;
+  margin-left: 12rpx;
+}
+
+.pl-search-placeholder {
+  color: #c0c0c0;
+  font-size: 26rpx;
+}
+
+.pl-add-btn {
+  display: flex;
+  align-items: center;
+  gap: 6rpx;
+  background: #1677FF;
+  border-radius: 20rpx;
+  padding: 0 22rpx;
+  height: 72rpx;
+}
+
+.pl-add-btn:active { opacity: 0.85; }
+
+.pl-add-text {
+  color: #FFFFFF;
+  font-size: 26rpx;
+  font-weight: 600;
+}
+
+.pl-filter {
+  display: flex;
+  gap: 16rpx;
+  margin-bottom: 20rpx;
+}
+
+.pl-filter-tag {
+  padding: 8rpx 26rpx;
+  border-radius: 28rpx;
+  font-size: 22rpx;
+  font-weight: 500;
+  background: rgba(255, 255, 255, 0.6);
+  color: #737373;
+  border: 1rpx solid rgba(0, 0, 0, 0.06);
+  position: relative;
+}
+
+.pl-filter-active {
+  background: #1a1a1a;
+  color: #FFFFFF;
+  border-color: #1a1a1a;
+}
+
+.pl-badge {
+  position: absolute;
+  top: -10rpx;
+  right: -10rpx;
+  width: 28rpx;
+  height: 28rpx;
+  border-radius: 50%;
+  font-size: 18rpx;
+  font-weight: 600;
+  line-height: 28rpx;
+  text-align: center;
+  color: white;
+}
+
+.pl-badge-warning { background: #F59E0B; }
+.pl-badge-danger { background: #EF4444; }
+
+/* 卡片菜单按钮 */
+.m-card-menu {
+  position: absolute;
+  top: 8rpx;
+  right: 36rpx;
+  padding: 12rpx;
+}
+.m-card-menu:active {
+  opacity: 0.6;
+}

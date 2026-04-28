@@ -210,8 +210,8 @@ exports.main = async (event, context) => {
     const adminActions = ['create', 'update', 'delete'];
     if (adminActions.includes(action)) {
       const user = await getCurrentUser(OPENID);
-      // 物料相关字典：放给 canManageMaterial（管理员/行政经理/办美员工）写
-      const MANAGE_MATERIAL_DICTS = ['material_category', 'material_location'];
+      // 物料/商品相关字典：放给 canManageMaterial（管理员/行政经理/办美员工）写
+      const MANAGE_MATERIAL_DICTS = ['material_category', 'material_location', 'product_category', 'product_location'];
       const isManageMaterialDict = data && MANAGE_MATERIAL_DICTS.includes(data.dict_key);
       const canManageMaterial = user && [1, 2, 4].includes(user.role_id) && user.active !== false;
       const isAdminUser = user && user.role_id === 1 && user.active !== false;

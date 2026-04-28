@@ -1,20 +1,23 @@
 /**
  * 入库管理（独立页）
- * 子页签：入库记录 / 分类管理 + 右下角 FAB
+ * 子页签：入库记录 / 分类管理 + 右下角 FAB（直接扫码）
  * 入口：首页 Tab2 耗品管理 → 宫格"入库管理"
+ *
+ * 数据域：商品（耗品）— products 集合 + product_records + product_category/location 字典
+ * 与维修域 materials 完全隔离
  */
 
-const materialService = require('../../../services/materialService');
+const productService = require('../../../services/productService');
 const dictionaryAdmin = require('../../../services/dictionaryAdmin');
 const dictionary = require('../../../services/dictionary');
 const { ROLES, STORAGE_KEYS } = require('../../../utils/constants');
 
-const DEFAULT_MATERIAL_CATEGORIES = [
-  '电气', '水暖', '门窗', '消防', '清洁', '五金',
-  '滤芯类', '轴承类', '密封类', '管路类', '油漆涂料', '通用',
+const DEFAULT_PRODUCT_CATEGORIES = [
+  '办公耗品', '清洁用品', '日用百货',
+  '食品饮料', '五金杂货', '通用',
 ];
 
-const DEFAULT_MATERIAL_LOCATIONS = [
+const DEFAULT_PRODUCT_LOCATIONS = [
   '主仓库', '应急储备', '工程仓',
   '办公耗材区', '外采暂存', '其它',
 ];
@@ -32,8 +35,8 @@ function formatDateTime(dateVal) {
 
 Page({
   data: {
-    activeSubTab: 0,                       // 0 入库记录 / 1 商品管理 / 2 分类管理
-    subTabs: ['入库记录', '商品管理', '分类管理'],
+    activeSubTab: 0,                       // 0 入库记录 / 1 分类管理
+    subTabs: ['入库记录', '分类管理'],
     canManage: false,
 
     // 入库记录
@@ -43,25 +46,24 @@ Page({
     inPage: 1,
     inTotal: 0,
 
-    // 分类管理（material_category 字典）
+    // 分类管理（product_category 字典）
     categoriesLoading: false,
     categoryItems: [],
     categoriesLoaded: false,
 
     // === Modal: 扫码后入库表单 ===
     showStockInModal: false,
-    scannedMaterial: null,    // { material_id, name, material_number, stock, unit, spec, images, usage_area }
+    scannedProduct: null,    // { product_id, name, product_code, stock, unit, spec, images, usage_area }
     modalQuantity: '',
-    modalLocation: '',        // 选中的位置（用于提交）
+    modalLocation: '',
     modalRemark: '',
     modalSubmitting: false,
-    locationOptions: [],      // [{value, label}]
+    locationOptions: [],
     locationIndex: 0,
   },
 
   onLoad() {
     const userInfo = wx.getStorageSync(STORAGE_KEYS.USER_INFO);
-    // 维修员（MAINTENANCE_STAFF=3）已被移除耗品访问权
     const canAccess = userInfo && [ROLES.ADMIN, ROLES.PROPERTY_MANAGER, ROLES.PROPERTY_STAFF].includes(userInfo.role_id);
     if (!canAccess) {
       wx.showToast({ title: '无权限访问', icon: 'none' });
@@ -80,10 +82,6 @@ Page({
     if (this.data.activeSubTab === 0) {
       this.loadRecords();
     }
-    if (this.data.activeSubTab === 1) {
-      const list = this.selectComponent('#materialList');
-      if (list) list.reload();
-    }
   },
 
   onPullDownRefresh() {
@@ -99,21 +97,16 @@ Page({
     const sub = parseInt(e.currentTarget.dataset.sub, 10);
     this.setData({ activeSubTab: sub });
     if (sub === 1) {
-      const list = this.selectComponent('#materialList');
-      if (list) list.reload();
-    }
-    if (sub === 2) {
       this._ensureCategoriesLoaded();
     }
   },
 
-  // ===== 直接扫码（替代旧 ActionSheet） =====
+  // ===== 直接扫码 =====
   async directScan() {
     let scanResult;
     try {
       scanResult = await wx.scanCode({ scanType: ['qrCode', 'barCode'] });
     } catch (e) {
-      // 用户取消，静默
       return;
     }
     const code = (scanResult.result || '').trim();
@@ -124,7 +117,7 @@ Page({
 
     let result;
     try {
-      result = await materialService.getMaterialByNumber(code);
+      result = await productService.getProductByCode(code);
     } catch (e) {
       console.error('[StockIn] scan lookup error:', e);
       wx.showToast({ title: '网络错误，请重试', icon: 'none' });
@@ -136,8 +129,7 @@ Page({
       return;
     }
 
-    if (!result.material) {
-      // 扫到不识别 → modal 双按钮引导添加
+    if (!result.product) {
       wx.showModal({
         title: '未识别',
         content: `编号「${code}」未登记，是否去商品管理添加？`,
@@ -145,9 +137,8 @@ Page({
         confirmText: '立即添加',
         success: (modalRes) => {
           if (modalRes.confirm) {
-            this.setData({ activeSubTab: 1 });
             wx.navigateTo({
-              url: `/pages/material/add/index?material_number=${encodeURIComponent(code)}`,
+              url: `/pages/product/add/index?product_code=${encodeURIComponent(code)}`,
             });
           }
         },
@@ -155,23 +146,20 @@ Page({
       return;
     }
 
-    // 命中 → 弹 Modal（loadLocationOptions + openStockInModal 下 Task 实现）
-    await this.openStockInModal(result.material);
+    await this.openStockInModal(result.product);
   },
 
-  async openStockInModal(material) {
-    // 首次扫码触发 loadLocationOptions（含 seed）
+  async openStockInModal(product) {
     await this.loadLocationOptions();
 
-    // material.usage_area 在字典中找 idx；找不到 fallback 0
-    const usage = material.usage_area || '';
+    const usage = product.usage_area || '';
     let idx = this.data.locationOptions.findIndex(o => o.value === usage);
     if (idx < 0) idx = 0;
     const initLocation = (this.data.locationOptions[idx] && this.data.locationOptions[idx].value) || '';
 
     this.setData({
       showStockInModal: true,
-      scannedMaterial: material,
+      scannedProduct: product,
       modalQuantity: '',
       modalLocation: initLocation,
       modalRemark: '',
@@ -183,7 +171,7 @@ Page({
   async loadLocationOptions() {
     if (this._locationLoaded && this.data.locationOptions.length > 0) return;
     try {
-      const result = await dictionaryAdmin.getDictionary('material_location');
+      const result = await dictionaryAdmin.getDictionary('product_location');
       if (result && result.success && result.data) {
         const items = (result.data.items || [])
           .filter(i => i.enabled !== false)
@@ -206,21 +194,21 @@ Page({
   },
 
   async _seedLocations() {
-    const items = DEFAULT_MATERIAL_LOCATIONS.map((label, idx) => ({
+    const items = DEFAULT_PRODUCT_LOCATIONS.map((label, idx) => ({
       value: label,
       label,
       sort: idx,
       enabled: true,
     }));
     const result = await dictionaryAdmin.createDictionary({
-      dict_key: 'material_location',
-      dict_name: '物料位置',
+      dict_key: 'product_location',
+      dict_name: '商品位置',
       description: '入库时的位置选项',
       items,
     });
     if (result && result.success) {
       wx.showToast({ title: '已创建默认位置', icon: 'success' });
-      dictionary.refreshCache('material_location');
+      dictionary.refreshCache('product_location');
       this.setData({
         locationOptions: items.map(i => ({ value: i.value, label: i.label })),
       });
@@ -234,7 +222,7 @@ Page({
   closeStockInModal() {
     this.setData({
       showStockInModal: false,
-      scannedMaterial: null,
+      scannedProduct: null,
       modalQuantity: '',
       modalLocation: '',
       modalRemark: '',
@@ -277,8 +265,8 @@ Page({
 
     this.setData({ modalSubmitting: true });
     try {
-      const result = await materialService.stockIn(
-        this.data.scannedMaterial.material_id,
+      const result = await productService.stockIn(
+        this.data.scannedProduct.product_id,
         qty,
         this.data.modalRemark || '',
         this.data.modalLocation
@@ -291,7 +279,7 @@ Page({
         const err = (result && result.error) || '入库失败';
         wx.showToast({ title: err, icon: 'none' });
         this.setData({ modalSubmitting: false });
-        if (err.includes('配件不存在')) {
+        if (err.includes('商品不存在')) {
           setTimeout(() => {
             this.closeStockInModal();
             this.loadRecords();
@@ -311,7 +299,7 @@ Page({
       this.setData({ inLoading: true, inPage: 1 });
     }
     try {
-      const result = await materialService.listRecords('in', this.data.inPage);
+      const result = await productService.listRecords('in', this.data.inPage);
       const records = (result.records || []).map(r => ({
         ...r,
         timeText: formatDateTime(r.created_at),
@@ -337,8 +325,15 @@ Page({
 
   goToRecordDetail(e) {
     const record = e.currentTarget.dataset.record;
+    // record-detail 页仍用 material_* 字段名展示，桥接 product_* → material_* 复用旧页
+    const bridged = {
+      ...record,
+      material_name: record.product_name || record.material_name || '',
+      material_number: record.product_code || record.material_number || '',
+      material_image: record.product_image || record.material_image || '',
+    };
     wx.navigateTo({
-      url: `/pages/material/record-detail/index?data=${encodeURIComponent(JSON.stringify(record))}`,
+      url: `/pages/material/record-detail/index?data=${encodeURIComponent(JSON.stringify(bridged))}`,
     });
   },
 
@@ -351,7 +346,7 @@ Page({
   async loadCategories() {
     this.setData({ categoriesLoading: true });
     try {
-      const result = await dictionaryAdmin.getDictionary('material_category');
+      const result = await dictionaryAdmin.getDictionary('product_category');
       if (result && result.success && result.data) {
         const items = (result.data.items || []).slice().sort((a, b) => (a.sort || 0) - (b.sort || 0));
         this.setData({
@@ -361,12 +356,10 @@ Page({
         });
         return;
       }
-      // 不存在 → 自动 seed
       if (result && !result.success && (result.error || '').includes('不存在')) {
         await this.seedCategories();
         return;
       }
-      // 其他错误
       wx.showToast({ title: '加载失败', icon: 'none' });
       this.setData({ categoriesLoading: false });
     } catch (e) {
@@ -377,7 +370,7 @@ Page({
   },
 
   async seedCategories() {
-    const items = DEFAULT_MATERIAL_CATEGORIES.map((label, idx) => ({
+    const items = DEFAULT_PRODUCT_CATEGORIES.map((label, idx) => ({
       value: label,
       label,
       sort: idx,
@@ -385,14 +378,14 @@ Page({
     }));
     try {
       const result = await dictionaryAdmin.createDictionary({
-        dict_key: 'material_category',
-        dict_name: '物料分类',
+        dict_key: 'product_category',
+        dict_name: '商品分类',
         description: '新品入库的商品分类',
         items,
       });
       if (result && result.success) {
         wx.showToast({ title: '已创建默认分类', icon: 'success' });
-        dictionary.refreshCache('material_category');
+        dictionary.refreshCache('product_category');
         this.setData({
           categoryItems: items,
           categoriesLoading: false,
@@ -500,9 +493,9 @@ Page({
     const prev = this.data.categoryItems;
     this.setData({ categoryItems: items });
     try {
-      const result = await dictionaryAdmin.updateDictionary('material_category', items);
+      const result = await dictionaryAdmin.updateDictionary('product_category', items);
       if (result && result.success) {
-        dictionary.refreshCache('material_category');
+        dictionary.refreshCache('product_category');
         if (typeof onSuccess === 'function') onSuccess();
       } else {
         this.setData({ categoryItems: prev });
@@ -513,14 +506,5 @@ Page({
       this.setData({ categoryItems: prev });
       wx.showToast({ title: '网络错误', icon: 'none' });
     }
-  },
-
-  onMaterialTap(e) {
-    const material = e.detail.material;
-    wx.navigateTo({ url: `/pages/material/detail/index?id=${material.material_id}` });
-  },
-
-  onAddMaterialTap() {
-    wx.navigateTo({ url: '/pages/material/add/index' });
   },
 });

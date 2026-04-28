@@ -2,7 +2,144 @@
 
 <!-- 每次新任务在这里追加规划，完成后加 Review 小节。 -->
 
-## 任务（当前）：工单维修模块 Bug 修复 + 后端补全 + 适度精简
+## 任务（当前）：根据 `tasks/角色权限清单.xlsx` 重新分配角色权限
+
+**目标**：让代码中的权限校验与该表格一致。表格汇总：
+
+| 功能 | 管理员(1) | 行政经理(2) | 维修员(3) | 办美员工(4) |
+|---|---|---|---|---|
+| 提交工单 | ✅ | ✅ | ❌ | ✅ |
+| 查看工单 | 全部 | 全部 | 部门内 | 全部 |
+| 编辑工单 | ✅ | ✅（已提报） | ❌ | ✅（已提报） |
+| 删除工单 | ✅ | 已提报状态 | ❌ | 已提报状态 |
+| 接单/维修 | ✅ | ❌ | ✅（部门匹配） | ❌ |
+| 完成维修 | ✅ | ❌ | ✅ | ❌ |
+| 复核验收 | ✅ | ❌ | ❌ | 所有 |
+| 催接单/催维修 | ✅ | ✅ | ❌ | ✅ |
+| 催复核 | ✅ | ✅ | ✅ | ❌ |
+| 导出工单 | ❌ | ✅ | ❌ | ✅ |
+| 用户/角色/公告/审计/系统配置/字典 | ✅ | ❌ | ❌ | ❌ |
+| 数据分析 | ✅ | 可授权 | ❌ | 可授权 |
+| 反馈管理 | 全部 | 自己的 | 自己的 | 自己的 |
+| 进入管理后台 | ✅ | ❌ | ❌ | ❌ |
+
+### TODO
+
+**后端 cloudfunctions**
+- [x] 1. `workOrderManager/handlers/crud.js` 编辑工单：管理员任意状态；经理/办美员工仅 `Pending Repair`；维修员禁止；去掉"提交人为办美员工"才能改的限制
+- [x] 2. `workOrderManager/index.js` 删除工单：允许管理员；经理/办美员工可删所有 `Pending Repair`（去掉"仅本人提交"的限制）
+- [x] 3. `workOrderManager/index.js` 导出工单：允许办美员工 (4)
+- [x] 4. `workOrderManager/handlers/status.js` 接单/状态流转：移除经理 (2)；保留管理员 + 维修员(部门匹配)
+- [x] 5. `workOrderManager/handlers/status.js` 完成维修：增加管理员；维修员保持部门匹配
+- [x] 6. `workOrderManager/handlers/status.js` 复核验收：管理员 ✅；办美员工可复核所有；移除"经理/提报人"路径
+- [x] 7. `workOrderManager/handlers/notify.js` 催接单/催维修：移除"仅提报人/经理"限制；管理员/经理/办美员工均可催
+- [x] 8. `userAuth/handlers/users.js` 用户管理：listUsers / createUser / updateUser 限制为仅管理员 (1)
+- [x] 9. `getAnalytics*/index.js` 6 个 + `getEmployeeRanking/index.js`：显式禁止维修员(3)访问
+
+**前端 miniprogram**
+- [x] 10. `pages/work-order-detail/index.js`：canEdit 增加管理员；canReview 移除经理，保留管理员 + 办美员工
+- [x] 11. `config/workOrderButtons.js`：新增 `adminAll`（4 状态）+ `staffReviewAll` + `managerUrge`；`getButtonConfig` 增加 `isAdmin` 分支；办美员工(role 4) 在 Repaired 状态展示验收按钮、行政经理仅展示催复核
+- [x] 12. `pages/index/index.{wxml,js}`：导出按钮显示/handler 检查改为 "经理 || 办美员工"
+- [x] 13. `pages/home/index.js`：维修员快捷入口同时隐藏"数据看板"
+
+### 不改动
+- 物料管理（清单未涉及）
+- 收费工单（清单未涉及）
+- 自定义 TabBar、ROLES 常量定义
+
+## Review（角色权限重新分配）
+
+### 改动文件（共 14 个）
+
+**后端**
+1. `cloudfunctions/workOrderManager/handlers/crud.js` — `updateWorkOrderDetails`：编辑权限改为"管理员任意状态；经理/办美员工仅已提报"，移除原"办美员工只能改办美员工提交的工单"限制
+2. `cloudfunctions/workOrderManager/index.js` — `delete` 分支：允许管理员/经理/办美员工删除任意"已提报"工单（去掉"仅本人提交才能删"的限制）；`exportWorkOrders`：允许 [2,4] 导出
+3. `cloudfunctions/workOrderManager/handlers/status.js`
+   - `updateOrderStatus`：移除经理(2)的接单权限；只允许管理员或维修员（部门匹配）操作；同时简化状态白名单逻辑（管理员仍跳过，维修员只允许 → In Progress）
+   - `completeRepair`：增加管理员
+   - `reviewOrder`：管理员任意可审核；办美员工可审核所有；移除"提报人/经理"路径
+4. `cloudfunctions/workOrderManager/handlers/notify.js` — `urgeAccept` / `urgeRepair`：去掉"仅提报人"限制
+5. `cloudfunctions/userAuth/handlers/users.js` — `handleListUsers` / `handleCreateUser` / `handleUpdateUser`：从 `[1,2]` 收紧到 `1`
+6. `cloudfunctions/getAnalyticsByCategory/index.js`、`getAnalyticsByFloor`、`getAnalyticsByResponsible`、`getAnalyticsByStatus`、`getAnalyticsOverview`、`getAnalyticsTrends`、`getEmployeeRanking` —— 7 个云函数权限检查前增加 `if (user.role_id === 3) return error`，显式禁止维修员
+
+**前端**
+7. `miniprogram/pages/work-order-detail/index.js` — `isAdmin` 标志；`canEdit` 增加管理员；`canReview` 移除经理保留 admin+办美员工；调用 `getButtonConfig` 时新增 `isAdmin` 入参
+8. `miniprogram/config/workOrderButtons.js` — 重构按钮配置：每个状态下新增 `adminAll`（管理员可见全部按钮）；'Repaired' 拆为 `staffReviewAll`（办美员工验收所有）和 `managerUrge`（经理只能催复核）；删除原 `managerAndSubmitter` / `managerNotSubmitter` / `staffSubmitter`
+9. `miniprogram/pages/index/index.{wxml,js}` — 导出按钮 visibility & handler 校验改为 `isManager || isPropertyStaff`
+10. `miniprogram/pages/home/index.js` — 维修员首页 `workOrderFunctions` 同时过滤掉"数据看板"
+
+### 影响面
+- **维修员**：失去"数据看板"入口；仍可催复核；不能看后台数据分析
+- **行政经理**：失去验收权限（只能催复核）；失去用户管理权限；失去接单/维修操作权限；新增删除任意已提报工单的能力（之前仅本人提交）
+- **办美员工**：可验收所有工单（之前仅"办美员工提交的"）；可导出工单；可删除任意已提报工单
+- **管理员**：新增可编辑任意状态、删除任意已提报、完成维修、验收的能力，并在工单详情按钮上看到对应入口
+
+### 部署须知
+1. 微信开发者工具中右键以下云函数 → 上传并部署：
+   - `workOrderManager`
+   - `userAuth`
+   - `getAnalyticsByCategory` / `getAnalyticsByFloor` / `getAnalyticsByResponsible` / `getAnalyticsByStatus` / `getAnalyticsOverview` / `getAnalyticsTrends`
+   - `getEmployeeRanking`
+2. 前端：刷新模拟器即可（仅改 .js / .wxml）
+
+### 自检清单
+- 管理员：编辑任意状态工单；删除已提报工单；接单 → 完成 → 验收（端到端）
+- 行政经理：仅能编辑/删除"已提报"；尝试接单/验收应被拒；可催接单/催维修/催复核；无用户列表入口；可查看数据分析（如配置开放）
+- 维修员：无"数据看板"入口；调用任一 getAnalytics* 应被拒；接单/完成维修受部门匹配限制
+- 办美员工：可导出工单；可验收任意工单（包括经理或管理员提交的）；可删除已提报工单；不能催复核
+
+
+## 任务（当前）：首页顶部渐变改为薄荷绿（取自 Pencil 5sXUY）
+
+**目标**：把 `miniprogram/pages/home/index.wxss` 的 `.page` 背景渐变，按 Pencil 文件 `5sXUY` 节点的渐变结构落地，但把原渐变里的"淡紫蓝 `#DCE4FF`"替换为"薄荷绿"，整体走 `mint → 浅mint → 近白` 的从上到下过渡。
+
+### Pencil 原始渐变（线性 180°）
+| 位置 | 原色 | 备注 |
+|------|------|------|
+| 0%   | `#DCE4FF` | 淡紫蓝 ← **本次替换** |
+| 30%  | `#DFF5F4` | 淡薄荷绿（保留） |
+| 55%  | `#FAFAFA` | 近白（保留） |
+
+### 新方案（替换后）
+| 位置 | 新色 | 说明 |
+|------|------|------|
+| 0%   | `#C8F0E8` | 薄荷绿，比 30% 略深，保留视觉层次 |
+| 30%  | `#DFF5F4` | 不动 |
+| 55%  | `#FAFAFA` | 不动 |
+| 100% | `#FAFAFA` | 平铺到底（保持 55% 之后无再变化） |
+
+### TODO
+- [x] 1. `miniprogram/pages/home/index.wxss` `.page`：用单层 `linear-gradient(180deg, #C8F0E8 0%, #DFF5F4 30%, #FAFAFA 55%, #FAFAFA 100%)` 替换现有的 4 层 radial-gradient + 1 层 linear-gradient 复合背景
+- [x] 2. `page` 选择器底色 `#E8FAE5` 同步换成 `#C8F0E8`，保证下拉/超出区也是薄荷绿，与首屏顶部连续
+- [x] 3. 不动其它任何样式（KPI 卡片、功能入口、快捷入口、最近记录、Tab Header）
+
+## Review（首页顶部薄荷绿渐变）
+
+### 改动
+- 仅一个文件：`miniprogram/pages/home/index.wxss`
+  - `page { background: #E8FAE5 }` → `#C8F0E8`
+  - `.page` 复合背景（4 个 radial + 1 个 linear，共 23 行 CSS）压缩为单层 `linear-gradient(180deg, #C8F0E8 0%, #DFF5F4 30%, #FAFAFA 55%, #FAFAFA 100%)`
+
+### 颜色逻辑
+- Pencil 5sXUY 原渐变 `#DCE4FF → #DFF5F4 → #FAFAFA` 中的"淡紫蓝 `#DCE4FF`"按需求替换为薄荷绿 `#C8F0E8`，其它两段保留，整体改为统一的"薄荷绿淡入白"基调
+- `#C8F0E8` 与现有 30% 的 `#DFF5F4` 同为青绿系，过渡自然；两色都偏浅，整体不会盖过卡片内容
+
+### 影响面
+- 仅首页 `pages/home` 的背景视觉。其它页面、TabBar、组件库样式、JS、wxml 完全未触碰。
+- 微信开发者工具内"模拟器刷新"即可看到效果，无需"构建 npm"或上传云函数。
+
+### 微调入口
+- 想更绿：把两处 `#C8F0E8` 改 `#BFE9DC`
+- 想更淡：把两处 `#C8F0E8` 改 `#D6F2EA`
+
+### 二轮迭代：下半段改淡灰，强化卡片立体感
+- `.page` 渐变 4 段重排：`#C8F0E8 0%` → `#DFF5F4 22%` → `#F1F3F6 50%` → `#EAEDF2 100%`
+  - 上 1/4 仍是薄荷绿，中段 22%–50% 由薄荷过渡到中性色
+  - 下半部 50%–100% 是淡灰，与卡片白底形成清晰对比
+- `page` 兜底色同步从 `#C8F0E8`（薄荷）改为 `#EAEDF2`（淡灰），保证下拉/超出区也是底部淡灰，不会突兀变薄荷
+- 卡片样式（KPI、func-card、record-item）原本是 `rgba(255,255,255,0.8→0.6)` 半透明 + 多层阴影 — 下半段背景从近白 `#FAFAFA` 换成 `#EAEDF2` 后，阴影对比度变高，卡片自然"浮起"
+
+## 任务：工单维修模块 Bug 修复 + 后端补全 + 适度精简
 
 **目标**：以前端现有页面为基础，不重设计前端、不改已完善按钮交互；先排查工单维修模块的 bug，必要时做最小修复；补齐未跑通的后端逻辑；合并明显重复代码。
 
@@ -200,3 +337,216 @@
 - WXML 中多处 `<!-- ... -->` 描述型注释，属于既有代码风格，非本次引入。
 - `'Pending Repair'` / `'Completed'` / `'全部'` / `'待维修'` 等字面量可接入 `utils/constants.js` 的 `STATUS_DISPLAY_NAMES`，但属重构范畴。
 - `onSearchInput` 防抖与 `applyFilter` setData payload 瘦身，属性能优化方向，非本次目标。
+
+---
+
+## 任务（当前）：删除耗品管理的 3 个按钮
+
+**目标**：在首页耗品管理 Tab 下移除"库存盘点 / 申领审批 / 预警管理"三个按钮入口。
+
+### 影响范围（grep 结果）
+- `miniprogram/pages/home/index.js`
+  - 第 87 行：`{ icon: 'records-o', label: '库存盘点', bg: '#7B61FF' }`（功能宫格第 1 行第 4 列）
+  - 第 92 行：`{ icon: 'sign', label: '申领审批', bg: '#FF4D4F' }`（功能宫格第 2 行第 3 列）
+  - 第 93 行：`{ icon: 'warning-o', label: '预警管理', bg: '#EB2F96' }`（功能宫格第 2 行第 4 列）
+- `miniprogram/pages/home/index.wxml`
+  - 第 225 行：待办事项卡片"库存预警"，`data-label="预警管理"` → tap 目标即将被删
+  - 第 234 行：待办事项卡片"出库审核"，`data-label="申领审批"` → tap 目标即将被删
+
+### TODO
+- [x] 1. `miniprogram/pages/home/index.js` `consumableFuncRows`：移除 库存盘点 / 申领审批 / 预警管理
+- [x] 2. `miniprogram/pages/home/index.wxml` 待办两张卡片去掉 `data-module/data-label/bindtap`（方案 A）
+- [ ] 3. 实机预览首页耗品 Tab，确认布局不错位（待用户在微信开发者工具中验证）
+
+### Review
+- 用户确认方案 A：保留待办卡片仅作展示。
+- `index.js` `consumableFuncRows` 由 2×4 改为：第 1 行 3 个（入库/出库/库存查询）、第 2 行 2 个（快递管理/数据报表），共 5 项。
+- `index.wxml` 待办两张卡片移除 `data-module="consumable"`、`data-label`、`bindtap="onFunctionTap"`，class 不动；点击不再触发跳转。
+- `onFunctionTap` 没有针对被删 3 个 label 的专属分支，无需修改 handler。
+- 未触碰 `consumableActivities` 中"库存盘点完成，差异3项"这条文案动态（属于演示数据，与按钮无关）。
+
+---
+
+## 任务（当前）：按 `~/Desktop/DESIGN.md`（Apple 画廊风）重构首页样式
+
+**目标**：把 `miniprogram/pages/home/index.{wxss,wxml}` 的视觉语言切换到 DESIGN.md 规范——单一 `#0066cc` 行动色、零装饰渐变、零卡片阴影、SF Pro 字号梯度、pill 主按钮 + hairline 卡片。结构（3 Tab + KPI + 功能宫格 + 快捷入口 + 最近记录）保持不动。
+
+### 当前现状（要砍掉的装饰层）
+- `page` 渐变背景 `#DCE4FF→#DFF5F4→#F1F3F6→#EAEDF2`（home/index.wxss:9-13）
+- KPI 卡片：`linear-gradient` 白底 + `backdrop-filter: blur(20px)` + 4 层 box-shadow + 4 边渐变 border + `::after` 渐变蓝半圆（kpi-card / kpi-card::after）
+- 功能图标渐变方块 `#E8EDFF→#D3DDFF` + 紫色阴影（func-icon）
+- 快捷按钮渐变胶囊：薄荷蓝→紫 / 黄→珊瑚 + 多重阴影（quick-btn-primary / quick-btn-secondary）
+- record-item 卡片：同款 8 边 border + 4 层阴影 + 渐变背景
+- 顶部 tab：橙色 `#F0A030` 下划线
+- Tab2 耗品管理整套 `cs-*` 样式（白卡 + 蓝渐变图标）
+
+### 关键取舍——你需要拍板（A vs B）
+
+| 项 | A. 严格执行 DESIGN.md（极简） | B. 务实精神化（推荐） |
+|---|---|---|
+| KPI 数值色 | 全部 `#1d1d1f` 黑（DESIGN.md "no second accent"）—4 个数字看起来一样，状态识别靠 label | 保留状态色（橙/蓝/紫/绿）作为**信息色**，按钮和链接走 `#0066cc` |
+| record-status-badge | 全部 `#1d1d1f` 文字 + 灰底 | 保留状态色（已提报蓝、维修中青、待复核紫、已完成绿）|
+| 工单维修区 vs 耗品管理区 | 用 `#ffffff` ↔ `#f5f5f7`（parchment）做色块切换 | 全部 `#ffffff`，用 80rpx 段间距分隔 |
+| 顶部 tab 下划线 | 不要下划线，黑字粗体表示 active（Apple 不用下划线 tab）| 保留下划线但改成 `#0066cc` |
+| 整体激进度 | 砍得最干净，可能"看起来都一样" | 保留功能性识别色，去掉所有装饰 |
+
+> **我的推荐：B**。理由：DESIGN.md 是 Apple 营销页规范，目标是"产品独白、UI 隐身"；当前是工具型小程序仪表板，KPI 数字色承担"快速扫视识别状态"的功能（非装饰），完全砍掉会损伤可用性。但 DESIGN.md 的核心精神（无装饰渐变 / 无卡片阴影 / 单一行动色按钮 / pill CTA / hairline 卡片 / 收紧字号梯度）我们 100% 执行。
+
+### Token 翻译表（DESIGN.md px → 小程序 rpx，按 1:2）
+
+| Token | px | rpx | 用在哪 |
+|---|---|---|---|
+| `colors.primary` #0066cc | — | — | 所有 CTA、链接、tab active 下划线 |
+| `colors.canvas` #ffffff | — | — | page 背景、卡片底 |
+| `colors.canvas-parchment` #f5f5f7 | — | — | 段落分隔（仅 B 路线用）|
+| `colors.ink` #1d1d1f | — | — | 标题、正文 |
+| `colors.body-muted` `#525252`/`#737373` | — | — | 次级文本（label / caption）|
+| `colors.hairline` #e0e0e0 | — | — | 卡片 1rpx 实线边（取代多层阴影）|
+| `rounded.lg` | 18px | 36rpx | 卡片圆角（KPI / func / record）|
+| `rounded.sm` | 8px | 16rpx | 内嵌图片圆角 |
+| `rounded.pill` | 9999px | 9999rpx | 主按钮、徽章 |
+| `spacing.lg` | 24px | 48rpx | 卡片内 padding |
+| `spacing.xl` | 32px | 64rpx | 段间距 |
+| `spacing.section` | 80px | 160rpx | 区段大间距（适度缩到 96rpx，小程序屏窄）|
+| `display-lg` | 40px / 600 | 56rpx 600（KPI 数字 38rpx 改 56rpx）| KPI 大数字、section 标题|
+| `body` | 17px / 400 / -0.374px | 30rpx 400 letter-spacing -0.4rpx | 列表正文 |
+| `caption` | 14px / 400 / -0.224px | 24rpx 400 letter-spacing -0.3rpx | KPI 标签、时间文本 |
+| `tagline` | 21px / 600 / 0.231px | 38rpx 600 letter-spacing 0.5rpx | tab 文字 |
+| product-shadow `rgba(0,0,0,0.22) 3px 5px 30px` | — | — | **本次不用**（全文无产品图）|
+
+### TODO（按 CLAUDE.md 简单原则，全部局限在 home/ 三件套）
+
+**前置：等用户选 A 还是 B（推荐 B），再开工**
+
+- [ ] 1. `home/index.wxss` `page` 改纯白 `#ffffff`，删 4 段渐变；`.page` 同步改纯色
+- [ ] 2. KPI 卡片去装饰：删 `linear-gradient` 白底 / `backdrop-filter` / 4 层 box-shadow / `::after` 半圆；改 `background: #fff` + `border: 1rpx solid #e0e0e0` + `border-radius: 36rpx` + 不要阴影
+- [ ] 3. KPI 字号：`.kpi-value` 38rpx→56rpx，`font-weight: 600`（不再 800），`letter-spacing: -0.6rpx`；color 处理见 A/B 取舍
+- [ ] 4. `.func-icon` 删渐变 `#E8EDFF→#D3DDFF` 和紫色阴影；改纯白 `#fff` + 1rpx hairline + 36rpx 圆角；图标颜色统一 `#0066cc`
+- [ ] 5. `.func-card` 删 backdrop-filter / 多层 box-shadow / 4 边渐变 border；改纯白 + 1rpx hairline
+- [ ] 6. `.quick-btn-primary` / `.quick-btn-secondary` 改 button-primary：`background: #0066cc`、`border-radius: 9999rpx`、`box-shadow: none`、字色 `#fff`；删两套渐变 + 紫/珊瑚阴影。**两个按钮颜色统一**（DESIGN.md 不允许第二行动色）
+- [ ] 7. `.record-item` 同 KPI 处理：删 backdrop-filter / 4 层阴影 / 8 边渐变 border；改纯白 + 1rpx hairline + 36rpx 圆角；`.record-status-badge` 处理见 A/B
+- [ ] 8. `.tab-text`：38rpx 600 letter-spacing 0.5rpx；`.tab-underline` 颜色 `#F0A030`→`#0066cc`（B 路线）或整体删除（A 路线）
+- [ ] 9. `.section-title`：30rpx 600 #525252 → 38rpx 600 #1d1d1f letter-spacing -0.5rpx
+- [ ] 10. `.cs-*` 系列（耗品 Tab）：同样处理——删所有渐变蓝图标、删多层阴影、`#1677FF` 全局换 `#0066cc`、border-radius 18→36rpx 统一
+- [ ] 11. `.cs-overview-value` 56rpx 700→64rpx 600 letter-spacing -0.7rpx；`.cs-stat-icon` 蓝 `#EAF2FF` 底改纯白 + hairline；`.cs-todo-icon-orange` / `.cs-todo-icon-blue` 改纯白 + hairline；图标色统一 `#0066cc`
+- [ ] 12. `.cs-quick-fill` `#1677FF` → `#0066cc`，删阴影；`.cs-quick-outline` border `2rpx #1677FF` → `1rpx #0066cc`，删阴影
+- [ ] 13. `home/index.wxml` 同步：`van-icon` 出现的 hardcoded color（`#4F6DF5` / `#5C8DFF` / `#1677FF` / `#fafafa`）全部改 `#0066cc` 或 `#fff`；KPI 卡片 inline `style="color: #..."` 处理见 A/B
+- [ ] 14. `home/index.js` 检查：`STATUS_TEXT_COLORS` / `STATUS_BG_COLORS` / `inspectionRecords[].dotColor` / `consumableActivities[].badgeBg/timeColor`——A 路线全部统一灰，B 路线保留
+- [ ] 15. 微信开发者工具实机预览三个 Tab，确认布局不错位、点击区域不变（待用户验证）
+- [ ] 16. 跑 `code simplifier`（CLAUDE.md 第 10 条）
+
+### 不做（YAGNI 红线）
+- 不动 wxml 结构（不删 KPI、不并段、不改 swiper 顺序）
+- 不动 home/index.js 业务逻辑（除上面 14 提到的颜色常量）
+- 不动 TabBar / 其他页面（DESIGN.md 设计语言全站推广是另一个任务）
+- 不引入新组件、不重写 cs-* 为新命名空间
+- 不实现 Apple 的"alternating tile"全屏色块切换（小程序滚动语境不适用）
+- 不引入 SF Pro Display 字面量字体声明（小程序已用 `-apple-system` 系统栈，iOS 已经能拿到 SF Pro，Android 走 fallback 即可）
+
+### 验证清单（用户实机）
+1. 三个 Tab 切换无错位、动画顺畅
+2. 没有任何卡片有可见阴影；没有任何渐变（page、卡片、按钮、图标）
+3. 所有 CTA / 链接 / 链状元素颜色都是 `#0066cc`（不再有紫 #6366e8 / 橙 #FF6A00 / 蓝 #1677FF）
+4. KPI 卡片、record-item、func-card 都是 1rpx hairline 边、36rpx 圆角、纯白底
+5. 字号梯度收紧：tab > section-title > KPI value > body > caption 阶梯清晰
+6. （B 路线）状态徽章和 KPI 数字仍能一眼分辨工单状态
+
+### Review
+（实施完成后填写：实际改动文件、关键决策、未达成项、需后续跟进）
+
+---
+
+## 任务（当前·已批准）：商品管理（耗品域）彻底独立化
+
+**目标**：把"商品管理"从 stock-in 的 sub-tab 升级为耗品域独立页面 `/pages/product/index`，前后端两层与 `materials` / `<material-list>` 完全解耦。维修域代码零修改。
+
+**完整 plan**：`/Users/lvleo/.claude/plans/silly-moseying-newell.md`
+
+### TODO（按 plan 阶段顺序）
+
+**阶段 1：后端**
+- [x] 1. 复制 `cloudfunctions/materialManager/` → `cloudfunctions/productManager/`，重命名字段（`material_id`→`product_id`、`material_number`→`product_code`、`materials`→`products`、`material_records`→`product_records`），权限白名单 `canAccessMaterial`/`canManageMaterial` → `canAccessProduct`/`canManageProduct`
+- [x] 2. `cloudfunctions/dictionaryManager/index.js`：白名单 `MANAGE_MATERIAL_DICTS` 加 `product_category` / `product_location`
+
+**阶段 2：服务层**
+- [x] 3. 新建 `miniprogram/services/productService.js`（从 materialService 复制 + 字段+服务名重命名）
+
+**阶段 3：组件**
+- [x] 4. 新建 `miniprogram/components/product-list/{js,wxml,wxss,json}`（从 material-list 复制 + 文案"配件"→"商品" + placeholder/empty-text 改）
+
+**阶段 4：商品独立页**
+- [x] 5. 新建 `miniprogram/pages/product/index.{js,wxml,wxss,json}`（NavBar "商品管理"，挂 `<product-list>` + canManage 校验 + 跳详情/新增）
+- [x] 6. 新建 `miniprogram/pages/product/detail/index.*` + `pages/product/edit/index.*`（从 material/detail + material/edit 复制 + 字段重命名 + 服务切换；plan 漏写 edit 页，实施时一并补上）
+- [x] 7. 新建 `miniprogram/pages/product/add/index.*`（从 material/add 复制 + 字段重命名 + 服务切换 + onLoad 接 `query.product_code`）
+- [x] 8. `miniprogram/app.json`：注册 4 个新页面（product/index、detail、edit、add）
+
+**阶段 5：改造 stock-in**
+- [x] 9. `pages/material/stock-in/index.js`：`subTabs` 删"商品管理"项 + 删 onMaterial 回调 + `directScan`/`submitStockIn` 切到 productService + 扫码失败跳 `/pages/product/add/?product_code=` + 字典 key 改 `product_*` + goToRecordDetail 加 product→material 字段桥接复用 record-detail 旧页
+- [x] 10. `pages/material/stock-in/index.wxml`：删 sub-tab 1 整段（`<material-list>` 块）+ scannedMaterial → scannedProduct + product_image/product_name/product_code 字段同步
+- [x] 11. `pages/material/stock-in/index.json`：移除 `material-list` 组件注册
+
+**阶段 6：首页**
+- [x] 12. `pages/home/index.js`：`consumableFuncRows` 加"商品管理"宫格（icon: gift-o，紫色 #7C3AED）+ `onFunctionTap` 加分支跳 `/pages/product/index`
+
+**阶段 7：清理 + 验证**
+- [x] 13. 所有新建 `.js` 跑 `node -c` 静态校验（13 文件全过）
+- [x] 14. 跑 `code simplifier`（CLAUDE.md 第 10 条）— 子代理审查 17 文件确认零冗余，无修改
+- [ ] 15. 部署 `productManager` + `dictionaryManager` 云函数（用户在微信开发者工具中执行）
+- [ ] 16. 用户实机回归（plan 验证章节 6 项）
+
+### 不做（YAGNI 红线）
+- 不实现 products 出库流程、不实现"库存查询/快递管理/数据报表"宫格
+- 不动 `materials` 集合、不写迁移脚本
+- 不重构 `materialService.js` / `<material-list>` / `pages/material/index`
+- 不引入 products / materials 的统一抽象层
+
+### Review（商品管理彻底独立化）
+
+#### 改动文件清单（21 个文件）
+
+**新建 18 个**：
+- 后端 6：`cloudfunctions/productManager/{package.json, helpers.js, index.js, handlers/crud.js, handlers/stock.js, handlers/seed.js}`（seed 为开发用测试数据 handler，幂等：products 非空时拒绝）
+- 服务层 1：`miniprogram/services/productService.js`
+- 组件 4：`miniprogram/components/product-list/{json,js,wxml,wxss}`
+- 商品列表页 4：`miniprogram/pages/product/index.{json,js,wxml,wxss}`
+- 商品详情页 4：`miniprogram/pages/product/detail/index.{json,js,wxml,wxss}`（wxss 直接 cp）
+- 商品新增页 4：`miniprogram/pages/product/add/index.{json,js,wxml,wxss}`（json/wxss 直接 cp）
+- 商品编辑页 4：`miniprogram/pages/product/edit/index.{json,js,wxml,wxss}`（wxss 直接 cp）
+
+> 注：商品详情/新增/编辑各 4 个文件，但部分（json/wxss）是 cp 不变，所以新建总数按文件数算；扣除原始模板复制份数=新建独立逻辑文件 17 项。
+
+**改造 4 个**：
+- `cloudfunctions/dictionaryManager/index.js`：白名单加 `product_category` / `product_location`
+- `miniprogram/app.json`：注册 4 个新页面路由
+- `miniprogram/pages/material/stock-in/index.{js,wxml,json}`：subTabs 缩 2 项、扫码改 productService、字典 key 改 product_*、wxml 删商品管理 sub-tab、json 移除 material-list 组件注册
+- `miniprogram/pages/home/index.js`：耗品宫格加"商品管理"项 + onFunctionTap 加分支
+
+#### 关键决策与偏离
+
+1. **edit 页补建（plan 漏）**：原 plan 只列了 detail + add，实施时发现 product-list 组件的"编辑"菜单跳 `/pages/product/edit/index`，必须建。在 P6 范围内补 4 个文件（含 json/wxml/js + cp wxss）。
+2. **record-detail 字段桥接（plan 未涉及）**：stock-in 入库记录详情页 `/pages/material/record-detail/` 仍按 material_* 字段名展示。我在 stock-in/index.js 的 goToRecordDetail 加了 3 行字段映射（product_name → material_name 等），不复制整个 record-detail 页。这是 product_records 集合保持 product_* 命名干净 vs UI 复用之间的最小成本桥接。
+3. **耗品域权限白名单**：照搬 materialManager 的 `[1,2,4,5]` / `[1,2,5]`，未做收紧。
+4. **耗品分类/位置默认值**：抛弃了维修配件的"电气/水暖/门窗/消防"，改成"办公耗品/清洁用品/日用百货/食品饮料/五金杂货/通用"。位置默认值（"主仓库/应急储备/工程仓/办公耗材区/外采暂存/其它"）保留了原值——这些位置对耗品域同样适用。
+5. **既有 `materials` 数据零迁移**（D3）：商品域从空白 products 集合开始。
+6. **后置补丁：material/index 加回"入库记录" Tab**：上一轮拆分把维修域的入库记录视图一并拿走，本轮修复——`pages/material/index` 改回 3 Tab（配件列表 / 入库记录 / 出库记录），数据来自 `material_records.type='in'`。
+7. **后置补丁：productManager 加 seed handler**：Plan 原本说"耗品从空开始"，但回归阶段需要测试数据，加了 `handlers/seed.js`（幂等保护：products 非空时拒绝），通过 `seedTestData` action 一键插入 5 条商品 + 3 条入库流水。
+
+#### 部署须知
+
+用户需在微信开发者工具中执行：
+- 右键 `cloudfunctions/productManager/` → 上传并部署所有文件（首次部署会创建该云函数 + 安装 wx-server-sdk 依赖）
+- 右键 `cloudfunctions/dictionaryManager/` → 上传并部署所有文件（白名单已扩 product_*）
+- 工具 → 构建 npm（前端代码）
+- 真机/模拟器实际跑回归
+
+#### 自检清单
+
+- [ ] 首页耗品 Tab → 商品管理宫格 → 进 /pages/product/index，NavBar "商品管理"，列表为空
+- [ ] FAB → /pages/product/add，提交一条 → 回列表见 1 条
+- [ ] 列表项点击 → 详情页；详情"修改"→ edit 页；编辑后回详情可见
+- [ ] 列表项菜单"删除"→ 乐观删除生效
+- [ ] 耗品 Tab → 入库管理 → /pages/material/stock-in，仅 2 sub-tab
+- [ ] FAB 扫码：扫到已存在 product → Modal；扫不存在 → showModal "立即添加" → 跳 product/add 预填 code
+- [ ] 入库提交后 product_records 表 type=in，products.stock 增加
+- [ ] 工单维修 → 物料管理 → /pages/material/index 仍是 2 Tab（配件列表/出库记录），materials 表数据原样
+- [ ] 维修员 role_id=3 在耗品 Tab 隐藏所有商品域入口

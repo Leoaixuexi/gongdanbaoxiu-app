@@ -1,0 +1,12 @@
+<view class="product-page">
+  <product-list
+    id="productList"
+    canManage="{{canManage}}"
+    bind:itemtap="onProductTap"
+    bind:additem="onAddProductTap"
+  />
+
+  <view wx:if="{{canManage}}" class="fab-button" bindtap="onAddProductTap">
+    <van-icon name="plus" size="24px" color="#FFFFFF" />
+  </view>
+</view>
