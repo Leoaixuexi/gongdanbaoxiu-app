@@ -175,7 +175,7 @@ exports.main = async (event, context) => {
           return { success: false, error: '无权限执行入库操作' };
         }
 
-        const { material_id, quantity, remark = '', location = '' } = data;
+        const { material_id, quantity, remark = '', location = '', unit_price } = data;
         if (!material_id || !quantity || quantity <= 0) {
           return { success: false, error: '请填写正确的入库信息' };
         }
@@ -190,12 +190,17 @@ exports.main = async (event, context) => {
         const material = materials[0];
         const now = new Date();
         const qty = Number(quantity);
+        const hasPrice = unit_price !== undefined && unit_price !== null && Number(unit_price) > 0;
+        const priceVal = hasPrice ? Number(unit_price) : null;
+
+        const matUpdate = { stock: _.inc(qty), updated_at: now };
+        if (hasPrice) {
+          matUpdate.last_purchase_price = priceVal;
+        }
 
         const [recordId] = await Promise.all([
           getNextId('material_records'),
-          db.collection('materials').doc(material._id).update({
-            data: { stock: _.inc(qty), updated_at: now }
-          })
+          db.collection('materials').doc(material._id).update({ data: matUpdate })
         ]);
 
         await db.collection('material_records').add({
@@ -211,6 +216,7 @@ exports.main = async (event, context) => {
             material_image: (material.images && material.images[0]) || '',
             type: 'in',
             quantity: qty,
+            unit_price: priceVal,
             operator: { user_id: user.user_id, name: user.name },
             remark,
             created_at: now,
