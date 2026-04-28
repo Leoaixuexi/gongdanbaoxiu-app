@@ -103,6 +103,65 @@
     <button class="primary-btn" bind:tap="openAdjust">📝 修改库存</button>
   </view>
 
+  <!-- 调整抽屉 -->
+  <van-popup
+    show="{{ showAdjust }}"
+    position="bottom"
+    round
+    closeable
+    bind:close="closeAdjust">
+    <view class="adj-wrap">
+      <view class="adj-title">调整库存</view>
+      <view class="adj-meta">{{ detail.material.name }} · 当前库存 <text class="adj-cur {{ isWarn ? 'warn' : 'primary' }}">{{ detail.currentStock }}</text> {{ detail.material.unit || '' }}</view>
+
+      <view class="adj-label">调整类型</view>
+      <view class="adj-types">
+        <view
+          class="adj-type-pill {{ adjForm.type === 'gain' ? 'active gain' : '' }}"
+          data-type="gain"
+          bind:tap="onAdjTypeTap">+ 盘盈</view>
+        <view
+          class="adj-type-pill {{ adjForm.type === 'loss' ? 'active loss' : '' }}"
+          data-type="loss"
+          bind:tap="onAdjTypeTap">- 盘亏</view>
+        <view
+          class="adj-type-pill {{ adjForm.type === 'scrap' ? 'active loss' : '' }}"
+          data-type="scrap"
+          bind:tap="onAdjTypeTap">- 报废</view>
+        <view
+          class="adj-type-pill {{ adjForm.type === 'lost' ? 'active loss' : '' }}"
+          data-type="lost"
+          bind:tap="onAdjTypeTap">- 丢失</view>
+      </view>
+
+      <view class="adj-label">调整数量</view>
+      <van-stepper
+        value="{{ adjForm.quantity }}"
+        min="1"
+        integer
+        bind:change="onAdjQtyChange"
+      />
+
+      <view class="adj-label">调整原因</view>
+      <van-field
+        type="textarea"
+        autosize
+        placeholder="如:盘点差异 / 损坏报废 / 物品丢失"
+        value="{{ adjForm.reason }}"
+        bind:change="onAdjReasonChange"
+      />
+
+      <view class="adj-preview {{ adjPreview.tone }}">
+        ⚠️ 调整后库存：{{ detail.currentStock }} {{ adjPreview.opSymbol }} {{ adjForm.quantity }} = <text class="adj-preview-val">{{ adjPreview.newStock }}</text>
+      </view>
+
+      <button
+        class="adj-submit"
+        loading="{{ adjSubmitting }}"
+        bind:tap="submitAdjust">确认提交</button>
+    </view>
+  </van-popup>
+
 </view>
 
 <view class="loading-page" wx:elif="{{ loading }}">加载中...</view>
