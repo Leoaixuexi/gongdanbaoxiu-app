@@ -52,7 +52,7 @@ Page({
 
   onLoad() {
     const userInfo = wx.getStorageSync(STORAGE_KEYS.USER_INFO);
-    const canAccess = userInfo && [ROLES.ADMIN, ROLES.PROPERTY_MANAGER, ROLES.PROPERTY_STAFF, 5].includes(userInfo.role_id);
+    const canAccess = userInfo && [ROLES.ADMIN, ROLES.PROPERTY_MANAGER, ROLES.PROPERTY_STAFF, ROLES.WAREHOUSE_KEEPER].includes(userInfo.role_id);
     if (!canAccess) {
       wx.showToast({ title: '无权限访问', icon: 'none' });
       setTimeout(() => wx.navigateBack(), 1500);

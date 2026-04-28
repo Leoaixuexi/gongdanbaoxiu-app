@@ -35,7 +35,7 @@ function decorateRecord(r) {
 }
 
 function canManage(user) {
-  return user && [ROLES.ADMIN, ROLES.PROPERTY_MANAGER, 5].includes(user.role_id) && user.active !== false;
+  return user && [ROLES.ADMIN, ROLES.PROPERTY_MANAGER, ROLES.WAREHOUSE_KEEPER].includes(user.role_id) && user.active !== false;
 }
 
 function monthLabel(monthKey) {
@@ -156,6 +156,10 @@ Page({
   },
 
   initTrendChart() {
+    if (this._trendChart) {
+      this._trendChart.setOption(buildTrendOption(this.data.detail.trend, this.data.trendType), true);
+      return;
+    }
     const comp = this.selectComponent('#trendChart');
     if (!comp) return;
     comp.init((canvas, width, height, dpr) => {
