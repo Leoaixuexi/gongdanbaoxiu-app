@@ -299,14 +299,66 @@ async function cancelStockOutRequest({ data, user }) {
   return { success: true, message: '已撤回' };
 }
 
+async function listStockOutRequests({ data, user }) {
+  const { canAccessStockOut, db, _ } = require('./helpers');
+  if (!canAccessStockOut(user)) return { success: false, error: '无权限' };
+
+  const {
+    status, requester_user_id, material_id,
+    region, scene, date_from, date_to, keyword,
+    page = 1, pageSize = 20,
+  } = data;
+
+  const conditions = {};
+  if (user.role_id === 4) {
+    conditions['requester.user_id'] = user.user_id;
+  } else if (requester_user_id) {
+    conditions['requester.user_id'] = requester_user_id;
+  }
+
+  if (Array.isArray(status) && status.length) {
+    conditions.status = _.in(status);
+  } else if (typeof status === 'string' && status) {
+    conditions.status = status;
+  }
+  if (material_id) conditions.material_id = material_id;
+  if (region) conditions.region = region;
+  if (scene) conditions.scene = scene;
+
+  if (date_from && date_to) {
+    conditions.created_at = _.and(_.gte(new Date(date_from)), _.lte(new Date(date_to)));
+  } else if (date_from) {
+    conditions.created_at = _.gte(new Date(date_from));
+  } else if (date_to) {
+    conditions.created_at = _.lte(new Date(date_to));
+  }
+  if (keyword) {
+    conditions.material_name = db.RegExp({ regexp: keyword, options: 'i' });
+  }
+
+  const query = db.collection('material_requests').where(conditions);
+  const [countRes, listRes] = await Promise.all([
+    query.count(),
+    query.orderBy('created_at', 'desc').skip((page - 1) * pageSize).limit(pageSize).get(),
+  ]);
+
+  return {
+    success: true,
+    requests: listRes.data,
+    total: countRes.total,
+    page, pageSize,
+  };
+}
+
 const ROUTES = {
   ping: async () => ({ success: true, message: 'stockOutManager pong' }),
   createStockOutRequest,
   approveStockOutRequest,
   rejectStockOutRequest,
   cancelStockOutRequest,
-  // Task 6-8 加入：
-  // listStockOutRequests, getStockOutRequest, getMaterialById, listMaterials
+  listStockOutRequests,
+  // Task 7-8 加入：
+  // getStockOutRequest, getMaterialById, listMaterials
 };
 
 exports.main = async (event, context) => {
