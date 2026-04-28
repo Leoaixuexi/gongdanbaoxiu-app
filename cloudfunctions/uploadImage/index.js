@@ -21,6 +21,14 @@ exports.main = async (event, context) => {
     const wxContext = cloud.getWXContext();
     const { tempFilePath, category = 'workorder' } = event;
 
+    // 身份验证：确保用户已登录
+    if (!wxContext.OPENID) {
+      return {
+        success: false,
+        error: '无法获取用户身份，请重新登录'
+      };
+    }
+
     if (!tempFilePath) {
       throw new Error('tempFilePath is required');
     }

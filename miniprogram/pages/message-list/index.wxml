@@ -36,7 +36,7 @@
 
     <!-- 空状态 -->
     <view class="empty-state" wx:elif="{{messages.length === 0}}">
-      <image class="empty-icon" src="cloud://cloud1-7glfhm4r06e030bd.636c-cloud1-7glfhm4r06e030bd-1386591973/icons/08.png" mode="aspectFit"></image>
+      <image class="empty-icon" src="{{emptyIconUrl}}" mode="aspectFit"></image>
       <text class="empty-text">暂无消息</text>
     </view>
 

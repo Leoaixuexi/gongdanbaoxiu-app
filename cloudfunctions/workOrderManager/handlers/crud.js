@@ -8,6 +8,7 @@ const {
   SLA_RULES,
   normalizeStatus,
   generateOrderNumber,
+  parseReportDateTime,
   calculateSLADeadline,
   getUserByOpenId,
   getOrderCategories,
@@ -18,6 +19,7 @@ const {
   addStatusHistory,
   enhanceWorkOrder,
   getStatusVariants,
+  writeAuditLog,
 } = require('../helpers');
 
 /**
@@ -66,11 +68,9 @@ async function createWorkOrder(openid, orderData) {
   // Generate a numeric ID with low collision probability (ms + random)
   const orderId = (Date.now() * 1000) + Math.floor(Math.random() * 1000);
 
-  // 处理报修时间（前端传来的是北京时间，需要正确解析）
   let reportTime = now;
   if (orderData.report_date && orderData.report_time) {
-    // 使用 ISO 格式并指定为中国时区 (+08:00)
-    reportTime = new Date(`${orderData.report_date}T${orderData.report_time}:00+08:00`);
+    reportTime = parseReportDateTime(orderData.report_date, orderData.report_time);
   }
 
   // 构建工单数据
@@ -98,7 +98,8 @@ async function createWorkOrder(openid, orderData) {
       user_id: technician.user_id,
       openid: technician.wechat_openid,
       name: technician.name,
-      phone: technician.contact_phone
+      phone: technician.contact_phone,
+      avatar: technician.avatar || ''
     },
     created_at: now,
     assigned_at: now,
@@ -205,15 +206,8 @@ async function getWorkOrders(openid, filters = {}) {
     if (user.department) {
       conditions.responsible_party = user.department;
     }
-  } else if (user.role_id === 2 || user.role_id === 4) {
-    // 办美员工和行政经理共享可见所有工单
-    // 已完成状态：办美员工只能看自己提交的
-    if (filters.status === 'Completed' && user.role_id === 4) {
-      conditions['submitter.user_id'] = user.user_id;
-    }
-    // 其他状态：不过滤，可以看到所有工单
   }
-  // 管理员可以看到所有工单
+  // 行政经理(2)、办美员工(4)、管理员(1) 可见所有工单（不附加条件）
 
   // 应用过滤条件（兼容老数据中文状态）
   if (filters.status) {
@@ -224,41 +218,36 @@ async function getWorkOrders(openid, filters = {}) {
     conditions.priority = filters.priority;
   }
 
-  const { total } = await workOrders.where(conditions).count();
+  const pageSize = Math.min(Math.max(limit, 1), 100);
+  const offset = (page - 1) * pageSize;
+
+  // count 与首页数据并发拉取，省一次 RTT
+  const [{ total }, firstPage] = await Promise.all([
+    workOrders.where(conditions).count(),
+    workOrders.where(conditions).orderBy('created_at', 'desc').skip(fetchAll ? 0 : offset).limit(fetchAll ? 100 : pageSize).get(),
+  ]);
 
   let data;
   if (fetchAll && total > 100) {
-    // 分批获取所有数据（云数据库单次最多100条）
-    const allOrders = [];
+    // 已有首批 100 条，剩余分批并发拉取
     const batchSize = 100;
-    const batchCount = Math.ceil(total / batchSize);
-    for (let i = 0; i < batchCount; i++) {
-      const { data: batch } = await workOrders
-        .where(conditions)
-        .orderBy('created_at', 'desc')
-        .skip(i * batchSize)
-        .limit(batchSize)
-        .get();
-      allOrders.push(...batch);
-    }
-    data = allOrders;
+    const remainingBatches = Math.ceil(total / batchSize) - 1;
+    const restBatches = await Promise.all(
+      Array.from({ length: remainingBatches }, (_, i) =>
+        workOrders.where(conditions).orderBy('created_at', 'desc').skip((i + 1) * batchSize).limit(batchSize).get()
+      )
+    );
+    data = firstPage.data.concat(...restBatches.map(r => r.data));
   } else {
-    const offset = (page - 1) * Math.min(Math.max(limit, 1), 100);
-    const { data: pageData } = await workOrders
-      .where(conditions)
-      .orderBy('created_at', 'desc')
-      .skip(offset)
-      .limit(Math.min(Math.max(limit, 1), 100))
-      .get();
-    data = pageData;
+    data = firstPage.data;
   }
 
   return {
-    orders: data.map(order => enhanceWorkOrder(order)),
+    orders: data.map(enhanceWorkOrder),
     total,
     page,
-    limit: fetchAll ? total : Math.min(Math.max(limit, 1), 100),
-    totalPages: fetchAll ? 1 : (total > 0 ? Math.ceil(total / Math.min(Math.max(limit, 1), 100)) : 0),
+    limit: fetchAll ? total : pageSize,
+    totalPages: fetchAll ? 1 : (total > 0 ? Math.ceil(total / pageSize) : 0),
   };
 }
 
@@ -289,18 +278,18 @@ async function updateWorkOrderDetails(openid, orderId, updates = {}) {
   const order = orders[0];
   const currentStatus = normalizeStatus(order.status);
 
-  const isSubmittedByPropertyStaff = order.submitter?.role_id === 4;
+  // 编辑权限：管理员任意状态；行政经理/办美员工仅"已提报"；维修员禁止
   const canEdit =
     user.role_id === 1 ||
     user.role_id === 2 ||
-    (user.role_id === 4 && isSubmittedByPropertyStaff);  // 办美员工可编辑所有办美员工提交的工单
+    user.role_id === 4;
 
   if (!canEdit) {
     throw new Error('无权限修改该工单');
   }
 
-  if (currentStatus !== 'Pending Repair') {
-    throw new Error('仅待维修工单允许修改');
+  if (user.role_id !== 1 && currentStatus !== 'Pending Repair') {
+    throw new Error('仅已提报工单允许修改');
   }
 
   const floor = typeof updates.floor === 'string' ? updates.floor.trim() : order.floor;
@@ -312,7 +301,7 @@ async function updateWorkOrderDetails(openid, orderId, updates = {}) {
   const remark = typeof updates.remark === 'string' ? updates.remark.trim() : (order.remark || '');
 
   const photos = Array.isArray(updates.photos)
-    ? updates.photos.filter(p => typeof p === 'string' && p.trim()).map(p => p.trim()).slice(0, 3)
+    ? updates.photos.filter(p => typeof p === 'string' && p.trim()).map(p => p.trim()).slice(0, 9)
     : (order.photos || []);
 
   if (!floor) throw new Error('请填写楼层');
@@ -327,10 +316,9 @@ async function updateWorkOrderDetails(openid, orderId, updates = {}) {
   if (!description) throw new Error('请填写问题描述');
   if (!photos || photos.length === 0) throw new Error('请至少上传一张现场照片');
 
-  // 处理报修时间（允许修改）
   let reportTime = order.report_time || order.created_at || new Date();
   if (updates.report_date && updates.report_time) {
-    reportTime = new Date(`${updates.report_date} ${updates.report_time}`);
+    reportTime = parseReportDateTime(updates.report_date, updates.report_time);
   }
 
   const now = new Date();
@@ -348,6 +336,23 @@ async function updateWorkOrderDetails(openid, orderId, updates = {}) {
       updated_at: now,
       status_history: _.push(addStatusHistory(currentStatus, currentStatus, user, '工单信息修改')),
     }
+  });
+
+  await writeAuditLog({
+    user,
+    action: 'update_details',
+    order_id: numericOrderId,
+    before: {
+      floor: order.floor,
+      location: order.location,
+      order_category: order.order_category,
+      responsible_party: order.responsible_party,
+      priority: order.priority,
+      description: order.description,
+    },
+    after: {
+      floor, location, order_category: orderCategory, responsible_party: responsibleParty, priority, description,
+    },
   });
 
   return {

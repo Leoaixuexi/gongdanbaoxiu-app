@@ -3,8 +3,7 @@
  * 角色与权限管理页面
  */
 
-const cloudDB = require('../../../services/cloudDatabase');
-const { ROLES, STORAGE_KEYS } = require('../../../utils/constants');
+const userService = require('../../../services/userService');
 
 // 系统模块定义（与云数据库 roles.permissions.modules 保持一致）
 const SYSTEM_MODULES = [
@@ -16,6 +15,8 @@ const SYSTEM_MODULES = [
 ];
 
 Page({
+  behaviors: [require('../../../behaviors/adminPage')],
+
   data: {
     roles: [],
     loading: true,
@@ -28,7 +29,7 @@ Page({
   },
 
   onLoad() {
-    this.checkAdminPermission();
+    if (!this.checkAdminPermission()) return;
   },
 
   onShow() {
@@ -42,29 +43,13 @@ Page({
   },
 
   /**
-   * 检查管理员权限
-   */
-  checkAdminPermission() {
-    const userInfo = wx.getStorageSync(STORAGE_KEYS.USER_INFO);
-    if (!userInfo || userInfo.role_id !== ROLES.ADMIN) {
-      wx.showToast({
-        title: '无权限访问',
-        icon: 'none'
-      });
-      setTimeout(() => {
-        wx.navigateBack();
-      }, 1500);
-    }
-  },
-
-  /**
    * 加载角色列表
    */
   async loadRoles() {
     this.setData({ loading: true });
 
     try {
-      const roles = await cloudDB.roles.list();
+      const roles = await userService.listRoles();
 
       // 处理角色数据
       const processedRoles = roles.map(role => ({
@@ -183,7 +168,7 @@ Page({
     try {
       wx.showLoading({ title: '保存中...' });
 
-      await cloudDB.roles.updatePermissions(editingRole.role_id, editingPermissions);
+      await userService.updateRolePermissions(editingRole.role_id, editingPermissions);
 
       wx.hideLoading();
       wx.showToast({

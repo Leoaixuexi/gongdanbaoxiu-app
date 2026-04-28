@@ -51,6 +51,8 @@ miniprogram/miniprogram_npm/
 tmp/
 temp/
 *.tmp
+.worktrees/
+.superpowers/
 
 # Cloud Object Storage credentials
 cos-credentials.json

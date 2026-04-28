@@ -1,0 +1,210 @@
+<!-- 物料管理页面 -->
+<view class="material-page">
+  <!-- 顶部 Tab -->
+  <view class="tab-header">
+    <view class="tab-list">
+      <view
+        wx:for="{{tabs}}"
+        wx:key="index"
+        class="tab-item {{activeTab === index ? 'tab-active' : ''}}"
+        data-index="{{index}}"
+        bindtap="onTabChange"
+      >
+        <text class="tab-text">{{item}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 内容区域 -->
+  <swiper
+    class="content-swiper"
+    current="{{activeTab}}"
+    bindchange="onSwiperChange"
+    duration="{{300}}"
+  >
+    <!-- Tab 1: 配件列表 -->
+    <swiper-item>
+      <material-list
+        id="materialList"
+        canManage="{{canManage}}"
+        bind:itemtap="onMaterialTap"
+        bind:additem="onAddMaterialTap"
+      />
+    </swiper-item>
+
+    <!-- Tab 2: 入库记录 -->
+    <swiper-item>
+      <scroll-view scroll-y class="tab-content" bindscrolltolower="onLoadMoreRecords">
+        <view wx:if="{{inLoading}}" class="loading-state">
+          <text>加载中...</text>
+        </view>
+        <view wx:elif="{{inRecords.length === 0}}" class="empty-state">
+          <van-icon name="orders-o" size="48px" color="#d4d4d4" />
+          <text class="empty-text">暂无入库记录</text>
+        </view>
+        <view wx:else class="card-list">
+          <view
+            wx:for="{{inRecords}}"
+            wx:key="record_id"
+            class="m-card"
+            bindtap="goToRecordDetail"
+            data-record="{{item}}"
+          >
+            <image
+              class="m-card-img"
+              src="{{item.material_image || '/images/placeholder.png'}}"
+              mode="aspectFill"
+            />
+            <view class="m-card-body">
+              <view class="m-card-title">{{item.material_name}}</view>
+              <view class="m-card-meta">
+                <view class="meta-item">
+                  <van-icon name="apps-o" size="11px" color="#a3a3a3" />
+                  <text class="meta-text">{{item.category || '-'}}</text>
+                </view>
+                <view class="meta-item">
+                  <van-icon name="location-o" size="11px" color="#a3a3a3" />
+                  <text class="meta-text">{{item.usage_area || '-'}}</text>
+                </view>
+              </view>
+              <view class="m-card-meta">
+                <view class="meta-item">
+                  <van-icon name="clock-o" size="11px" color="#a3a3a3" />
+                  <text class="meta-text">{{item.timeText}}</text>
+                </view>
+                <view class="meta-item">
+                  <van-icon name="manager-o" size="11px" color="#a3a3a3" />
+                  <text class="meta-text">{{item.operator.name}}</text>
+                </view>
+              </view>
+            </view>
+            <view class="m-card-qty qty-in">+{{item.quantity}}</view>
+          </view>
+        </view>
+        <view wx:if="{{inLoadingMore}}" class="loading-more">
+          <text>加载更多...</text>
+        </view>
+      </scroll-view>
+    </swiper-item>
+
+    <!-- Tab 3: 出库记录 -->
+    <swiper-item>
+      <scroll-view scroll-y class="tab-content" bindscrolltolower="onLoadMoreRecords">
+        <view class="search-row">
+          <view class="search-bar search-bar-flex">
+            <van-icon name="search" size="14px" color="#a3a3a3" custom-class="search-icon" />
+            <input class="search-input" placeholder="搜索" placeholder-class="search-placeholder" />
+          </view>
+          <view class="filter-btn" bindtap="onFilterTap">
+            <van-icon name="filter-o" size="18px" color="#737373" />
+          </view>
+        </view>
+
+        <view wx:if="{{outLoading}}" class="loading-state">
+          <text>加载中...</text>
+        </view>
+        <view wx:elif="{{outRecords.length === 0}}" class="empty-state">
+          <van-icon name="orders-o" size="48px" color="#d4d4d4" />
+          <text class="empty-text">暂无出库记录</text>
+        </view>
+        <view wx:else class="card-list">
+          <view
+            wx:for="{{outRecords}}"
+            wx:key="record_id"
+            class="m-card"
+            bindtap="goToRecordDetail"
+            data-record="{{item}}"
+          >
+            <image
+              class="m-card-img"
+              src="{{item.material_image || '/images/placeholder.png'}}"
+              mode="aspectFill"
+            />
+            <view class="m-card-body">
+              <view class="m-card-title">{{item.material_name}}</view>
+              <view class="m-card-meta">
+                <view class="meta-item">
+                  <van-icon name="apps-o" size="11px" color="#a3a3a3" />
+                  <text class="meta-text">{{item.category || '-'}}</text>
+                </view>
+                <view class="meta-item">
+                  <van-icon name="location-o" size="11px" color="#a3a3a3" />
+                  <text class="meta-text">{{item.usage_area || '-'}}</text>
+                </view>
+              </view>
+              <view class="m-card-meta">
+                <view class="meta-item">
+                  <van-icon name="clock-o" size="11px" color="#a3a3a3" />
+                  <text class="meta-text">{{item.timeText}}</text>
+                </view>
+                <view class="meta-item">
+                  <van-icon name="manager-o" size="11px" color="#a3a3a3" />
+                  <text class="meta-text">{{item.operator.name}}</text>
+                </view>
+              </view>
+            </view>
+            <view class="m-card-qty qty-out">-{{item.quantity}}</view>
+          </view>
+        </view>
+        <view wx:if="{{outLoadingMore}}" class="loading-more">
+          <text>加载更多...</text>
+        </view>
+      </scroll-view>
+    </swiper-item>
+  </swiper>
+
+  <!-- FAB 新增配件按钮（仅配件列表 Tab） -->
+  <view wx:if="{{canManage && activeTab === 0}}" class="fab-button" bindtap="onAddMaterialTap">
+    <van-icon name="plus" size="24px" color="#FFFFFF" />
+  </view>
+
+  <!-- 回到顶部按钮 -->
+  <view wx:if="{{showBackToTop && activeTab === 0}}" class="back-to-top" bindtap="scrollToTop">
+    <view class="back-to-top-arrow"></view>
+    <text class="back-to-top-label">顶部</text>
+  </view>
+
+  <!-- 出库弹窗 -->
+  <van-popup show="{{showStockOut}}" position="bottom" round bind:close="closeStockOutModal" custom-style="max-height: 80vh;">
+    <view class="modal-content">
+      <view class="modal-header">
+        <text class="modal-title">配件出库</text>
+        <view class="close-btn" bindtap="closeStockOutModal">×</view>
+      </view>
+      <view class="modal-body">
+        <view class="form-item">
+          <text class="form-label">配件名称</text>
+          <text class="form-value">{{stockOutForm.material_name}}</text>
+        </view>
+        <view class="form-item">
+          <text class="form-label">当前库存</text>
+          <text class="form-value">{{stockOutForm.current_stock}} {{stockOutForm.unit}}</text>
+        </view>
+        <view class="form-item">
+          <text class="form-label">出库数量 <text class="required">*</text></text>
+          <input
+            class="form-input"
+            type="number"
+            placeholder="请输入出库数量"
+            value="{{stockOutForm.quantity}}"
+            bindinput="onStockOutQtyInput"
+          />
+        </view>
+        <view class="form-item">
+          <text class="form-label">备注</text>
+          <textarea
+            class="form-textarea"
+            placeholder="可选，出库用途或备注"
+            value="{{stockOutForm.remark}}"
+            bindinput="onStockOutRemarkInput"
+          />
+        </view>
+      </view>
+      <view class="modal-footer">
+        <view class="btn-cancel" bindtap="closeStockOutModal">取消</view>
+        <view class="btn-confirm" bindtap="doStockOut">确认出库</view>
+      </view>
+    </view>
+  </van-popup>
+
+</view>

@@ -45,7 +45,7 @@ Page({
 
     // ========== 行政经理专用数据 ==========
     // Tab切换
-    activeTab: 'stats',  // 'stats' | 'charts'
+    activeTab: 'charts',
 
     // 时间过滤
     timeFilter: 'all',  // 'all' | 'yesterday' | 'today' | 'week' | 'month' | 'custom'
@@ -72,9 +72,14 @@ Page({
 
     // 图表数据
     statusChartData: [],
+    statusChartLegend: [],
+    selectedStatusIdx: -1,
     trendChartData: { categories: [], reported: [], completed: [] },
     categoryChartData: [],
+    categoryBarData: [],
     responsibleChartData: [],
+    responsibleChartLegend: [],
+    selectedResponsibleIdx: -1,
     floorChartData: { categories: [], values: [] },
     chartsInitialized: false,
 
@@ -142,29 +147,18 @@ Page({
         // });
 
         // 根据角色加载不同的数据
-        if (isManager) {
-          // 行政经理：检查缓存是否有效
+        if (isManager || isPropertyStaff) {
+          // 行政经理 / 办美员工：完整看板（全量数据）
           const now = Date.now();
           const cacheValid = (now - this.data._lastFetchTime) < this.data._cacheValidMs;
           if (cacheValid && this.data.kpiData.totalOrders > 0) {
-            // console.log('[Data] Using cached manager data');
             this.setData({ loading: false });
           } else {
-            // 初始化全局分析视图
             this.initManagerView();
           }
-        } else {
-          // 办美员工/维修员：并行加载数据
-          if (isPropertyStaff) {
-            // 办美员工：同时加载统计数据和月度排名
-            await Promise.all([
-              this.loadStatistics(),
-              this.loadRankings()
-            ]);
-          } else {
-            // 维修员：只加载统计数据
-            await this.loadStatistics();
-          }
+        } else if (isMaintenanceWorker) {
+          // 维修员：完整看板（仅展示本部门数据）
+          this.initMaintenanceView();
         }
       }
     } catch (error) {
@@ -231,8 +225,8 @@ Page({
           icon: 'icon-jihuashishi'
         },
         {
-          key: 'repaired',
-          label: '已修复',
+          key: 'review',
+          label: '待复核',
           status: 'Repaired',
           bgClass: '#f3e8ff',
           color: '#9333ea',
@@ -538,65 +532,193 @@ Page({
    * 初始化行政经理视图
    */
   initManagerView() {
-    // console.log('[Manager] Initializing manager view');
-
-    // 初始化日期范围为"全部"
-    this.setData({
-      startDate: '',
-      endDate: '',
-      timeFilter: 'all'
-    });
-
-    // 加载所有数据
+    this.setData({ startDate: '', endDate: '', timeFilter: 'all' });
     this.fetchAllManagerData();
+  },
+
+  /**
+   * 初始化维修员视图（完整看板，仅本部门数据）
+   */
+  initMaintenanceView() {
+    this.setData({ startDate: '', endDate: '', timeFilter: 'all' });
+    this.fetchDeptData();
+  },
+
+  /**
+   * 加载维修员部门数据（客户端从已过滤工单计算所有图表统计）
+   */
+  async fetchDeptData() {
+    wx.showLoading({ title: '加载中...' });
+    try {
+      const { startDate, endDate } = this.data;
+
+      // 获取本部门工单（服务端已按 responsible_party 过滤）
+      const allOrders = await workOrderService.getWorkOrders({});
+
+      // 应用日期过滤（趋势图始终使用全量 allOrders）
+      let orders = allOrders;
+      if (startDate && endDate) {
+        const start = new Date(startDate); start.setHours(0, 0, 0, 0);
+        const end = new Date(endDate); end.setHours(23, 59, 59, 999);
+        orders = allOrders.filter(o => {
+          const createdAt = o.created_at?.$date ? new Date(o.created_at.$date) : new Date(o.created_at);
+          return createdAt >= start && createdAt <= end;
+        });
+      }
+
+      // 1. KPI 数据
+      const totalOrders = orders.length;
+      const completedOrders = orders.filter(o => o.status === 'Completed' || o.status === '已完成').length;
+      const inProgressOrders = orders.filter(o => o.status !== 'Completed' && o.status !== '已完成').length;
+      let avgCompletionTime = 0;
+      const completedWithTime = orders.filter(o =>
+        (o.status === 'Completed' || o.status === '已完成') && o.completed_at && o.created_at
+      );
+      if (completedWithTime.length > 0) {
+        const totalHours = completedWithTime.reduce((sum, o) => {
+          const reportTime = o.created_at?.$date ? new Date(o.created_at.$date) : new Date(o.created_at);
+          const completeTime = o.completed_at?.$date ? new Date(o.completed_at.$date) : new Date(o.completed_at);
+          return sum + (completeTime - reportTime) / (1000 * 60 * 60);
+        }, 0);
+        avgCompletionTime = parseFloat((totalHours / completedWithTime.length).toFixed(1));
+      }
+
+      // 2. 工单状态分布
+      const STATUS_NAMES = {
+        'Pending Repair': '已提报', 'In Progress': '维修中',
+        'Repaired': '待复核', 'Needs Rework': '需返工', 'Completed': '已完成',
+      };
+      const STATUS_ORDER = ['已提报', '维修中', '待复核', '需返工', '已完成'];
+      const STATUS_GRADIENTS = [
+        { from: '#3B82F6', to: '#60A5FA' }, { from: '#0EA5E9', to: '#06B6D4' },
+        { from: '#F59E0B', to: '#F97316' }, { from: '#EF4444', to: '#F87171' },
+        { from: '#10B981', to: '#34D399' },
+      ];
+      const statusCounts = {};
+      orders.forEach(o => {
+        const name = STATUS_NAMES[o.status] || o.status;
+        statusCounts[name] = (statusCounts[name] || 0) + 1;
+      });
+      const statusChartData = STATUS_ORDER
+        .map(name => ({ name, value: statusCounts[name] || 0 }))
+        .filter(item => item.value > 0);
+      const statusChartLegend = statusChartData.map((item, idx) => ({
+        name: item.name, count: item.value, dataIndex: idx,
+        gradientFrom: (STATUS_GRADIENTS[idx] || STATUS_GRADIENTS[0]).from,
+        gradientTo: (STATUS_GRADIENTS[idx] || STATUS_GRADIENTS[0]).to,
+      }));
+
+      // 3. 故障类型条形图
+      const categoryCounts = {};
+      orders.forEach(o => {
+        const cat = o.order_category || '未分类';
+        categoryCounts[cat] = (categoryCounts[cat] || 0) + 1;
+      });
+      const barColors = ['#F97316', '#6366F1', '#3B82F6', '#8B5CF6', '#06B6D4', '#10B981', '#F59E0B'];
+      const sortedCategory = Object.entries(categoryCounts)
+        .map(([name, value]) => ({ name, value }))
+        .sort((a, b) => b.value - a.value);
+      const categoryMax = sortedCategory[0]?.value || 1;
+      const categoryTotal = sortedCategory.reduce((s, item) => s + item.value, 0);
+      const categoryBarData = sortedCategory.map((item, idx) => ({
+        name: item.name, value: item.value,
+        percentage: categoryTotal > 0 ? Math.round(item.value / categoryTotal * 100) : 0,
+        barWidth: Math.round(item.value / categoryMax * 80),
+        color: barColors[idx % barColors.length],
+      }));
+
+      // 4. 楼层分布
+      const floorCounts = {};
+      orders.forEach(o => { if (o.floor) floorCounts[o.floor] = (floorCounts[o.floor] || 0) + 1; });
+      const floorSortKey = name => {
+        if (!name) return 9999;
+        const s = String(name).trim().toUpperCase();
+        if (s.startsWith('B')) return -(parseInt(s.slice(1)) || 0);
+        return parseInt(s) || 9999;
+      };
+      const sortedFloors = Object.entries(floorCounts).sort((a, b) => floorSortKey(a[0]) - floorSortKey(b[0]));
+      const floorChartData = {
+        categories: sortedFloors.map(([name]) => name),
+        values: sortedFloors.map(([, value]) => value),
+      };
+
+      // 5. 最近7天趋势（使用全量 allOrders，不受日期筛选影响）
+      const today = new Date();
+      const trendDays = Array.from({ length: 7 }, (_, i) => {
+        const d = new Date(today); d.setDate(today.getDate() - (6 - i)); return d;
+      });
+      const trendCategories = trendDays.map(d =>
+        `${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+      );
+      const trendReported = trendDays.map(d => {
+        const s = new Date(d); s.setHours(0, 0, 0, 0);
+        const e = new Date(d); e.setHours(23, 59, 59, 999);
+        return allOrders.filter(o => {
+          const t = o.created_at?.$date ? new Date(o.created_at.$date) : new Date(o.created_at);
+          return t >= s && t <= e;
+        }).length;
+      });
+      const trendCompleted = trendDays.map(d => {
+        const s = new Date(d); s.setHours(0, 0, 0, 0);
+        const e = new Date(d); e.setHours(23, 59, 59, 999);
+        return allOrders.filter(o => {
+          if (o.status !== 'Completed' && o.status !== '已完成' || !o.completed_at) return false;
+          const t = o.completed_at?.$date ? new Date(o.completed_at.$date) : new Date(o.completed_at);
+          return t >= s && t <= e;
+        }).length;
+      });
+
+      this.setData({
+        kpiData: { totalOrders, completedOrders, inProgressOrders, avgCompletionTime },
+        statusChartData, statusChartLegend, selectedStatusIdx: -1,
+        trendChartData: { categories: trendCategories, reported: trendReported, completed: trendCompleted },
+        categoryBarData,
+        floorChartData,
+        responsibleChartData: [], responsibleChartLegend: [],
+        rankings: [],
+        loading: false,
+        _lastFetchTime: Date.now(),
+      });
+
+      this.animateKPICards();
+      setTimeout(() => this.initCharts(), 300);
+      wx.hideLoading();
+    } catch (error) {
+      console.error('[Dept] Fetch data error:', error);
+      wx.hideLoading();
+      wx.showToast({ title: '加载失败', icon: 'none' });
+      this.setData({ loading: false });
+    }
   },
 
   /**
    * Tab切换
    */
-  switchTab(e) {
-    const tab = e.currentTarget.dataset.tab;
-    if (tab === this.data.activeTab) return; // 相同tab不处理
-
-    // 重置筛选条件为"全部"
-    this.setData({
-      activeTab: tab,
-      timeFilter: 'all',
-      startDate: '',
-      endDate: '',
-      chartsInitialized: false  // 重置图表初始化状态
-    });
-
-    // 重新加载数据
-    this.fetchAllManagerData();
-  },
-
   /**
    * 时间过滤器切换
    */
   onTimeFilterChange(e) {
     const filter = e.currentTarget.dataset.filter;
-    const { isManager } = this.data;
+    const { isManager, isPropertyStaff, isMaintenanceWorker } = this.data;
+
+    const reload = () => {
+      if (isManager || isPropertyStaff) {
+        this.fetchAllManagerData();
+      } else if (isMaintenanceWorker) {
+        this.fetchDeptData();
+      }
+    };
 
     if (filter === 'custom') {
-      // 显示日期选择器并立即设置 timeFilter 以激活样式
       this.setData({
         showDatePicker: true,
-        timeFilter: 'custom'
+        timeFilter: 'custom',
+        customStartDate: '',
+        customEndDate: ''
       });
     } else if (filter === 'all') {
-      // 全部：不限制日期
-      this.setData({
-        timeFilter: 'all',
-        startDate: '',
-        endDate: ''
-      });
-      // 根据角色加载对应数据
-      if (isManager) {
-        this.fetchAllManagerData();
-      } else {
-        this.loadStatistics(); // 办美员工/维修员：重新加载工单汇总
-      }
+      this.setData({ timeFilter: 'all', startDate: '', endDate: '' });
+      reload();
     } else {
       const { startDate, endDate } = dateUtils.getDateRange(filter);
       this.setData({
@@ -604,13 +726,7 @@ Page({
         startDate: dateUtils.formatDate(startDate),
         endDate: dateUtils.formatDate(endDate)
       });
-
-      // 根据角色加载对应数据
-      if (isManager) {
-        this.fetchAllManagerData();
-      } else {
-        this.loadStatistics(); // 办美员工/维修员：重新加载工单汇总
-      }
+      reload();
     }
   },
 
@@ -636,7 +752,11 @@ Page({
    * 关闭日期选择弹窗
    */
   closeDatePicker() {
-    this.setData({ showDatePicker: false });
+    this.setData({
+      showDatePicker: false,
+      customStartDate: '',
+      customEndDate: ''
+    });
   },
 
   /**
@@ -691,12 +811,11 @@ Page({
       showDatePicker: false
     });
 
-    // 根据角色加载对应数据
-    const { isManager } = this.data;
-    if (isManager) {
+    const { isManager, isPropertyStaff, isMaintenanceWorker } = this.data;
+    if (isManager || isPropertyStaff) {
       this.fetchAllManagerData();
-    } else {
-      this.loadStatistics(); // 办美员工/维修员：重新加载工单汇总
+    } else if (isMaintenanceWorker) {
+      this.fetchDeptData();
     }
   },
 
@@ -765,14 +884,67 @@ Page({
       // 转换头像URL
       await convertCloudUrls(rankings, 'avatar');
 
+      // 计算故障类型横向条形图数据
+      const rawCategory = categoryRes?.data || [];
+      const sortedCategory = [...rawCategory].sort((a, b) => b.value - a.value);
+      const categoryTotal = sortedCategory.reduce((s, item) => s + item.value, 0);
+      const categoryMax = sortedCategory[0]?.value || 1;
+      const barColors = ['#F97316', '#6366F1', '#3B82F6', '#8B5CF6', '#06B6D4', '#10B981', '#F59E0B'];
+      const categoryBarData = sortedCategory.map((item, idx) => ({
+        name: item.name,
+        value: item.value,
+        percentage: categoryTotal > 0 ? Math.round(item.value / categoryTotal * 100) : 0,
+        barWidth: Math.round(item.value / categoryMax * 80),
+        color: barColors[idx % barColors.length]
+      }));
+
       // 更新数据
       this.setData({
         kpiData: kpiData,
         rankings: rankings,
         statusChartData: statusRes?.data || [],
+        statusChartLegend: (() => {
+          const STATUS_GRADIENTS = [
+            { from: '#3B82F6', to: '#60A5FA' },
+            { from: '#0EA5E9', to: '#06B6D4' },
+            { from: '#F59E0B', to: '#F97316' },
+            { from: '#EF4444', to: '#F87171' },
+            { from: '#10B981', to: '#34D399' },
+          ];
+          const raw = statusRes?.data || [];
+          const total = raw.reduce((s, i) => s + i.value, 0);
+          return raw.map((item, idx) => ({
+            name: item.name,
+            count: item.value,
+            dataIndex: idx,
+            gradientFrom: (STATUS_GRADIENTS[idx] || STATUS_GRADIENTS[0]).from,
+            gradientTo: (STATUS_GRADIENTS[idx] || STATUS_GRADIENTS[0]).to,
+          })).filter(item => item.count > 0);
+        })(),
+        selectedStatusIdx: -1,
         trendChartData: trendRes?.data || { categories: [], reported: [], completed: [] },
-        categoryChartData: categoryRes?.data || [],
+        categoryChartData: rawCategory,
+        categoryBarData: categoryBarData,
         responsibleChartData: responsibleRes?.data || [],
+        responsibleChartLegend: (() => {
+          const RESP_GRADIENTS = [
+            { from: '#3B82F6', to: '#60A5FA' },
+            { from: '#10B981', to: '#34D399' },
+            { from: '#F59E0B', to: '#FBBF24' },
+            { from: '#EF4444', to: '#F87171' },
+            { from: '#8B5CF6', to: '#A78BFA' },
+            { from: '#06B6D4', to: '#22D3EE' },
+          ];
+          const raw = responsibleRes?.data || [];
+          return raw.map((item, idx) => ({
+            name: item.name,
+            count: item.value,
+            dataIndex: idx,
+            gradientFrom: (RESP_GRADIENTS[idx] || RESP_GRADIENTS[0]).from,
+            gradientTo: (RESP_GRADIENTS[idx] || RESP_GRADIENTS[0]).to,
+          })).filter(item => item.count > 0);
+        })(),
+        selectedResponsibleIdx: -1,
         floorChartData: floorRes?.data || { categories: [], values: [] },
         loading: false,
         _lastFetchTime: Date.now()  // 更新缓存时间戳
@@ -781,12 +953,10 @@ Page({
       // 触发KPI卡片动画
       this.animateKPICards();
 
-      // 如果当前在图表tab，延迟刷新图表（等待组件渲染完成）
-      if (this.data.activeTab === 'charts') {
-        setTimeout(() => {
-          this.initCharts();
-        }, 300);
-      }
+      // 延迟刷新图表（等待组件渲染完成）
+      setTimeout(() => {
+        this.initCharts();
+      }, 300);
 
       wx.hideLoading();
 
@@ -814,25 +984,53 @@ Page({
   initCharts() {
     // console.log('[Manager] Initializing 5 charts');
 
-    // 检查是否在图表Tab
-    if (this.data.activeTab !== 'charts') {
-      // console.log('[Manager] Not in charts tab, skip initialization');
-      return;
-    }
-
     // 1. 初始化状态环形图
     this.initStatusChart();
     // 2. 初始化趋势折线图
     this.initTrendChart();
-    // 3. 初始化故障类型饼图
-    this.initCategoryChart();
-    // 4. 初始化责任方饼图
+    // 3. 初始化责任方饼图
     this.initResponsibleChart();
     // 5. 初始化楼层柱状图
     this.initFloorChart();
 
     // 标记图表已初始化
     this.setData({ chartsInitialized: true });
+  },
+
+  // 点击图例胶囊：高亮饼图对应切片
+  onLegendTap(e) {
+    const idx = e.currentTarget.dataset.index
+    const item = this.data.statusChartLegend[idx]
+    if (!item || !this._statusChart) return
+
+    const prev = this.data.selectedStatusIdx
+    const next = prev === item.dataIndex ? -1 : item.dataIndex
+
+    if (prev !== -1) {
+      this._statusChart.dispatchAction({ type: 'pieUnSelect', seriesIndex: 0, dataIndex: prev })
+    }
+    if (next !== -1) {
+      this._statusChart.dispatchAction({ type: 'pieSelect', seriesIndex: 0, dataIndex: next })
+    }
+    this.setData({ selectedStatusIdx: next })
+  },
+
+  // 点击责任方胶囊：高亮饼图对应切片
+  onResponsibleLegendTap(e) {
+    const idx = e.currentTarget.dataset.index
+    const item = this.data.responsibleChartLegend[idx]
+    if (!item || !this._responsibleChart) return
+
+    const prev = this.data.selectedResponsibleIdx
+    const next = prev === item.dataIndex ? -1 : item.dataIndex
+
+    if (prev !== -1) {
+      this._responsibleChart.dispatchAction({ type: 'pieUnSelect', seriesIndex: 0, dataIndex: prev })
+    }
+    if (next !== -1) {
+      this._responsibleChart.dispatchAction({ type: 'pieSelect', seriesIndex: 0, dataIndex: next })
+    }
+    this.setData({ selectedResponsibleIdx: next })
   },
 
   /**
@@ -852,6 +1050,7 @@ Page({
         devicePixelRatio: dpr
       });
       canvas.setChart(chart);
+      this._statusChart = chart;
 
       const option = chartUtils.getRingChartOption(this.data.statusChartData || []);
       chart.setOption(option);
@@ -887,31 +1086,6 @@ Page({
   },
 
   /**
-   * 3. 初始化故障类型饼图
-   */
-  initCategoryChart() {
-    const component = this.selectComponent('#categoryChart');
-    if (!component) {
-      console.warn('[Manager] Category chart component not found');
-      return;
-    }
-
-    component.init((canvas, width, height, dpr) => {
-      const chart = echarts.init(canvas, null, {
-        width: width,
-        height: height,
-        devicePixelRatio: dpr
-      });
-      canvas.setChart(chart);
-
-      const option = chartUtils.getPieChartOption(this.data.categoryChartData || [], '故障类型');
-      chart.setOption(option);
-
-      return chart;
-    });
-  },
-
-  /**
    * 4. 初始化责任方饼图
    */
   initResponsibleChart() {
@@ -928,6 +1102,7 @@ Page({
         devicePixelRatio: dpr
       });
       canvas.setChart(chart);
+      this._responsibleChart = chart;
 
       const option = chartUtils.getSolidPieChartOption(this.data.responsibleChartData || [], '责任方');
       chart.setOption(option);

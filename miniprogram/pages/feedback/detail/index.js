@@ -3,6 +3,7 @@
  */
 
 const { STORAGE_KEYS } = require('../../../utils/constants');
+const feedbackService = require('../../../services/feedbackService');
 
 Page({
   data: {
@@ -44,23 +45,13 @@ Page({
     try {
       this.setData({ loading: true });
 
-      const res = await wx.cloud.callFunction({
-        name: 'feedbackManager',
-        data: {
-          action: 'getById',
-          data: { feedback_id: feedbackId }
-        }
-      });
+      const result = await feedbackService.getFeedbackById(feedbackId);
 
-      if (res.result && res.result.success) {
-        const feedback = this.formatFeedback(res.result.feedback);
-        this.setData({
-          feedback,
-          loading: false
-        });
-      } else {
-        throw new Error(res.result?.error || '加载失败');
-      }
+      const feedback = this.formatFeedback(result.feedback);
+      this.setData({
+        feedback,
+        loading: false
+      });
     } catch (error) {
       console.error('[FeedbackDetail] Load error:', error);
       this.setData({ loading: false });
@@ -102,6 +93,14 @@ Page({
   },
 
   goBack() {
-    wx.navigateBack();
+    const pages = getCurrentPages();
+    if (pages.length > 1) {
+      wx.navigateBack();
+    } else {
+      // 没有上一页时，跳转到反馈列表页
+      wx.redirectTo({
+        url: '/pages/feedback/list/index'
+      });
+    }
   }
 });

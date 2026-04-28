@@ -25,28 +25,50 @@
   >
     <!-- Tab 1: 工单维修 -->
     <swiper-item>
-      <scroll-view scroll-y class="tab-content">
+      <scroll-view
+        scroll-y
+        class="tab-content"
+        scroll-top="{{scrollTops[0]}}"
+        refresher-enabled="{{true}}"
+        refresher-triggered="{{refreshing}}"
+        bindrefresherrefresh="onRefresh"
+      >
         <!-- 统计卡片 -->
-        <view class="kpi-grid">
-          <view class="kpi-card">
-            <text class="kpi-label">待维修</text>
-            <text class="kpi-value" style="color: #EA580C;">{{workOrderStats.pending}}</text>
+        <view class="kpi-grid kpi-grid-4">
+          <view class="kpi-card kpi-card-sm" bindtap="onStatCardTap" data-status="reported">
+            <view class="kpi-text-group">
+              <text class="kpi-label">已提报</text>
+              <text class="kpi-value" style="color: #EA580C;">{{workOrderStats.pending}}</text>
+            </view>
             <view class="kpi-icon-wrapper">
-              <van-icon name="setting-o" size="40rpx" color="#EA580C" custom-style="opacity:0.6" />
+              <van-icon name="setting-o" size="28rpx" color="#EA580C" custom-style="opacity:0.6" />
             </view>
           </view>
-          <view class="kpi-card">
-            <text class="kpi-label">维修中</text>
-            <text class="kpi-value" style="color: #2563EB;">{{workOrderStats.inProgress}}</text>
+          <view class="kpi-card kpi-card-sm" bindtap="onStatCardTap" data-status="maintenance">
+            <view class="kpi-text-group">
+              <text class="kpi-label">维修中</text>
+              <text class="kpi-value" style="color: #2563EB;">{{workOrderStats.inProgress}}</text>
+            </view>
             <view class="kpi-icon-wrapper">
-              <van-icon name="clock-o" size="40rpx" color="#2563EB" custom-style="opacity:0.6" />
+              <van-icon name="clock-o" size="28rpx" color="#2563EB" custom-style="opacity:0.6" />
             </view>
           </view>
-          <view class="kpi-card">
-            <text class="kpi-label">已完成</text>
-            <text class="kpi-value" style="color: #16A34A;">{{workOrderStats.completed}}</text>
+          <view class="kpi-card kpi-card-sm" bindtap="onStatCardTap" data-status="review">
+            <view class="kpi-text-group">
+              <text class="kpi-label">待复核</text>
+              <text class="kpi-value" style="color: #7C3AED;">{{workOrderStats.review}}</text>
+            </view>
             <view class="kpi-icon-wrapper">
-              <van-icon name="passed" size="40rpx" color="#16A34A" custom-style="opacity:0.6" />
+              <van-icon name="eye-o" size="28rpx" color="#7C3AED" custom-style="opacity:0.6" />
+            </view>
+          </view>
+          <view class="kpi-card kpi-card-sm" bindtap="onStatCardTap" data-status="completed">
+            <view class="kpi-text-group">
+              <text class="kpi-label">已完成</text>
+              <text class="kpi-value" style="color: #16A34A;">{{workOrderStats.completed}}</text>
+            </view>
+            <view class="kpi-icon-wrapper">
+              <van-icon name="passed" size="28rpx" color="#16A34A" custom-style="opacity:0.6" />
             </view>
           </view>
         </view>
@@ -62,25 +84,25 @@
               data-label="{{item.label}}"
               bindtap="onFunctionTap"
             >
-              <view class="func-icon" style="background: {{item.bg}};">
-                <van-icon name="{{item.icon}}" size="22px" color="{{item.color}}" />
+              <view class="func-icon">
+                <van-icon name="{{item.icon}}" size="22px" color="#4F6DF5" />
               </view>
               <text class="func-label">{{item.label}}</text>
             </view>
           </view>
         </view>
 
-        <!-- 快捷入口 -->
-        <view class="quick-section">
+        <!-- 快捷入口（维修员不显示） -->
+        <view class="quick-section" wx:if="{{!isMaintenanceWorker}}">
           <text class="section-title">快捷入口</text>
           <view class="quick-row">
             <view class="quick-btn quick-btn-primary" data-action="新建工单" bindtap="onQuickAction">
               <van-icon name="plus" size="16px" color="#fafafa" />
               <text class="quick-btn-text-light">新建工单</text>
             </view>
-            <view class="quick-btn quick-btn-secondary" data-action="待办事项" bindtap="onQuickAction">
-              <van-icon name="todo-list-o" size="16px" color="#0a0a0a" />
-              <text class="quick-btn-text-dark">待办事项</text>
+            <view class="quick-btn quick-btn-secondary" data-action="物料入库" bindtap="onQuickAction">
+              <van-icon name="plus" size="16px" color="#fafafa" />
+              <text class="quick-btn-text-dark">物料入库</text>
             </view>
           </view>
         </view>
@@ -89,23 +111,22 @@
         <view class="recent-section">
           <view class="recent-header">
             <text class="section-title">最近记录</text>
-            <text class="view-all" data-module="workOrder" bindtap="onViewAll">查看全部</text>
+            <text class="view-all" data-module="workOrder" bindtap="onViewAll"></text>
           </view>
           <view class="recent-list">
             <view
               wx:for="{{workOrderRecords}}"
-              wx:key="title"
+              wx:key="orderId"
               class="record-item"
               data-module="workOrder"
               data-index="{{index}}"
               bindtap="onRecordTap"
             >
-              <view class="record-dot" style="background: {{item.dotColor}};"></view>
+              <text class="record-status-badge" style="background: {{item.statusBg}}; color: {{item.statusColor}};">{{item.statusText}}</text>
               <view class="record-content">
-                <text class="record-title">{{item.title}}</text>
-                <text class="record-subtitle">{{item.subtitle}}</text>
+                <text class="record-info">{{item.info}}</text>
+                <text class="record-time">{{item.timeText}}</text>
               </view>
-              <van-icon name="arrow" size="16px" color="#737373" />
             </view>
           </view>
         </view>
@@ -113,107 +134,156 @@
     </swiper-item>
 
     <!-- Tab 2: 耗品管理 -->
-    <swiper-item>
-      <scroll-view scroll-y class="tab-content">
-        <!-- 统计卡片 - 4张 -->
-        <view class="kpi-grid kpi-grid-4">
-          <view class="kpi-card kpi-card-sm">
-            <text class="kpi-label">待审批</text>
-            <text class="kpi-value" style="color: #EA580C;">{{consumableStats.pendingApproval}}</text>
-            <view class="kpi-icon-wrapper">
-              <van-icon name="edit" size="28rpx" color="#EA580C" custom-style="opacity:0.6" />
+    <swiper-item wx:if="{{!isMaintenanceWorker}}">
+      <scroll-view
+        scroll-y
+        class="tab-content"
+        scroll-top="{{scrollTops[1]}}"
+        refresher-enabled="{{true}}"
+        refresher-triggered="{{refreshing}}"
+        bindrefresherrefresh="onRefresh"
+      >
+
+        <!-- 数据概览卡片 -->
+        <view class="cs-card cs-overview-card">
+          <view class="cs-overview-top">
+            <view class="cs-overview-left">
+              <text class="cs-overview-label">库存商品总量</text>
+              <text class="cs-overview-value">{{consumableOverview.totalStock}}<text class="cs-overview-unit">件</text></text>
             </view>
+            <text class="cs-month-text">统计周期 · {{consumableMonth}}</text>
           </view>
-          <view class="kpi-card kpi-card-sm">
-            <text class="kpi-label">库存预警</text>
-            <text class="kpi-value" style="color: #DC2626;">{{consumableStats.stockWarning}}</text>
-            <view class="kpi-icon-wrapper">
-              <van-icon name="warning-o" size="28rpx" color="#DC2626" custom-style="opacity:0.6" />
+          <view class="cs-divider"></view>
+          <view class="cs-stats-grid">
+            <view class="cs-stat-cell cs-border-right cs-border-bottom">
+              <view class="cs-stat-icon">
+                <van-icon name="add-o" size="15px" color="#5C8DFF" />
+              </view>
+              <view class="cs-stat-texts">
+                <text class="cs-stat-label">本月入库总量</text>
+                <text class="cs-stat-value">{{consumableOverview.monthIn}}件</text>
+                <text class="cs-stat-trend">环比上月增长 --</text>
+              </view>
             </view>
-          </view>
-          <view class="kpi-card kpi-card-sm">
-            <text class="kpi-label">今日出库</text>
-            <text class="kpi-value" style="color: #2563EB;">{{consumableStats.todayOut}}</text>
-            <view class="kpi-icon-wrapper">
-              <van-icon name="upgrade" size="28rpx" color="#2563EB" custom-style="opacity:0.6" />
+            <view class="cs-stat-cell cs-border-bottom">
+              <view class="cs-stat-icon">
+                <van-icon name="orders-o" size="15px" color="#5C8DFF" />
+              </view>
+              <view class="cs-stat-texts">
+                <text class="cs-stat-label">本月采购总金额</text>
+                <text class="cs-stat-value">¥{{consumableOverview.monthInAmount}}</text>
+                <text class="cs-stat-trend">环比上月增长 --</text>
+              </view>
             </view>
-          </view>
-          <view class="kpi-card kpi-card-sm">
-            <text class="kpi-label">今日入库</text>
-            <text class="kpi-value" style="color: #16A34A;">{{consumableStats.todayIn}}</text>
-            <view class="kpi-icon-wrapper">
-              <van-icon name="down" size="28rpx" color="#16A34A" custom-style="opacity:0.6" />
+            <view class="cs-stat-cell cs-border-right">
+              <view class="cs-stat-icon">
+                <van-icon name="upgrade" size="15px" color="#5C8DFF" />
+              </view>
+              <view class="cs-stat-texts">
+                <text class="cs-stat-label">本月出库总量</text>
+                <text class="cs-stat-value">{{consumableOverview.monthOut}}件</text>
+                <text class="cs-stat-trend">环比上月增长 --</text>
+              </view>
+            </view>
+            <view class="cs-stat-cell">
+              <view class="cs-stat-icon">
+                <van-icon name="chart-trending-o" size="15px" color="#5C8DFF" />
+              </view>
+              <view class="cs-stat-texts">
+                <text class="cs-stat-label">本月消耗总金额</text>
+                <text class="cs-stat-value">¥{{consumableOverview.monthOutAmount}}</text>
+                <text class="cs-stat-trend">环比上月增长 --</text>
+              </view>
             </view>
           </view>
         </view>
 
-        <!-- 功能入口 - 2行 -->
-        <view class="func-card">
-          <view class="func-row" wx:for="{{consumableFunctions}}" wx:key="index" wx:for-item="row">
+        <!-- 功能宫格（2行×4列） -->
+        <view class="cs-card cs-func-card">
+          <view wx:for="{{consumableFuncRows}}" wx:key="index" wx:for-item="row" class="cs-func-row {{index > 0 ? 'cs-func-row-mt' : ''}}">
             <view
               wx:for="{{row}}"
               wx:key="label"
               wx:for-item="func"
-              class="func-item"
+              class="cs-func-item"
               data-module="consumable"
               data-label="{{func.label}}"
               bindtap="onFunctionTap"
             >
-              <view class="func-icon func-icon-sm" style="background: {{func.bg}};">
-                <van-icon name="{{func.icon}}" size="20px" color="{{func.color}}" />
+              <view class="cs-func-icon">
+                <van-icon name="{{func.icon}}" size="22px" color="#4F6DF5" />
               </view>
-              <text class="func-label func-label-sm">{{func.label}}</text>
+              <text class="cs-func-label">{{func.label}}</text>
             </view>
-            <!-- 占位元素（第二行只有2个） -->
-            <view class="func-item func-item-placeholder" wx:if="{{row.length === 2}}"></view>
+          </view>
+        </view>
+
+        <!-- 待办事项 -->
+        <view class="cs-todo-section">
+          <text class="cs-section-title">待办事项</text>
+          <view class="cs-todo-row">
+            <view class="cs-todo-card">
+              <view class="cs-todo-left">
+                <text class="cs-todo-name">库存预警</text>
+                <text class="cs-todo-count">{{consumableStats.stockWarning}}</text>
+              </view>
+              <view class="cs-todo-icon cs-todo-icon-orange">
+                <van-icon name="warning-o" size="18px" color="#F29A58" />
+              </view>
+            </view>
+            <view class="cs-todo-card">
+              <view class="cs-todo-left">
+                <text class="cs-todo-name">出库审核</text>
+                <text class="cs-todo-count">{{consumableStats.pendingApproval}}</text>
+              </view>
+              <view class="cs-todo-icon cs-todo-icon-blue">
+                <van-icon name="records-o" size="18px" color="#5C8DFF" />
+              </view>
+            </view>
           </view>
         </view>
 
         <!-- 快捷入口 -->
-        <view class="quick-section">
-          <text class="section-title">快捷入口</text>
+        <view class="cs-quick-section">
+          <text class="cs-section-title">快捷入口</text>
           <view class="quick-row">
             <view class="quick-btn quick-btn-primary" data-action="发起申领" bindtap="onQuickAction">
-              <van-icon name="fire-o" size="16px" color="#fafafa" />
+              <van-icon name="upgrade" size="16px" color="#fafafa" />
               <text class="quick-btn-text-light">发起申领</text>
             </view>
-            <view class="quick-btn quick-btn-secondary" data-action="新增入库" bindtap="onQuickAction">
-              <van-icon name="plus" size="16px" color="#0a0a0a" />
-              <text class="quick-btn-text-dark">新增入库</text>
+            <view class="quick-btn quick-btn-secondary" data-action="快速入库" bindtap="onQuickAction">
+              <van-icon name="add-o" size="16px" color="#fafafa" />
+              <text class="quick-btn-text-dark">快速入库</text>
             </view>
           </view>
         </view>
 
-        <!-- 最近记录 -->
-        <view class="recent-section">
-          <view class="recent-header">
-            <text class="section-title">最近记录</text>
-            <text class="view-all" data-module="consumable" bindtap="onViewAll">查看全部</text>
+        <!-- 最近动态 -->
+        <view class="cs-card cs-activity-card">
+          <view class="cs-activity-header">
+            <text class="cs-section-title cs-section-title-inline">最近动态</text>
+            <text class="cs-view-all" data-module="consumable" bindtap="onViewAll">查看全部 ></text>
           </view>
-          <view class="recent-list">
-            <view
-              wx:for="{{consumableRecords}}"
-              wx:key="title"
-              class="record-item"
-              data-module="consumable"
-              data-index="{{index}}"
-              bindtap="onRecordTap"
-            >
-              <view class="record-dot" style="background: {{item.dotColor}};"></view>
-              <view class="record-content">
-                <text class="record-title">{{item.title}}</text>
-                <text class="record-subtitle">{{item.subtitle}}</text>
-              </view>
-              <van-icon name="arrow" size="16px" color="#737373" />
-            </view>
+          <view wx:for="{{consumableActivities}}" wx:key="index" class="cs-activity-item">
+            <view class="cs-activity-badge" style="background: {{item.badgeBg}};"></view>
+            <text class="cs-activity-text">{{item.text}}</text>
+            <text class="cs-activity-time" style="color: {{item.timeColor}};">{{item.time}}</text>
           </view>
         </view>
+
       </scroll-view>
     </swiper-item>
 
     <!-- Tab 3: 楼宇巡检 -->
-    <swiper-item>
-      <scroll-view scroll-y class="tab-content">
+    <swiper-item wx:if="{{!isMaintenanceWorker}}">
+      <scroll-view
+        scroll-y
+        class="tab-content"
+        scroll-top="{{scrollTops[2]}}"
+        refresher-enabled="{{true}}"
+        refresher-triggered="{{refreshing}}"
+        bindrefresherrefresh="onRefresh"
+      >
         <!-- 统计卡片 -->
         <view class="kpi-grid">
           <view class="kpi-card">
@@ -250,8 +320,8 @@
               data-label="{{item.label}}"
               bindtap="onFunctionTap"
             >
-              <view class="func-icon" style="background: {{item.bg}};">
-                <van-icon name="{{item.icon}}" size="22px" color="{{item.color}}" />
+              <view class="func-icon">
+                <van-icon name="{{item.icon}}" size="22px" color="#4F6DF5" />
               </view>
               <text class="func-label">{{item.label}}</text>
             </view>
@@ -273,7 +343,7 @@
         <view class="recent-section">
           <view class="recent-header">
             <text class="section-title">最近记录</text>
-            <text class="view-all" data-module="inspection" bindtap="onViewAll">查看全部</text>
+            <text class="view-all" data-module="inspection" bindtap="onViewAll"></text>
           </view>
           <view class="recent-list">
             <view

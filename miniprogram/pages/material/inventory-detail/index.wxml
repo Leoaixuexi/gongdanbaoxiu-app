@@ -1,0 +1,168 @@
+<view class="page" wx:if="{{ detail }}">
+
+  <view class="content">
+
+    <!-- 商品卡片 -->
+    <view class="prod-card">
+      <view class="prod-side {{ isWarn ? 'warn' : '' }}"></view>
+      <view class="prod-info">
+        <view class="prod-name">{{ detail.material.name }}</view>
+        <view class="prod-meta">
+          <text wx:if="{{ detail.material.spec }}">{{ detail.material.spec }}</text>
+          <text wx:if="{{ detail.material.spec }}" class="dot">·</text>
+          <text>{{ detail.material.category || '' }}</text>
+          <text class="dot">·</text>
+          <text>{{ detail.material.unit || '' }}</text>
+        </view>
+        <view class="prod-code" wx:if="{{ detail.material.material_number }}">
+          <van-icon name="orders-o" size="13px" color="#999" />
+          <text>{{ detail.material.material_number }}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 3 指标 -->
+    <view class="metrics">
+      <view class="metric-card">
+        <view class="metric-label">📦 当前库存</view>
+        <view class="metric-value {{ isWarn ? 'warn' : 'primary' }}">{{ detail.currentStock }}</view>
+        <view class="metric-unit">{{ detail.material.unit || '' }}</view>
+      </view>
+      <view class="metric-card">
+        <view class="metric-label">⚠️ 预警值</view>
+        <view class="metric-value">{{ detail.minStock }}</view>
+        <view class="metric-unit">{{ detail.material.unit || '' }}</view>
+      </view>
+      <view class="metric-card">
+        <view class="metric-label">📅 30 日消耗</view>
+        <view class="metric-value">{{ detail.last30dConsume }}</view>
+        <view class="metric-unit">{{ detail.material.unit || '' }}</view>
+      </view>
+    </view>
+
+    <!-- 库存趋势 -->
+    <view class="card chart-card">
+      <view class="card-head">
+        <view class="card-title">📊 库存趋势</view>
+        <view class="chart-tabs">
+          <text class="chart-tab {{ trendType === 'in' ? 'active' : '' }}" data-type="in" bind:tap="onTrendTypeTap">入库</text>
+          <text class="chart-tab {{ trendType === 'out' ? 'active' : '' }}" data-type="out" bind:tap="onTrendTypeTap">出库</text>
+        </view>
+      </view>
+      <view class="chart-area" wx:if="{{ hasTrendData }}">
+        <ec-canvas id="trendChart" canvas-id="trendChart" ec="{{ ecTrend }}" class="chart-canvas"></ec-canvas>
+      </view>
+      <view class="chart-empty" wx:else>暂无数据</view>
+    </view>
+
+    <!-- 消耗分析 2x2 -->
+    <view class="card analysis-card">
+      <view class="card-title">📈 消耗分析</view>
+      <view class="analysis-grid">
+        <view class="analysis-cell">
+          <view class="cell-label">消耗最多区域</view>
+          <view class="cell-value">{{ detail.topArea || '—' }}</view>
+        </view>
+        <view class="analysis-cell">
+          <view class="cell-label">消耗最多场景</view>
+          <view class="cell-value muted">暂无数据</view>
+        </view>
+        <view class="analysis-cell">
+          <view class="cell-label">最近采购单价</view>
+          <view class="cell-value">{{ detail.material.last_purchase_price ? '¥' + detail.material.last_purchase_price : '—' }}</view>
+        </view>
+        <view class="analysis-cell">
+          <view class="cell-label">月均消耗</view>
+          <view class="cell-value">{{ detail.monthlyAvg }} {{ detail.material.unit || '' }}/月</view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 最近流转记录 -->
+    <view class="rec-section" wx:if="{{ detail.recentRecords.length > 0 }}">
+      <view class="rec-title">🕒 最近流转记录</view>
+      <view
+        class="rec-card"
+        wx:for="{{ detail.recentRecords }}"
+        wx:key="created_at">
+        <view class="rec-side rec-side-{{ item._tone }}"></view>
+        <view class="rec-body">
+          <view class="rec-left">
+            <text class="rec-tag rec-tag-{{ item._tone }}">{{ item._typeLabel }}</text>
+            <text class="rec-date">{{ item._dateLabel }}</text>
+          </view>
+          <text class="rec-qty rec-qty-{{ item._tone }}">{{ item._qtyText }}</text>
+        </view>
+      </view>
+    </view>
+
+  </view>
+
+  <!-- 底部固定栏（仅 canAdjust） -->
+  <view class="bottom-bar" wx:if="{{ canAdjust }}">
+    <button class="primary-btn" bind:tap="openAdjust">📝 修改库存</button>
+  </view>
+
+  <!-- 调整抽屉 -->
+  <van-popup
+    show="{{ showAdjust }}"
+    position="bottom"
+    round
+    closeable
+    bind:close="closeAdjust">
+    <view class="adj-wrap">
+      <view class="adj-title">调整库存</view>
+      <view class="adj-meta">{{ detail.material.name }} · 当前库存 <text class="adj-cur {{ isWarn ? 'warn' : 'primary' }}">{{ detail.currentStock }}</text> {{ detail.material.unit || '' }}</view>
+
+      <view class="adj-label">调整类型</view>
+      <view class="adj-types">
+        <view
+          class="adj-type-pill {{ adjForm.type === 'gain' ? 'active gain' : '' }}"
+          data-type="gain"
+          bind:tap="onAdjTypeTap">+ 盘盈</view>
+        <view
+          class="adj-type-pill {{ adjForm.type === 'loss' ? 'active loss' : '' }}"
+          data-type="loss"
+          bind:tap="onAdjTypeTap">- 盘亏</view>
+        <view
+          class="adj-type-pill {{ adjForm.type === 'scrap' ? 'active loss' : '' }}"
+          data-type="scrap"
+          bind:tap="onAdjTypeTap">- 报废</view>
+        <view
+          class="adj-type-pill {{ adjForm.type === 'lost' ? 'active loss' : '' }}"
+          data-type="lost"
+          bind:tap="onAdjTypeTap">- 丢失</view>
+      </view>
+
+      <view class="adj-label">调整数量</view>
+      <van-stepper
+        value="{{ adjForm.quantity }}"
+        min="1"
+        integer
+        bind:change="onAdjQtyChange"
+      />
+
+      <view class="adj-label">调整原因</view>
+      <van-field
+        type="textarea"
+        autosize
+        placeholder="如:盘点差异 / 损坏报废 / 物品丢失"
+        value="{{ adjForm.reason }}"
+        bind:change="onAdjReasonChange"
+      />
+
+      <view class="adj-preview {{ adjPreview.tone }}">
+        ⚠️ 调整后库存：{{ detail.currentStock }} {{ adjPreview.opSymbol }} {{ adjForm.quantity }} = <text class="adj-preview-val">{{ adjPreview.newStock }}</text>
+      </view>
+
+      <button
+        class="adj-submit"
+        loading="{{ adjSubmitting }}"
+        bind:tap="submitAdjust">确认提交</button>
+    </view>
+  </van-popup>
+
+</view>
+
+<view class="loading-page" wx:elif="{{ loading }}">加载中...</view>
+<view class="empty-page" wx:else>未找到该配件</view>

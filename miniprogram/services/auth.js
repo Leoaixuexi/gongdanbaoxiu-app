@@ -4,9 +4,7 @@
  * Supports both cloud-based and password-based authentication
  */
 
-const api = require('./api');
 const storage = require('./storage');
-const cloudDB = require('./cloudDatabase');
 const { callCloud, callCloudSilent } = require('../utils/cloudCall');
 const { STORAGE_KEYS } = require('../utils/constants');
 
@@ -33,13 +31,15 @@ const loginWithPassword = async (username, password) => {
   const { user, permissions } = result;
 
   // Store user info and permissions
-  await storage.set(STORAGE_KEYS.USER_INFO, user);
+  // 确保 user_id 字段存在（兼容云函数返回的 id 字段）
+  const normalizedUser = {
+    ...user,
+    user_id: user.user_id || user.id
+  };
+  await storage.set(STORAGE_KEYS.USER_INFO, normalizedUser);
   await storage.set(STORAGE_KEYS.USER_PERMISSIONS, permissions);
   await storage.set(STORAGE_KEYS.LAST_LOGIN, new Date().toISOString());
   await storage.set(STORAGE_KEYS.TOKEN, 'authenticated');
-
-  // 缓存userId到cloudDatabase模块
-  cloudDB.initUserId(user.user_id || user.id);
 
   wx.showToast({
     title: '登录成功',
@@ -68,13 +68,15 @@ const login = async () => {
   const { user, permissions, isNewUser } = result;
 
   // Store user info and permissions
-  await storage.set(STORAGE_KEYS.USER_INFO, user);
+  // 确保 user_id 字段存在（兼容云函数返回的 id 字段）
+  const normalizedUser = {
+    ...user,
+    user_id: user.user_id || user.id
+  };
+  await storage.set(STORAGE_KEYS.USER_INFO, normalizedUser);
   await storage.set(STORAGE_KEYS.USER_PERMISSIONS, permissions);
   await storage.set(STORAGE_KEYS.LAST_LOGIN, new Date().toISOString());
   await storage.set(STORAGE_KEYS.TOKEN, 'cloud_authenticated');
-
-  // 缓存userId到cloudDatabase模块
-  cloudDB.initUserId(user.user_id || user.id);
 
   wx.showToast({
     title: isNewUser ? '注册成功' : '登录成功',
@@ -103,8 +105,11 @@ const logout = async () => {
       storage.remove(STORAGE_KEYS.LAST_LOGIN)
     ]);
 
-    // 清除cloudDatabase模块的userId缓存
-    cloudDB.clearUserId();
+    // 清除全局未读消息数缓存，确保账号切换后不会显示旧账号数据
+    const app = getApp();
+    if (app && app.clearUnreadCounts) {
+      app.clearUnreadCounts();
+    }
 
     wx.showToast({
       title: '已退出登录',
@@ -135,6 +140,23 @@ const logout = async () => {
 };
 
 /**
+ * 清理所有认证相关的存储数据
+ * @returns {Promise<void>}
+ */
+const clearAuthStorage = async () => {
+  try {
+    await Promise.all([
+      storage.remove(STORAGE_KEYS.TOKEN),
+      storage.remove(STORAGE_KEYS.USER_INFO),
+      storage.remove(STORAGE_KEYS.USER_PERMISSIONS),
+      storage.remove(STORAGE_KEYS.LAST_LOGIN)
+    ]);
+  } catch (e) {
+    console.error('[Auth] Failed to clear auth storage:', e);
+  }
+};
+
+/**
  * Check if user is authenticated
  * @returns {Promise<boolean>} True if user has valid token
  */
@@ -150,20 +172,28 @@ const isAuthenticated = async () => {
       return false;
     }
 
+    // 检查 userInfo 数据完整性（防止存储损坏）
+    if (typeof userInfo !== 'object' || !userInfo.user_id) {
+      console.warn('[Auth] userInfo 数据损坏，清理存储');
+      await clearAuthStorage();
+      return false;
+    }
+
     // 检查Token是否过期
     if (lastLogin) {
       const loginTime = new Date(lastLogin).getTime();
+      // 检查 lastLogin 是否为有效日期
+      if (isNaN(loginTime)) {
+        console.warn('[Auth] lastLogin 数据损坏，清理存储');
+        await clearAuthStorage();
+        return false;
+      }
+
       const daysSinceLogin = (Date.now() - loginTime) / (1000 * 60 * 60 * 24);
 
       if (daysSinceLogin > TOKEN_EXPIRY_DAYS) {
         console.log('[Auth] Token已过期，天数:', daysSinceLogin.toFixed(1));
-        // 清除过期会话
-        await Promise.all([
-          storage.remove(STORAGE_KEYS.TOKEN),
-          storage.remove(STORAGE_KEYS.USER_INFO),
-          storage.remove(STORAGE_KEYS.USER_PERMISSIONS),
-          storage.remove(STORAGE_KEYS.LAST_LOGIN)
-        ]);
+        await clearAuthStorage();
         return false;
       }
     }
@@ -172,6 +202,8 @@ const isAuthenticated = async () => {
     return true;
   } catch (error) {
     console.error('[Auth] Error checking authentication:', error);
+    // 发生异常时清理可能损坏的存储数据
+    await clearAuthStorage();
     return false;
   }
 };
@@ -287,33 +319,6 @@ const changePassword = async (oldPassword, newPassword) => {
   return result;
 };
 
-/**
- * Refresh user info from backend
- * @returns {Promise<object>} Updated user info
- */
-const refreshUserInfo = async () => {
-  try {
-    const response = await api.get('/auth/me');
-
-    if (response.user) {
-      await storage.set(STORAGE_KEYS.USER_INFO, response.user);
-
-      if (response.permissions) {
-        await storage.set(STORAGE_KEYS.USER_PERMISSIONS, response.permissions);
-      }
-
-      console.log('[Auth] User info refreshed:', response.user);
-      return response.user;
-    }
-
-    throw new Error('Failed to refresh user info');
-
-  } catch (error) {
-    console.error('[Auth] Error refreshing user info:', error);
-    throw error;
-  }
-};
-
 module.exports = {
   login,
   loginWithPassword,
@@ -323,6 +328,5 @@ module.exports = {
   updateUserInfo,
   getUserPermissions,
   hasPermission,
-  changePassword,
-  refreshUserInfo
+  changePassword
 };

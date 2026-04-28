@@ -8,6 +8,7 @@ const workOrderService = require('../../../services/workOrder');
 const auth = require('../../../services/auth');
 const dictionary = require('../../../services/dictionary');
 const { smartCompress, COMPRESS_PRESETS } = require('../../../utils/imageUtils');
+const { getNavBarInfo } = require('../../../utils/navigation');
 
 Page({
   data: {
@@ -50,11 +51,9 @@ Page({
   onLoad: function (options) {
     // console.log('[Submit] Page load');
     // 计算自定义导航栏高度
-    const systemInfo = wx.getSystemInfoSync();
-    const statusBarHeight = systemInfo.statusBarHeight;
-    const navBarHeight = 88 * systemInfo.windowWidth / 750;
+    const { headerHeight } = getNavBarInfo();
     this.setData({
-      headerHeight: statusBarHeight + navBarHeight
+      headerHeight: Math.ceil(headerHeight)
     });
     this.checkAuth();
     // Set default date and time to now

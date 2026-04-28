@@ -95,6 +95,10 @@ Page({
     this.setData({
       statusBarHeight: Math.ceil(statusBarHeight)
     });
+    // 保存 URL 参数中的初始状态（来自首页卡片跳转等）
+    if (options.status) {
+      this._initialStatus = options.status;
+    }
     this.checkAuth();
     this.loadDictionaries();
   },
@@ -187,12 +191,16 @@ Page({
         // 根据角色配置筛选行
         const filterRows = getFilterRowsByRole(isManager, isMaintenanceWorker);
 
-        // 根据角色设置默认状态
-        let defaultStatus = 'all';  // 经理默认为"全部"
+        // 根据角色设置默认状态：办美员工与经理一致，默认"全部"
+        let defaultStatus = 'all';
         if (isMaintenanceWorker) {
           defaultStatus = 'pending_accept';  // 维修员默认为"待接单"
-        } else if (isPropertyStaff) {
-          defaultStatus = 'reported';  // 办美员工默认为"已提报"
+        }
+
+        // 如果有来自 URL 参数的初始状态，优先使用（首次加载时）
+        if (this._initialStatus) {
+          defaultStatus = this._initialStatus;
+          this._initialStatus = null;  // 只使用一次
         }
 
         // 判断是否需要重置状态
@@ -662,6 +670,7 @@ Page({
    * Handle Filter - 打开筛选弹窗
    */
   handleFilter: function () {
+    wx.vibrateShort({ type: 'light' });
     this.setData({ isFilterOpen: true });
     // 隐藏自定义 TabBar
     if (typeof this.getTabBar === 'function' && this.getTabBar()) {
@@ -675,6 +684,7 @@ Page({
    * 关闭筛选弹窗
    */
   closeFilterPanel: function () {
+    wx.vibrateShort({ type: 'light' });
     this.setData({ isFilterOpen: false });
     // 显示自定义 TabBar
     if (typeof this.getTabBar === 'function' && this.getTabBar()) {
@@ -695,6 +705,7 @@ Page({
    * 重置筛选条件
    */
   handleReset: function () {
+    wx.vibrateShort({ type: 'medium' });
     const resetFilterRows = this.data.filterRows.map(row => ({
       ...row,
       value: ''
@@ -709,6 +720,7 @@ Page({
    * 确定筛选
    */
   handleConfirm: function () {
+    wx.vibrateShort({ type: 'medium' });
     this.closeFilterPanel();
     this.loadWorkOrders();
   },
@@ -771,6 +783,7 @@ Page({
    * 确认选择器选择
    */
   confirmPickerSelection: function (e) {
+    wx.vibrateShort({ type: 'light' });
     const { currentPickerId, filterRows } = this.data;
     // custom-picker 组件返回 detail: { value: '选中的值', index: 选中的索引 }
     const selectedValue = e.detail.value;
@@ -823,6 +836,7 @@ Page({
    * Handle Tab Change
    */
   handleTabChange: function (e) {
+    wx.vibrateShort({ type: 'light' });
     const tab = e.currentTarget.dataset.tab;
 
     // 如果点击的是当前已选中的标签,则取消选中
@@ -1030,11 +1044,11 @@ Page({
   },
 
   /**
-   * 导出工单到Excel（仅行政经理可用）
+   * 导出工单到Excel（行政经理 / 办美员工可用）
    */
   handleExport: async function () {
     // 权限检查
-    if (!this.data.isManager) {
+    if (!this.data.isManager && !this.data.isPropertyStaff) {
       wx.showToast({ title: '无权限导出', icon: 'none' });
       return;
     }
@@ -1056,7 +1070,8 @@ Page({
         startDate: this.data.startDate || '',
         endDate: this.data.endDate || ''
       },
-      advancedFilters: {}
+      advancedFilters: {},
+      searchText: this.data.searchText || ''
     };
 
     // 提取高级筛选条件
@@ -1122,11 +1137,7 @@ Page({
           try {
             wx.showLoading({ title: '接单中...', mask: true });
 
-            await workOrderService.updateWorkOrderStatus(
-              parseInt(order.order_id),
-              'In Progress',
-              '维修员接单开始维修'
-            );
+            await workOrderService.acceptOrder(order.order_id);
 
             wx.hideLoading();
             wx.showToast({

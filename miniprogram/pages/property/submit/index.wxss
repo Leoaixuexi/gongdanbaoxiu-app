@@ -9,7 +9,7 @@ page {
 
 .submit-container {
   min-height: 100vh;
-  background-color: #F5F5F5;
+  background: linear-gradient(180deg, #DCE4FF 0%, #DFF5F4 30%, #FAFAFA 55%);
   padding-bottom: 200rpx;
 }
 
@@ -23,14 +23,24 @@ page {
 
 /* 单个卡片 */
 .card {
-  background-color: white;
-  border-radius: 16rpx;
-  padding: 20rpx 28rpx;
-  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.06);
+  background: linear-gradient(165deg, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0.6) 100%);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 20rpx;
+  padding: 16rpx 28rpx;
+  box-shadow:
+    inset 0 2rpx 0 rgba(255,255,255,0.5),
+    0 2rpx 4rpx rgba(0,0,0,0.008),
+    0 6rpx 14rpx rgba(0,0,0,0.018),
+    0 12rpx 24rpx -6rpx rgba(0,0,0,0.02);
+  border-top: 1rpx solid rgba(255,255,255,0.95);
+  border-left: 1rpx solid rgba(255,255,255,0.6);
+  border-right: 1rpx solid rgba(255,255,255,0.6);
+  border-bottom: 1rpx solid rgba(0,0,0,0.03);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  min-height: 70rpx;
+  min-height: 64rpx;
 }
 
 /* 标签 */
@@ -63,7 +73,7 @@ page {
 
 .star {
   color: #FF3B30;
-  font-size: 30rpx;
+  font-size: 24rpx;
   line-height: 30rpx;
 }
 
@@ -194,7 +204,7 @@ picker {
 /* 优先级按钮行 - 水平布局 */
 .priority-row {
   display: flex;
-  gap: 24rpx;
+  gap: 16rpx;
   justify-content: flex-end;
 }
 
@@ -269,19 +279,19 @@ picker {
 .card-textarea {
   flex-direction: column;
   align-items: flex-start;
-  gap: 24rpx;
+  gap: 16rpx;
 }
 
 .textarea-box {
   width: 100%;
-  min-height: 140rpx;
+  min-height: 64rpx;
   font-size: 30rpx;
   color: #333;
   line-height: 1.6;
-  background-color: #FAFAFA;
-  border: 1rpx solid #F0E6D3;
+  background-color: #F9FAFB;
+  border: 1rpx solid #E5E7EB;
   border-radius: 8rpx;
-  padding: 24rpx;
+  padding: 12rpx 20rpx;
   box-sizing: border-box;
   /* font-family 继承 page */
 }
@@ -292,9 +302,14 @@ picker {
   font-weight: 400 !important;
 }
 
+.textarea-box-desc {
+  min-height: 144rpx;
+  height: 144rpx;
+}
+
 .textarea-box-remark {
-  min-height: 130rpx;
-  height: 130rpx;
+  min-height: 80rpx;
+  height: 80rpx;
 }
 
 /* 现场照片卡片 */
@@ -334,7 +349,7 @@ picker {
   width: 100%;
   height: 100%;
   position: relative;
-  border-radius: 8rpx;
+  border-radius: 12rpx;
   overflow: hidden;
 }
 
@@ -365,9 +380,9 @@ picker {
 .photo-add {
   width: 100%;
   height: 100%;
-  background-color: #F5F5F5;
-  border: 2rpx dashed #DDDDDD;
-  border-radius: 8rpx;
+  background-color: #F3F4F6;
+  border: 2rpx dashed #D1D5DB;
+  border-radius: 12rpx;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -375,7 +390,7 @@ picker {
 
 .add-plus {
   font-size: 56rpx;
-  color: #CCCCCC;
+  color: #9CA3AF;
   line-height: 1;
   font-weight: 300;
 }
@@ -397,8 +412,8 @@ picker {
 .btn-cancel {
   flex: 1;
   height: 88rpx;
-  background-color: white;
-  border: 1rpx solid #DDDDDD;
+  background-color: #F3F4F6;
+  border: none;
   border-radius: 24rpx;
   display: flex;
   align-items: center;
@@ -407,7 +422,7 @@ picker {
 
 .btn-cancel-text {
   font-size: 30rpx;
-  color: #666;
+  color: #4B5563;
 }
 
 .btn-submit {

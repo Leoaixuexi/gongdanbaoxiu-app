@@ -1,0 +1,8 @@
+{
+  "navigationBarTitleText": "商品管理",
+  "enablePullDownRefresh": true,
+  "usingComponents": {
+    "van-icon": "@vant/weapp/icon/index",
+    "product-list": "/components/product-list/index"
+  }
+}

@@ -1,0 +1,308 @@
+<!-- 收费工单主页：收费列表 + 数据看板 -->
+<view class="page" style="padding-top: {{headerHeight}}px;">
+
+  <custom-header title="收费工单" />
+
+  <!-- Tab 切换 -->
+  <view class="tab-header">
+    <view
+      wx:for="{{tabs}}"
+      wx:key="index"
+      class="tab-item {{activeTab === index ? 'tab-active' : ''}}"
+      data-index="{{index}}"
+      bindtap="onTabChange"
+    >
+      <text class="tab-text">{{item}}</text>
+      <view wx:if="{{activeTab === index}}" class="tab-underline"></view>
+    </view>
+  </view>
+
+  <!-- 内容 swiper -->
+  <swiper class="swiper" current="{{activeTab}}" bindchange="onSwiperChange" duration="{{300}}">
+
+    <!-- Tab 1: 收费列表 -->
+    <swiper-item>
+      <scroll-view scroll-y class="list-scroll">
+
+        <!-- 搜索栏 -->
+        <view class="search-float">
+          <view class="search-card">
+            <van-icon name="search" size="15px" color="#94a3b8" />
+            <input class="search-input" placeholder="搜索工单编号 / 客户名称" placeholder-class="search-ph" value="{{keyword}}" bindinput="onSearchInput" />
+            <view wx:if="{{keyword}}" class="search-clear" bindtap="onSearchClear">
+              <van-icon name="clear" size="14px" color="#cbd5e1" />
+            </view>
+          </view>
+        </view>
+
+        <!-- Segmented Control 筛选 -->
+        <view class="segmented">
+          <view
+            wx:for="{{filters}}"
+            wx:key="item"
+            class="seg-item {{activeFilter === item ? 'seg-active' : ''}}"
+            data-filter="{{item}}"
+            bindtap="onFilterChange"
+          >{{item}}</view>
+        </view>
+
+        <!-- 空状态 -->
+        <view wx:if="{{orders.length === 0}}" class="empty">
+          <van-icon name="orders-o" size="60px" color="#cbd5e1" />
+          <text class="empty-title">还没有收费工单</text>
+          <text class="empty-sub">从普通工单详情页转入</text>
+        </view>
+
+        <!-- 列表 -->
+        <view class="list-wrap">
+          <block wx:for="{{orders}}" wx:key="id">
+
+            <!-- 待维修：复用主工单列表 ticket-card 样式 -->
+            <view
+              wx:if="{{item.status === 'Pending Repair'}}"
+              class="ticket-card"
+              data-id="{{item.id}}"
+              bindtap="onOrderTap"
+            >
+              <view class="status-badge status-reported">{{item.statusText}}</view>
+
+              <view class="ticket-id-row">
+                <text class="ticket-id">{{item.order_number}}</text>
+                <view wx:if="{{item.priority === 'Emergency'}}" class="priority-badge priority-emergency">紧急</view>
+              </view>
+
+              <view class="description-box">{{item.description || '无描述'}}</view>
+
+              <view class="metadata-wrapper">
+                <view class="metadata-line">
+                  <view class="metadata-item metadata-left">
+                    <view class="icon icon-person"></view>
+                    <text class="metadata-text">{{item.responsible_party || '未知'}}</text>
+                  </view>
+                  <view class="metadata-item metadata-center">
+                    <view class="icon icon-user"></view>
+                    <text class="metadata-text">{{item.submitter.name || '未知'}}</text>
+                  </view>
+                  <view class="metadata-item metadata-right">
+                    <view class="icon icon-building"></view>
+                    <text class="metadata-text">{{item.order_category || '未分类'}}</text>
+                  </view>
+                </view>
+                <view class="metadata-line">
+                  <view class="metadata-item">
+                    <view class="icon icon-location"></view>
+                    <text class="metadata-text">{{item.floor}}</text>
+                    <text class="location-separator"></text>
+                    <text class="metadata-text">{{item.location}}</text>
+                  </view>
+                  <view class="metadata-item">
+                    <view class="icon icon-time"></view>
+                    <text class="metadata-text">{{item.created_at}}</text>
+                  </view>
+                </view>
+              </view>
+
+              <view wx:if="{{item.photos && item.photos.length > 0}}" class="photo-row">
+                <view class="photo-list">
+                  <block wx:for="{{item.photos}}" wx:key="*this" wx:for-item="photo" wx:for-index="photoIndex" wx:if="{{photoIndex < 3}}">
+                    <view class="photo-placeholder">
+                      <image src="{{photo}}" class="photo-image" mode="aspectFill" lazy-load="{{true}}" />
+                    </view>
+                  </block>
+                </view>
+              </view>
+            </view>
+
+            <!-- 已完成：重构字段卡片 -->
+            <view wx:else class="card" data-id="{{item.id}}" bindtap="onOrderTap">
+
+              <!-- 状态标签：绝对定位右上角，与待维修样式一致 -->
+              <view class="status-badge status-completed">{{item.statusText}}</view>
+
+              <!-- 第1行：工单号 + 总费用标签 -->
+              <view class="order-no-row">
+                <text class="order-no">{{item.order_number}}</text>
+                <text class="amount-tag">{{item.totalAmountText}}</text>
+              </view>
+
+              <!-- 第2行：故障描述框 -->
+              <view class="description-box">{{item.description || '无描述'}}</view>
+
+              <!-- 元数据区 -->
+              <view class="metadata-wrapper">
+                <!-- 第3行：维修人 | 维修用时 | 类型 -->
+                <view class="metadata-line">
+                  <view class="metadata-item metadata-left">
+                    <view class="icon icon-user"></view>
+                    <text class="metadata-text">{{item.repairer || '—'}}</text>
+                  </view>
+                  <view class="metadata-item metadata-center">
+                    <view class="icon icon-time"></view>
+                    <text class="metadata-text">{{item.duration || '—'}}</text>
+                  </view>
+                  <view class="metadata-item metadata-right">
+                    <view class="icon icon-building"></view>
+                    <text class="metadata-text">{{item.order_category || '—'}}</text>
+                  </view>
+                </view>
+                <!-- 第4行：楼层+位置 | 完成时间 -->
+                <view class="metadata-line">
+                  <view class="metadata-item">
+                    <view class="icon icon-location"></view>
+                    <text class="metadata-text">{{item.floor}}</text>
+                    <text class="location-separator"></text>
+                    <text class="metadata-text">{{item.location}}</text>
+                  </view>
+                  <view class="metadata-item">
+                    <view class="icon icon-time"></view>
+                    <text class="metadata-text">{{item.endTime || '—'}}</text>
+                  </view>
+                </view>
+              </view>
+
+
+              <!-- 维修后照片 + 确认单 -->
+              <view
+                wx:if="{{(item.photosAfter && item.photosAfter.length > 0) || (item.photosConfirm && item.photosConfirm.length > 0)}}"
+                class="photo-row"
+              >
+                <view class="photo-list">
+                  <block wx:for="{{item.photosAfter}}" wx:key="*this" wx:for-item="photo" wx:for-index="pIdx" wx:if="{{pIdx < 2}}">
+                    <view class="photo-placeholder">
+                      <image src="{{photo}}" class="photo-image" mode="aspectFill" lazy-load="{{true}}" />
+                    </view>
+                  </block>
+                  <block wx:for="{{item.photosConfirm}}" wx:key="*this" wx:for-item="photo" wx:for-index="pIdx" wx:if="{{pIdx < 1}}">
+                    <view class="photo-placeholder photo-placeholder-confirm">
+                      <image src="{{photo}}" class="photo-image" mode="aspectFill" lazy-load="{{true}}" />
+                    </view>
+                  </block>
+                </view>
+              </view>
+
+            </view>
+
+          </block>
+        </view>
+
+        <view style="height: 40px;"></view>
+      </scroll-view>
+    </swiper-item>
+
+    <!-- Tab 2: 数据看板 -->
+    <swiper-item>
+      <scroll-view scroll-y class="dash-scroll">
+
+        <!-- 时间筛选器 -->
+        <view class="dash-segmented">
+          <view
+            wx:for="{{rangeOptions}}"
+            wx:key="*this"
+            class="dash-seg-item {{activeRange === item ? 'dash-seg-active' : ''}}"
+            data-range="{{item}}"
+            bindtap="onRangeSelect"
+          >{{item === '自定义' ? customRangeLabel : item}}</view>
+        </view>
+
+        <!-- KPI 4 卡 -->
+        <view class="dash-kpi-grid">
+          <view wx:for="{{kpiCards}}" wx:key="label" class="dash-kpi-card">
+            <text class="dash-kpi-label">{{item.label}}</text>
+            <text class="dash-kpi-value {{item.accent ? 'dash-kpi-accent' : ''}}" style="{{item.color ? 'color:' + item.color + ';' : ''}}">{{item.value}}</text>
+          </view>
+        </view>
+        <!-- 月度支出趋势 -->
+        <view class="dash-chart-card">
+          <view class="dash-chart-header">
+            <text class="dash-chart-title">月度支出趋势</text>
+            <text class="dash-chart-sub">近 12 个月</text>
+          </view>
+          <view class="dash-chart-box-trend">
+            <ec-canvas ec="{{ ecTrend }}"></ec-canvas>
+          </view>
+        </view>
+        <!-- 按工单分类费用占比 -->
+        <view class="dash-chart-card">
+          <view class="dash-chart-header">
+            <text class="dash-chart-title">按工单分类费用占比</text>
+          </view>
+          <block wx:if="{{dash.categoryData.length > 0}}">
+            <view class="dash-pie-row">
+              <view class="dash-pie-canvas">
+                <ec-canvas wx:if="{{ecPie}}" ec="{{ ecPie }}"></ec-canvas>
+              </view>
+              <view class="dash-pie-legend">
+                <view wx:for="{{dash.categoryData}}" wx:key="name" class="dash-legend-item">
+                  <view class="dash-legend-dot" style="background:{{item.color}};"></view>
+                  <text class="dash-legend-name">{{item.name}}</text>
+                </view>
+              </view>
+            </view>
+          </block>
+          <view wx:else class="dash-empty">暂无数据</view>
+        </view>
+        <!-- 楼层 TOP 5 -->
+        <view class="dash-chart-card">
+          <view class="dash-chart-header">
+            <text class="dash-chart-title">楼层维修热点 TOP 5</text>
+            <text class="dash-chart-sub">按工单数</text>
+          </view>
+          <view wx:if="{{dash.topFloors.length > 0}}" class="dash-chart-box-hbar">
+            <ec-canvas wx:if="{{ecFloor}}" ec="{{ ecFloor }}"></ec-canvas>
+          </view>
+          <view wx:else class="dash-empty">暂无数据</view>
+        </view>
+
+        <!-- 设备 TOP 5 -->
+        <view class="dash-chart-card">
+          <view class="dash-chart-header">
+            <text class="dash-chart-title">设备维修热点 TOP 5</text>
+            <text class="dash-chart-sub">按工单数</text>
+          </view>
+          <view wx:if="{{dash.topDevices.length > 0}}" class="dash-chart-box-hbar">
+            <ec-canvas wx:if="{{ecDevice}}" ec="{{ ecDevice }}"></ec-canvas>
+          </view>
+          <view wx:else class="dash-empty">暂无数据</view>
+        </view>
+
+        <view style="height: 40px;"></view>
+      </scroll-view>
+
+      <!-- 自定义日期范围弹窗 -->
+      <view wx:if="{{isRangePickerOpen}}" class="modal-overlay" catchtap="closeRangePicker">
+        <view class="modal-content" catchtap="stopPropagation">
+          <view class="modal-header">
+            <text class="modal-title">选择日期范围</text>
+          </view>
+          <view class="datetime-picker-content">
+            <view class="picker-row">
+              <text class="picker-label">开始</text>
+              <picker mode="date" value="{{tempStart}}" bindchange="onTempStartChange">
+                <view class="datetime-picker-display">
+                  <text class="datetime-picker-text">{{tempStart || '请选择日期'}}</text>
+                </view>
+              </picker>
+            </view>
+            <view class="picker-row">
+              <text class="picker-label">结束</text>
+              <picker mode="date" value="{{tempEnd}}" bindchange="onTempEndChange">
+                <view class="datetime-picker-display">
+                  <text class="datetime-picker-text">{{tempEnd || '请选择日期'}}</text>
+                </view>
+              </picker>
+            </view>
+          </view>
+          <view class="modal-actions">
+            <view class="modal-button modal-button-cancel" bindtap="cancelRangePicker">
+              <text class="modal-button-text">取消</text>
+            </view>
+            <view class="modal-button modal-button-confirm" bindtap="confirmRangePicker">
+              <text class="modal-button-text modal-button-text-white">确定</text>
+            </view>
+          </view>
+        </view>
+      </view>
+    </swiper-item>
+
+  </swiper>
+</view>

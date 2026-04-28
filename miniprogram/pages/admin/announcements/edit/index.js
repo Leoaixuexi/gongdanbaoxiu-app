@@ -3,10 +3,11 @@
  * 公告编辑页面 - 支持富文本编辑
  */
 
-const cloudDB = require('../../../../services/cloudDatabase');
-const { ROLES, ROLE_DISPLAY_NAMES, STORAGE_KEYS } = require('../../../../utils/constants');
+const announcementService = require('../../../../services/announcementService');
 
 Page({
+  behaviors: [require('../../../../behaviors/adminPage')],
+
   data: {
     isEdit: false,
     announcementId: null,
@@ -28,7 +29,7 @@ Page({
   editorCtx: null,
 
   onLoad(options) {
-    this.checkAdminPermission();
+    if (!this.checkAdminPermission()) return;
 
     if (options.id) {
       this.setData({
@@ -43,28 +44,12 @@ Page({
   },
 
   /**
-   * 检查管理员权限
-   */
-  checkAdminPermission() {
-    const userInfo = wx.getStorageSync(STORAGE_KEYS.USER_INFO);
-    if (!userInfo || userInfo.role_id !== ROLES.ADMIN) {
-      wx.showToast({
-        title: '无权限访问',
-        icon: 'none'
-      });
-      setTimeout(() => {
-        wx.navigateBack();
-      }, 1500);
-    }
-  },
-
-  /**
    * 加载公告详情
    */
   async loadAnnouncement(id) {
     try {
       wx.showLoading({ title: '加载中...' });
-      const result = await cloudDB.announcements.get(id);
+      const result = await announcementService.getAnnouncement(id);
 
       if (result) {
         // 更新表单数据
@@ -276,9 +261,9 @@ Page({
       };
 
       if (isEdit) {
-        await cloudDB.announcements.update(announcementId, data);
+        await announcementService.updateAnnouncement(announcementId, data);
       } else {
-        await cloudDB.announcements.create(data);
+        await announcementService.createAnnouncement(data);
       }
 
       wx.showToast({

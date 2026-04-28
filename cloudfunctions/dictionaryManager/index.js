@@ -26,14 +26,6 @@ async function getCurrentUser(openid) {
 }
 
 /**
- * 检查是否为管理员
- */
-async function isAdmin(openid) {
-  const user = await getCurrentUser(openid);
-  return user && user.role_id === 1;
-}
-
-/**
  * 获取字典列表
  */
 async function listDictionaries() {
@@ -206,11 +198,26 @@ exports.main = async (event, context) => {
   console.log(`[DictionaryManager] Action: ${action}, OpenID: ${OPENID}`);
 
   try {
-    // 需要管理员权限的操作
+    // 身份验证：确保用户已登录
+    if (!OPENID) {
+      return {
+        success: false,
+        error: '请先登录后再操作'
+      };
+    }
+
+    // 需要写权限的操作
     const adminActions = ['create', 'update', 'delete'];
     if (adminActions.includes(action)) {
-      const admin = await isAdmin(OPENID);
-      if (!admin) {
+      const user = await getCurrentUser(OPENID);
+      // 物料/商品相关字典：放给 canManageMaterial（管理员/行政经理/办美员工）写
+      const MANAGE_MATERIAL_DICTS = ['material_category', 'material_location', 'product_category', 'product_location'];
+      const isManageMaterialDict = data && MANAGE_MATERIAL_DICTS.includes(data.dict_key);
+      const canManageMaterial = user && [1, 2, 4].includes(user.role_id) && user.active !== false;
+      const isAdminUser = user && user.role_id === 1 && user.active !== false;
+
+      const allowed = isAdminUser || (isManageMaterialDict && canManageMaterial);
+      if (!allowed) {
         return {
           success: false,
           error: '无权限：只有管理员可以执行此操作'

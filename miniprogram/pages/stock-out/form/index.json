@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "出库申请",
+  "usingComponents": {
+    "van-icon": "@vant/weapp/icon/index"
+  }
+}

@@ -47,17 +47,6 @@ Component({
           });
         }
       });
-    },
-
-    // 菜单按钮点击
-    onMenuClick() {
-      this.triggerEvent('menuclick');
-      wx.showActionSheet({
-        itemList: ['选项1', '选项2', '选项3'],
-        success: (res) => {
-          console.log('用户点击了:', res.tapIndex);
-        }
-      });
     }
   }
 })

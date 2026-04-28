@@ -3,10 +3,20 @@
  */
 
 const { smartCompress } = require('../../../utils/imageUtils');
+const feedbackService = require('../../../services/feedbackService');
 
 Page({
   data: {
-    title: '',
+    // 类型选项
+    typeOptions: ['系统BUG', '新增功能建议', '现有模块优化', '个人想法'],
+    typeActions: [
+      { name: '系统BUG' },
+      { name: '新增功能建议' },
+      { name: '现有模块优化' },
+      { name: '个人想法' }
+    ],
+    showTypeSheet: false,
+    selectedType: '',
     content: '',
     contentLength: 0,
     uploadedPhotos: [],
@@ -26,9 +36,22 @@ Page({
     });
   },
 
-  // 标题输入
-  onTitleInput(e) {
-    this.setData({ title: e.detail.value });
+  // 显示类型选择弹窗
+  showTypeSheet() {
+    this.setData({ showTypeSheet: true });
+  },
+
+  // 关闭类型选择弹窗
+  onTypeSheetClose() {
+    this.setData({ showTypeSheet: false });
+  },
+
+  // 选择类型
+  onTypeSelect(e) {
+    this.setData({
+      selectedType: e.detail.name,
+      showTypeSheet: false
+    });
   },
 
   // 内容输入
@@ -97,10 +120,10 @@ Page({
 
   // 表单验证
   validateForm() {
-    const { title, content } = this.data;
+    const { selectedType, content } = this.data;
 
-    if (!title || title.trim() === '') {
-      wx.showToast({ title: '请填写标题', icon: 'none' });
+    if (!selectedType) {
+      wx.showToast({ title: '请选择反馈类型', icon: 'none' });
       return false;
     }
 
@@ -148,54 +171,42 @@ Page({
       // 收集上下文信息
       const systemInfo = wx.getSystemInfoSync();
 
-      wx.showLoading({ title: '提交中...', mask: true });
-
-      const res = await wx.cloud.callFunction({
-        name: 'feedbackManager',
-        data: {
-          action: 'create',
-          data: {
-            title: this.data.title.trim(),
-            content: this.data.content.trim(),
-            photos: uploadedPhotoUrls,
-            system_info: `${systemInfo.brand} ${systemInfo.model}`,
-            user_agent: `${systemInfo.system} / 微信${systemInfo.version}`,
-            app_version: systemInfo.SDKVersion
-          }
-        }
+      await feedbackService.createFeedback({
+        type: this.data.selectedType,
+        content: this.data.content.trim(),
+        photos: uploadedPhotoUrls,
+        system_info: `${systemInfo.brand} ${systemInfo.model}`,
+        user_agent: `${systemInfo.system} / 微信${systemInfo.version}`,
+        app_version: systemInfo.SDKVersion
       });
 
-      wx.hideLoading();
+      wx.showToast({
+        title: '提交成功',
+        icon: 'success',
+        duration: 1500
+      });
 
-      if (res.result && res.result.success) {
-        wx.showToast({
-          title: '提交成功',
-          icon: 'success',
-          duration: 1500
+      setTimeout(() => {
+        wx.redirectTo({
+          url: '/pages/feedback/list/index'
         });
-
-        setTimeout(() => {
-          wx.redirectTo({
-            url: '/pages/feedback/list/index'
-          });
-        }, 1500);
-      } else {
-        throw new Error(res.result?.error || '提交失败');
-      }
+      }, 1500);
     } catch (error) {
       console.error('[Feedback] Submit error:', error);
       this.setData({ submitting: false });
-      wx.hideLoading();
-      wx.showToast({
-        title: error.message || '提交失败',
-        icon: 'none'
-      });
     }
   },
 
   // 返回
   goBack() {
-    wx.navigateBack();
+    const pages = getCurrentPages();
+    if (pages.length > 1) {
+      wx.navigateBack();
+    } else {
+      wx.redirectTo({
+        url: '/pages/feedback/index/index'
+      });
+    }
   },
 
   // 跳转到我的反馈

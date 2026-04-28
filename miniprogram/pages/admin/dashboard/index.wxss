@@ -127,6 +127,11 @@
   box-shadow: 0 8rpx 24rpx rgba(239, 68, 68, 0.3);
 }
 
+.icon-feedback {
+  background: linear-gradient(135deg, #10B981 0%, #34D399 100%);
+  box-shadow: 0 8rpx 24rpx rgba(16, 185, 129, 0.3);
+}
+
 /* 卡片信息 */
 .card-info {
   flex: 1;

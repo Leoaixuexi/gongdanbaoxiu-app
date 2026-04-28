@@ -9,28 +9,74 @@
     <text class="header-desc">查看系统操作记录</text>
   </view>
 
-  <!-- 筛选栏 -->
-  <view class="filter-bar">
-    <view class="filter-btn {{selectedAction ? 'active' : ''}}" bindtap="toggleFilter">
-      <text>{{selectedActionLabel}}</text>
-      <text class="arrow">▼</text>
+  <!-- 高级筛选区域 -->
+  <view class="filter-section">
+    <!-- 第一行：日期筛选 -->
+    <view class="filter-row">
+      <view class="filter-item-box" bindtap="showStartDatePicker">
+        <text class="filter-label">开始日期</text>
+        <view class="filter-value">
+          <text>{{startDateText || '不限'}}</text>
+          <van-icon name="arrow-down" size="24rpx" color="#9CA3AF" />
+        </view>
+      </view>
+      <view class="filter-item-box" bindtap="showEndDatePicker">
+        <text class="filter-label">结束日期</text>
+        <view class="filter-value">
+          <text>{{endDateText || '不限'}}</text>
+          <van-icon name="arrow-down" size="24rpx" color="#9CA3AF" />
+        </view>
+      </view>
     </view>
-    <view wx:if="{{selectedAction}}" class="clear-btn" bindtap="clearFilter">
-      <text>清除</text>
+
+    <!-- 第二行：操作人和操作类型 -->
+    <view class="filter-row">
+      <view class="filter-item-box" bindtap="showUserPicker">
+        <text class="filter-label">操作人</text>
+        <view class="filter-value">
+          <text>{{selectedUserLabel || '全部'}}</text>
+          <van-icon name="arrow-down" size="24rpx" color="#9CA3AF" />
+        </view>
+      </view>
+      <view class="filter-item-box" bindtap="toggleFilter">
+        <text class="filter-label">操作类型</text>
+        <view class="filter-value">
+          <text>{{selectedActionLabel}}</text>
+          <van-icon name="arrow-down" size="24rpx" color="#9CA3AF" />
+        </view>
+      </view>
     </view>
-    <view class="total-count">
-      <text>共 {{total}} 条</text>
+
+    <!-- 第三行：按钮区域 -->
+    <view class="filter-actions">
+      <view class="action-btn reset-btn" bindtap="resetFilters">
+        <van-icon name="replay" size="28rpx" />
+        <text>重置</text>
+      </view>
+      <view class="action-btn search-btn" bindtap="doSearch">
+        <van-icon name="search" size="28rpx" />
+        <text>搜索</text>
+      </view>
+      <view class="action-btn export-btn" bindtap="exportCSV">
+        <van-icon name="down" size="28rpx" />
+        <text>导出</text>
+      </view>
+    </view>
+
+    <!-- 统计信息 -->
+    <view class="filter-stats">
+      <text>共 {{total}} 条记录</text>
     </view>
   </view>
 
-  <!-- 筛选下拉面板 -->
+  <!-- 操作类型筛选下拉面板 -->
   <view wx:if="{{showFilter}}" class="filter-dropdown" catchtap="stopPropagation">
     <view class="filter-mask" bindtap="toggleFilter"></view>
     <view class="filter-panel">
       <view
         wx:for="{{actions}}"
         wx:key="value"
-        class="filter-item {{selectedAction === item.value ? 'selected' : ''}}"
+        class="filter-option {{selectedAction === item.value ? 'selected' : ''}}"
         bindtap="selectAction"
         data-value="{{item.value}}"
         data-label="{{item.label}}"
@@ -40,6 +86,40 @@
       </view>
     </view>
   </view>
+
+  <!-- 日期选择器弹窗 -->
+  <van-popup show="{{showStartDate}}" position="bottom" bind:close="hideStartDatePicker">
+    <van-datetime-picker
+      type="date"
+      value="{{startDateValue}}"
+      min-date="{{minDate}}"
+      max-date="{{maxDate}}"
+      bind:confirm="onStartDateConfirm"
+      bind:cancel="hideStartDatePicker"
+    />
+  </van-popup>
+
+  <van-popup show="{{showEndDate}}" position="bottom" bind:close="hideEndDatePicker">
+    <van-datetime-picker
+      type="date"
+      value="{{endDateValue}}"
+      min-date="{{minDate}}"
+      max-date="{{maxDate}}"
+      bind:confirm="onEndDateConfirm"
+      bind:cancel="hideEndDatePicker"
+    />
+  </van-popup>
+
+  <!-- 操作人选择器弹窗 -->
+  <van-popup show="{{showUserSelect}}" position="bottom" bind:close="hideUserPicker">
+    <van-picker
+      show-toolbar
+      title="选择操作人"
+      columns="{{userColumns}}"
+      bind:confirm="onUserConfirm"
+      bind:cancel="hideUserPicker"
+    />
+  </van-popup>
 
   <!-- 加载状态 -->
   <view wx:if="{{loading}}" class="loading-state">

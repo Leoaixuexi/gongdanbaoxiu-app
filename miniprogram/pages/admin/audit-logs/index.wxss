@@ -26,44 +26,88 @@
   color: rgba(255, 255, 255, 0.8);
 }
 
-/* 筛选栏 */
-.filter-bar {
-  display: flex;
-  align-items: center;
-  padding: 20rpx 24rpx;
+/* 高级筛选区域 */
+.filter-section {
   background: #FFFFFF;
-  border-bottom: 1rpx solid #F3F4F6;
+  padding: 24rpx;
+  margin-bottom: 8rpx;
 }
 
-.filter-btn {
+.filter-row {
+  display: flex;
+  gap: 20rpx;
+  margin-bottom: 20rpx;
+}
+
+.filter-item-box {
+  flex: 1;
+  background: #F9FAFB;
+  border-radius: 12rpx;
+  padding: 16rpx 20rpx;
+  border: 1rpx solid #E5E7EB;
+}
+
+.filter-item-box:active {
+  background: #F3F4F6;
+}
+
+.filter-label {
+  display: block;
+  font-size: 22rpx;
+  color: #9CA3AF;
+  margin-bottom: 8rpx;
+}
+
+.filter-value {
   display: flex;
   align-items: center;
-  padding: 12rpx 20rpx;
+  justify-content: space-between;
+  font-size: 28rpx;
+  color: #374151;
+}
+
+/* 按钮区域 */
+.filter-actions {
+  display: flex;
+  gap: 16rpx;
+  margin-top: 24rpx;
+}
+
+.action-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8rpx;
+  padding: 20rpx 0;
+  border-radius: 12rpx;
+  font-size: 28rpx;
+  font-weight: 500;
+}
+
+.reset-btn {
   background: #F3F4F6;
-  border-radius: 20rpx;
-  font-size: 26rpx;
   color: #6B7280;
 }
 
-.filter-btn.active {
-  background: rgba(12, 167, 125, 0.1);
-  color: #0CA77D;
+.search-btn {
+  background: #0CA77D;
+  color: #FFFFFF;
 }
 
-.filter-btn .arrow {
-  margin-left: 8rpx;
-  font-size: 20rpx;
+.export-btn {
+  background: #3B82F6;
+  color: #FFFFFF;
 }
 
-.clear-btn {
-  margin-left: 16rpx;
-  padding: 12rpx 20rpx;
-  font-size: 26rpx;
-  color: #EF4444;
+.action-btn:active {
+  opacity: 0.8;
 }
 
-.total-count {
-  margin-left: auto;
+/* 统计信息 */
+.filter-stats {
+  text-align: center;
+  margin-top: 16rpx;
   font-size: 24rpx;
   color: #9CA3AF;
 }
@@ -99,7 +143,7 @@
   overflow-y: auto;
 }
 
-.filter-item {
+.filter-option {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -109,16 +153,16 @@
   color: #374151;
 }
 
-.filter-item:last-child {
+.filter-option:last-child {
   border-bottom: none;
 }
 
-.filter-item.selected {
+.filter-option.selected {
   color: #0CA77D;
   background: rgba(12, 167, 125, 0.05);
 }
 
-.filter-item .check {
+.filter-option .check {
   color: #0CA77D;
   font-weight: 600;
 }

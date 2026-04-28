@@ -1,0 +1,9 @@
+{
+  "navigationStyle": "custom",
+  "backgroundColor": "#F7F7F7",
+  "usingComponents": {
+    "van-icon": "@vant/weapp/icon/index",
+    "ec-canvas": "../../components/ec-canvas/ec-canvas",
+    "custom-header": "/components/header/header"
+  }
+}

@@ -3,23 +3,23 @@
  * 提供智能压缩等功能
  */
 
-// 压缩预设配置
+// 压缩预设配置（统一目标区间 50-150KB）
 const COMPRESS_PRESETS = {
-  // 工单照片预设：50-130KB
+  // 工单/物料/反馈/收费等图片：50-150KB
   WORKORDER: {
-    targetSize: 90 * 1024,   // 目标 90KB（中间值）
-    maxSize: 130 * 1024,     // 最大 130KB
+    targetSize: 100 * 1024,  // 目标 100KB（中间值）
+    maxSize: 150 * 1024,     // 最大 150KB
     minSize: 50 * 1024,      // 最小 50KB
-    minQuality: 40,          // 最低质量
-    startQuality: 80         // 起始质量
+    minQuality: 40,
+    startQuality: 80
   },
-  // 头像预设：50-100KB
+  // 头像：50-150KB
   AVATAR: {
-    targetSize: 75 * 1024,   // 目标 75KB（中间值）
-    maxSize: 100 * 1024,     // 最大 100KB
-    minSize: 50 * 1024,      // 最小 50KB
-    minQuality: 40,          // 最低质量
-    startQuality: 80         // 起始质量
+    targetSize: 100 * 1024,
+    maxSize: 150 * 1024,
+    minSize: 50 * 1024,
+    minQuality: 40,
+    startQuality: 80
   }
 };
 

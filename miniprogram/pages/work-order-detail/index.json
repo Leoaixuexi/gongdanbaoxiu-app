@@ -5,6 +5,7 @@
   "usingComponents": {
     "work-order-stepper": "/components/work-order-stepper/index",
     "timeline-item": "/components/timeline-item/index",
-    "custom-header": "/components/header/header"
+    "custom-header": "/components/header/header",
+    "van-icon": "@vant/weapp/icon/index"
   }
 }

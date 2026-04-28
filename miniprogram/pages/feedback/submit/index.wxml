@@ -4,68 +4,82 @@
   <view class="nav-bar" style="padding-top: {{statusBarHeight}}px;">
     <view class="nav-content">
       <view class="nav-left" bindtap="goBack">
-        <van-icon name="arrow-left" size="40rpx" color="#333" />
+        <van-icon name="arrow-left" size="40rpx" color="#fff" />
       </view>
-      <text class="nav-title">意见反馈</text>
       <view class="nav-right"></view>
     </view>
   </view>
 
   <!-- 表单区域 -->
-  <view class="form-area" style="padding-top: {{navBarHeight}}px;">
-    <!-- 标题输入 -->
-    <view class="form-group">
-      <view class="form-label">
-        <text class="label-text">标题</text>
-        <text class="required">*</text>
+  <view class="form-area" style="padding-top: {{navBarHeight + 20}}px;">
+    <!-- 类型选择 -->
+    <view class="form-card">
+      <view class="form-group">
+        <view class="form-header">
+          <view class="form-label">
+            <van-icon name="apps-o" size="32rpx" color="#3b82f6" />
+            <text class="label-text">类型</text>
+          </view>
+          <text class="required-badge">必填</text>
+        </view>
+        <view class="type-picker {{selectedType ? 'selected' : ''}}" bindtap="showTypeSheet">
+          <text class="picker-text">{{selectedType || '请选择反馈类型'}}</text>
+          <text class="picker-arrow">▼</text>
+        </view>
       </view>
-      <input
-        class="form-input"
-        placeholder="请输入反馈标题"
-        placeholder-class="placeholder"
-        value="{{title}}"
-        bindinput="onTitleInput"
-        maxlength="50"
-      />
-    </view>
 
-    <!-- 内容输入 -->
-    <view class="form-group">
-      <view class="form-label">
-        <text class="label-text">请具体描述您遇到的问题或建议</text>
-        <text class="required">*</text>
-      </view>
-      <view class="textarea-wrapper">
-        <textarea
-          class="form-textarea"
-          placeholder="请详细描述您的问题或建议..."
-          placeholder-class="placeholder"
-          value="{{content}}"
-          bindinput="onContentInput"
-          maxlength="500"
-        />
-        <view class="char-count">{{contentLength}}/500</view>
+      <!-- 内容输入 -->
+      <view class="form-group">
+        <view class="form-header">
+          <view class="form-label">
+            <van-icon name="description" size="32rpx" color="#3b82f6" />
+            <text class="label-text">详细描述</text>
+          </view>
+          <text class="required-badge">必填</text>
+        </view>
+        <view class="textarea-wrapper">
+          <textarea
+            class="form-textarea"
+            placeholder="请详细描述您的问题或建议，越详细越有助于我们改进..."
+            placeholder-class="placeholder"
+            value="{{content}}"
+            bindinput="onContentInput"
+            maxlength="500"
+            auto-height
+          />
+          <view class="char-count-wrapper">
+            <text class="char-count {{contentLength > 400 ? 'warning' : ''}}">{{contentLength}}/500</text>
+          </view>
+        </view>
       </view>
     </view>
 
     <!-- 问题截图 -->
-    <view class="form-group">
-      <view class="form-label-row">
-        <text class="label-text">问题截图（提供截图，可以更快速的定位问题）</text>
-        <text class="photo-count">{{photoCount}}/4</text>
-      </view>
-      <view class="photo-grid">
-        <!-- 已上传的图片 -->
-        <view wx:for="{{uploadedPhotos}}" wx:key="index" class="photo-item">
-          <image class="photo-img" src="{{item}}" mode="aspectFill" bindtap="previewPhoto" data-index="{{index}}" />
-          <view class="photo-delete" catchtap="removePhoto" data-index="{{index}}">
-            <text class="delete-icon">×</text>
+    <view class="form-card">
+      <view class="form-group no-border">
+        <view class="form-header">
+          <view class="form-label">
+            <van-icon name="photo-o" size="32rpx" color="#10b981" />
+            <text class="label-text">问题截图</text>
           </view>
+          <text class="photo-count-badge">{{photoCount}}/4</text>
         </view>
-        <!-- 上传按钮 -->
-        <view wx:if="{{photoCount < 4}}" class="photo-add" bindtap="choosePhoto">
-          <text class="add-icon">+</text>
-          <text class="add-text">上传图片</text>
+        <text class="photo-hint">提供截图可以帮助阿哲更快定位问题</text>
+        <view class="photo-grid">
+          <!-- 已上传的图片 -->
+          <view wx:for="{{uploadedPhotos}}" wx:key="index" class="photo-item">
+            <image class="photo-img" src="{{item}}" mode="aspectFill" bindtap="previewPhoto" data-index="{{index}}" />
+            <view class="photo-delete" catchtap="removePhoto" data-index="{{index}}">
+              <van-icon name="cross" size="24rpx" color="#fff" />
+            </view>
+          </view>
+          <!-- 上传按钮 -->
+          <view wx:if="{{photoCount < 4}}" class="photo-add" bindtap="choosePhoto">
+            <view class="add-icon-wrapper">
+              <van-icon name="plus" size="48rpx" color="#ccc" />
+            </view>
+            <text class="add-text">添加图片</text>
+          </view>
         </view>
       </view>
     </view>
@@ -74,7 +88,18 @@
   <!-- 底部提交按钮 -->
   <view class="bottom-bar">
     <view class="submit-btn {{submitting ? 'disabled' : ''}}" bindtap="handleSubmit">
-      <text class="submit-text">{{submitting ? '提交中...' : '提交'}}</text>
+      <van-loading wx:if="{{submitting}}" size="36rpx" color="#fff" />
+      <text class="submit-text">{{submitting ? '提交中...' : '提交反馈'}}</text>
     </view>
   </view>
+
+  <!-- 类型选择弹窗 -->
+  <van-action-sheet
+    show="{{showTypeSheet}}"
+    actions="{{typeActions}}"
+    bind:close="onTypeSheetClose"
+    bind:select="onTypeSelect"
+    cancel-text="取消"
+    bind:cancel="onTypeSheetClose"
+  />
 </view>

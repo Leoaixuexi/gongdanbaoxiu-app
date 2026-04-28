@@ -1,0 +1,9 @@
+{
+  "name": "stockOutManager",
+  "version": "1.0.0",
+  "description": "耗品出库审批流云函数（独立模块）",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}

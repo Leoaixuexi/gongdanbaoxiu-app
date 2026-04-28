@@ -532,6 +532,8 @@ page {
   background: #ffffff;
   border-radius: 24rpx;
   box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+  position: sticky;
+  z-index: 50;
 }
 
 .date-chip {
@@ -565,50 +567,6 @@ page {
 }
 
 /* Tab切换栏 - Clean Sticky Text Style */
-.manager-tabs {
-  position: sticky;
-  z-index: 50;
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  /* Extend to screen edges by counteracting parent padding */
-  margin-left: -40rpx;
-  margin-right: -40rpx;
-  padding: 10rpx 40rpx 0 40rpx; /* Restore internal padding */
-  margin-bottom: 24rpx;
-  /* Background matches page */
-  background-color: #F7F7F7;
-}
-
-.tab-item {
-  position: relative;
-  padding: 16rpx 32rpx;
-  text-align: center;
-  font-size: 30rpx; /* Smaller font size */
-  font-weight: 500;
-  color: #9ca3af; /* Gray for inactive */
-  transition: all 0.3s ease;
-}
-
-.tab-item.active {
-  background: transparent;
-  color: #000000; /* Black for active */
-  font-weight: 800; /* Bold/Heavy */
-  box-shadow: none;
-  transform: scale(1.05);
-}
-
-/* Custom indicator if needed, but the image shows just text. 
-   Adding a small dot or line could be nice, but let's stick to the prompt's "text turns black" */
-.active-indicator {
-  display: none; 
-}
-
-/* Override active state transform from previous utility if it conflicts */
-.tab-item:active {
-  transform: scale(0.98);
-}
-
 /* KPI卡片网格 */
 .kpi-grid {
   display: grid;
@@ -687,6 +645,43 @@ page {
   border-bottom: none;
 }
 
+/* KPI 面板 */
+.kpi-panel {
+  display: flex;
+  flex-direction: row;
+  gap: 12rpx;
+}
+
+.kpi-panel-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 28rpx 8rpx 24rpx;
+  gap: 10rpx;
+  border-radius: 16rpx;
+}
+
+.kpi-panel-value {
+  font-size: 44rpx;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -1rpx;
+}
+
+.kpi-panel-label {
+  font-size: 20rpx;
+  color: var(--muted-foreground);
+  font-weight: 400;
+  letter-spacing: 1rpx;
+}
+
+.kpi-panel-rate {
+  font-size: 20rpx;
+  font-weight: 600;
+  color: #8B5CF6;
+}
+
 .ranking-name {
   font-size: 28rpx;
   color: #1f2937;
@@ -715,9 +710,73 @@ page {
   justify-content: center;
 }
 
+/* 饼图容器（需要更多空间放图例+标签） */
+.chart-container-pie {
+  height: 650rpx;
+}
+
 .chart-canvas {
   width: 100%;
   height: 100%;
+}
+
+/* ========== 工单状态左右布局 ========== */
+.status-chart-wrap {
+  display: flex;
+  align-items: center;
+}
+
+.status-canvas-box {
+  width: 350rpx;
+  height: 350rpx;
+  flex-shrink: 0;
+}
+
+.status-legend-box {
+  flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: center;
+  gap: 20rpx 0;
+  padding-left: 80rpx;
+}
+
+.legend-item {
+  width: 50%;
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  padding-right: 16rpx;
+}
+
+.legend-badge {
+  border-radius: 14rpx;
+  padding: 6rpx 14rpx;
+  min-width: 60rpx;
+  text-align: center;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.75;
+}
+
+.legend-percent {
+  color: #ffffff;
+  font-size: 20rpx;
+  font-weight: bold;
+}
+
+.legend-name {
+  font-size: 22rpx;
+  color: #333333;
+  white-space: nowrap;
+}
+
+.legend-badge-selected {
+  transform: scale(1.18);
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.25);
+  opacity: 1;
 }
 
 /* ========== 日期选择弹窗样式 ========== */
@@ -896,6 +955,50 @@ page {
   width: 100%;
   height: 100%;
   border-radius: 50%;
+}
+
+/* ========== 横向条形图样式 ========== */
+.hbar-row {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  margin-bottom: 24rpx;
+}
+
+.hbar-row:last-child {
+  margin-bottom: 0;
+}
+
+.hbar-label {
+  width: 160rpx;
+  font-size: 22rpx;
+  color: var(--foreground);
+  flex-shrink: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hbar-track {
+  flex: 1;
+  height: 24rpx;
+  background: #f3f4f6;
+  border-radius: 999rpx;
+  overflow: hidden;
+}
+
+.hbar-fill {
+  height: 100%;
+  border-radius: 999rpx;
+  min-width: 8rpx;
+}
+
+.hbar-pct {
+  width: 80rpx;
+  font-size: 22rpx;
+  color: var(--muted-foreground);
+  text-align: right;
+  flex-shrink: 0;
 }
 
 /* ========== 图表空状态样式 ========== */

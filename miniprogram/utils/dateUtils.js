@@ -24,13 +24,13 @@ function getDateRange(filterType) {
       yesterday.setDate(yesterday.getDate() - 1);
       return {
         startDate: yesterday,
-        endDate: new Date(yesterday.getFullYear(), yesterday.getMonth(), yesterday.getDate(), 23, 59, 59)
+        endDate: new Date(yesterday.getFullYear(), yesterday.getMonth(), yesterday.getDate(), 23, 59, 59, 999)
       };
 
     case 'today':
       return {
         startDate: today,
-        endDate: new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59)
+        endDate: new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999)
       };
 
     case 'week':
@@ -40,20 +40,20 @@ function getDateRange(filterType) {
       weekStart.setDate(today.getDate() + diff);
       return {
         startDate: weekStart,
-        endDate: new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59)
+        endDate: new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999)
       };
 
     case 'month':
       const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
       return {
         startDate: monthStart,
-        endDate: new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59)
+        endDate: new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999)
       };
 
     default:
       return {
         startDate: today,
-        endDate: new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59)
+        endDate: new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999)
       };
   }
 }

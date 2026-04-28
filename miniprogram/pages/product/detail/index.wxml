@@ -1,0 +1,159 @@
+<!-- 商品详情页 -->
+<view class="detail-page">
+  <!-- 图片区域 -->
+  <view class="img-section">
+    <swiper
+      wx:if="{{product.images && product.images.length > 0}}"
+      class="img-swiper"
+      indicator-dots
+      indicator-color="rgba(0,0,0,0.2)"
+      indicator-active-color="#3B82F6"
+      autoplay
+      circular
+    >
+      <swiper-item wx:for="{{product.images}}" wx:key="*this">
+        <image class="img-full" src="{{item}}" mode="aspectFill" bindtap="previewImage" data-url="{{item}}" />
+      </swiper-item>
+    </swiper>
+    <view wx:else class="img-placeholder">
+      <van-icon name="photo-o" size="48px" color="#d4d4d4" />
+      <text class="img-placeholder-text">商品照片</text>
+    </view>
+  </view>
+
+  <!-- 名称 + 编号 + 状态 -->
+  <view class="title-section">
+    <view class="title-row">
+      <text class="title-name">{{product.name}}</text>
+      <view class="status-tag status-{{stockStatus}}">{{stockStatusText}}</view>
+    </view>
+  </view>
+
+  <!-- 基础信息 -->
+  <view class="info-group">
+    <text class="group-title">基础信息</text>
+    <view class="info-card">
+      <view class="info-row">
+        <text class="info-label">编号</text>
+        <text class="info-value">{{product.product_code || '-'}}</text>
+      </view>
+      <view class="info-row">
+        <text class="info-label">类别</text>
+        <text class="info-value">{{product.category || '-'}}</text>
+      </view>
+      <view class="info-row">
+        <text class="info-label">规格</text>
+        <text class="info-value">{{product.spec || '-'}}</text>
+      </view>
+      <view class="info-row">
+        <text class="info-label">型号</text>
+        <text class="info-value">{{product.model || '-'}}</text>
+      </view>
+      <view class="info-row">
+        <text class="info-label">单位</text>
+        <text class="info-value">{{product.unit || '-'}}</text>
+      </view>
+      <view class="info-row">
+        <text class="info-label">商品来源</text>
+        <text class="info-value">{{product.source || '-'}}</text>
+      </view>
+      <view class="info-row">
+        <text class="info-label">使用区域</text>
+        <text class="info-value">{{product.usage_area || '-'}}</text>
+      </view>
+      <view class="info-row info-row-last">
+        <text class="info-label">预警值</text>
+        <text class="info-value">{{product.min_stock || '-'}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 库存信息 -->
+  <view class="info-group">
+    <text class="group-title">库存信息</text>
+    <view class="stock-card">
+      <view class="stock-item">
+        <text class="stock-item-label">当前库存</text>
+        <text class="stock-item-value stock-value-green">{{product.stock}}</text>
+      </view>
+      <view class="stock-divider"></view>
+      <view class="stock-item">
+        <text class="stock-item-label">累计入库</text>
+        <text class="stock-item-value stock-value-blue">{{totalIn}}</text>
+      </view>
+      <view class="stock-divider"></view>
+      <view class="stock-item">
+        <text class="stock-item-label">累计出库</text>
+        <text class="stock-item-value stock-value-orange">{{totalOut}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 入库记录 -->
+  <view wx:if="{{inRecords.length > 0}}" class="info-group">
+    <text class="group-title">入库记录</text>
+    <view class="record-card">
+      <view
+        wx:for="{{inRecords}}"
+        wx:key="record_id"
+        class="record-item {{index < inRecords.length - 1 ? '' : 'record-item-last'}}"
+      >
+        <view class="record-dot record-dot-in"></view>
+        <view class="record-body">
+          <view class="record-line1">
+            <text class="record-qty record-qty-in">+{{item.quantity}}</text>
+            <text class="record-secondary">{{item.source || item.remark || ''}}</text>
+          </view>
+          <view class="record-line2">
+            <text class="record-meta">{{item.timeText}} · {{item.operator.name}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 出库记录 -->
+  <view wx:if="{{outRecords.length > 0}}" class="info-group">
+    <text class="group-title">出库记录</text>
+    <view class="record-card">
+      <view
+        wx:for="{{outRecords}}"
+        wx:key="record_id"
+        class="record-item {{index < outRecords.length - 1 ? '' : 'record-item-last'}}"
+      >
+        <view class="record-dot record-dot-out"></view>
+        <view class="record-body">
+          <view class="record-line1">
+            <text class="record-qty record-qty-out">-{{item.quantity}}</text>
+            <text class="record-secondary">{{item.operator.name}}</text>
+          </view>
+          <view class="record-line2">
+            <text class="record-meta">{{item.timeText}}{{item.usage_area ? ' · ' + item.usage_area : ''}}{{item.remark ? ' · ' + item.remark : ''}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 底部操作 -->
+  <view wx:if="{{canManage}}" class="bottom-actions">
+    <button class="action-button action-button-more" bindtap="handleMore">
+      <text class="more-icon">⋯</text>
+    </button>
+    <button class="action-button action-button-edit" bindtap="handleEdit">
+      <text class="action-button-text">修改</text>
+    </button>
+  </view>
+
+  <!-- 更多操作抽屉 -->
+  <view wx:if="{{showMoreActions}}" class="modal-overlay" catchtap="closeMoreActions">
+    <view class="more-actions-drawer" catchtap="stopPropagation">
+      <view class="drawer-action-item delete-action" catchtap="handleDelete">
+        <view class="icon-wrapper">
+          <van-icon name="delete-o" size="28px" color="#EF4444" />
+        </view>
+        <text class="action-label">删除商品</text>
+      </view>
+    </view>
+  </view>
+</view>

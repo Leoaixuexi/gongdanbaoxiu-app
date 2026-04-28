@@ -1,0 +1,110 @@
+<view class="material-list">
+  <view class="ml-header">
+    <view class="ml-search-row">
+      <view class="ml-search-bar">
+        <van-icon name="search" size="14px" color="#a3a3a3" />
+        <input
+          class="ml-search-input"
+          placeholder="搜索配件名称、编号"
+          placeholder-class="ml-search-placeholder"
+          value="{{keyword}}"
+          bindinput="onSearchInput"
+          bindconfirm="onSearchConfirm"
+        />
+      </view>
+      <view wx:if="{{canManage}}" class="ml-add-btn" bindtap="onAddTap">
+        <van-icon name="plus" size="18px" color="#FFFFFF" />
+        <text class="ml-add-text">新增</text>
+      </view>
+    </view>
+
+    <view class="ml-filter">
+      <view
+        class="ml-filter-tag {{materialFilter === '全部' ? 'ml-filter-active' : ''}}"
+        data-filter="全部"
+        bindtap="onFilterTap"
+      >全部</view>
+      <view
+        class="ml-filter-tag {{materialFilter === '预警' ? 'ml-filter-active' : ''}}"
+        data-filter="预警"
+        bindtap="onFilterTap"
+      >预警<text wx:if="{{warningCount > 0}}" class="ml-badge ml-badge-warning">{{warningCount}}</text></view>
+      <view
+        class="ml-filter-tag {{materialFilter === '缺货' ? 'ml-filter-active' : ''}}"
+        data-filter="缺货"
+        bindtap="onFilterTap"
+      >缺货<text wx:if="{{shortageCount > 0}}" class="ml-badge ml-badge-danger">{{shortageCount}}</text></view>
+    </view>
+  </view>
+
+  <scroll-view scroll-y class="list-scroll" bindscrolltolower="onLoadMore">
+    <view wx:if="{{loading}}" class="loading-state">
+      <text>加载中...</text>
+    </view>
+
+    <view wx:elif="{{filteredMaterials.length === 0}}" class="empty-state">
+      <van-icon name="gift-o" size="48px" color="#d4d4d4" />
+      <text class="empty-text">暂无配件</text>
+    </view>
+
+    <view wx:else class="card-list">
+      <view
+        wx:for="{{filteredMaterials}}"
+        wx:key="material_id"
+        class="m-card"
+        bindtap="onCardTap"
+        data-material="{{item}}"
+      >
+        <image
+          class="m-card-img"
+          src="{{item.images[0] || '/images/placeholder.png'}}"
+          mode="aspectFill"
+        />
+        <view class="m-card-body">
+          <view class="m-card-title">{{item.name}} {{item.material_number || ''}}</view>
+          <view class="m-card-fields">
+            <view class="m-card-field-col">
+              <view class="m-card-meta" wx:if="{{item.spec}}">
+                <van-icon name="description-o" size="11px" color="#a3a3a3" />
+                <text style="margin-left: 4rpx;">{{item.spec}}</text>
+              </view>
+              <view class="m-card-meta" wx:if="{{item.usage_area}}">
+                <van-icon name="location-o" size="11px" color="#a3a3a3" />
+                <text style="margin-left: 4rpx;">{{item.usage_area}}</text>
+              </view>
+            </view>
+            <view class="m-card-field-col">
+              <view class="m-card-meta" wx:if="{{item.category}}">
+                <van-icon name="apps-o" size="11px" color="#a3a3a3" />
+                <text style="margin-left: 4rpx;">{{item.category}}</text>
+              </view>
+              <view class="m-card-meta" wx:if="{{item.model}}">
+                <van-icon name="label-o" size="11px" color="#a3a3a3" />
+                <text style="margin-left: 4rpx;">{{item.model}}</text>
+              </view>
+            </view>
+          </view>
+        </view>
+        <view class="m-card-stock {{item.stock === 0 ? 'stock-danger' : (item.stock <= item.min_stock && item.min_stock > 0 ? 'stock-warning' : 'stock-ok')}}">
+          {{item.stock}}
+        </view>
+        <view class="stock-tag {{item.stock === 0 ? 'stock-tag-danger' : (item.stock <= item.min_stock && item.min_stock > 0 ? 'stock-tag-warning' : 'stock-tag-ok')}}">
+          {{item.stock === 0 ? '缺货' : (item.stock <= item.min_stock && item.min_stock > 0 ? '预警' : '正常')}}
+        </view>
+
+        <view
+          wx:if="{{canManage}}"
+          class="m-card-menu"
+          catchtap="onCardMenuTap"
+          data-material="{{item}}"
+        >
+          <van-icon name="ellipsis" size="20px" color="#9CA3AF" />
+        </view>
+      </view>
+    </view>
+
+    <view wx:if="{{loadingMore}}" class="loading-more">
+      <text>加载更多...</text>
+    </view>
+  </scroll-view>
+</view>

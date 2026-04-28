@@ -3,8 +3,8 @@
   <!-- 自定义导航栏 -->
   <custom-header title="数据" showBack="{{true}}" />
 
-  <!-- ========== 办美员工/维修员视图 ========== -->
-  <view wx:if="{{!isManager}}" class="main px-5" style="padding-top: {{headerHeight + 20}}px;">
+  <!-- ========== 简易视图（已停用：办美员工已统一走经理视图，仅留给未识别角色兜底） ========== -->
+  <view wx:if="{{!isManager && !isPropertyStaff && !isMaintenanceWorker}}" class="main px-5" style="padding-top: {{headerHeight + 20}}px;">
     <!-- 日期筛选器 -->
     <view class="manager-date-filter mb-3">
       <view class="flex gap-1 justify-center">
@@ -92,6 +92,7 @@
         </view>
 
         <view class="flex items-center gap-2">
+          <text wx:if="{{rankings.length > 3}}" class="text-sm text-muted-foreground" style="margin-right: 8rpx;" bindtap="viewAllRankings">查看全部</text>
           <text class="arrow-icon" bindtap="prevMonth">‹</text>
           <picker mode="date" fields="month" value="{{rankingYear}}-{{rankingMonth < 10 ? '0' + rankingMonth : rankingMonth}}" bindchange="onMonthPickerChange">
             <view class="badge" style="background-color: #f5f5f5; padding: 8rpx 24rpx;">
@@ -134,11 +135,6 @@
               </view>
             </view>
           </view>
-
-          <!-- 查看全部 - 只在排名超过3个时显示 -->
-          <view wx:if="{{rankings.length > 3}}" class="view-all-button" bindtap="viewAllRankings">
-            <text class="text-base font-semibold">查看全部</text>
-          </view>
         </block>
         <!-- 无排名数据时显示缺省图 -->
         <view wx:else class="empty-ranking">
@@ -149,151 +145,12 @@
     </view>
   </view>
 
-  <!-- ========== 行政经理视图 ========== -->
-  <view wx:if="{{isManager}}" class="main px-5" style="padding-top: {{headerHeight}}px;">
-    <!-- Tab切换栏 (Clean Sticky Text) -->
-    <view class="manager-tabs" style="top: {{headerHeight}}px;">
-      <view class="tab-item {{activeTab === 'stats' ? 'active' : ''}}"
-            bindtap="switchTab" data-tab="stats">
-        <text>KPI统计</text>
-        <view class="active-indicator" wx:if="{{activeTab === 'stats'}}"></view>
-      </view>
-      <view class="tab-item {{activeTab === 'charts' ? 'active' : ''}}"
-            bindtap="switchTab" data-tab="charts">
-        <text>可视化图表</text>
-        <view class="active-indicator" wx:if="{{activeTab === 'charts'}}"></view>
-      </view>
-    </view>
-
-    <!-- Tab 1: 数据统计 -->
-    <view wx:if="{{activeTab === 'stats'}}">
+  <!-- ========== 完整看板视图（行政经理 / 办美员工 / 维修员） ========== -->
+  <view wx:if="{{isManager || isPropertyStaff || isMaintenanceWorker}}" class="main px-5" style="padding-top: {{headerHeight}}px;">
+    <!-- 可视化图表 -->
+    <view style="padding-top: 24rpx;">
       <!-- 日期范围选择器 -->
-      <view class="manager-date-filter mb-3">
-        <view class="flex gap-1 justify-center">
-          <view class="date-chip {{timeFilter === 'all' ? 'active' : ''}}"
-                bindtap="onTimeFilterChange" data-filter="all">
-            <text>全部</text>
-          </view>
-          <view class="date-chip {{timeFilter === 'yesterday' ? 'active' : ''}}"
-                bindtap="onTimeFilterChange" data-filter="yesterday">
-            <text>昨日</text>
-          </view>
-          <view class="date-chip {{timeFilter === 'today' ? 'active' : ''}}"
-                bindtap="onTimeFilterChange" data-filter="today">
-            <text>今日</text>
-          </view>
-          <view class="date-chip {{timeFilter === 'week' ? 'active' : ''}}"
-                bindtap="onTimeFilterChange" data-filter="week">
-            <text>本周</text>
-          </view>
-          <view class="date-chip {{timeFilter === 'month' ? 'active' : ''}}"
-                bindtap="onTimeFilterChange" data-filter="month">
-            <text>本月</text>
-          </view>
-          <view class="date-chip {{timeFilter === 'custom' ? 'active' : ''}}"
-                bindtap="onTimeFilterChange" data-filter="custom">
-            <image src="{{icons.calendar}}" mode="aspectFit"
-                   style="width: 28rpx; height: 28rpx; {{timeFilter === 'custom' ? 'filter: brightness(0) invert(1);' : 'opacity: 0.5;'}}"></image>
-          </view>
-        </view>
-      </view>
-
-      <!-- KPI卡片 -->
-      <view class="kpi-grid mb-3">
-        <!-- 总工单数 -->
-        <view class="kpi-card" animation="{{card1Anim}}">
-          <text class="kpi-label">总工单数</text>
-          <text class="kpi-value" style="color: #10b981;">{{kpiData.totalOrders}}</text>
-          <view class="absolute" style="right: 8rpx; top: 8rpx;">
-             <text class="iconfont icon-icon_zonggongdan" style="font-size: 64rpx; opacity: 0.6; color: #10b981;"></text>
-          </view>
-        </view>
-
-        <!-- 已完成 -->
-        <view class="kpi-card" animation="{{card2Anim}}">
-          <text class="kpi-label">已完成</text>
-          <view class="flex items-baseline gap-2">
-            <text class="kpi-value" style="color: #8B5CF6;">{{kpiData.completedOrders}}</text>
-            <text class="kpi-subtitle">({{kpiData.completionRate}}%)</text>
-          </view>
-          <view class="absolute" style="right: 8rpx; top: 8rpx;">
-             <text class="iconfont icon-yiwancheng" style="font-size: 64rpx; opacity: 0.6; color: #8B5CF6;"></text>
-          </view>
-        </view>
-
-        <!-- 进行中 -->
-        <view class="kpi-card" animation="{{card3Anim}}">
-           <text class="kpi-label">进行中</text>
-           <text class="kpi-value" style="color: #06B6D4;">{{kpiData.inProgressOrders}}</text>
-           <view class="absolute" style="right: 8rpx; top: 8rpx;">
-             <text class="iconfont icon-jinhangzhong" style="font-size: 64rpx; opacity: 0.6; color: #06B6D4;"></text>
-           </view>
-        </view>
-
-        <!-- 平均时长 -->
-        <view class="kpi-card" animation="{{card4Anim}}">
-          <text class="kpi-label">平均时长(h)</text>
-          <text class="kpi-value" style="color: #F59E0B;">{{kpiData.avgCompletionTime}}</text>
-          <view class="absolute" style="right: 8rpx; top: 8rpx;">
-             <text class="iconfont icon-chushenpingjunshichang" style="font-size: 64rpx; opacity: 0.6; color: #F59E0B;"></text>
-          </view>
-        </view>
-      </view>
-
-      <!-- 员工排名 -->
-      <view class="section mb-3">
-        <view class="section-title mb-2">
-          <text class="text-base font-bold">完成工单排名</text>
-        </view>
-        <view class="card card-backdrop">
-          <!-- 有排名数据时显示列表 -->
-          <block wx:if="{{rankings.length > 0}}">
-            <!-- 只显示前3名 -->
-            <view wx:for="{{rankings}}" wx:key="rank" wx:if="{{index < 3}}">
-              <view class="p-4 flex items-center gap-3"
-                    style="border-bottom: 1rpx solid var(--border);">
-                <view style="width: 60rpx; text-align: center; display: flex; align-items: center; justify-content: center;">
-                  <image wx:if="{{item.rank == 1}}" src="/images/icons/one.png" style="width: 64rpx; height: 64rpx;"></image>
-                  <image wx:elif="{{item.rank == 2}}" src="/images/icons/two.png" style="width: 64rpx; height: 64rpx;"></image>
-                  <image wx:elif="{{item.rank == 3}}" src="/images/icons/three.png" style="width: 64rpx; height: 64rpx;"></image>
-                  <text wx:else class="text-base font-bold">{{item.rank}}</text>
-                </view>
-
-                <view class="avatar-placeholder">
-                  <image wx:if="{{item.avatar}}" class="avatar-img" src="{{item.avatar}}" mode="aspectFill"></image>
-                  <text wx:else>{{item.name[0] || '?'}}</text>
-                </view>
-
-                <view class="flex-1 min-w-0 flex items-center gap-2">
-                  <text class="text-sm truncate tracking-tight">{{item.name}}</text>
-                </view>
-
-                <view class="text-right">
-                  <text class="text-base font-bold text-foreground">{{item.completedOrders}}</text>
-                  <text class="text-xs text-muted-foreground ml-1">单</text>
-                </view>
-              </view>
-            </view>
-
-            <!-- 查看全部 - 只在排名超过3个时显示 -->
-            <view wx:if="{{rankings.length > 3}}" class="view-all-button" bindtap="viewAllRankings">
-              <text class="text-base font-semibold">查看全部</text>
-            </view>
-          </block>
-          <!-- 无排名数据时显示缺省图 -->
-          <view wx:else class="empty-ranking">
-            <image class="empty-ranking-icon" src="{{emptyIconUrl}}" mode="aspectFit"></image>
-            <text class="empty-ranking-text">暂无排名</text>
-          </view>
-        </view>
-      </view>
-
-    </view>
-
-    <!-- Tab 2: 可视化图表 -->
-    <view wx:if="{{activeTab === 'charts'}}">
-      <!-- 日期范围选择器 -->
-      <view class="manager-date-filter mb-3">
+      <view class="manager-date-filter mb-3" style="top: {{headerHeight}}px;">
         <view class="flex gap-1 justify-center">
           <view class="date-chip {{timeFilter === 'all' ? 'active' : ''}}"
                 bindtap="onTimeFilterChange" data-filter="all">
@@ -333,42 +190,96 @@
         </view>
       </view>
 
-      <!-- 2. 工单状态环形图 -->
+      <!-- 2. KPI数据面板 -->
+      <view class="section mb-3">
+        <view class="section-title mb-2">
+          <text class="text-base font-bold">数据概览</text>
+        </view>
+        <view class="kpi-panel">
+          <view class="kpi-panel-item" style="background: rgba(16,185,129,0.08);">
+            <text class="kpi-panel-value" style="color: #10b981;">{{kpiData.totalOrders}}</text>
+            <text class="kpi-panel-label">总工单</text>
+          </view>
+          <view class="kpi-panel-item" style="background: rgba(6,182,212,0.08);">
+            <text class="kpi-panel-value" style="color: #06B6D4;">{{kpiData.inProgressOrders}}</text>
+            <text class="kpi-panel-label">进行中</text>
+          </view>
+          <view class="kpi-panel-item" style="background: rgba(139,92,246,0.08);">
+            <text class="kpi-panel-value" style="color: #8B5CF6;">{{kpiData.completedOrders}}</text>
+            <text class="kpi-panel-label">已完成</text>
+          </view>
+          <view class="kpi-panel-item" style="background: rgba(245,158,11,0.08);">
+            <text class="kpi-panel-value" style="color: #F59E0B;">{{kpiData.avgCompletionTime}}</text>
+            <text class="kpi-panel-label">平均用时(h)</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 3. 工单状态环形图 -->
       <view class="section mb-3">
         <view class="section-title mb-2">
           <text class="text-base font-bold">工单状态</text>
         </view>
-        <view class="chart-divider"></view>
-        <view class="chart-container chart-container-pie">
-          <ec-canvas id="statusChart" canvas-id="statusChart" ec="{{ ecStatus }}" class="chart-canvas"></ec-canvas>
+        <view class="status-chart-wrap">
+          <view class="status-canvas-box">
+            <ec-canvas id="statusChart" canvas-id="statusChart" ec="{{ ecStatus }}" class="chart-canvas"></ec-canvas>
+          </view>
+          <view class="status-legend-box">
+            <view wx:for="{{statusChartLegend}}" wx:key="name" class="legend-item"
+                  bind:tap="onLegendTap" data-index="{{index}}">
+              <view class="legend-badge {{selectedStatusIdx === item.dataIndex ? 'legend-badge-selected' : ''}}"
+                    style="background: linear-gradient(135deg, {{item.gradientFrom}}, {{item.gradientTo}});">
+                <text class="legend-percent">{{item.count}}单</text>
+              </view>
+              <text class="legend-name">{{item.name}}</text>
+            </view>
+          </view>
         </view>
       </view>
 
-      <!-- 3. 故障类型饼图 -->
-<view class="section mb-3">
+      <!-- 3. 故障类型横向条形图 -->
+      <view class="section mb-3">
         <view class="section-title mb-2">
           <text class="text-base font-bold">故障类型</text>
         </view>
-        <view class="chart-container chart-container-pie">
-          <ec-canvas wx:if="{{categoryChartData.length > 0}}" id="categoryChart" canvas-id="categoryChart" ec="{{ ecCategory }}" class="chart-canvas"></ec-canvas>
-          <view wx:else class="chart-empty-state">
-            <image class="chart-empty-icon" src="{{emptyIconUrl}}" mode="aspectFit"></image>
-            <text class="chart-empty-text">暂无数据</text>
+        <view wx:if="{{categoryBarData.length > 0}}">
+          <view wx:for="{{categoryBarData}}" wx:key="name" class="hbar-row">
+            <text class="hbar-label">{{item.name}}</text>
+            <view class="hbar-track">
+              <view class="hbar-fill" style="width: {{item.barWidth}}%; background: {{item.color}};"></view>
+            </view>
+            <text class="hbar-pct">{{item.value}}单</text>
           </view>
+        </view>
+        <view wx:else class="chart-empty-state">
+          <image class="chart-empty-icon" src="{{emptyIconUrl}}" mode="aspectFit"></image>
+          <text class="chart-empty-text">暂无数据</text>
         </view>
       </view>
 
-      <!-- 4. 责任方饼图 -->
-      <view class="section mb-3">
+      <!-- 4. 责任方（维修员不显示：单部门无意义） -->
+      <view class="section mb-3" wx:if="{{!isMaintenanceWorker}}">
         <view class="section-title mb-2">
           <text class="text-base font-bold">责任方</text>
         </view>
-        <view class="chart-container chart-container-pie">
-          <ec-canvas wx:if="{{responsibleChartData.length > 0}}" id="responsibleChart" canvas-id="responsibleChart" ec="{{ ecResponsible }}" class="chart-canvas"></ec-canvas>
-          <view wx:else class="chart-empty-state">
-            <image class="chart-empty-icon" src="{{emptyIconUrl}}" mode="aspectFit"></image>
-            <text class="chart-empty-text">暂无数据</text>
+        <view wx:if="{{responsibleChartData.length > 0}}" class="status-chart-wrap">
+          <view class="status-canvas-box">
+            <ec-canvas id="responsibleChart" canvas-id="responsibleChart" ec="{{ ecResponsible }}" class="chart-canvas"></ec-canvas>
           </view>
+          <view class="status-legend-box">
+            <view wx:for="{{responsibleChartLegend}}" wx:key="name" class="legend-item"
+                  bind:tap="onResponsibleLegendTap" data-index="{{index}}">
+              <view class="legend-badge {{selectedResponsibleIdx === item.dataIndex ? 'legend-badge-selected' : ''}}"
+                    style="background: linear-gradient(135deg, {{item.gradientFrom}}, {{item.gradientTo}});">
+                <text class="legend-percent">{{item.count}}单</text>
+              </view>
+              <text class="legend-name">{{item.name}}</text>
+            </view>
+          </view>
+        </view>
+        <view wx:else class="chart-empty-state">
+          <image class="chart-empty-icon" src="{{emptyIconUrl}}" mode="aspectFit"></image>
+          <text class="chart-empty-text">暂无数据</text>
         </view>
       </view>
 
@@ -382,6 +293,50 @@
           <view wx:else class="chart-empty-state">
             <image class="chart-empty-icon" src="{{emptyIconUrl}}" mode="aspectFit"></image>
             <text class="chart-empty-text">暂无数据</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 6. 完成工单排名（维修员不显示） -->
+      <view class="section mb-3" wx:if="{{!isMaintenanceWorker}}">
+        <view class="section-title mb-2 justify-between">
+          <text class="text-base font-bold">完成工单排名</text>
+          <text wx:if="{{rankings.length > 3}}" class="text-sm text-muted-foreground" style="font-weight: normal;" bindtap="viewAllRankings">查看全部</text>
+        </view>
+        <view class="card card-backdrop">
+          <!-- 有排名数据时显示列表 -->
+          <block wx:if="{{rankings.length > 0}}">
+            <!-- 只显示前3名 -->
+            <view wx:for="{{rankings}}" wx:key="rank" wx:if="{{index < 3}}">
+              <view class="p-4 flex items-center gap-3"
+                    style="border-bottom: 1rpx solid var(--border);">
+                <view style="width: 60rpx; text-align: center; display: flex; align-items: center; justify-content: center;">
+                  <image wx:if="{{item.rank == 1}}" src="/images/icons/one.png" style="width: 64rpx; height: 64rpx;"></image>
+                  <image wx:elif="{{item.rank == 2}}" src="/images/icons/two.png" style="width: 64rpx; height: 64rpx;"></image>
+                  <image wx:elif="{{item.rank == 3}}" src="/images/icons/three.png" style="width: 64rpx; height: 64rpx;"></image>
+                  <text wx:else class="text-base font-bold">{{item.rank}}</text>
+                </view>
+
+                <view class="avatar-placeholder">
+                  <image wx:if="{{item.avatar}}" class="avatar-img" src="{{item.avatar}}" mode="aspectFill"></image>
+                  <text wx:else>{{item.name[0] || '?'}}</text>
+                </view>
+
+                <view class="flex-1 min-w-0 flex items-center gap-2">
+                  <text class="text-sm truncate tracking-tight">{{item.name}}</text>
+                </view>
+
+                <view class="text-right">
+                  <text class="text-base font-bold text-foreground">{{item.completedOrders}}</text>
+                  <text class="text-xs text-muted-foreground ml-1">单</text>
+                </view>
+              </view>
+            </view>
+          </block>
+          <!-- 无排名数据时显示缺省图 -->
+          <view wx:else class="empty-ranking">
+            <image class="empty-ranking-icon" src="{{emptyIconUrl}}" mode="aspectFit"></image>
+            <text class="empty-ranking-text">暂无排名</text>
           </view>
         </view>
       </view>
@@ -436,9 +391,9 @@
       <!-- 弹窗标题 -->
       <view style="padding: 32rpx 32rpx 24rpx; border-bottom: 1rpx solid var(--color-divider);">
         <text class="text-lg font-bold">完成工单排名</text>
-        <!-- 办美员工：显示选择的月份 -->
-        <text wx:if="{{!isManager}}" class="text-sm text-muted-foreground ml-2">({{rankingMonth}}月)</text>
-        <!-- 行政经理：根据日期筛选显示 -->
+        <!-- 简易视图（未识别角色）保留按月显示，其余角色按时间筛选显示 -->
+        <text wx:if="{{!isManager && !isPropertyStaff}}" class="text-sm text-muted-foreground ml-2">({{rankingMonth}}月)</text>
+        <!-- 完整看板：根据日期筛选显示 -->
         <text wx:elif="{{timeFilter === 'all'}}" class="text-sm text-muted-foreground ml-2">(全部)</text>
         <text wx:elif="{{timeFilter === 'yesterday'}}" class="text-sm text-muted-foreground ml-2">(昨日)</text>
         <text wx:elif="{{timeFilter === 'today'}}" class="text-sm text-muted-foreground ml-2">(今日)</text>

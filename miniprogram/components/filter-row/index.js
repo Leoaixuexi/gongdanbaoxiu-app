@@ -23,6 +23,7 @@ Component({
   },
   methods: {
     onTap: function () {
+      wx.vibrateShort({ type: 'light' });
       console.log('[FilterRow] onTap triggered, rowId:', this.properties.rowId);
       this.triggerEvent('rowtap', { id: this.properties.rowId });
     }

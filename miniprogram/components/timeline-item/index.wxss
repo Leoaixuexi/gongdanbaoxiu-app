@@ -90,7 +90,7 @@
   box-shadow: 0 2px 8px rgba(8, 145, 178, 0.2);
 }
 
-/* 已修复状态 - 浅紫色背景+深紫色字体 */
+/* 待复核状态 - 浅紫色背景+深紫色字体 */
 .status-repaired {
   background-color: #ede9fe;
   color: #7c3aed;

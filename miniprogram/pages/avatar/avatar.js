@@ -1,7 +1,7 @@
 // pages/avatar/avatar.js
 const app = getApp()
 const { STORAGE_KEYS } = require('../../utils/constants')
-const cloud = require('../../services/cloud')
+const { callCloudSilent } = require('../../utils/cloudCall')
 const { smartCompress, COMPRESS_PRESETS } = require('../../utils/imageUtils')
 
 Page({
@@ -88,14 +88,10 @@ Page({
       }
 
       // 调用云函数更新数据库
-      const result = await cloud.callFunction('userAuth', {
+      const result = await callCloudSilent('userAuth', {
         action: 'updateProfile',
         data: { avatar: cloudAvatarUrl }
       })
-
-      if (!result.success) {
-        throw new Error(result.error || '保存失败')
-      }
 
       // 更新全局数据
       if (app.globalData.userInfo) {

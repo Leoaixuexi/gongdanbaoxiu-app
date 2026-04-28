@@ -3,9 +3,11 @@
  * 字典项管理页面
  */
 
-const { ROLES, STORAGE_KEYS } = require('../../../utils/constants');
+const dictionaryAdmin = require('../../../services/dictionaryAdmin');
 
 Page({
+  behaviors: [require('../../../behaviors/adminPage')],
+
   data: {
     dictKey: '',
     dictName: '',
@@ -23,7 +25,7 @@ Page({
   },
 
   onLoad(options) {
-    this.checkAdminPermission();
+    if (!this.checkAdminPermission()) return;
     if (options.dict_key) {
       this.setData({
         dictKey: options.dict_key,
@@ -48,49 +50,20 @@ Page({
   },
 
   /**
-   * 检查管理员权限
-   */
-  checkAdminPermission() {
-    const userInfo = wx.getStorageSync(STORAGE_KEYS.USER_INFO);
-    if (!userInfo || userInfo.role_id !== ROLES.ADMIN) {
-      wx.showToast({
-        title: '无权限访问',
-        icon: 'none'
-      });
-      setTimeout(() => {
-        wx.navigateBack();
-      }, 1500);
-    }
-  },
-
-  /**
    * 加载字典数据
    */
   async loadDictionary() {
     this.setData({ loading: true });
 
     try {
-      const result = await wx.cloud.callFunction({
-        name: 'dictionaryManager',
-        data: {
-          action: 'get',
-          data: {
-            dict_key: this.data.dictKey,
-            include_disabled: true
-          }
-        }
-      });
+      const result = await dictionaryAdmin.getDictionary(this.data.dictKey);
 
-      if (result.result && result.result.success) {
-        const dict = result.result.data;
-        this.setData({
-          dictionary: dict,
-          items: dict.items || [],
-          loading: false
-        });
-      } else {
-        throw new Error(result.result?.error || '加载失败');
-      }
+      const dict = result.data;
+      this.setData({
+        dictionary: dict,
+        items: dict.items || [],
+        loading: false
+      });
     } catch (error) {
       console.error('[DictItems] Load error:', error);
       wx.showToast({
@@ -237,31 +210,15 @@ Page({
       // 按sort排序
       newItems.sort((a, b) => (a.sort || 0) - (b.sort || 0));
 
-      const result = await wx.cloud.callFunction({
-        name: 'dictionaryManager',
-        data: {
-          action: 'update',
-          data: {
-            dict_key: this.data.dictKey,
-            items: newItems
-          }
-        }
+      await dictionaryAdmin.updateDictionary(this.data.dictKey, newItems);
+
+      wx.showToast({
+        title: '保存成功',
+        icon: 'success'
       });
-
-      wx.hideLoading();
-
-      if (result.result && result.result.success) {
-        wx.showToast({
-          title: '保存成功',
-          icon: 'success'
-        });
-        this.closeModal();
-        this.loadDictionary();
-      } else {
-        throw new Error(result.result?.error || '保存失败');
-      }
+      this.closeModal();
+      this.loadDictionary();
     } catch (error) {
-      wx.hideLoading();
       wx.showToast({
         title: error.message || '保存失败',
         icon: 'none'
@@ -282,34 +239,16 @@ Page({
       success: async (res) => {
         if (res.confirm) {
           try {
-            wx.showLoading({ title: '删除中...' });
-
             const newItems = this.data.items.filter((_, i) => i !== index);
 
-            const result = await wx.cloud.callFunction({
-              name: 'dictionaryManager',
-              data: {
-                action: 'update',
-                data: {
-                  dict_key: this.data.dictKey,
-                  items: newItems
-                }
-              }
+            await dictionaryAdmin.updateDictionary(this.data.dictKey, newItems);
+
+            wx.showToast({
+              title: '已删除',
+              icon: 'success'
             });
-
-            wx.hideLoading();
-
-            if (result.result && result.result.success) {
-              wx.showToast({
-                title: '已删除',
-                icon: 'success'
-              });
-              this.loadDictionary();
-            } else {
-              throw new Error(result.result?.error || '删除失败');
-            }
+            this.loadDictionary();
           } catch (error) {
-            wx.hideLoading();
             wx.showToast({
               title: error.message || '删除失败',
               icon: 'none'
@@ -329,38 +268,20 @@ Page({
     const newEnabled = item.enabled === false ? true : false;
 
     try {
-      wx.showLoading({ title: '更新中...' });
-
       const newItems = [...this.data.items];
       newItems[index] = {
         ...newItems[index],
         enabled: newEnabled
       };
 
-      const result = await wx.cloud.callFunction({
-        name: 'dictionaryManager',
-        data: {
-          action: 'update',
-          data: {
-            dict_key: this.data.dictKey,
-            items: newItems
-          }
-        }
+      await dictionaryAdmin.updateDictionary(this.data.dictKey, newItems);
+
+      wx.showToast({
+        title: newEnabled ? '已启用' : '已停用',
+        icon: 'success'
       });
-
-      wx.hideLoading();
-
-      if (result.result && result.result.success) {
-        wx.showToast({
-          title: newEnabled ? '已启用' : '已停用',
-          icon: 'success'
-        });
-        this.loadDictionary();
-      } else {
-        throw new Error(result.result?.error || '更新失败');
-      }
+      this.loadDictionary();
     } catch (error) {
-      wx.hideLoading();
       wx.showToast({
         title: error.message || '更新失败',
         icon: 'none'

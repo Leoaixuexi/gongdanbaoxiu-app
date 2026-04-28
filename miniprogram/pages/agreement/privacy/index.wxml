@@ -1,0 +1,96 @@
+<custom-header title="隐私政策" showBack="{{true}}" />
+
+<view class="page">
+  <view class="content">
+    <view class="section">
+      <view class="section-title">引言</view>
+      <view class="section-content">
+        <view class="line">吕哲（以下简称"我们"）非常重视用户的隐私保护。</view>
+        <view class="line">本隐私政策适用于"小物业工单管理"小程序（以下简称"本小程序"）。</view>
+        <view class="line">请您在使用本小程序前，仔细阅读并理解本隐私政策。</view>
+      </view>
+    </view>
+
+    <view class="section">
+      <view class="section-title">一、我们收集的信息</view>
+      <view class="section-content">
+        <view class="line">为了向您提供服务，我们可能会收集以下信息：</view>
+        <view class="line">1. 账号信息：您的用户名、手机号码，用于账号登录和身份识别。</view>
+        <view class="line">2. 工单信息：您提交的报修内容、图片、位置信息，用于处理您的报修请求。</view>
+        <view class="line">3. 设备信息：设备型号、操作系统版本，用于优化服务体验。</view>
+      </view>
+    </view>
+
+    <view class="section">
+      <view class="section-title">二、信息的使用目的</view>
+      <view class="section-content">
+        <view class="line">我们收集的信息将用于以下目的：</view>
+        <view class="line">1. 提供工单报修服务；</view>
+        <view class="line">2. 验证用户身份；</view>
+        <view class="line">3. 发送服务通知和消息提醒；</view>
+        <view class="line">4. 改进和优化服务质量；</view>
+        <view class="line">5. 保障服务安全。</view>
+      </view>
+    </view>
+
+    <view class="section">
+      <view class="section-title">三、手机号的收集与使用</view>
+      <view class="section-content">
+        <view class="line">我们收集您的手机号用于：</view>
+        <view class="line">1. 作为您的登录凭证之一；</view>
+        <view class="line">2. 在必要时联系您处理工单相关事宜；</view>
+        <view class="line">3. 发送重要的服务通知。</view>
+        <view class="line">我们承诺不会将您的手机号用于上述目的以外的用途，也不会向第三方出售或泄露您的手机号。</view>
+      </view>
+    </view>
+
+    <view class="section">
+      <view class="section-title">四、信息的存储与保护</view>
+      <view class="section-content">
+        <view class="line">1. 我们采用安全的技术措施保护您的个人信息。</view>
+        <view class="line">2. 您的信息存储在安全的服务器上。</view>
+        <view class="line">3. 我们仅在必要的期限内保留您的信息。</view>
+      </view>
+    </view>
+
+    <view class="section">
+      <view class="section-title">五、信息共享</view>
+      <view class="section-content">
+        <view class="line">除以下情况外，我们不会与第三方共享您的个人信息：</view>
+        <view class="line">1. 获得您的明确同意；</view>
+        <view class="line">2. 根据法律法规的要求；</view>
+        <view class="line">3. 为保护我们或公众的权益所必需。</view>
+      </view>
+    </view>
+
+    <view class="section">
+      <view class="section-title">六、您的权利</view>
+      <view class="section-content">
+        <view class="line">您有权：</view>
+        <view class="line">1. 查询您的个人信息；</view>
+        <view class="line">2. 更正不准确的信息；</view>
+        <view class="line">3. 删除您的个人信息（在法律允许的范围内）；</view>
+        <view class="line">4. 撤回您的授权同意。</view>
+      </view>
+    </view>
+
+    <view class="section">
+      <view class="section-title">七、隐私政策的更新</view>
+      <view class="section-content">
+        <view class="line">我们可能会适时更新本隐私政策。</view>
+        <view class="line">更新后的政策将在本小程序内公布，请您定期查阅。</view>
+      </view>
+    </view>
+
+    <view class="section">
+      <view class="section-title">八、联系我们</view>
+      <view class="section-content">
+        <view class="line">如您对本隐私政策有任何疑问，请联系管理员。</view>
+      </view>
+    </view>
+
+    <view class="footer">
+      吕哲
+    </view>
+  </view>
+</view>

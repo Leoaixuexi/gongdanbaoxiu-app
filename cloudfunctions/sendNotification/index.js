@@ -402,19 +402,56 @@ exports.main = async (event, context) => {
         };
       }
 
+      case 'hideAnnouncement': {
+        // 隐藏公告（用户级别，不真正删除公告）
+        const { announcement_id } = eventData;
+
+        if (!announcement_id) {
+          return {
+            success: false,
+            error: 'announcement_id is required'
+          };
+        }
+
+        const hiddenCollection = db.collection('user_hidden_announcements');
+
+        // 检查是否已隐藏
+        const { data: existing } = await hiddenCollection.where({
+          user_id: currentUser.user_id,
+          announcement_id: announcement_id
+        }).get();
+
+        if (existing.length > 0) {
+          return { success: true, message: 'Already hidden' };
+        }
+
+        // 插入隐藏记录
+        await hiddenCollection.add({
+          data: {
+            user_id: currentUser.user_id,
+            announcement_id: announcement_id,
+            hidden_at: new Date()
+          }
+        });
+
+        return {
+          success: true,
+          message: 'Announcement hidden'
+        };
+      }
+
       default:
         return {
           success: false,
           error: `Unknown action: ${action}`,
-          available_actions: ['send', 'sendBatch', 'getTemplates', 'getUserNotifications', 'markAsRead', 'markAllAsRead', 'getUnreadCount', 'deleteNotification']
+          available_actions: ['send', 'sendBatch', 'getTemplates', 'getUserNotifications', 'markAsRead', 'markAllAsRead', 'getUnreadCount', 'deleteNotification', 'hideAnnouncement']
         };
     }
   } catch (error) {
     console.error('[SendNotification] Error:', error);
     return {
       success: false,
-      error: error.message,
-      stack: error.stack
+      error: error.message
     };
   }
 };

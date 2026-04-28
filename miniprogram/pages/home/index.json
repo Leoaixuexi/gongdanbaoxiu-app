@@ -1,6 +1,5 @@
 {
   "navigationStyle": "custom",
-  "enablePullDownRefresh": true,
   "backgroundColor": "#fafafa",
   "usingComponents": {
     "van-icon": "@vant/weapp/icon/index"

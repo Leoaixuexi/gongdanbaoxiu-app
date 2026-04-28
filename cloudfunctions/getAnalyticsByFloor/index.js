@@ -48,7 +48,10 @@ exports.main = async (event, context) => {
     }
 
     const { user, permissions } = await getCurrentUserAndPermissions(openid);
-    if (!(user.role_id === 1 || hasModulePermission(permissions, 'view_analytics'))) {
+    if (user.role_id === 3) {
+      return { success: false, error: '无权限查看数据分析' };
+    }
+    if (!(user.role_id === 1 || user.role_id === 4 || hasModulePermission(permissions, 'view_analytics'))) {
       return { success: false, error: '无权限查看数据分析' };
     }
 
@@ -70,14 +73,20 @@ exports.main = async (event, context) => {
         _id: '$floor',
         count: $.sum(1)
       })
-      .sort({
-        count: -1  // 按数量降序
-      })
       .end();
 
+    // 按楼层逻辑顺序排序：B3→B2→B1→1楼→2楼→…
+    const floorSortKey = name => {
+      if (!name) return 9999;
+      const s = String(name).trim().toUpperCase();
+      if (s.startsWith('B')) return -(parseInt(s.slice(1)) || 0);
+      return parseInt(s) || 9999;
+    };
+    const sorted = result.list.slice().sort((a, b) => floorSortKey(a._id) - floorSortKey(b._id));
+
     // 转换为ECharts格式
-    const categories = result.list.map(item => item._id || '未知楼层');
-    const data = result.list.map(item => item.count);
+    const categories = sorted.map(item => item._id || '未知楼层');
+    const data = sorted.map(item => item.count);
 
     return {
       success: true,

@@ -2,6 +2,8 @@
  * 我的反馈列表页面
  */
 
+const feedbackService = require('../../../services/feedbackService');
+
 Page({
   data: {
     list: [],
@@ -48,31 +50,21 @@ Page({
     try {
       this.setData({ loading: this.data.list.length === 0 });
 
-      const res = await wx.cloud.callFunction({
-        name: 'feedbackManager',
-        data: {
-          action: 'list',
-          data: {
-            filters: {
-              page: this.data.page,
-              limit: this.data.limit
-            }
-          }
+      const result = await feedbackService.listFeedbacks({
+        filters: {
+          page: this.data.page,
+          limit: this.data.limit
         }
       });
 
-      if (res.result && res.result.success) {
-        const newList = (res.result.list || []).map(item => this.formatItem(item));
-        const hasMore = this.data.page < res.result.totalPages;
+      const newList = (result.list || []).map(item => this.formatItem(item));
+      const hasMore = this.data.page < result.totalPages;
 
-        this.setData({
-          list: [...this.data.list, ...newList],
-          hasMore,
-          loading: false
-        });
-      } else {
-        throw new Error(res.result?.error || '加载失败');
-      }
+      this.setData({
+        list: [...this.data.list, ...newList],
+        hasMore,
+        loading: false
+      });
     } catch (error) {
       console.error('[FeedbackList] Load error:', error);
       this.setData({ loading: false });
@@ -99,11 +91,26 @@ Page({
       ? item.content.substring(0, 100) + '...'
       : item.content || '';
 
+    // 类型到样式类的映射
+    const typeClass = this.getTypeClass(item.type);
+
     return {
       ...item,
       created_at_str,
-      content_summary
+      content_summary,
+      typeClass
     };
+  },
+
+  // 根据类型返回对应的样式类
+  getTypeClass(type) {
+    const typeMap = {
+      '系统BUG': 'type-bug',
+      '新增功能建议': 'type-feature',
+      '现有模块优化': 'type-optimize',
+      '个人想法': 'type-idea'
+    };
+    return typeMap[type] || 'type-default';
   },
 
   loadMore() {
@@ -126,13 +133,42 @@ Page({
     });
   },
 
-  goToSubmit() {
-    wx.navigateTo({
-      url: '/pages/feedback/submit/index'
+  onDelete(e) {
+    const id = e.currentTarget.dataset.id;
+    wx.showModal({
+      title: '确认删除',
+      content: '确定要删除这条反馈吗？删除后无法恢复。',
+      confirmColor: '#ef4444',
+      success: (res) => {
+        if (res.confirm) {
+          this.deleteFeedback(id);
+        }
+      }
     });
   },
 
+  async deleteFeedback(feedbackId) {
+    try {
+      await feedbackService.deleteFeedback(feedbackId);
+
+      // 从列表中移除已删除的项
+      const newList = this.data.list.filter(item => item.feedback_id !== feedbackId);
+      this.setData({ list: newList });
+      wx.showToast({ title: '删除成功', icon: 'success' });
+    } catch (error) {
+      console.error('[FeedbackList] Delete error:', error);
+    }
+  },
+
   goBack() {
-    wx.navigateBack();
+    const pages = getCurrentPages();
+    if (pages.length > 1) {
+      wx.navigateBack();
+    } else {
+      // 没有上一页时，跳转到反馈入口页
+      wx.redirectTo({
+        url: '/pages/feedback/index/index'
+      });
+    }
   }
 });

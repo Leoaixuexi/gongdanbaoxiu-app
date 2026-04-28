@@ -24,6 +24,7 @@ const ROLES = {
   PROPERTY_MANAGER: 2,       // 行政经理
   MAINTENANCE_STAFF: 3,      // 维修员
   PROPERTY_STAFF: 4,         // 办美员工
+  WAREHOUSE_KEEPER: 5,       // 仓管员
 };
 
 // Notification Types (mirrors backend)
@@ -51,9 +52,9 @@ const MODULE_PERMISSIONS = [
 
 // Status Display Names (Chinese)
 const STATUS_DISPLAY_NAMES = {
-  'Pending Repair': '待维修',
+  'Pending Repair': '已提报',
   'In Progress': '维修中',
-  'Repaired': '已维修',
+  'Repaired': '待复核',
   'Needs Rework': '需返工',
   'Completed': '已完成',
 };
@@ -70,6 +71,29 @@ const ROLE_DISPLAY_NAMES = {
   2: '行政经理',
   3: '维修员',
   4: '办美员工',
+  5: '仓管员',
+};
+
+// Stock-Out Request Status
+const STOCK_OUT_STATUS = {
+  PENDING: 'Pending',
+  APPROVED: 'Approved',
+  REJECTED: 'Rejected',
+  CANCELLED: 'Cancelled',
+};
+
+const STOCK_OUT_STATUS_DISPLAY_NAMES = {
+  Pending: '待审核',
+  Approved: '已出库',
+  Rejected: '已驳回',
+  Cancelled: '已撤回',
+};
+
+const STOCK_OUT_STATUS_COLORS = {
+  Pending: '#F59E0B',
+  Approved: '#10B981',
+  Rejected: '#DC2626',
+  Cancelled: '#6B7280',
 };
 
 // Status Colors for UI badges/tags
@@ -103,10 +127,6 @@ const DELIVERY_STATUS_COLORS = {
   'delivered': '#4caf50',
 };
 
-// API Base URL - from config file
-const config = require('../config/index');
-const API_BASE_URL = config.baseURL;
-
 // WeChat Cloud Environment ID
 // Keep this consistent with the Cloud Environment you deploy to.
 const CLOUD_ENV_ID = 'cloud1-7glfhm4r06e030bd';
@@ -125,23 +145,6 @@ const STORAGE_KEYS = {
   SETTINGS: 'app_settings',
   WECHAT_OPENID: 'wechat_openid',
 };
-
-// HTTP Status Codes
-const HTTP_STATUS = {
-  OK: 200,
-  CREATED: 201,
-  NO_CONTENT: 204,
-  BAD_REQUEST: 400,
-  UNAUTHORIZED: 401,
-  FORBIDDEN: 403,
-  NOT_FOUND: 404,
-  CONFLICT: 409,
-  UNPROCESSABLE_ENTITY: 422,
-  INTERNAL_SERVER_ERROR: 500,
-};
-
-// Request Timeout (milliseconds)
-const REQUEST_TIMEOUT = 10000;
 
 // Image Compression Quality
 const IMAGE_QUALITY = 80;
@@ -185,18 +188,18 @@ module.exports = {
   STATUS_DISPLAY_NAMES,
   PRIORITY_DISPLAY_NAMES,
   ROLE_DISPLAY_NAMES,
+  STOCK_OUT_STATUS,
+  STOCK_OUT_STATUS_DISPLAY_NAMES,
+  STOCK_OUT_STATUS_COLORS,
   STATUS_COLORS,
   PRIORITY_COLORS,
   DELIVERY_STATUS_DISPLAY_NAMES,
   DELIVERY_STATUS_COLORS,
-  API_BASE_URL,
   CLOUD_ENV_ID,
   MAX_PHOTOS_PER_ORDER,
   MAX_PHOTO_SIZE_MB,
   MAX_CONCURRENT_ORDERS_PER_TECHNICIAN,
   STORAGE_KEYS,
-  HTTP_STATUS,
-  REQUEST_TIMEOUT,
   IMAGE_QUALITY,
   DEFAULT_PAGE_SIZE,
   MAX_PAGE_SIZE,

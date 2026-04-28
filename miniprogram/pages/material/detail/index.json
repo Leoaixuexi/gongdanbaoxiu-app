@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "配件详情",
+  "usingComponents": {
+    "van-icon": "@vant/weapp/icon/index"
+  }
+}

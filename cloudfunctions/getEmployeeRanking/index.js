@@ -46,8 +46,11 @@ exports.main = async (event, context) => {
       return { success: false, error: '无法获取微信身份，请在小程序内操作', data: [] };
     }
 
-    // 权限检查：行政经理、办美员工或拥有view_analytics权限的用户可以查看
+    // 权限检查：维修员明确禁止；管理员/办美员工或拥有 view_analytics 权限可查看
     const { user, permissions } = await getCurrentUserAndPermissions(openid);
+    if (user.role_id === 3) {
+      return { success: false, error: '无权限查看数据分析', data: [] };
+    }
     if (!(user.role_id === 1 || user.role_id === 4 || hasModulePermission(permissions, 'view_analytics'))) {
       return { success: false, error: '无权限查看数据分析', data: [] };
     }
@@ -62,10 +65,10 @@ exports.main = async (event, context) => {
       dateCondition = { created_at: _.gte(start).and(_.lte(end)) };
     }
 
-    // 查询办美员工（role_id=4）的用户
+    // 查询办美员工（role_id=4）和行政经理（role_id=2）的用户
     const usersResult = await db.collection('users')
       .where({
-        role_id: 4  // 办美员工
+        role_id: _.in([2, 4])  // 行政经理(2) + 办美员工(4)
       })
       .get();
 

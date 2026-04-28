@@ -1,0 +1,8 @@
+{
+  "navigationBarTitleText": "入库管理",
+  "enablePullDownRefresh": true,
+  "usingComponents": {
+    "van-icon": "@vant/weapp/icon/index",
+    "van-button": "@vant/weapp/button/index"
+  }
+}

@@ -4,6 +4,7 @@
   "backgroundColor": "#F7F7F7",
   "usingComponents": {
     "filter-row": "/components/filter-row/index",
-    "custom-header": "/components/header/header"
+    "custom-header": "/components/header/header",
+    "van-icon": "@vant/weapp/icon/index"
   }
 }

@@ -3,9 +3,11 @@
  * 字典管理列表页面
  */
 
-const { ROLES, STORAGE_KEYS } = require('../../../utils/constants');
+const dictionaryAdmin = require('../../../services/dictionaryAdmin');
 
 Page({
+  behaviors: [require('../../../behaviors/adminPage')],
+
   data: {
     dictionaries: [],
     loading: true,
@@ -18,7 +20,7 @@ Page({
   },
 
   onLoad() {
-    this.checkAdminPermission();
+    if (!this.checkAdminPermission()) return;
   },
 
   onShow() {
@@ -32,41 +34,18 @@ Page({
   },
 
   /**
-   * 检查管理员权限
-   */
-  checkAdminPermission() {
-    const userInfo = wx.getStorageSync(STORAGE_KEYS.USER_INFO);
-    if (!userInfo || userInfo.role_id !== ROLES.ADMIN) {
-      wx.showToast({
-        title: '无权限访问',
-        icon: 'none'
-      });
-      setTimeout(() => {
-        wx.navigateBack();
-      }, 1500);
-    }
-  },
-
-  /**
    * 加载字典列表
    */
   async loadDictionaries() {
     this.setData({ loading: true });
 
     try {
-      const result = await wx.cloud.callFunction({
-        name: 'dictionaryManager',
-        data: { action: 'list' }
-      });
+      const result = await dictionaryAdmin.listDictionaries();
 
-      if (result.result && result.result.success) {
-        this.setData({
-          dictionaries: result.result.data,
-          loading: false
-        });
-      } else {
-        throw new Error(result.result?.error || '加载失败');
-      }
+      this.setData({
+        dictionaries: result.data,
+        loading: false
+      });
     } catch (error) {
       console.error('[Dict] Load error:', error);
       wx.showToast({
@@ -159,30 +138,15 @@ Page({
     }
 
     try {
-      wx.showLoading({ title: '创建中...' });
+      await dictionaryAdmin.createDictionary(this.data.newDict);
 
-      const result = await wx.cloud.callFunction({
-        name: 'dictionaryManager',
-        data: {
-          action: 'create',
-          data: this.data.newDict
-        }
+      wx.showToast({
+        title: '创建成功',
+        icon: 'success'
       });
-
-      wx.hideLoading();
-
-      if (result.result && result.result.success) {
-        wx.showToast({
-          title: '创建成功',
-          icon: 'success'
-        });
-        this.closeModal();
-        this.loadDictionaries();
-      } else {
-        throw new Error(result.result?.error || '创建失败');
-      }
+      this.closeModal();
+      this.loadDictionaries();
     } catch (error) {
-      wx.hideLoading();
       wx.showToast({
         title: error.message || '创建失败',
         icon: 'none'
@@ -211,29 +175,14 @@ Page({
       success: async (res) => {
         if (res.confirm) {
           try {
-            wx.showLoading({ title: '删除中...' });
+            await dictionaryAdmin.deleteDictionary(dictKey);
 
-            const result = await wx.cloud.callFunction({
-              name: 'dictionaryManager',
-              data: {
-                action: 'delete',
-                data: { dict_key: dictKey }
-              }
+            wx.showToast({
+              title: '已删除',
+              icon: 'success'
             });
-
-            wx.hideLoading();
-
-            if (result.result && result.result.success) {
-              wx.showToast({
-                title: '已删除',
-                icon: 'success'
-              });
-              this.loadDictionaries();
-            } else {
-              throw new Error(result.result?.error || '删除失败');
-            }
+            this.loadDictionaries();
           } catch (error) {
-            wx.hideLoading();
             wx.showToast({
               title: error.message || '删除失败',
               icon: 'none'
