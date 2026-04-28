@@ -206,15 +206,8 @@ async function getWorkOrders(openid, filters = {}) {
     if (user.department) {
       conditions.responsible_party = user.department;
     }
-  } else if (user.role_id === 2 || user.role_id === 4) {
-    // 办美员工和行政经理共享可见所有工单
-    // 已完成状态：办美员工只能看自己提交的
-    if (filters.status === 'Completed' && user.role_id === 4) {
-      conditions['submitter.user_id'] = user.user_id;
-    }
-    // 其他状态：不过滤，可以看到所有工单
   }
-  // 管理员可以看到所有工单
+  // 行政经理(2)、办美员工(4)、管理员(1) 可见所有工单（不附加条件）
 
   // 应用过滤条件（兼容老数据中文状态）
   if (filters.status) {
@@ -285,17 +278,17 @@ async function updateWorkOrderDetails(openid, orderId, updates = {}) {
   const order = orders[0];
   const currentStatus = normalizeStatus(order.status);
 
-  const isSubmittedByPropertyStaff = order.submitter?.role_id === 4;
+  // 编辑权限：管理员任意状态；行政经理/办美员工仅"已提报"；维修员禁止
   const canEdit =
     user.role_id === 1 ||
     user.role_id === 2 ||
-    (user.role_id === 4 && isSubmittedByPropertyStaff);  // 办美员工可编辑所有办美员工提交的工单
+    user.role_id === 4;
 
   if (!canEdit) {
     throw new Error('无权限修改该工单');
   }
 
-  if (currentStatus !== 'Pending Repair') {
+  if (user.role_id !== 1 && currentStatus !== 'Pending Repair') {
     throw new Error('仅已提报工单允许修改');
   }
 

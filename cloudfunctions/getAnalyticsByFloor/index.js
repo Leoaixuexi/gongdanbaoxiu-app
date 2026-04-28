@@ -48,7 +48,10 @@ exports.main = async (event, context) => {
     }
 
     const { user, permissions } = await getCurrentUserAndPermissions(openid);
-    if (!(user.role_id === 1 || hasModulePermission(permissions, 'view_analytics'))) {
+    if (user.role_id === 3) {
+      return { success: false, error: '无权限查看数据分析' };
+    }
+    if (!(user.role_id === 1 || user.role_id === 4 || hasModulePermission(permissions, 'view_analytics'))) {
       return { success: false, error: '无权限查看数据分析' };
     }
 

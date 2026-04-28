@@ -191,12 +191,10 @@ Page({
         // 根据角色配置筛选行
         const filterRows = getFilterRowsByRole(isManager, isMaintenanceWorker);
 
-        // 根据角色设置默认状态
-        let defaultStatus = 'all';  // 经理默认为"全部"
+        // 根据角色设置默认状态：办美员工与经理一致，默认"全部"
+        let defaultStatus = 'all';
         if (isMaintenanceWorker) {
           defaultStatus = 'pending_accept';  // 维修员默认为"待接单"
-        } else if (isPropertyStaff) {
-          defaultStatus = 'reported';  // 办美员工默认为"已提报"
         }
 
         // 如果有来自 URL 参数的初始状态，优先使用（首次加载时）
@@ -1046,11 +1044,11 @@ Page({
   },
 
   /**
-   * 导出工单到Excel（仅行政经理可用）
+   * 导出工单到Excel（行政经理 / 办美员工可用）
    */
   handleExport: async function () {
     // 权限检查
-    if (!this.data.isManager) {
+    if (!this.data.isManager && !this.data.isPropertyStaff) {
       wx.showToast({ title: '无权限导出', icon: 'none' });
       return;
     }

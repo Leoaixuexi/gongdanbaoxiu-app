@@ -7,19 +7,13 @@
  * 按用户角色筛选工单
  */
 function filterByUserRole(orders, { isPropertyStaff, isMaintenanceWorker, isManager, userDepartment, userId }) {
-  if (isManager) {
+  // 行政经理 / 办美员工：可见全部工单
+  if (isManager || isPropertyStaff) {
     return orders;
-  } else if (isPropertyStaff) {
-    return orders.filter(order => {
-      if (order.status !== 'Completed') {
-        return true;
-      }
-      return order.submitter?.user_id === userId;
-    });
-  } else if (isMaintenanceWorker && userDepartment) {
-    return orders.filter(order => {
-      return order.responsible_party === userDepartment;
-    });
+  }
+  // 维修员：仅本部门工单
+  if (isMaintenanceWorker && userDepartment) {
+    return orders.filter(order => order.responsible_party === userDepartment);
   }
   return orders;
 }

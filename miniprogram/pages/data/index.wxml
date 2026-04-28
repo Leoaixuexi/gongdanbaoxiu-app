@@ -3,8 +3,8 @@
   <!-- 自定义导航栏 -->
   <custom-header title="数据" showBack="{{true}}" />
 
-  <!-- ========== 办美员工/维修员视图 ========== -->
-  <view wx:if="{{!isManager && !isMaintenanceWorker}}" class="main px-5" style="padding-top: {{headerHeight + 20}}px;">
+  <!-- ========== 简易视图（已停用：办美员工已统一走经理视图，仅留给未识别角色兜底） ========== -->
+  <view wx:if="{{!isManager && !isPropertyStaff && !isMaintenanceWorker}}" class="main px-5" style="padding-top: {{headerHeight + 20}}px;">
     <!-- 日期筛选器 -->
     <view class="manager-date-filter mb-3">
       <view class="flex gap-1 justify-center">
@@ -145,8 +145,8 @@
     </view>
   </view>
 
-  <!-- ========== 行政经理视图 ========== -->
-  <view wx:if="{{isManager || isMaintenanceWorker}}" class="main px-5" style="padding-top: {{headerHeight}}px;">
+  <!-- ========== 完整看板视图（行政经理 / 办美员工 / 维修员） ========== -->
+  <view wx:if="{{isManager || isPropertyStaff || isMaintenanceWorker}}" class="main px-5" style="padding-top: {{headerHeight}}px;">
     <!-- 可视化图表 -->
     <view style="padding-top: 24rpx;">
       <!-- 日期范围选择器 -->
@@ -391,9 +391,9 @@
       <!-- 弹窗标题 -->
       <view style="padding: 32rpx 32rpx 24rpx; border-bottom: 1rpx solid var(--color-divider);">
         <text class="text-lg font-bold">完成工单排名</text>
-        <!-- 办美员工：显示选择的月份 -->
-        <text wx:if="{{!isManager}}" class="text-sm text-muted-foreground ml-2">({{rankingMonth}}月)</text>
-        <!-- 行政经理：根据日期筛选显示 -->
+        <!-- 简易视图（未识别角色）保留按月显示，其余角色按时间筛选显示 -->
+        <text wx:if="{{!isManager && !isPropertyStaff}}" class="text-sm text-muted-foreground ml-2">({{rankingMonth}}月)</text>
+        <!-- 完整看板：根据日期筛选显示 -->
         <text wx:elif="{{timeFilter === 'all'}}" class="text-sm text-muted-foreground ml-2">(全部)</text>
         <text wx:elif="{{timeFilter === 'yesterday'}}" class="text-sm text-muted-foreground ml-2">(昨日)</text>
         <text wx:elif="{{timeFilter === 'today'}}" class="text-sm text-muted-foreground ml-2">(今日)</text>

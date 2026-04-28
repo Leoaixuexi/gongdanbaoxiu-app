@@ -315,6 +315,7 @@ Page({
 
       // Determine action buttons visibility with null checks
       const isPropertyManager = userInfo.role_id === ROLES.PROPERTY_MANAGER;
+      const isAdmin = userInfo.role_id === ROLES.ADMIN;
 
       // 修改按钮：只在已提交状态显示
       // 行政经理可操作所有工单，办美员工可操作所有工单（等同提交人权限）
@@ -326,9 +327,10 @@ Page({
       // 办美员工拥有等同提交人的权限（可操作所有工单，包括经理提交的）
       const hasSubmitterPermission = isSubmitter || (userInfo.role_id === ROLES.PROPERTY_STAFF);
 
-      // 经理和办美员工都可以编辑所有工单
-      const canEdit = (isPropertyManager || userInfo.role_id === ROLES.PROPERTY_STAFF) &&
-        processedOrder.status === 'Pending Repair';
+      // 编辑权限：管理员任意状态可编辑；经理/办美员工仅"已提报"
+      const canEdit = isAdmin ||
+        ((isPropertyManager || userInfo.role_id === ROLES.PROPERTY_STAFF) &&
+          processedOrder.status === 'Pending Repair');
 
       // 判断维修员是否有权限操作该工单 - 使用部门匹配（新权限模型）
       const userDepartment = userInfo.department;
@@ -357,8 +359,8 @@ Page({
         isAssignedTechnician &&
         processedOrder.status === 'In Progress';
 
-      // 验收：经理和办美员工都可以验收所有工单
-      const canReview = (isPropertyManager || userInfo.role_id === ROLES.PROPERTY_STAFF) &&
+      // 验收：管理员和办美员工可验收所有工单（行政经理已不再具备验收权限）
+      const canReview = (isAdmin || userInfo.role_id === ROLES.PROPERTY_STAFF) &&
         processedOrder.status === 'Repaired';
 
       // 统一显示：所有状态特定按钮都不显示
@@ -368,6 +370,7 @@ Page({
       // 使用配置表获取按钮显示状态
       const status = processedOrder.status;
       const buttonConfig = getButtonConfig(status, {
+        isAdmin,
         isPropertyManager,
         isPropertyStaff,
         isSubmitter: hasSubmitterPermission,  // 办美员工视为拥有提交人权限

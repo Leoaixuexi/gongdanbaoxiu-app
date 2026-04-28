@@ -147,8 +147,8 @@ Page({
         // });
 
         // 根据角色加载不同的数据
-        if (isManager) {
-          // 行政经理：检查缓存是否有效
+        if (isManager || isPropertyStaff) {
+          // 行政经理 / 办美员工：完整看板（全量数据）
           const now = Date.now();
           const cacheValid = (now - this.data._lastFetchTime) < this.data._cacheValidMs;
           if (cacheValid && this.data.kpiData.totalOrders > 0) {
@@ -159,12 +159,6 @@ Page({
         } else if (isMaintenanceWorker) {
           // 维修员：完整看板（仅展示本部门数据）
           this.initMaintenanceView();
-        } else {
-          // 办美员工：统计数据 + 月度排名
-          await Promise.all([
-            this.loadStatistics(),
-            this.loadRankings()
-          ]);
         }
       }
     } catch (error) {
@@ -705,7 +699,15 @@ Page({
    */
   onTimeFilterChange(e) {
     const filter = e.currentTarget.dataset.filter;
-    const { isManager, isMaintenanceWorker } = this.data;
+    const { isManager, isPropertyStaff, isMaintenanceWorker } = this.data;
+
+    const reload = () => {
+      if (isManager || isPropertyStaff) {
+        this.fetchAllManagerData();
+      } else if (isMaintenanceWorker) {
+        this.fetchDeptData();
+      }
+    };
 
     if (filter === 'custom') {
       this.setData({
@@ -716,13 +718,7 @@ Page({
       });
     } else if (filter === 'all') {
       this.setData({ timeFilter: 'all', startDate: '', endDate: '' });
-      if (isManager) {
-        this.fetchAllManagerData();
-      } else if (isMaintenanceWorker) {
-        this.fetchDeptData();
-      } else {
-        this.loadStatistics();
-      }
+      reload();
     } else {
       const { startDate, endDate } = dateUtils.getDateRange(filter);
       this.setData({
@@ -730,13 +726,7 @@ Page({
         startDate: dateUtils.formatDate(startDate),
         endDate: dateUtils.formatDate(endDate)
       });
-      if (isManager) {
-        this.fetchAllManagerData();
-      } else if (isMaintenanceWorker) {
-        this.fetchDeptData();
-      } else {
-        this.loadStatistics();
-      }
+      reload();
     }
   },
 
@@ -821,13 +811,11 @@ Page({
       showDatePicker: false
     });
 
-    const { isManager, isMaintenanceWorker } = this.data;
-    if (isManager) {
+    const { isManager, isPropertyStaff, isMaintenanceWorker } = this.data;
+    if (isManager || isPropertyStaff) {
       this.fetchAllManagerData();
     } else if (isMaintenanceWorker) {
       this.fetchDeptData();
-    } else {
-      this.loadStatistics();
     }
   },
 

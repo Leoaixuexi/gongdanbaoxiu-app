@@ -22,10 +22,10 @@ const {
 async function handleListUsers(openid, data, getCurrentUser) {
   const currentUser = await getCurrentUser();
 
-  if (!currentUser || ![1, 2].includes(currentUser.role_id)) {
+  if (!currentUser || currentUser.role_id !== 1) {
     return {
       success: false,
-      error: '权限不足'
+      error: '权限不足：需要系统管理员权限'
     };
   }
 
@@ -110,10 +110,10 @@ async function handleListUsers(openid, data, getCurrentUser) {
 async function handleCreateUser(openid, data, getCurrentUser) {
   const currentUser = await getCurrentUser();
 
-  if (!currentUser || ![1, 2].includes(currentUser.role_id)) {
+  if (!currentUser || currentUser.role_id !== 1) {
     return {
       success: false,
-      error: '权限不足：需要管理员权限'
+      error: '权限不足：需要系统管理员权限'
     };
   }
 
@@ -196,10 +196,10 @@ async function handleCreateUser(openid, data, getCurrentUser) {
 async function handleUpdateUser(openid, data, getCurrentUser) {
   const currentUser = await getCurrentUser();
 
-  if (!currentUser || ![1, 2].includes(currentUser.role_id)) {
+  if (!currentUser || currentUser.role_id !== 1) {
     return {
       success: false,
-      error: '权限不足：需要管理员权限'
+      error: '权限不足：需要系统管理员权限'
     };
   }
 

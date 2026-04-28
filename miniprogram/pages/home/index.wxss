@@ -1,29 +1,16 @@
 /* 新首页样式 - 仪表板风格 */
 
 page {
-  background: #DCE4FF;
+  background: #EAEDF2;
   overflow-x: hidden;
 }
 
 .page {
-  background:
-    radial-gradient(circle 320rpx at 12% 4%,
-      rgba(20, 213, 144, 0.28) 0%,
-      rgba(20, 213, 144, 0) 70%),
-    radial-gradient(circle 380rpx at 38% 2%,
-      rgba(19, 164, 255, 0.26) 0%,
-      rgba(19, 164, 255, 0) 70%),
-    radial-gradient(circle 360rpx at 58% -2%,
-      rgba(255, 255, 255, 0.55) 0%,
-      rgba(255, 255, 255, 0) 65%),
-    radial-gradient(circle 300rpx at 92% 5%,
-      rgba(79, 64, 255, 0.24) 0%,
-      rgba(79, 64, 255, 0) 70%),
-    linear-gradient(180deg,
-      rgba(220, 228, 255, 0.45) 0%,
-      rgba(223, 245, 244, 0.30) 10%,
-      #FAFAFA 26%,
-      #FFFFFF 45%);
+  background: linear-gradient(180deg,
+    #DCE4FF 0%,
+    #DFF5F4 22%,
+    #F1F3F6 50%,
+    #EAEDF2 100%);
   height: 100vh;
   display: flex;
   flex-direction: column;
@@ -139,7 +126,7 @@ page {
   right: -30rpx;
   width: 100rpx;
   height: 100rpx;
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(20, 184, 166, 0.18) 100%);
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.10) 0%, rgba(59, 130, 246, 0.26) 100%);
   border-radius: 50%;
   z-index: 0;
 }

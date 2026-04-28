@@ -60,8 +60,8 @@
         </view>
       </view>
         <view class="icon-buttons">
-          <!-- 导出按钮 - 仅行政经理可见 -->
-          <view wx:if="{{isManager}}" class="export-button" bindtap="handleExport">
+          <!-- 导出按钮 - 行政经理 / 办美员工可见 -->
+          <view wx:if="{{isManager || isPropertyStaff}}" class="export-button" bindtap="handleExport">
             <van-icon name="descending" size="32rpx" color="#ffffff" />
             <text class="btn-label">导出</text>
           </view>

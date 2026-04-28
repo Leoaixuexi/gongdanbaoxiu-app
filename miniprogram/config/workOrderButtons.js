@@ -17,6 +17,12 @@ const BUTTON_CONFIG = {
     },
     assignedTechnician: {
       showAcceptBtn: true
+    },
+    adminAll: {
+      showThreeDots: true,
+      showEditBtn: true,
+      showDeleteInMenu: true,
+      showUrgeAcceptInMenu: true
     }
   },
   'In Progress': {
@@ -29,6 +35,12 @@ const BUTTON_CONFIG = {
       showThreeDots: true,
       showUrgeRepairBtn: true,
       showEmptyMenu: true
+    },
+    adminAll: {
+      showThreeDots: true,
+      showConfirmRepairBtn: true,
+      showUrgeRepairBtn: true,
+      showEmptyMenu: true
     }
   },
   'Repaired': {
@@ -37,20 +49,21 @@ const BUTTON_CONFIG = {
       showUrgeReviewBtn: true,
       showEmptyMenu: true
     },
-    managerAndSubmitter: {
-      showThreeDots: true,
-      showReviewedBtn: true,
-      showNeedsReworkInMenu: true
-    },
-    managerNotSubmitter: {
+    managerUrge: {
       showThreeDots: true,
       showUrgeReviewBtn: true,
       showEmptyMenu: true
     },
-    staffSubmitter: {
+    staffReviewAll: {
       showThreeDots: true,
       showReviewedBtn: true,
       showNeedsReworkInMenu: true
+    },
+    adminAll: {
+      showThreeDots: true,
+      showReviewedBtn: true,
+      showNeedsReworkInMenu: true,
+      showUrgeReviewBtn: true
     }
   },
   'Needs Rework': {
@@ -61,6 +74,12 @@ const BUTTON_CONFIG = {
     },
     managerOrSubmitter: {
       showThreeDots: true,
+      showUrgeRepairBtn: true,
+      showEmptyMenu: true
+    },
+    adminAll: {
+      showThreeDots: true,
+      showConfirmRepairBtn: true,
       showUrgeRepairBtn: true,
       showEmptyMenu: true
     }
@@ -113,7 +132,7 @@ const STEPPER_CONFIG = {
  * 根据状态和角色获取按钮配置
  */
 function getButtonConfig(status, roles) {
-  const { isPropertyManager, isPropertyStaff, isSubmitter, isAssignedTechnician } = roles;
+  const { isAdmin, isPropertyManager, isPropertyStaff, isSubmitter, isAssignedTechnician } = roles;
   const statusConfig = BUTTON_CONFIG[status];
 
   if (!statusConfig) {
@@ -124,18 +143,22 @@ function getButtonConfig(status, roles) {
     return statusConfig.all || {};
   }
 
+  // 管理员：所有状态下都按 adminAll 配置展示
+  if (isAdmin && statusConfig.adminAll) {
+    return statusConfig.adminAll;
+  }
+
   if (status === 'Repaired') {
     if (isAssignedTechnician) {
       return statusConfig.assignedTechnician || {};
     }
-    if (isPropertyManager && isSubmitter) {
-      return statusConfig.managerAndSubmitter || {};
+    // 办美员工（role 4，但不是经理）可验收所有工单
+    if (isPropertyStaff && !isPropertyManager) {
+      return statusConfig.staffReviewAll || {};
     }
+    // 行政经理只能催复核，不能验收
     if (isPropertyManager) {
-      return statusConfig.managerNotSubmitter || {};
-    }
-    if (isPropertyStaff && isSubmitter) {
-      return statusConfig.staffSubmitter || {};
+      return statusConfig.managerUrge || {};
     }
     return {};
   }

@@ -271,13 +271,13 @@ exports.main = async (event, context) => {
 
       case 'delete':
         {
-          // 行政经理和办美员工可以删除工单
+          // 删除权限：管理员、行政经理、办美员工均可删除"已提报"状态工单
           const deleteUser = await getUserByOpenId(openid);
           if (!deleteUser) {
             return { success: false, error: '用户未注册' };
           }
-          if (deleteUser.role_id !== 2 && deleteUser.role_id !== 4) { // 2 = 行政经理, 4 = 办美员工
-            return { success: false, error: '只有行政经理和办美员工才能删除工单' };
+          if (![1, 2, 4].includes(deleteUser.role_id)) {
+            return { success: false, error: '无权限删除工单' };
           }
 
           const workOrders = db.collection('work_orders');
@@ -291,15 +291,7 @@ exports.main = async (event, context) => {
 
           const orderToDelete = orders[0];
 
-          // 权限校验：管理员可删除任意工单，其他用户只能删除自己提交的工单
-          const isAdmin = deleteUser.role_id === 1;
-          const isSubmitter = orderToDelete.submitter?.user_id === deleteUser.user_id;
-
-          if (!isAdmin && !isSubmitter) {
-            return { success: false, error: '只能删除自己提交的工单' };
-          }
-
-          // 只允许删除待维修状态的工单
+          // 只允许删除"已提报"状态的工单（管理员同样受状态限制，避免误删进行中工单）
           const normalizedStatus = normalizeStatus(orderToDelete.status);
           if (normalizedStatus !== 'Pending Repair') {
             return { success: false, error: '只能删除已提报状态的工单' };
@@ -447,8 +439,8 @@ exports.main = async (event, context) => {
           if (exportUser.active === false) {
             return { success: false, error: '账号已被停用' };
           }
-          // 权限校验：仅行政经理可导出
-          if (exportUser.role_id !== 2) {
+          // 权限校验：行政经理 / 办美员工可导出
+          if (![2, 4].includes(exportUser.role_id)) {
             return { success: false, error: '无权限导出工单' };
           }
 

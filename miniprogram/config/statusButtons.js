@@ -7,17 +7,10 @@
  * 根据角色获取状态按钮列表
  */
 function getStatusButtonsByRole(isPropertyStaff, isMaintenanceWorker, isManager) {
-  if (isManager) {
+  // 行政经理 / 办美员工 共用同一组状态按钮（含"全部"）
+  if (isManager || isPropertyStaff) {
     return [
       { key: 'all', label: '全部', status: null },
-      { key: 'reported', label: '已提报', status: 'Pending Repair' },
-      { key: 'maintenance', label: '维修中', status: 'In Progress' },
-      { key: 'review', label: '待复核', status: 'Repaired' },
-      { key: 'rework', label: '需返工', status: 'Needs Rework' },
-      { key: 'completed', label: '已完成', status: 'Completed' }
-    ];
-  } else if (isPropertyStaff) {
-    return [
       { key: 'reported', label: '已提报', status: 'Pending Repair' },
       { key: 'maintenance', label: '维修中', status: 'In Progress' },
       { key: 'review', label: '待复核', status: 'Repaired' },

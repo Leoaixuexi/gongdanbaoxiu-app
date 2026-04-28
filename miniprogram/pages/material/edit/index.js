@@ -36,7 +36,7 @@ Page({
 
   onLoad(options) {
     const userInfo = wx.getStorageSync(STORAGE_KEYS.USER_INFO);
-    if (!userInfo || ![ROLES.ADMIN, ROLES.PROPERTY_MANAGER].includes(userInfo.role_id)) {
+    if (!userInfo || ![ROLES.ADMIN, ROLES.PROPERTY_MANAGER, ROLES.PROPERTY_STAFF].includes(userInfo.role_id)) {
       wx.showToast({ title: '无权限', icon: 'none' });
       setTimeout(() => wx.navigateBack(), 1500);
       return;

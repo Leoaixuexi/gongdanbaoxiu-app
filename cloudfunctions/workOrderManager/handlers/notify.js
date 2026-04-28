@@ -39,13 +39,6 @@ async function urgeAccept(openid, orderId) {
   }
   const order = orders[0];
 
-  // 2.1 非管理员需要是提报人或经理才能催接单
-  const isManager = user.role_id === 2;
-  const isSubmitter = order.submitter?.user_id === user.user_id;
-  if (user.role_id !== 1 && !isManager && !isSubmitter) {
-    throw new Error('只有工单提报人或经理可以催接单');
-  }
-
   // 3. 状态校验：已提报
   const status = normalizeStatus(order.status);
   if (status !== 'Pending Repair') {
@@ -151,11 +144,6 @@ async function urgeRepair(openid, orderId) {
     throw new Error('工单不存在');
   }
   const order = orders[0];
-
-  // 2.1 非管理员需要是提报人才能催维修
-  if (user.role_id !== 1 && order.submitter.user_id !== user.user_id) {
-    throw new Error('只有工单提报人可以催维修');
-  }
 
   // 3. 状态校验：维修中 或 需返工
   const status = normalizeStatus(order.status);

@@ -57,30 +57,20 @@ async function updateOrderStatus(openid, orderId, newStatus, notes = '') {
   const oldStatus = normalizeStatus(order.status);
   const targetStatus = normalizeStatus(newStatus);
 
-  // 权限检查
+  // 权限检查：管理员或维修员（部门匹配）可操作；行政经理/办美员工不再可接单
   const isAdmin = user.role_id === ROLE.ADMIN;
-  const isManager = user.role_id === ROLE.MANAGER;
-  // 维修员：责任方与自己部门匹配即可操作
   const isTechnicianWithAccess = user.role_id === ROLE.TECHNICIAN && order.responsible_party === user.department;
 
-  if (!(isAdmin || isManager || isTechnicianWithAccess)) {
+  if (!(isAdmin || isTechnicianWithAccess)) {
     throw new Error('权限不足');
   }
 
   // 状态流转校验
   if (!isAdmin) {
-    if (user.role_id === ROLE.TECHNICIAN) {
-      // 维修员只允许"接单/开始维修"类操作
-      const allowedFrom = new Set(['Pending Repair', 'Needs Rework']);
-      if (targetStatus !== 'In Progress' || !allowedFrom.has(oldStatus)) {
-        throw new Error('不允许的状态变更，请使用对应的操作入口');
-      }
-    } else {
-      // 经理及其他非管理员遵循白名单
-      const allowed = STATUS_TRANSITIONS[oldStatus] || [];
-      if (!allowed.includes(targetStatus)) {
-        throw new Error(`不允许的状态变更：${oldStatus} → ${targetStatus}`);
-      }
+    // 维修员只允许"接单/开始维修"类操作
+    const allowedFrom = new Set(['Pending Repair', 'Needs Rework']);
+    if (targetStatus !== 'In Progress' || !allowedFrom.has(oldStatus)) {
+      throw new Error('不允许的状态变更，请使用对应的操作入口');
     }
   }
 
@@ -188,8 +178,10 @@ async function completeRepair(openid, orderId, completionNotes, partsUsed) {
   const targetStatus = 'Repaired'; // 固定为待复核状态
   const notes = normalizeNotes(completionNotes);
 
-  // 权限检查：维修员 && 部门与责任方匹配
-  if (user.role_id !== 3 || order.responsible_party !== user.department) {
+  // 权限检查：管理员，或维修员且部门与责任方匹配
+  const isAdmin = user.role_id === 1;
+  const isTechnicianWithAccess = user.role_id === 3 && order.responsible_party === user.department;
+  if (!(isAdmin || isTechnicianWithAccess)) {
     throw new Error('只有责任方部门的维修员可以完成维修');
   }
 
@@ -353,13 +345,10 @@ async function reviewOrder(openid, orderId, status, reviewNotes) {
   const targetStatus = normalizeStatus(status);
   const notes = normalizeNotes(reviewNotes);
 
-  // 权限检查：只有提报人或管理员可审核，办美员工可审核所有办美员工提交的工单
-  const isSubmitter = order.submitter.user_id === user.user_id;
-  const isManager = user.role_id === 1;
-  const isSubmittedByPropertyStaff = order.submitter?.role_id === 4;
-  const canReview = isManager || isSubmitter || (user.role_id === 4 && isSubmittedByPropertyStaff);
+  // 权限检查：管理员可审核任意工单；办美员工可审核所有工单
+  const canReview = user.role_id === 1 || user.role_id === 4;
   if (!canReview) {
-    throw new Error('只有工单提报人可以审核');
+    throw new Error('无权限审核工单');
   }
 
   // 状态检查：只有"待复核"的工单可以审核

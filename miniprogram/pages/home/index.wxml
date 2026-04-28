@@ -38,7 +38,7 @@
           <view class="kpi-card kpi-card-sm" bindtap="onStatCardTap" data-status="reported">
             <view class="kpi-text-group">
               <text class="kpi-label">已提报</text>
-              <text class="kpi-value" style="color: #000000;">{{workOrderStats.pending}}</text>
+              <text class="kpi-value" style="color: #EA580C;">{{workOrderStats.pending}}</text>
             </view>
             <view class="kpi-icon-wrapper">
               <van-icon name="setting-o" size="28rpx" color="#EA580C" custom-style="opacity:0.6" />
@@ -47,7 +47,7 @@
           <view class="kpi-card kpi-card-sm" bindtap="onStatCardTap" data-status="maintenance">
             <view class="kpi-text-group">
               <text class="kpi-label">维修中</text>
-              <text class="kpi-value" style="color: #000000;">{{workOrderStats.inProgress}}</text>
+              <text class="kpi-value" style="color: #2563EB;">{{workOrderStats.inProgress}}</text>
             </view>
             <view class="kpi-icon-wrapper">
               <van-icon name="clock-o" size="28rpx" color="#2563EB" custom-style="opacity:0.6" />
@@ -56,7 +56,7 @@
           <view class="kpi-card kpi-card-sm" bindtap="onStatCardTap" data-status="review">
             <view class="kpi-text-group">
               <text class="kpi-label">待复核</text>
-              <text class="kpi-value" style="color: #000000;">{{workOrderStats.review}}</text>
+              <text class="kpi-value" style="color: #7C3AED;">{{workOrderStats.review}}</text>
             </view>
             <view class="kpi-icon-wrapper">
               <van-icon name="eye-o" size="28rpx" color="#7C3AED" custom-style="opacity:0.6" />
@@ -65,7 +65,7 @@
           <view class="kpi-card kpi-card-sm" bindtap="onStatCardTap" data-status="completed">
             <view class="kpi-text-group">
               <text class="kpi-label">已完成</text>
-              <text class="kpi-value" style="color: #000000;">{{workOrderStats.completed}}</text>
+              <text class="kpi-value" style="color: #16A34A;">{{workOrderStats.completed}}</text>
             </view>
             <view class="kpi-icon-wrapper">
               <van-icon name="passed" size="28rpx" color="#16A34A" custom-style="opacity:0.6" />
@@ -222,7 +222,7 @@
         <view class="cs-todo-section">
           <text class="cs-section-title">待办事项</text>
           <view class="cs-todo-row">
-            <view class="cs-todo-card" data-module="consumable" data-label="预警管理" bindtap="onFunctionTap">
+            <view class="cs-todo-card">
               <view class="cs-todo-left">
                 <text class="cs-todo-name">库存预警</text>
                 <text class="cs-todo-count">{{consumableStats.stockWarning}}</text>
@@ -231,7 +231,7 @@
                 <van-icon name="warning-o" size="18px" color="#F29A58" />
               </view>
             </view>
-            <view class="cs-todo-card" data-module="consumable" data-label="申领审批" bindtap="onFunctionTap">
+            <view class="cs-todo-card">
               <view class="cs-todo-left">
                 <text class="cs-todo-name">出库审核</text>
                 <text class="cs-todo-count">{{consumableStats.pendingApproval}}</text>
