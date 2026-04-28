@@ -25,15 +25,6 @@ Page({
     showActions: false,
     canCancel: false,
     canApprove: false,
-    showApproveDialog: false,
-    approveQty: '',
-    currentStock: 0,
-    approveQtyValid: false,
-    approving: false,
-    showRejectDialog: false,
-    rejectReason: '',
-    rejectReasonValid: false,
-    rejecting: false,
   },
 
   onLoad(query) {
@@ -82,94 +73,8 @@ Page({
     wx.navigateBack();
   },
 
-  onCancel() {
-    const that = this;
-    wx.showModal({
-      title: '撤回申请',
-      content: '撤回后无法恢复，确定继续？',
-      confirmText: '撤回',
-      confirmColor: '#DC2626',
-      success: async (r) => {
-        if (!r.confirm) return;
-        const res = await materialService.cancelStockOutRequest(that.data.requestId);
-        if (res && res.success) {
-          wx.showToast({ title: '已撤回', icon: 'success' });
-          that._load();
-        }
-      }
-    });
-  },
-
-  async onApprove() {
-    const stockRes = await materialService.getMaterialById(this.data.request.material_id);
-    const stock = (stockRes && stockRes.success && stockRes.material) ? stockRes.material.stock : 0;
-
-    this.setData({
-      showApproveDialog: true,
-      approveQty: String(Math.min(this.data.request.requested_quantity, stock)),
-      currentStock: stock,
-    }, this._refreshApproveValid);
-  },
-
-  onApproveQtyInput(e) {
-    this.setData({ approveQty: e.detail.value }, this._refreshApproveValid);
-  },
-
-  _refreshApproveValid() {
-    const q = Number(this.data.approveQty);
-    const ok = Number.isInteger(q) && q >= 1
-      && q <= this.data.request.requested_quantity
-      && q <= this.data.currentStock;
-    this.setData({ approveQtyValid: ok });
-  },
-
-  onCloseApprove() {
-    this.setData({ showApproveDialog: false });
-  },
-
-  async onConfirmApprove() {
-    if (!this.data.approveQtyValid || this.data.approving) return;
-    this.setData({ approving: true });
-    const res = await materialService.approveStockOutRequest(
-      this.data.requestId,
-      Number(this.data.approveQty)
-    );
-    this.setData({ approving: false });
-    if (res && res.success) {
-      wx.showToast({ title: '出库成功', icon: 'success' });
-      this.setData({ showApproveDialog: false });
-      this._load();
-    }
-  },
-
-  onReject() {
-    this.setData({ showRejectDialog: true, rejectReason: '', rejectReasonValid: false });
-  },
-
-  onRejectReasonInput(e) {
-    const v = e.detail.value || '';
-    this.setData({
-      rejectReason: v,
-      rejectReasonValid: v.trim().length > 0 && v.length <= 200,
-    });
-  },
-
-  onCloseReject() {
-    this.setData({ showRejectDialog: false });
-  },
-
-  async onConfirmReject() {
-    if (!this.data.rejectReasonValid || this.data.rejecting) return;
-    this.setData({ rejecting: true });
-    const res = await materialService.rejectStockOutRequest(
-      this.data.requestId,
-      this.data.rejectReason
-    );
-    this.setData({ rejecting: false });
-    if (res && res.success) {
-      wx.showToast({ title: '已驳回', icon: 'success' });
-      this.setData({ showRejectDialog: false });
-      this._load();
-    }
-  },
+  // Task 16 接入
+  onCancel() {},
+  onApprove() {},
+  onReject() {},
 });
