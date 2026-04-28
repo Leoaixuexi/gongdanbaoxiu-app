@@ -1,2 +1,132 @@
-.page { min-height: 100vh; background: #F5F6F8; }
-.placeholder { padding: 80rpx; text-align: center; color: #999; }
+.page {
+  min-height: 100vh;
+  background: #F5F6F8;
+  padding-bottom: 24rpx;
+}
+
+/* 搜索栏 */
+.search-bar {
+  background: #FFFFFF;
+  padding: 8rpx 0;
+}
+
+/* 4 状态 pill */
+.status-tabs {
+  background: #FFFFFF;
+  padding: 16rpx 24rpx 24rpx;
+  white-space: nowrap;
+  border-bottom: 1rpx solid #F0F0F0;
+}
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 12rpx;
+  padding: 14rpx 28rpx;
+  border-radius: 32rpx;
+  background: #F5F6F8;
+  border: 1rpx solid transparent;
+  margin-right: 16rpx;
+  font-size: 26rpx;
+  color: #666;
+}
+.status-pill.warning { background: #FFF7E6; color: #FF9500; border-color: #FFE0A8; }
+.status-pill.empty   { background: #FFEEEE; color: #FF4D4F; border-color: #FFD0D0; }
+.status-pill.normal  { background: #F0F9F2; color: #00B578; border-color: #C8EBD5; }
+.status-pill.active  { background: #1677FF; color: #FFFFFF; border-color: #1677FF; }
+.status-pill.active.warning,
+.status-pill.active.empty,
+.status-pill.active.normal { background: #1677FF; color: #FFFFFF; border-color: #1677FF; }
+
+.pill-label { line-height: 1; }
+.pill-badge {
+  padding: 2rpx 16rpx;
+  border-radius: 20rpx;
+  font-size: 22rpx;
+  font-weight: 600;
+  line-height: 1;
+}
+.badge-default { background: rgba(255,255,255,0.25); color: #FFFFFF; }
+.status-pill:not(.active) .badge-default { background: #FFFFFF; color: #1A1A1A; border: 1rpx solid #E5E6E8; }
+.badge-warning { background: #FF9500; color: #FFFFFF; }
+.badge-empty   { background: #FF4D4F; color: #FFFFFF; }
+.badge-normal  { background: #00B578; color: #FFFFFF; }
+.status-pill.active .pill-badge { background: rgba(255,255,255,0.25); color: #FFFFFF; }
+
+/* 商品卡片 */
+.cards-wrap {
+  padding: 24rpx 32rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+.m-card {
+  background: #FFFFFF;
+  border-radius: 28rpx;
+  display: flex;
+  overflow: hidden;
+  box-shadow: 0 4rpx 16rpx rgba(0,0,0,0.04);
+}
+.m-side {
+  width: 8rpx;
+  background: #1677FF;
+}
+.m-card.status-warning .m-side { background: #FF9500; }
+.m-card.status-empty   .m-side { background: #FF4D4F; }
+.m-card.status-normal  .m-side { background: #1677FF; }
+
+.m-body {
+  flex: 1;
+  padding: 24rpx 28rpx;
+}
+.m-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.m-row-top { margin-bottom: 8rpx; }
+.m-name {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #1A1A1A;
+}
+.m-tag {
+  font-size: 22rpx;
+  font-weight: 600;
+  padding: 4rpx 16rpx;
+  border-radius: 20rpx;
+  line-height: 1;
+}
+.tag-warning { background: #FFF7E6; color: #FF9500; }
+.tag-empty   { background: #FFEEEE; color: #FF4D4F; }
+.tag-normal  { background: #F0F4FF; color: #1677FF; }
+
+.m-sub {
+  font-size: 24rpx;
+  color: #999;
+  margin: 4rpx 0 12rpx;
+}
+.m-row-bot { font-size: 24rpx; color: #5E5E5E; }
+.m-stock-num {
+  font-size: 28rpx;
+  font-weight: 600;
+  margin: 0 4rpx;
+}
+.stock-warning { color: #FF9500; }
+.stock-empty   { color: #FF4D4F; }
+.stock-normal  { color: #1A1A1A; }
+.m-stock-min   { color: #999; }
+.m-time { color: #999; font-size: 22rpx; }
+
+/* 空 / 加载 */
+.empty-state {
+  padding: 120rpx 0;
+  text-align: center;
+}
+.empty-text { color: #999; font-size: 26rpx; }
+.loading-more,
+.loading-end {
+  text-align: center;
+  color: #999;
+  padding: 24rpx 0;
+  font-size: 24rpx;
+}
