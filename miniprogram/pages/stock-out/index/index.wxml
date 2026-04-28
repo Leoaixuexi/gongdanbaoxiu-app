@@ -1,0 +1,178 @@
+<view class="page">
+  <!-- 顶部 Sub-Tabs -->
+  <view class="sub-tabs">
+    <view
+      wx:for="{{subTabs}}"
+      wx:key="index"
+      class="sub-tab-item {{activeSubTab === index ? 'sub-tab-active' : ''}}"
+      data-sub="{{index}}"
+      bindtap="onSubTabChange"
+    >
+      <text class="sub-tab-text">{{item}}</text>
+    </view>
+  </view>
+
+  <!-- Swiper -->
+  <swiper class="content-swiper" current="{{activeSubTab}}" bindchange="onSwiperChange" duration="{{300}}">
+    <!-- Tab1 出库申请 -->
+    <swiper-item>
+      <scroll-view scroll-y class="sub-tab-content" bindscrolltolower="onLoadMoreRequests">
+        <view wx:if="{{requestsLoading}}" class="loading-state"><text>加载中...</text></view>
+        <view wx:elif="{{requests.length === 0}}" class="empty-state">
+          <van-icon name="orders-o" size="48px" color="#d4d4d4" />
+          <text class="empty-text">暂无申请单</text>
+        </view>
+        <view wx:else class="card-list">
+          <view
+            wx:for="{{requests}}"
+            wx:key="request_id"
+            class="m-card"
+            bindtap="goToRequestDetail"
+            data-id="{{item.request_id}}"
+          >
+            <image class="m-card-img" src="{{item.material_image || '/images/placeholder.png'}}" mode="aspectFill" />
+            <view class="m-card-body">
+              <view class="m-card-title">{{item.material_name}}</view>
+              <view class="m-card-meta">
+                <view class="meta-item">
+                  <van-icon name="manager-o" size="11px" color="#a3a3a3" />
+                  <text class="meta-text">{{item.requester.name}}</text>
+                </view>
+                <view class="meta-item">
+                  <van-icon name="location-o" size="11px" color="#a3a3a3" />
+                  <text class="meta-text">{{item.region || '-'}}</text>
+                </view>
+              </view>
+              <view class="m-card-meta">
+                <view class="meta-item">
+                  <van-icon name="clock-o" size="11px" color="#a3a3a3" />
+                  <text class="meta-text">{{item.timeText}}</text>
+                </view>
+                <view class="meta-item">
+                  <text class="status-chip status-chip-{{item.status}}">{{item.statusText}}</text>
+                </view>
+              </view>
+            </view>
+            <view class="m-card-qty {{item.status === 'Approved' ? 'qty-out' : ''}}">
+              {{item.status === 'Approved' ? '-' : ''}}{{item.approved_quantity || item.requested_quantity}}
+            </view>
+          </view>
+        </view>
+        <view wx:if="{{requestsLoadingMore}}" class="loading-more"><text>加载更多...</text></view>
+      </scroll-view>
+    </swiper-item>
+
+    <!-- Tab2 出库记录 -->
+    <swiper-item>
+      <scroll-view scroll-y class="sub-tab-content" bindscrolltolower="onLoadMoreRecords">
+        <view class="search-row">
+          <view class="search-bar">
+            <van-icon name="search" size="14px" color="#a3a3a3" />
+            <input class="search-input" placeholder="搜索物资" value="{{outFilter.keyword}}" bindinput="onOutKeywordInput" bindconfirm="onOutKeywordSearch" />
+          </view>
+          <view class="filter-btn" bindtap="onOutFilterTap">
+            <van-icon name="filter-o" size="18px" color="#737373" />
+          </view>
+        </view>
+
+        <view wx:if="{{outFilterChips.length}}" class="filter-chip-row">
+          <view wx:for="{{outFilterChips}}" wx:key="key" class="filter-chip" data-key="{{item.key}}" bindtap="onRemoveFilterChip">
+            <text>{{item.label}}</text>
+            <text class="chip-x">×</text>
+          </view>
+        </view>
+
+        <view wx:if="{{outLoading}}" class="loading-state"><text>加载中...</text></view>
+        <view wx:elif="{{outRecords.length === 0}}" class="empty-state">
+          <van-icon name="orders-o" size="48px" color="#d4d4d4" />
+          <text class="empty-text">暂无出库记录</text>
+        </view>
+        <view wx:else class="card-list">
+          <view
+            wx:for="{{outRecords}}"
+            wx:key="request_id"
+            class="m-card"
+            bindtap="goToRequestDetail"
+            data-id="{{item.request_id}}"
+          >
+            <image class="m-card-img" src="{{item.material_image || '/images/placeholder.png'}}" mode="aspectFill" />
+            <view class="m-card-body">
+              <view class="m-card-title">{{item.material_name}}</view>
+              <view class="m-card-meta">
+                <view class="meta-item">
+                  <van-icon name="apps-o" size="11px" color="#a3a3a3" />
+                  <text class="meta-text">{{item.region || '-'}}</text>
+                </view>
+                <view class="meta-item">
+                  <van-icon name="location-o" size="11px" color="#a3a3a3" />
+                  <text class="meta-text">{{item.scene || '-'}}</text>
+                </view>
+              </view>
+              <view class="m-card-meta">
+                <view class="meta-item">
+                  <van-icon name="clock-o" size="11px" color="#a3a3a3" />
+                  <text class="meta-text">{{item.timeText}}</text>
+                </view>
+                <view class="meta-item">
+                  <text class="status-chip status-chip-{{item.status}}">{{item.statusText}}</text>
+                </view>
+              </view>
+            </view>
+            <view class="m-card-qty qty-out">-{{item.approved_quantity || item.requested_quantity}}</view>
+          </view>
+        </view>
+        <view wx:if="{{outLoadingMore}}" class="loading-more"><text>加载更多...</text></view>
+      </scroll-view>
+    </swiper-item>
+  </swiper>
+
+  <!-- FAB -->
+  <view wx:if="{{canFab && activeSubTab === 0}}" class="fab-button" bindtap="onFabTap">
+    <van-icon name="plus" size="24px" color="#FFFFFF" />
+  </view>
+
+  <!-- 出库记录筛选抽屉 -->
+  <view wx:if="{{showOutFilterDrawer}}" class="filter-mask" bindtap="onCloseOutFilterDrawer"></view>
+  <view class="filter-drawer {{showOutFilterDrawer ? 'filter-drawer-open' : ''}}">
+    <view class="filter-header">
+      <text class="filter-title">筛选</text>
+      <view class="filter-close" bindtap="onCloseOutFilterDrawer">×</view>
+    </view>
+
+    <view class="filter-section">
+      <text class="filter-label">状态</text>
+      <view class="status-pick-row">
+        <view class="status-pick {{outFilter.status.includes('Approved') ? 'status-pick-on' : ''}}" data-s="Approved" bindtap="onFilterStatusToggle">已出库</view>
+        <view class="status-pick {{outFilter.status.includes('Rejected') ? 'status-pick-on' : ''}}" data-s="Rejected" bindtap="onFilterStatusToggle">已驳回</view>
+        <view class="status-pick {{outFilter.status.includes('Cancelled') ? 'status-pick-on' : ''}}" data-s="Cancelled" bindtap="onFilterStatusToggle">已撤回</view>
+      </view>
+    </view>
+
+    <view class="filter-section">
+      <text class="filter-label">使用区域</text>
+      <input class="filter-input" placeholder="如 办公区" value="{{outFilter.region}}" bindinput="onFilterRegionInput" />
+    </view>
+    <view class="filter-section">
+      <text class="filter-label">使用场景</text>
+      <input class="filter-input" placeholder="如 日常办公" value="{{outFilter.scene}}" bindinput="onFilterSceneInput" />
+    </view>
+
+    <view class="filter-section">
+      <text class="filter-label">起始日期</text>
+      <picker mode="date" value="{{outFilter.date_from}}" bindchange="onFilterDateFromChange">
+        <view class="filter-input">{{outFilter.date_from || '选择起始日期'}}</view>
+      </picker>
+    </view>
+    <view class="filter-section">
+      <text class="filter-label">结束日期</text>
+      <picker mode="date" value="{{outFilter.date_to}}" bindchange="onFilterDateToChange">
+        <view class="filter-input">{{outFilter.date_to || '选择结束日期'}}</view>
+      </picker>
+    </view>
+
+    <view class="filter-actions">
+      <button class="filter-btn-reset" bindtap="onResetOutFilter">重置</button>
+      <button class="filter-btn-apply" bindtap="onApplyOutFilter">应用</button>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "出库管理",
+  "usingComponents": {
+    "van-icon": "@vant/weapp/icon/index"
+  }
+}
