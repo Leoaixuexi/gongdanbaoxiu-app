@@ -116,6 +116,38 @@ const getWarnings = async () => {
   });
 };
 
+/**
+ * 库存查询列表
+ * @param {object} params { status: 'all'|'warning'|'empty'|'normal', keyword, category, page, pageSize }
+ */
+const getInventoryList = async (params = {}) => {
+  return callCloudSilent('materialManager', {
+    action: 'getInventoryList',
+    data: { status: 'all', page: 1, pageSize: 20, ...params }
+  });
+};
+
+/**
+ * 库存详情（单个 material 的全量数据）
+ */
+const getInventoryDetail = async (material_id) => {
+  return callCloudSilent('materialManager', {
+    action: 'getInventoryDetail',
+    data: { material_id }
+  });
+};
+
+/**
+ * 库存调整
+ * @param {object} params { material_id, adjust_type, quantity, reason }
+ */
+const adjustStock = async (params) => {
+  return callCloud('materialManager', {
+    action: 'adjustStock',
+    data: params
+  }, { loadingText: '提交中...' });
+};
+
 module.exports = {
   listMaterials,
   addMaterial,
@@ -128,4 +160,7 @@ module.exports = {
   getWarnings,
   getMaterialStats,
   getMaterialRecords,
+  getInventoryList,
+  getInventoryDetail,
+  adjustStock,
 };
