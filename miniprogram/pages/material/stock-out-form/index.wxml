@@ -71,43 +71,4 @@
       提交申请
     </button>
   </view>
-
-  <!-- 物资选择抽屉 -->
-  <view wx:if="{{showPicker}}" class="picker-mask" bindtap="onClosePicker"></view>
-  <view class="picker-sheet {{showPicker ? 'picker-sheet-open' : ''}}">
-    <view class="picker-header">
-      <text class="picker-title">选择物资</text>
-      <view class="picker-close" bindtap="onClosePicker">×</view>
-    </view>
-    <view class="picker-search">
-      <input
-        class="picker-search-input"
-        placeholder="搜索名称或编号"
-        value="{{pickerKeyword}}"
-        bindinput="onPickerSearchInput"
-        confirm-type="search"
-        bindconfirm="onPickerSearch"
-      />
-    </view>
-    <scroll-view scroll-y class="picker-list">
-      <view
-        wx:for="{{pickerList}}"
-        wx:key="material_id"
-        class="picker-item {{item.stock <= 0 ? 'picker-item-disabled' : ''}}"
-        data-mat="{{item}}"
-        bindtap="onSelectMaterial"
-      >
-        <image class="picker-img" src="{{item.images[0] || '/images/placeholder.png'}}" mode="aspectFill" />
-        <view class="picker-info">
-          <text class="picker-name">{{item.name}} {{item.material_number || ''}}</text>
-          <text class="picker-meta">{{item.category || '-'}} · {{item.spec || '-'}}</text>
-        </view>
-        <view class="picker-stock {{item.stock <= 0 ? 'stock-out' : ''}}">
-          库存 {{item.stock}}
-        </view>
-      </view>
-      <view wx:if="{{!pickerList.length && !pickerLoading}}" class="picker-empty">未找到匹配物资</view>
-      <view wx:if="{{pickerLoading}}" class="picker-empty">加载中...</view>
-    </scroll-view>
-  </view>
 </view>
