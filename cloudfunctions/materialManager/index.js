@@ -27,7 +27,6 @@ const ROUTES = {
   createStockOutRequest: request.createStockOutRequest,
   approveStockOutRequest: request.approveStockOutRequest,
   rejectStockOutRequest: request.rejectStockOutRequest,
-  cancelStockOutRequest: request.cancelStockOutRequest,
   // Seed
   seedTestData: seed.seedTestData,
 };
