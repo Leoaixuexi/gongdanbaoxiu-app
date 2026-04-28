@@ -3,7 +3,6 @@
  */
 const {
   db, _, getNextId,
-  canAccessMaterial,
   canRequestStockOut,
   canApproveStockOut,
   createBatchNotifications,
@@ -329,66 +328,9 @@ async function cancelStockOutRequest({ data, user }) {
   return { success: true, message: '已撤回' };
 }
 
-async function listStockOutRequests({ data, user }) {
-  if (!canAccessMaterial(user)) return { success: false, error: '无权限' };
-
-  const {
-    status, requester_user_id, material_id,
-    region, scene, date_from, date_to, keyword,
-    page = 1, pageSize = 20,
-  } = data;
-
-  const conditions = {};
-
-  // 角色过滤：办美只能看自己的
-  if (user.role_id === 4) {
-    conditions['requester.user_id'] = user.user_id;
-  } else if (requester_user_id) {
-    conditions['requester.user_id'] = requester_user_id;
-  }
-
-  // 状态：单值或数组
-  if (Array.isArray(status) && status.length) {
-    conditions.status = _.in(status);
-  } else if (typeof status === 'string' && status) {
-    conditions.status = status;
-  }
-
-  if (material_id) conditions.material_id = material_id;
-  if (region) conditions.region = region;
-  if (scene) conditions.scene = scene;
-
-  // 时间范围
-  if (date_from && date_to) {
-    conditions.created_at = _.and(_.gte(new Date(date_from)), _.lte(new Date(date_to)));
-  } else if (date_from) {
-    conditions.created_at = _.gte(new Date(date_from));
-  } else if (date_to) {
-    conditions.created_at = _.lte(new Date(date_to));
-  }
-
-  if (keyword) {
-    conditions.material_name = db.RegExp({ regexp: keyword, options: 'i' });
-  }
-
-  const query = db.collection('material_requests').where(conditions);
-  const [countRes, listRes] = await Promise.all([
-    query.count(),
-    query.orderBy('created_at', 'desc').skip((page - 1) * pageSize).limit(pageSize).get(),
-  ]);
-
-  return {
-    success: true,
-    requests: listRes.data,
-    total: countRes.total,
-    page, pageSize,
-  };
-}
-
 module.exports = {
   createStockOutRequest,
   approveStockOutRequest,
   rejectStockOutRequest,
   cancelStockOutRequest,
-  listStockOutRequests,
 };
