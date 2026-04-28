@@ -596,6 +596,85 @@ exports.main = async (event, context) => {
         };
       }
 
+      // ===== 库存调整（盘盈 / 盘亏 / 报废 / 丢失） =====
+      case 'adjustStock': {
+        if (!canManageMaterial(user)) {
+          return { success: false, error: '无权限调整库存' };
+        }
+
+        const { material_id, adjust_type, quantity, reason } = data;
+        const VALID_TYPES = ['gain', 'loss', 'scrap', 'lost'];
+        const qty = Number(quantity);
+
+        if (!material_id || !VALID_TYPES.includes(adjust_type) || !qty || qty <= 0) {
+          return { success: false, error: '请填写正确的调整信息' };
+        }
+        if (!reason || String(reason).trim().length < 2) {
+          return { success: false, error: '请填写调整原因（至少 2 个字符）' };
+        }
+
+        const tryAdjust = async () => {
+          const { data: mats } = await db.collection('materials')
+            .where({ material_id }).limit(1).get();
+          if (!mats.length) {
+            return { success: false, error: '配件不存在' };
+          }
+          const material = mats[0];
+          const currentStock = Number(material.stock) || 0;
+          const isOut = adjust_type !== 'gain';
+
+          if (isOut && qty > currentStock) {
+            return { success: false, error: `库存不足，当前库存: ${currentStock}` };
+          }
+          const newStock = isOut ? currentStock - qty : currentStock + qty;
+          const now = new Date();
+
+          // 乐观锁：仅当 stock 未变时更新
+          const updRes = await db.collection('materials')
+            .where({ _id: material._id, stock: _.eq(currentStock) })
+            .update({
+              data: { stock: newStock, updated_at: now }
+            });
+
+          if (!updRes.stats || updRes.stats.updated === 0) {
+            return { __conflict: true };
+          }
+
+          const recordId = await getNextId('material_records');
+          await db.collection('material_records').add({
+            data: {
+              record_id: recordId,
+              material_id,
+              material_name: material.name,
+              material_number: material.material_number || '',
+              category: material.category || '',
+              spec: material.spec || '',
+              model: material.model || '',
+              usage_area: material.usage_area || '',
+              material_image: (material.images && material.images[0]) || '',
+              type: 'adjust',
+              adjust_type,
+              adjust_reason: String(reason).trim(),
+              quantity: qty,
+              operator: { user_id: user.user_id, name: user.name },
+              created_at: now,
+            }
+          });
+
+          return { success: true, message: '调整成功' };
+        };
+
+        // 乐观锁失败重试 1 次
+        let result = await tryAdjust();
+        if (result.__conflict) {
+          result = await tryAdjust();
+          if (result.__conflict) {
+            return { success: false, error: '数据已更新，请刷新重试' };
+          }
+        }
+        return result;
+      }
+
       default:
         return {
           success: false,
