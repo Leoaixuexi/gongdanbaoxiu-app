@@ -350,6 +350,24 @@ async function listStockOutRequests({ data, user }) {
   };
 }
 
+async function getStockOutRequest({ data, user }) {
+  const { canAccessStockOut, db } = require('./helpers');
+  if (!canAccessStockOut(user)) return { success: false, error: '无权限' };
+
+  const { request_id } = data;
+  if (!request_id) return { success: false, error: '缺少 request_id' };
+
+  const { data: reqs } = await db.collection('material_requests').where({ request_id }).get();
+  if (!reqs.length) return { success: false, error: '申请单不存在' };
+  const req = reqs[0];
+
+  if (user.role_id === 4 && req.requester.user_id !== user.user_id) {
+    return { success: false, error: '无权限查看' };
+  }
+
+  return { success: true, request: req };
+}
+
 const ROUTES = {
   ping: async () => ({ success: true, message: 'stockOutManager pong' }),
   createStockOutRequest,
@@ -357,8 +375,9 @@ const ROUTES = {
   rejectStockOutRequest,
   cancelStockOutRequest,
   listStockOutRequests,
-  // Task 7-8 加入：
-  // getStockOutRequest, getMaterialById, listMaterials
+  getStockOutRequest,
+  // Task 8 加入：
+  // getMaterialById, listMaterials
 };
 
 exports.main = async (event, context) => {
