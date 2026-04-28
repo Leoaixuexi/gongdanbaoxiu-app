@@ -32,6 +32,7 @@
     "pages/charge-order/detail",
     "pages/charge-order/edit",
     "pages/material/inventory/index",
+    "pages/material/inventory-detail/index",
     "pages/product/index",
     "pages/product/detail/index",
     "pages/product/edit/index",

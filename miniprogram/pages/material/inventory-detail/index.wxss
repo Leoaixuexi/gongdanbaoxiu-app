@@ -1,0 +1,2 @@
+.page { min-height: 100vh; background: #F5F6F8; }
+.placeholder { padding: 80rpx; text-align: center; color: #999; }
