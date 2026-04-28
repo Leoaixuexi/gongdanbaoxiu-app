@@ -29,7 +29,6 @@ const ROUTES = {
   rejectStockOutRequest: request.rejectStockOutRequest,
   cancelStockOutRequest: request.cancelStockOutRequest,
   listStockOutRequests: request.listStockOutRequests,
-  getStockOutRequest: request.getStockOutRequest,
   // Seed
   seedTestData: seed.seedTestData,
 };
