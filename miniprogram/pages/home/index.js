@@ -78,19 +78,17 @@ Page({
       monthOutAmount: '96,320',
     },
     consumableMonth: '',
-    // 耗品管理 - 功能宫格（2行×4列）
+    // 耗品管理 - 功能宫格
     consumableFuncRows: [
       [
+        { icon: 'gift-o', label: '商品管理', bg: '#7C3AED' },
         { icon: 'add-o', label: '入库管理', bg: '#1677FF' },
         { icon: 'upgrade', label: '出库管理', bg: '#FF6A00' },
-        { icon: 'search', label: '库存查询', bg: '#00B578' },
-        { icon: 'records-o', label: '库存盘点', bg: '#7B61FF' },
       ],
       [
+        { icon: 'search', label: '库存查询', bg: '#00B578' },
         { icon: 'logistics', label: '快递管理', bg: '#00B4D8' },
         { icon: 'chart-trending-o', label: '数据报表', bg: '#FFB100' },
-        { icon: 'sign', label: '申领审批', bg: '#FF4D4F' },
-        { icon: 'warning-o', label: '预警管理', bg: '#EB2F96' },
       ],
     ],
     // 耗品管理 - 最近动态
@@ -293,6 +291,18 @@ Page({
       return
     }
 
+    // 耗品管理 - 商品管理（独立页）
+    if (module === 'consumable' && label === '商品管理') {
+      wx.navigateTo({
+        url: '/pages/product/index',
+        fail: (err) => {
+          console.error('navigateTo failed:', err)
+          wx.reLaunch({ url: '/pages/product/index' })
+        }
+      })
+      return
+    }
+
     // 耗品管理 - 入库管理（独立页）
     if (module === 'consumable' && label === '入库管理') {
       wx.navigateTo({
@@ -300,6 +310,30 @@ Page({
         fail: (err) => {
           console.error('navigateTo failed:', err)
           wx.reLaunch({ url: '/pages/material/stock-in/index' })
+        }
+      })
+      return
+    }
+
+    // 耗品管理 - 出库管理（独立页 pages/stock-out）
+    if (module === 'consumable' && label === '出库管理') {
+      wx.navigateTo({
+        url: '/pages/stock-out/index/index',
+        fail: (err) => {
+          console.error('navigateTo failed:', err)
+          wx.reLaunch({ url: '/pages/stock-out/index/index' })
+        }
+      })
+      return
+    }
+
+    // 耗品管理 - 库存查询（独立页）
+    if (module === 'consumable' && label === '库存查询') {
+      wx.navigateTo({
+        url: '/pages/material/inventory/index',
+        fail: (err) => {
+          console.error('navigateTo failed:', err)
+          wx.reLaunch({ url: '/pages/material/inventory/index' })
         }
       })
       return
