@@ -503,6 +503,99 @@ exports.main = async (event, context) => {
         };
       }
 
+      // ===== 库存查询详情 =====
+      case 'getInventoryDetail': {
+        const { material_id } = data;
+        if (!material_id) {
+          return { success: false, error: '缺少 material_id' };
+        }
+
+        const { data: mats } = await db.collection('materials')
+          .where({ material_id }).limit(1).get();
+        if (!mats.length) {
+          return { success: false, error: '配件不存在' };
+        }
+        const material = mats[0];
+
+        const now = new Date();
+        const d30 = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+        const d6mStart = new Date(now.getFullYear(), now.getMonth() - 5, 1); // 含当月共 6 个月
+
+        // 拉近 6 个月所有该 material 的 records（量可控）
+        const { data: records6m } = await db.collection('material_records')
+          .where({
+            material_id,
+            created_at: _.gte(d6mStart),
+          })
+          .orderBy('created_at', 'desc')
+          .limit(1000)
+          .get();
+
+        // 30 日消耗：type='out' 或 (type='adjust' 且 adjust_type ∈ {loss/scrap/lost})
+        const isOutLike = (r) =>
+          r.type === 'out' ||
+          (r.type === 'adjust' && ['loss', 'scrap', 'lost'].includes(r.adjust_type));
+        const last30dConsume = records6m
+          .filter(r => new Date(r.created_at) >= d30 && isOutLike(r))
+          .reduce((sum, r) => sum + (Number(r.quantity) || 0), 0);
+
+        // 6 月趋势（按月分组 in / out）
+        const monthKey = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+        const trendMap = {};
+        for (let i = 5; i >= 0; i--) {
+          const mDate = new Date(now.getFullYear(), now.getMonth() - i, 1);
+          trendMap[monthKey(mDate)] = { month: monthKey(mDate), in: 0, out: 0 };
+        }
+        records6m.forEach(r => {
+          const k = monthKey(new Date(r.created_at));
+          if (!trendMap[k]) return;
+          const qty = Number(r.quantity) || 0;
+          if (r.type === 'in') trendMap[k].in += qty;
+          else if (isOutLike(r)) trendMap[k].out += qty;
+        });
+        const trend = Object.values(trendMap);
+
+        // 消耗最多区域：按 usage_area 在出库类记录中计数
+        const areaCount = {};
+        records6m.filter(isOutLike).forEach(r => {
+          const a = r.usage_area || '';
+          if (!a) return;
+          areaCount[a] = (areaCount[a] || 0) + 1;
+        });
+        const topArea = Object.entries(areaCount)
+          .sort((a, b) => b[1] - a[1])[0]?.[0] || '';
+
+        // 月均消耗：6 月出库总量 / 6
+        const totalOut6m = trend.reduce((sum, t) => sum + t.out, 0);
+        const monthlyAvg = Math.floor(totalOut6m / 6);
+
+        // 最近 3 条流转记录（任何类型）
+        const { data: recentRecords } = await db.collection('material_records')
+          .where({ material_id })
+          .orderBy('created_at', 'desc')
+          .limit(3)
+          .get();
+
+        return {
+          success: true,
+          material,
+          currentStock: Number(material.stock) || 0,
+          minStock: Number(material.min_stock) || 0,
+          last30dConsume,
+          trend,
+          topArea,
+          topScene: null,
+          monthlyAvg,
+          recentRecords: recentRecords.map(r => ({
+            type: r.type,
+            adjust_type: r.adjust_type || null,
+            quantity: Number(r.quantity) || 0,
+            created_at: r.created_at,
+            remark: r.remark || '',
+          })),
+        };
+      }
+
       default:
         return {
           success: false,
