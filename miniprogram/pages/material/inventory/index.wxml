@@ -1,3 +1,84 @@
 <view class="page">
-  <view class="placeholder">库存查询页（占位）</view>
+
+  <!-- 搜索栏 -->
+  <view class="search-bar">
+    <van-search
+      value="{{ keyword }}"
+      placeholder="搜索商品名称"
+      shape="round"
+      background="#FFFFFF"
+      bind:change="onKeywordChange"
+      bind:search="onKeywordConfirm"
+      bind:clear="onKeywordClear"
+    />
+  </view>
+
+  <!-- 4 状态按钮 -->
+  <scroll-view class="status-tabs" scroll-x="{{ true }}" enable-flex>
+    <view
+      class="status-pill {{ activeStatus === 'all' ? 'active' : '' }}"
+      data-status="all"
+      bind:tap="onStatusTap">
+      <text class="pill-label">全部</text>
+      <text class="pill-badge badge-default">{{ statusCounts.all }}</text>
+    </view>
+    <view
+      class="status-pill warning {{ activeStatus === 'warning' ? 'active' : '' }}"
+      data-status="warning"
+      bind:tap="onStatusTap">
+      <text class="pill-label">预警</text>
+      <text class="pill-badge badge-warning">{{ statusCounts.warning }}</text>
+    </view>
+    <view
+      class="status-pill empty {{ activeStatus === 'empty' ? 'active' : '' }}"
+      data-status="empty"
+      bind:tap="onStatusTap">
+      <text class="pill-label">缺货</text>
+      <text class="pill-badge badge-empty">{{ statusCounts.empty }}</text>
+    </view>
+    <view
+      class="status-pill normal {{ activeStatus === 'normal' ? 'active' : '' }}"
+      data-status="normal"
+      bind:tap="onStatusTap">
+      <text class="pill-label">正常</text>
+      <text class="pill-badge badge-normal">{{ statusCounts.normal }}</text>
+    </view>
+  </scroll-view>
+
+  <!-- 商品卡片列表 -->
+  <view class="cards-wrap">
+    <view
+      class="m-card status-{{ item._status }}"
+      wx:for="{{ materials }}"
+      wx:key="material_id"
+      data-id="{{ item.material_id }}"
+      bind:tap="onCardTap">
+      <view class="m-side"></view>
+      <view class="m-body">
+        <view class="m-row m-row-top">
+          <text class="m-name">{{ item.name }}</text>
+          <text class="m-tag tag-{{ item._status }}">{{ item._statusText }}</text>
+        </view>
+        <view class="m-sub">{{ item.category }} · {{ item.unit }}{{ item.material_number ? ' · ' + item.material_number : '' }}</view>
+        <view class="m-row m-row-bot">
+          <view class="m-stock">
+            库存
+            <text class="m-stock-num stock-{{ item._status }}">{{ item.stock }}</text>
+            <text class="m-stock-min"> / 预警 {{ item.min_stock || 0 }}</text>
+          </view>
+          <text class="m-time">{{ item._latestLabel }}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 空状态 -->
+    <view class="empty-state" wx:if="{{ !loading && materials.length === 0 }}">
+      <text class="empty-text">暂无数据</text>
+    </view>
+
+    <!-- 加载更多 -->
+    <view class="loading-more" wx:if="{{ loadingMore }}">加载中...</view>
+    <view class="loading-end" wx:if="{{ !loadingMore && materials.length > 0 && materials.length >= total }}">— 没有更多了 —</view>
+  </view>
+
 </view>
