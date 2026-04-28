@@ -1,3 +1,4 @@
+import * as echarts from '../../../components/ec-canvas/echarts';
 const materialService = require('../../../services/materialService');
 const { STORAGE_KEYS, ROLES } = require('../../../utils/constants');
 
@@ -37,7 +38,61 @@ function canManage(user) {
   return user && [ROLES.ADMIN, ROLES.PROPERTY_MANAGER, 5].includes(user.role_id) && user.active !== false;
 }
 
+function monthLabel(monthKey) {
+  // monthKey: '2025-11'
+  const m = Number(monthKey.split('-')[1]);
+  return `${m}月`;
+}
+
+function buildTrendOption(trend, activeType) {
+  const categories = trend.map(t => monthLabel(t.month));
+  const inData = trend.map(t => t.in);
+  const outData = trend.map(t => t.out);
+  const ACTIVE = '#1677FF';
+  const FADED = '#1677FF25';
+
+  return {
+    grid: { top: 20, left: 30, right: 16, bottom: 28 },
+    xAxis: {
+      type: 'category',
+      data: categories,
+      axisLine: { lineStyle: { color: '#F0F0F0' } },
+      axisTick: { show: false },
+      axisLabel: { fontSize: 9, color: '#999' },
+    },
+    yAxis: {
+      type: 'value',
+      splitLine: { lineStyle: { color: '#F0F0F0' } },
+      axisLabel: { fontSize: 9, color: '#999' },
+    },
+    series: [
+      {
+        name: '入库',
+        type: 'bar',
+        data: inData,
+        itemStyle: {
+          color: activeType === 'in' ? ACTIVE : FADED,
+          borderRadius: [4, 4, 0, 0],
+        },
+        barWidth: 10,
+      },
+      {
+        name: '出库',
+        type: 'bar',
+        data: outData,
+        itemStyle: {
+          color: activeType === 'out' ? ACTIVE : FADED,
+          borderRadius: [4, 4, 0, 0],
+        },
+        barWidth: 10,
+      }
+    ]
+  };
+}
+
 Page({
+  _trendChart: null,
+
   data: {
     materialId: 0,
     detail: null,
@@ -46,7 +101,7 @@ Page({
     isWarn: false,
     hasTrendData: false,
     trendType: 'in',
-    ecTrend: null,
+    ecTrend: { lazyLoad: true },
     // 调整抽屉 Task 15 加
   },
 
@@ -79,6 +134,10 @@ Page({
         isWarn,
         hasTrendData,
       });
+      if (hasTrendData) {
+        // 等 setData 完成后再初始化（确保 wx:if 内的 ec-canvas 已渲染）
+        wx.nextTick(() => this.initTrendChart());
+      }
     } else {
       this.setData({ loading: false });
     }
@@ -88,7 +147,21 @@ Page({
     const type = e.currentTarget.dataset.type;
     if (type === this.data.trendType) return;
     this.setData({ trendType: type });
-    // 趋势图重渲染由 Task 14 接通
+    if (this._trendChart) {
+      this._trendChart.setOption(buildTrendOption(this.data.detail.trend, type), true);
+    }
+  },
+
+  initTrendChart() {
+    const comp = this.selectComponent('#trendChart');
+    if (!comp) return;
+    comp.init((canvas, width, height, dpr) => {
+      const chart = echarts.init(canvas, null, { width, height, devicePixelRatio: dpr });
+      canvas.setChart(chart);
+      chart.setOption(buildTrendOption(this.data.detail.trend, this.data.trendType));
+      this._trendChart = chart;
+      return chart;
+    });
   },
 
   openAdjust() {
