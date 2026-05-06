@@ -61,6 +61,10 @@
         <text class="info-label">使用区域</text>
         <text class="info-value">{{material.usage_area || '-'}}</text>
       </view>
+      <view class="info-row">
+        <text class="info-label">存放区域</text>
+        <text class="info-value">{{material.storage_area || '-'}}</text>
+      </view>
       <view class="info-row info-row-last">
         <text class="info-label">预警值</text>
         <text class="info-value">{{material.min_stock || '-'}}</text>

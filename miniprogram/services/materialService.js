@@ -7,11 +7,22 @@ const { callCloud, callCloudSilent } = require('../utils/cloudCall');
 
 /**
  * 获取配件列表
+ * @param {object} [options] 可选筛选参数 { categories, usage_areas, storage_areas }
  */
-const listMaterials = async (keyword = '', page = 1, pageSize = 20) => {
+const listMaterials = async (keyword = '', page = 1, pageSize = 20, options = {}) => {
+  const { categories = [], usage_areas = [], storage_areas = [] } = options;
   return callCloudSilent('materialManager', {
     action: 'listMaterials',
-    data: { keyword, page, pageSize }
+    data: { keyword, page, pageSize, categories, usage_areas, storage_areas }
+  });
+};
+
+/**
+ * 获取使用区域 distinct 列表（筛选弹层用）
+ */
+const listMaterialAreas = async () => {
+  return callCloudSilent('materialManager', {
+    action: 'listMaterialAreas'
   });
 };
 
@@ -150,6 +161,7 @@ const adjustStock = async (params) => {
 
 module.exports = {
   listMaterials,
+  listMaterialAreas,
   addMaterial,
   updateMaterial,
   deleteMaterial,

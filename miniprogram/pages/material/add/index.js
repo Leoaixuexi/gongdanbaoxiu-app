@@ -25,12 +25,14 @@ Page({
       stock_in_time: '',
       quantity: '',
       usage_area: '',
+      storage_area: '',
       min_stock: '',
       remark: ''
     },
 
     photos: ['', '', ''],
     categories: [],
+    storageAreas: [],
     units: ['个', '根', '箱', '套', '米', '卷']
   },
 
@@ -55,18 +57,22 @@ Page({
       });
     }
 
-    await this.loadCategories();
+    await this.loadDictionaries();
   },
 
   async onShow() {
-    dictionary.refreshCache('material_category');
-    await this.loadCategories();
+    ['material_category', 'material_storage_area'].forEach(k => dictionary.refreshCache(k));
+    await this.loadDictionaries();
   },
 
-  async loadCategories() {
-    const options = await dictionary.getOptions('material_category');
+  async loadDictionaries() {
+    const [categories, storageAreas] = await Promise.all([
+      dictionary.getOptions('material_category'),
+      dictionary.getOptions('material_storage_area'),
+    ]);
     this.setData({
-      categories: options || [],
+      categories: categories || [],
+      storageAreas: storageAreas || [],
     });
   },
 
@@ -81,6 +87,10 @@ Page({
 
   onUnitChange(e) {
     this.setData({ 'form.unit': this.data.units[e.detail.value] });
+  },
+
+  onStorageAreaChange(e) {
+    this.setData({ 'form.storage_area': this.data.storageAreas[e.detail.value] });
   },
 
   onDateChange(e) {
@@ -159,6 +169,7 @@ Page({
         stock_in_time: form.stock_in_time,
         quantity: Number(form.quantity) || 0,
         usage_area: form.usage_area,
+        storage_area: form.storage_area,
         min_stock: Number(form.min_stock) || 0,
         images: imageUrls,
         remark: form.remark

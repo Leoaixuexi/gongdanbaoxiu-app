@@ -550,3 +550,73 @@
 - [ ] 入库提交后 product_records 表 type=in，products.stock 增加
 - [ ] 工单维修 → 物料管理 → /pages/material/index 仍是 2 Tab（配件列表/出库记录），materials 表数据原样
 - [ ] 维修员 role_id=3 在耗品 Tab 隐藏所有商品域入口
+
+---
+
+## 任务（当前）：物料管理体验升级 — 三维筛选 + 存放区域 + 首页耗品 dashboard
+
+**目标**：把已经在工作区里写到一半的 3 组改动收尾干净并提交。本轮只补 1 处必修白名单缺漏。
+
+### 3 组改动
+
+1. **物料列表三维筛选**（前端组件 + 云函数）
+   - `cloudfunctions/materialManager/index.js`：`listMaterials` 增加 `categories / usage_areas / storage_areas` 数组过滤；新增 `listMaterialAreas` action（aggregate 取 distinct usage_area）
+   - `miniprogram/services/materialService.js`：`listMaterials` 接受筛选参数；新增 `listMaterialAreas`
+   - `miniprogram/components/material-list/`：删除新增按钮；新增筛选按钮（红点指示器）+ 右滑筛选弹层（3 组 chip：分类 / 使用区域 / 存放区域）；新增 `hasActiveFilter` 状态
+
+2. **物料新增"存放区域" `storage_area` 字段**
+   - `cloudfunctions/materialManager/index.js`：`addMaterial` / `updateMaterial` 接受 `storage_area`
+   - `miniprogram/pages/material/add/index.{js,wxml}`：picker 增加"存放区域"选项 + 加载 `material_storage_area` 字典
+   - `miniprogram/pages/material/edit/index.{js,wxml}`：编辑页增加"存放区域"
+   - `miniprogram/pages/material/detail/index.wxml`：详情页展示
+
+3. **首页耗品 Tab dashboard 改造**
+   - `miniprogram/pages/home/index.wxml` (+222) / `index.wxss` (+553) / `index.js` (+39)：图片底图 banner、4 个统计小卡、库存预警 / 出库审核分栏卡、5 条多类型时间线动态、功能宫格加 subtitle/tone
+   - `miniprogram/images/consumable-header.png`（新增）
+
+### TODO（本轮收尾）
+
+- [x] 1. `cloudfunctions/dictionaryManager/index.js` L214：`MANAGE_MATERIAL_DICTS` 加 `'material_storage_area'`，否则行政经理 / 办美员工无法在管理后台增删改"存放区域"字典项
+- [x] 2. `node -c cloudfunctions/dictionaryManager/index.js` 静态校验
+- [ ] 3. 跑 code-simplifier 审查新改的代码
+- [ ] 4. 实机回归（用户在微信开发者工具中执行，见下方"自检清单"）
+- [ ] 5. 部署 `dictionaryManager` + `materialManager` 云函数
+- [ ] 6. `git add` + `git commit`（用户确认后）
+
+### 不做（YAGNI 红线）
+- 不做 `home/index.js` 的 `onQuickAction` "快速入库 / 发起申领" 接通（CTA 按钮目前 toast，不影响功能；下一轮再决定）
+- 不做 `home/index.js` 的 `onViewAll` "库存预警 / 出库审核 / 近期动态" 接通（点击 toast 即可，避免本轮 wxml 再加 `data-target` 字段引入新改动）
+- 不动 `home` / `material-list` / `material/{add,edit,detail}` / `materialManager` / `materialService` 已写好的代码
+
+### 自检清单（实机）
+
+- [ ] 物料 Tab 0 → 筛选按钮 → 弹出抽屉，3 组 chip 显示
+- [ ] 选 1 个分类 → 确定 → 列表过滤；右上角红点显示
+- [ ] 重置 → 列表恢复完整；红点消失
+- [ ] 管理后台 → 数据字典 → 新建 `material_storage_area` 字典项（行政经理 / 办美员工应都可保存）
+- [ ] 物料新增页 → 存放区域 picker 显示字典项
+- [ ] 提交新物料 → storage_area 字段写入 materials 集合
+- [ ] 详情页 / 编辑页 → 存放区域显示且可改
+- [ ] 首页耗品 Tab → 顶部图片底图正常加载，文字叠加无遮挡
+- [ ] 6 个功能宫格 tap → 4 个跳转 OK，2 个（快递/报表）toast
+- [ ] 库存预警 / 出库审核卡片视觉正常（点击 toast 待下轮接通）
+
+### Review
+
+#### 改动文件（共 1 个；前 14 个文件未做新改动，仅原工作区改动）
+
+- `cloudfunctions/dictionaryManager/index.js` L214：`MANAGE_MATERIAL_DICTS` 加 `'material_storage_area'`，让"存放区域"字典与"分类 / 位置"等同走 `canManageMaterial` 写权限放开
+
+#### 关键决策与偏离
+- 选择"最小化收尾"路线：不接通 onQuickAction / onViewAll 的新 CTA / 查看全部，留作下一轮（YAGNI）
+- 字典白名单只加 `material_storage_area`，不顺手清理掉 `material_location`（虽然字段命名上有重叠风险，但本轮 scope 不涉及）
+
+#### 部署须知
+- 微信开发者工具中右键以下云函数 → 上传并部署：
+  - `cloudfunctions/dictionaryManager`（白名单改了）
+  - `cloudfunctions/materialManager`（之前已写新增 listMaterialAreas action 和 storage_area 字段，未部署）
+- 前端：刷新模拟器即可
+
+#### 已知局限
+- 首页耗品 dashboard 的"快速入库 / 发起申领"CTA 和"查看全部"按钮目前点击只显示 toast，未接通跳转 — 留作下一轮工作
+- 物料筛选目前只在 `material-list` 组件内消化，没有暴露事件给父页 — 当前父页（material/index、stock-in）也不需要感知，OK

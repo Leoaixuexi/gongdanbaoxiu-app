@@ -7,6 +7,7 @@ const materialService = require('../../../services/materialService');
 const { ROLES, STORAGE_KEYS } = require('../../../utils/constants');
 const { smartCompress, COMPRESS_PRESETS } = require('../../../utils/imageUtils');
 const { uploadFiles } = require('../../../services/cloudStorage');
+const dictionary = require('../../../services/dictionary');
 
 const CATEGORIES = ['电气', '水暖', '门窗', '消防', '通用'];
 const UNITS = ['个', '根', '箱', '套', '米', '卷'];
@@ -24,6 +25,7 @@ Page({
       model: '',
       source: '',
       usage_area: '',
+      storage_area: '',
       min_stock: '',
     },
 
@@ -32,6 +34,7 @@ Page({
     unitIndex: -1,
     categories: CATEGORIES,
     units: UNITS,
+    storageAreas: [],
   },
 
   onLoad(options) {
@@ -51,7 +54,10 @@ Page({
   async _loadMaterial() {
     wx.showLoading({ title: '加载中' });
     try {
-      const result = await materialService.listMaterials('', 1, 100);
+      const [result, storageAreas] = await Promise.all([
+        materialService.listMaterials('', 1, 100),
+        dictionary.getOptions('material_storage_area'),
+      ]);
       const material = (result.materials || []).find(m => m.material_id === this._materialId);
       if (!material) {
         wx.showToast({ title: '配件不存在', icon: 'none' });
@@ -78,11 +84,13 @@ Page({
           model: material.model || '',
           source: material.source || '',
           usage_area: material.usage_area || '',
+          storage_area: material.storage_area || '',
           min_stock: material.min_stock != null ? String(material.min_stock) : '',
         },
         photos,
         categoryIndex: categoryIndex >= 0 ? categoryIndex : 0,
         unitIndex: unitIndex >= 0 ? unitIndex : 0,
+        storageAreas: storageAreas || [],
       });
     } catch (e) {
       console.error('[MaterialEdit] Load error:', e);
@@ -104,6 +112,10 @@ Page({
   onUnitChange(e) {
     const index = Number(e.detail.value);
     this.setData({ 'form.unit': UNITS[index], unitIndex: index });
+  },
+
+  onStorageAreaChange(e) {
+    this.setData({ 'form.storage_area': this.data.storageAreas[e.detail.value] });
   },
 
   onChoosePhoto(e) {
@@ -180,6 +192,7 @@ Page({
         model: form.model,
         source: form.source,
         usage_area: form.usage_area,
+        storage_area: form.storage_area,
         min_stock: Number(form.min_stock) || 0,
         images: imageUrls,
       });

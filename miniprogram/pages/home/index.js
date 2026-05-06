@@ -78,24 +78,43 @@ Page({
       monthOutAmount: '96,320',
     },
     consumableMonth: '',
-    // 耗品管理 - 功能宫格
+    // 耗品管理 - 功能宫格（tone/subtitle 用于 dashboard 视觉）
     consumableFuncRows: [
       [
-        { icon: 'gift-o', label: '商品管理', bg: '#7C3AED' },
-        { icon: 'add-o', label: '入库管理', bg: '#1677FF' },
-        { icon: 'upgrade', label: '出库管理', bg: '#FF6A00' },
+        { icon: 'gift-o', label: '商品管理', bg: '#7C3AED', tone: 'blue', subtitle: '管理商品信息' },
+        { icon: 'add-o', label: '入库管理', bg: '#1677FF', tone: 'green', subtitle: '采购入库登记' },
+        { icon: 'upgrade', label: '出库管理', bg: '#FF6A00', tone: 'orange', subtitle: '领用出库登记' },
       ],
       [
-        { icon: 'search', label: '库存查询', bg: '#00B578' },
-        { icon: 'logistics', label: '快递管理', bg: '#00B4D8' },
-        { icon: 'chart-trending-o', label: '数据报表', bg: '#FFB100' },
+        { icon: 'search', label: '库存查询', bg: '#00B578', tone: 'purple', subtitle: '实时库存查询' },
+        { icon: 'logistics', label: '快递管理', bg: '#00B4D8', tone: 'blue', subtitle: '物流跟踪管理' },
+        { icon: 'chart-trending-o', label: '数据报表', bg: '#FFB100', tone: 'green', subtitle: '统计报表分析' },
       ],
+    ],
+    // 耗品管理 - 4 个统计小卡（用于 dashboard 库存大卡片底部）
+    consumableStatCards: [
+      { icon: 'down', tone: 'blue', label: '本月已入库', value: '320', unit: '件', delta: '↑ 8.2%', trend: 'up' },
+      { icon: 'cart-o', tone: 'green', label: '本月已采购金额', value: '¥128,560', unit: '', delta: '↑ 10.3%', trend: 'up' },
+      { icon: 'upgrade', tone: 'orange', label: '本月已出库', value: '280', unit: '件', delta: '↓ 5.6%', trend: 'down' },
+      { icon: 'chart-trending-o', tone: 'purple', label: '本月已消耗金额', value: '¥96,430', unit: '', delta: '↑ 6.8%', trend: 'up' },
+    ],
+    // 耗品管理 - 库存预警明细（dashboard 左下卡）
+    consumableWarnings: [
+      { name: 'A4打印纸', detail: '库存 8 件 低于最小库存 20' },
+      { name: '签字笔（黑色）', detail: '库存 12 支 低于最小库存 30' },
+    ],
+    // 耗品管理 - 出库审核明细（dashboard 右下卡）
+    consumableApprovals: [
+      { applicant: '李四', detail: '办公用纸等 3 件' },
+      { applicant: '王五', detail: '笔记本等 2 件' },
     ],
     // 耗品管理 - 最近动态
     consumableActivities: [
-      { text: '办公桌椅 x20 已入库', time: '10:30', badgeBg: '#1677FF1A', timeColor: '#1677FF' },
-      { text: '打印纸 x50 待审批出库', time: '09:15', badgeBg: '#FF6A001A', timeColor: '#8A6A53' },
-      { text: '库存盘点完成，差异3项', time: '昨天', badgeBg: '#00B5781A', timeColor: '#4E8F72' },
+      { type: '入库', icon: 'plus', tone: 'green', title: 'A4打印纸（70g）等 5 件', time: '今天 09:30' },
+      { type: '出库', icon: 'upgrade', tone: 'orange', title: '办公用纸等 3 件', time: '今天 09:15' },
+      { type: '审批', icon: 'down', tone: 'blue', title: '李四的出库申请已通过', time: '今天 09:10' },
+      { type: '入库', icon: 'plus', tone: 'green', title: '签字笔（黑色）等 10 件', time: '昨天 16:45' },
+      { type: '出库', icon: 'upgrade', tone: 'orange', title: '笔记本等 2 件', time: '昨天 15:20' },
     ],
 
     // 楼宇巡检 - 统计数据

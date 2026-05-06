@@ -151,6 +151,18 @@
           />
         </view>
         <view class="field-divider"></view>
+        <view class="field-row">
+          <view class="field-label-wrap">
+            <text class="field-label">存放区域</text>
+          </view>
+          <picker mode="selector" range="{{storageAreas}}" bindchange="onStorageAreaChange">
+            <view class="field-picker">
+              <text class="picker-val {{form.storage_area ? '' : 'picker-placeholder'}}">{{form.storage_area || '请选择'}}</text>
+              <view class="picker-arrow"></view>
+            </view>
+          </picker>
+        </view>
+        <view class="field-divider"></view>
         <view class="field-row field-row-last">
           <view class="field-label-wrap">
             <text class="field-label">预警值</text>

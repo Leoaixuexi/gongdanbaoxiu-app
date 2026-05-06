@@ -146,7 +146,7 @@
 .stock-tag-warning { color: #F59E0B; background: #FFFBEB; }
 .stock-tag-danger { color: #DC2626; background: #FEF2F2; }
 
-/* ====== Header (Task 5 增加) ====== */
+/* ====== Header ====== */
 .ml-header {
   flex-shrink: 0;
   padding: 16rpx 24rpx 0;
@@ -182,7 +182,8 @@
   font-size: 26rpx;
 }
 
-.ml-add-btn {
+.ml-filter-btn {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 6rpx;
@@ -192,12 +193,23 @@
   height: 72rpx;
 }
 
-.ml-add-btn:active { opacity: 0.85; }
+.ml-filter-btn:active { opacity: 0.85; }
 
-.ml-add-text {
+.ml-filter-btn-text {
   color: #FFFFFF;
   font-size: 26rpx;
   font-weight: 600;
+}
+
+.ml-filter-dot {
+  position: absolute;
+  top: 8rpx;
+  right: 8rpx;
+  width: 14rpx;
+  height: 14rpx;
+  border-radius: 50%;
+  background: #EF4444;
+  border: 2rpx solid #FFFFFF;
 }
 
 .ml-filter {
@@ -250,3 +262,111 @@
 .m-card-menu:active {
   opacity: 0.6;
 }
+
+/* ====== 筛选弹层 ====== */
+.filter-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: #F7F7F7;
+}
+
+.filter-panel-header {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 32rpx 32rpx 24rpx;
+  background: #FFFFFF;
+}
+
+.filter-panel-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.filter-panel-close {
+  padding: 8rpx;
+}
+
+.filter-panel-body {
+  flex: 1;
+  min-height: 0;
+  padding: 0 32rpx;
+}
+
+.filter-section {
+  background: #FFFFFF;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  margin-top: 24rpx;
+}
+
+.filter-section-title {
+  display: block;
+  font-size: 26rpx;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 16rpx;
+}
+
+.filter-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+}
+
+.filter-chip {
+  padding: 12rpx 24rpx;
+  border-radius: 24rpx;
+  font-size: 24rpx;
+  color: #525252;
+  background: #F3F4F6;
+  border: 1rpx solid transparent;
+}
+
+.filter-chip-active {
+  color: #1677FF;
+  background: #E6F0FF;
+  border-color: #1677FF;
+}
+
+.filter-empty {
+  font-size: 24rpx;
+  color: #a3a3a3;
+  padding: 16rpx 0;
+}
+
+.filter-panel-footer {
+  flex-shrink: 0;
+  display: flex;
+  gap: 16rpx;
+  padding: 20rpx 32rpx calc(20rpx + env(safe-area-inset-bottom));
+  background: #FFFFFF;
+  border-top: 1rpx solid #F0F0F0;
+}
+
+.filter-btn {
+  flex: 1;
+  height: 80rpx;
+  line-height: 80rpx;
+  text-align: center;
+  border-radius: 16rpx;
+  font-size: 28rpx;
+  font-weight: 600;
+}
+
+.filter-btn-reset {
+  background: #F3F4F6;
+  color: #525252;
+}
+
+.filter-btn-reset:active { opacity: 0.85; }
+
+.filter-btn-confirm {
+  background: #1677FF;
+  color: #FFFFFF;
+}
+
+.filter-btn-confirm:active { opacity: 0.85; }

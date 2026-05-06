@@ -12,9 +12,10 @@
           bindconfirm="onSearchConfirm"
         />
       </view>
-      <view wx:if="{{canManage}}" class="ml-add-btn" bindtap="onAddTap">
-        <van-icon name="plus" size="18px" color="#FFFFFF" />
-        <text class="ml-add-text">新增</text>
+      <view class="ml-filter-btn" bindtap="onOpenFilter">
+        <van-icon name="filter-o" size="18px" color="#FFFFFF" />
+        <text class="ml-filter-btn-text">筛选</text>
+        <view wx:if="{{hasActiveFilter}}" class="ml-filter-dot"></view>
       </view>
     </view>
 
@@ -107,4 +108,76 @@
       <text>加载更多...</text>
     </view>
   </scroll-view>
+
+  <!-- 筛选弹层 -->
+  <van-popup
+    show="{{ showFilter }}"
+    position="right"
+    custom-style="width: 80%; height: 100%;"
+    bind:close="onCloseFilter"
+  >
+    <view class="filter-panel">
+      <view class="filter-panel-header">
+        <text class="filter-panel-title">筛选</text>
+        <view class="filter-panel-close" bindtap="onCloseFilter">
+          <van-icon name="cross" size="20px" color="#737373" />
+        </view>
+      </view>
+
+      <scroll-view scroll-y class="filter-panel-body">
+        <!-- 类别 -->
+        <view class="filter-section">
+          <text class="filter-section-title">配件类别</text>
+          <view class="filter-chips">
+            <view
+              wx:for="{{optCategories}}"
+              wx:key="*this"
+              class="filter-chip {{filterCategories.indexOf(item) >= 0 ? 'filter-chip-active' : ''}}"
+              data-group="category"
+              data-value="{{item}}"
+              bindtap="onToggleFilterChip"
+            >{{item}}</view>
+            <view wx:if="{{optCategories.length === 0}}" class="filter-empty">暂无选项</view>
+          </view>
+        </view>
+
+        <!-- 使用区域 -->
+        <view class="filter-section">
+          <text class="filter-section-title">使用区域</text>
+          <view class="filter-chips">
+            <view
+              wx:for="{{optUsageAreas}}"
+              wx:key="*this"
+              class="filter-chip {{filterUsageAreas.indexOf(item) >= 0 ? 'filter-chip-active' : ''}}"
+              data-group="usage"
+              data-value="{{item}}"
+              bindtap="onToggleFilterChip"
+            >{{item}}</view>
+            <view wx:if="{{optUsageAreas.length === 0}}" class="filter-empty">暂无选项</view>
+          </view>
+        </view>
+
+        <!-- 存放区域 -->
+        <view class="filter-section">
+          <text class="filter-section-title">存放区域</text>
+          <view class="filter-chips">
+            <view
+              wx:for="{{optStorageAreas}}"
+              wx:key="*this"
+              class="filter-chip {{filterStorageAreas.indexOf(item) >= 0 ? 'filter-chip-active' : ''}}"
+              data-group="storage"
+              data-value="{{item}}"
+              bindtap="onToggleFilterChip"
+            >{{item}}</view>
+            <view wx:if="{{optStorageAreas.length === 0}}" class="filter-empty">暂无选项（请前往字典管理添加）</view>
+          </view>
+        </view>
+      </scroll-view>
+
+      <view class="filter-panel-footer">
+        <view class="filter-btn filter-btn-reset" bindtap="onResetFilter">重置</view>
+        <view class="filter-btn filter-btn-confirm" bindtap="onConfirmFilter">确定</view>
+      </view>
+    </view>
+  </van-popup>
 </view>

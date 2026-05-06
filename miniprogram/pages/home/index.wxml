@@ -144,130 +144,144 @@
         bindrefresherrefresh="onRefresh"
       >
 
-        <!-- 数据概览卡片 -->
-        <view class="cs-card cs-overview-card">
-          <view class="cs-overview-top">
-            <view class="cs-overview-left">
-              <text class="cs-overview-label">库存商品总量</text>
-              <text class="cs-overview-value">{{consumableOverview.totalStock}}<text class="cs-overview-unit">件</text></text>
-            </view>
-            <text class="cs-month-text">统计周期 · {{consumableMonth}}</text>
-          </view>
-          <view class="cs-divider"></view>
-          <view class="cs-stats-grid">
-            <view class="cs-stat-cell cs-border-right cs-border-bottom">
-              <view class="cs-stat-icon">
-                <van-icon name="add-o" size="15px" color="#5C8DFF" />
-              </view>
-              <view class="cs-stat-texts">
-                <text class="cs-stat-label">本月入库总量</text>
-                <text class="cs-stat-value">{{consumableOverview.monthIn}}件</text>
-                <text class="cs-stat-trend">环比上月增长 --</text>
-              </view>
-            </view>
-            <view class="cs-stat-cell cs-border-bottom">
-              <view class="cs-stat-icon">
-                <van-icon name="orders-o" size="15px" color="#5C8DFF" />
-              </view>
-              <view class="cs-stat-texts">
-                <text class="cs-stat-label">本月采购总金额</text>
-                <text class="cs-stat-value">¥{{consumableOverview.monthInAmount}}</text>
-                <text class="cs-stat-trend">环比上月增长 --</text>
-              </view>
-            </view>
-            <view class="cs-stat-cell cs-border-right">
-              <view class="cs-stat-icon">
-                <van-icon name="upgrade" size="15px" color="#5C8DFF" />
-              </view>
-              <view class="cs-stat-texts">
-                <text class="cs-stat-label">本月出库总量</text>
-                <text class="cs-stat-value">{{consumableOverview.monthOut}}件</text>
-                <text class="cs-stat-trend">环比上月增长 --</text>
-              </view>
-            </view>
-            <view class="cs-stat-cell">
-              <view class="cs-stat-icon">
-                <van-icon name="chart-trending-o" size="15px" color="#5C8DFF" />
-              </view>
-              <view class="cs-stat-texts">
-                <text class="cs-stat-label">本月消耗总金额</text>
-                <text class="cs-stat-value">¥{{consumableOverview.monthOutAmount}}</text>
-                <text class="cs-stat-trend">环比上月增长 --</text>
-              </view>
-            </view>
-          </view>
-        </view>
+        <view class="ds-content">
+          <!-- 顶部数据模块：图片底图 + 绝对定位文字叠加 -->
+          <view class="ds-banner">
+            <image src="/images/consumable-header.png" mode="widthFix" class="ds-banner-img"></image>
 
-        <!-- 功能宫格（2行×4列） -->
-        <view class="cs-card cs-func-card">
-          <view wx:for="{{consumableFuncRows}}" wx:key="index" wx:for-item="row" class="cs-func-row {{index > 0 ? 'cs-func-row-mt' : ''}}">
+            <view class="ds-banner-title">
+              <text class="ds-banner-kicker">库存总量</text>
+              <text class="ds-banner-num">{{consumableOverview.totalStock}}</text>
+              <text class="ds-banner-sub">统计周期 · {{consumableMonth}}</text>
+            </view>
+
+            <view class="ds-banner-stats">
+              <view class="ds-banner-stat" wx:for="{{consumableStatCards}}" wx:key="label">
+                <text class="ds-banner-stat-label">{{item.label}}</text>
+                <text class="ds-banner-stat-value">{{item.value}}<text class="ds-banner-stat-unit">{{item.unit}}</text></text>
+              </view>
+            </view>
+          </view>
+
+          <!-- 常用功能 6 宫格 -->
+          <view class="ds-panel ds-actions-panel">
+            <view class="ds-section-title"><text class="ds-h2">常用功能</text></view>
+            <view class="ds-actions-grid">
+              <block wx:for="{{consumableFuncRows}}" wx:for-item="row" wx:for-index="rowIdx" wx:key="rowIdx">
+                <view
+                  wx:for="{{row}}"
+                  wx:for-item="func"
+                  wx:key="label"
+                  class="ds-action"
+                  data-module="consumable"
+                  data-label="{{func.label}}"
+                  bindtap="onFunctionTap"
+                  hover-class="ds-row-hover"
+                >
+                  <view class="ds-action-icon ds-{{func.tone}}">
+                    <van-icon name="{{func.icon}}" size="19px" />
+                  </view>
+                  <view class="ds-action-text">
+                    <text class="ds-action-title">{{func.label}}</text>
+                    <text class="ds-action-sub">{{func.subtitle}}</text>
+                  </view>
+                </view>
+              </block>
+            </view>
+          </view>
+
+          <!-- CTA 双按钮 -->
+          <view class="ds-cta-grid">
+            <view class="ds-cta ds-blue" data-action="发起申领" bindtap="onQuickAction" hover-class="ds-cta-hover">
+              <view class="ds-cta-text">
+                <text class="ds-cta-title">发起申领</text>
+                <text class="ds-cta-sub">快速发起领用申请</text>
+              </view>
+              <view class="ds-doc-stack"></view>
+            </view>
+            <view class="ds-cta ds-green" data-action="快速入库" bindtap="onQuickAction" hover-class="ds-cta-hover">
+              <view class="ds-cta-text">
+                <text class="ds-cta-title">快速入库</text>
+                <text class="ds-cta-sub">扫码快速入库</text>
+              </view>
+              <view class="ds-cube-stack"></view>
+            </view>
+          </view>
+
+          <!-- 左右分栏：库存预警 + 出库审核 -->
+          <view class="ds-split-grid">
+            <view class="ds-panel ds-compact-panel">
+              <view class="ds-panel-head">
+                <view class="ds-h2">库存预警 <text class="ds-badge">{{consumableStats.stockWarning}}</text></view>
+                <view class="ds-more" data-module="consumable" bindtap="onViewAll">
+                  查看全部 <van-icon name="arrow" size="12px" color="#2f7bff" />
+                </view>
+              </view>
+              <view
+                class="ds-warning-row"
+                wx:for="{{consumableWarnings}}"
+                wx:key="name"
+                data-module="consumable"
+                bindtap="onViewAll"
+                hover-class="ds-row-hover"
+              >
+                <view class="ds-warn-icon">
+                  <van-icon name="warning-o" size="15px" color="#ff4f58" />
+                </view>
+                <view class="ds-row-text">
+                  <text class="ds-row-title">{{item.name}}</text>
+                  <text class="ds-row-sub">{{item.detail}}</text>
+                </view>
+                <van-icon name="arrow" size="13px" color="#ff4f58" custom-class="ds-row-arrow" />
+              </view>
+            </view>
+
+            <view class="ds-panel ds-compact-panel">
+              <view class="ds-panel-head">
+                <view class="ds-h2">出库审核 <text class="ds-badge">{{consumableStats.pendingApproval}}</text></view>
+                <view class="ds-more" data-module="consumable" bindtap="onViewAll">
+                  查看全部 <van-icon name="arrow" size="12px" color="#2f7bff" />
+                </view>
+              </view>
+              <view
+                class="ds-approval-row"
+                wx:for="{{consumableApprovals}}"
+                wx:key="applicant"
+                data-module="consumable"
+                bindtap="onViewAll"
+                hover-class="ds-row-hover"
+              >
+                <view class="ds-row-text">
+                  <text class="ds-row-title">申请人： {{item.applicant}}</text>
+                  <text class="ds-row-sub">{{item.detail}}</text>
+                </view>
+                <text class="ds-status-tag">待审核</text>
+              </view>
+            </view>
+          </view>
+
+          <!-- 最近动态时间线 -->
+          <view class="ds-panel ds-timeline-panel">
+            <view class="ds-panel-head">
+              <text class="ds-h2">最近动态</text>
+              <view class="ds-more" data-module="consumable" bindtap="onViewAll">
+                查看全部 <van-icon name="arrow" size="12px" color="#2f7bff" />
+              </view>
+            </view>
             <view
-              wx:for="{{row}}"
-              wx:key="label"
-              wx:for-item="func"
-              class="cs-func-item"
-              data-module="consumable"
-              data-label="{{func.label}}"
-              bindtap="onFunctionTap"
+              class="ds-activity-row"
+              wx:for="{{consumableActivities}}"
+              wx:key="title"
+              hover-class="ds-row-hover"
             >
-              <view class="cs-func-icon">
-                <van-icon name="{{func.icon}}" size="22px" color="#4F6DF5" />
+              <view class="ds-timeline-dot ds-{{item.tone}}">
+                <van-icon name="{{item.icon}}" size="10px" color="#fff" />
               </view>
-              <text class="cs-func-label">{{func.label}}</text>
+              <text class="ds-activity-type">{{item.type}}</text>
+              <text class="ds-activity-title">{{item.title}}</text>
+              <text class="ds-activity-time">{{item.time}}</text>
+              <van-icon name="arrow" size="13px" color="#7b859f" custom-class="ds-row-arrow" />
             </view>
-          </view>
-        </view>
-
-        <!-- 待办事项 -->
-        <view class="cs-todo-section">
-          <text class="cs-section-title">待办事项</text>
-          <view class="cs-todo-row">
-            <view class="cs-todo-card">
-              <view class="cs-todo-left">
-                <text class="cs-todo-name">库存预警</text>
-                <text class="cs-todo-count">{{consumableStats.stockWarning}}</text>
-              </view>
-              <view class="cs-todo-icon cs-todo-icon-orange">
-                <van-icon name="warning-o" size="18px" color="#F29A58" />
-              </view>
-            </view>
-            <view class="cs-todo-card">
-              <view class="cs-todo-left">
-                <text class="cs-todo-name">出库审核</text>
-                <text class="cs-todo-count">{{consumableStats.pendingApproval}}</text>
-              </view>
-              <view class="cs-todo-icon cs-todo-icon-blue">
-                <van-icon name="records-o" size="18px" color="#5C8DFF" />
-              </view>
-            </view>
-          </view>
-        </view>
-
-        <!-- 快捷入口 -->
-        <view class="cs-quick-section">
-          <text class="cs-section-title">快捷入口</text>
-          <view class="quick-row">
-            <view class="quick-btn quick-btn-primary" data-action="发起申领" bindtap="onQuickAction">
-              <van-icon name="upgrade" size="16px" color="#fafafa" />
-              <text class="quick-btn-text-light">发起申领</text>
-            </view>
-            <view class="quick-btn quick-btn-secondary" data-action="快速入库" bindtap="onQuickAction">
-              <van-icon name="add-o" size="16px" color="#fafafa" />
-              <text class="quick-btn-text-dark">快速入库</text>
-            </view>
-          </view>
-        </view>
-
-        <!-- 最近动态 -->
-        <view class="cs-card cs-activity-card">
-          <view class="cs-activity-header">
-            <text class="cs-section-title cs-section-title-inline">最近动态</text>
-            <text class="cs-view-all" data-module="consumable" bindtap="onViewAll">查看全部 ></text>
-          </view>
-          <view wx:for="{{consumableActivities}}" wx:key="index" class="cs-activity-item">
-            <view class="cs-activity-badge" style="background: {{item.badgeBg}};"></view>
-            <text class="cs-activity-text">{{item.text}}</text>
-            <text class="cs-activity-time" style="color: {{item.timeColor}};">{{item.time}}</text>
           </view>
         </view>
 

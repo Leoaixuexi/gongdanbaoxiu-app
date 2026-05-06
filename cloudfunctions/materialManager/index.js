@@ -58,15 +58,25 @@ exports.main = async (event, context) => {
 
       // ===== 配件列表 =====
       case 'listMaterials': {
-        const { keyword, page = 1, pageSize = 20 } = data;
+        const {
+          keyword, page = 1, pageSize = 20,
+          categories = [], usage_areas = [], storage_areas = [],
+        } = data;
         const conditions = {};
 
         if (keyword) {
-          conditions.name = db.RegExp({
-            regexp: keyword,
-            options: 'i'
-          });
+          conditions.name = db.RegExp({ regexp: keyword, options: 'i' });
         }
+        const arrayFilters = [
+          ['category', categories],
+          ['usage_area', usage_areas],
+          ['storage_area', storage_areas],
+        ];
+        arrayFilters.forEach(([field, values]) => {
+          if (Array.isArray(values) && values.length > 0) {
+            conditions[field] = _.in(values);
+          }
+        });
 
         const query = db.collection('materials').where(conditions);
         const [countRes, listRes] = await Promise.all([
@@ -86,6 +96,18 @@ exports.main = async (event, context) => {
         };
       }
 
+      // ===== 使用区域 distinct 列表（筛选弹层用） =====
+      case 'listMaterialAreas': {
+        const { list } = await db.collection('materials')
+          .aggregate()
+          .group({ _id: '$usage_area' })
+          .end();
+        const usage_areas = (list || [])
+          .map(item => item._id)
+          .filter(v => typeof v === 'string' && v.trim() !== '');
+        return { success: true, usage_areas };
+      }
+
       // ===== 新增配件 =====
       case 'addMaterial': {
         if (!canManageMaterial(user)) {
@@ -95,7 +117,7 @@ exports.main = async (event, context) => {
         const {
           material_number, name, category, unit,
           source = '', stock_in_time, quantity = 0,
-          usage_area = '', min_stock = 0, spec = '', model = '',
+          usage_area = '', storage_area = '', min_stock = 0, spec = '', model = '',
           images = [], remark = ''
         } = data;
 
@@ -134,6 +156,7 @@ exports.main = async (event, context) => {
             source,
             stock_in_time: parsedStockInTime,
             usage_area,
+            storage_area,
             spec,
             model,
             images: images.slice(0, 3),
@@ -296,7 +319,7 @@ exports.main = async (event, context) => {
           return { success: false, error: '配件不存在' };
         }
         const updateData = { updated_at: new Date() };
-        const allowed = ['name', 'material_number', 'category', 'unit', 'spec', 'model', 'source', 'usage_area', 'min_stock', 'images'];
+        const allowed = ['name', 'material_number', 'category', 'unit', 'spec', 'model', 'source', 'usage_area', 'storage_area', 'min_stock', 'images'];
         allowed.forEach(k => {
           if (fields[k] !== undefined) updateData[k] = fields[k];
         });

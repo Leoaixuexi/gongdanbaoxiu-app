@@ -152,6 +152,19 @@
       />
     </view>
 
+    <!-- 存放区域 -->
+    <view class="card">
+      <view class="card-label-wrapper">
+        <text class="label">存放区域</text>
+      </view>
+      <picker mode="selector" range="{{storageAreas}}" bindchange="onStorageAreaChange">
+        <view class="card-right">
+          <text class="picker-text {{form.storage_area ? '' : 'placeholder'}}">{{form.storage_area || '请选择'}}</text>
+          <view class="card-arrow"></view>
+        </view>
+      </picker>
+    </view>
+
     <!-- 库存预警值 -->
     <view class="card">
       <view class="card-label-wrapper">
