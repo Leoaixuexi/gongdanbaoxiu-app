@@ -33,81 +33,90 @@
         refresher-triggered="{{refreshing}}"
         bindrefresherrefresh="onRefresh"
       >
-        <!-- 统计卡片 -->
-        <view class="kpi-grid kpi-grid-4">
-          <view class="kpi-card kpi-card-sm" bindtap="onStatCardTap" data-status="reported">
-            <view class="kpi-text-group">
-              <text class="kpi-label">已提报</text>
-              <text class="kpi-value" style="color: #EA580C;">{{workOrderStats.pending}}</text>
-            </view>
-            <view class="kpi-icon-wrapper">
-              <van-icon name="setting-o" size="28rpx" color="#EA580C" custom-style="opacity:0.6" />
-            </view>
+        <!-- 顶部 hero：纯装饰建筑头图 -->
+        <view class="wo-banner">
+          <image src="/images/workorder-header.png" mode="aspectFit" class="wo-banner-img"></image>
+        </view>
+
+        <!-- 工单概况 -->
+        <view class="wo-card">
+          <view class="wo-card-head">
+            <text class="wo-card-title">工单概况</text>
+            <text class="wo-card-meta">实时同步</text>
           </view>
-          <view class="kpi-card kpi-card-sm" bindtap="onStatCardTap" data-status="maintenance">
-            <view class="kpi-text-group">
-              <text class="kpi-label">维修中</text>
-              <text class="kpi-value" style="color: #2563EB;">{{workOrderStats.inProgress}}</text>
+          <view class="wo-stat-row">
+            <view class="wo-stat" bindtap="onStatCardTap" data-status="reported">
+              <view class="wo-stat-icon wo-icon-blue">
+                <van-icon name="orders-o" size="26px" color="#3B82F6" />
+              </view>
+              <text class="wo-stat-num">{{workOrderStats.pending}}</text>
+              <text class="wo-stat-label">已提报</text>
             </view>
-            <view class="kpi-icon-wrapper">
-              <van-icon name="clock-o" size="28rpx" color="#2563EB" custom-style="opacity:0.6" />
+            <view class="wo-stat" bindtap="onStatCardTap" data-status="maintenance">
+              <view class="wo-stat-icon wo-icon-orange">
+                <van-icon name="setting-o" size="26px" color="#F97316" />
+              </view>
+              <text class="wo-stat-num">{{workOrderStats.inProgress}}</text>
+              <text class="wo-stat-label">维修中</text>
             </view>
-          </view>
-          <view class="kpi-card kpi-card-sm" bindtap="onStatCardTap" data-status="review">
-            <view class="kpi-text-group">
-              <text class="kpi-label">待复核</text>
-              <text class="kpi-value" style="color: #7C3AED;">{{workOrderStats.review}}</text>
+            <view class="wo-stat" bindtap="onStatCardTap" data-status="review">
+              <view class="wo-stat-icon wo-icon-purple">
+                <van-icon name="todo-list-o" size="26px" color="#A855F7" />
+              </view>
+              <text class="wo-stat-num">{{workOrderStats.review}}</text>
+              <text class="wo-stat-label">待复核</text>
             </view>
-            <view class="kpi-icon-wrapper">
-              <van-icon name="eye-o" size="28rpx" color="#7C3AED" custom-style="opacity:0.6" />
-            </view>
-          </view>
-          <view class="kpi-card kpi-card-sm" bindtap="onStatCardTap" data-status="completed">
-            <view class="kpi-text-group">
-              <text class="kpi-label">已完成</text>
-              <text class="kpi-value" style="color: #16A34A;">{{workOrderStats.completed}}</text>
-            </view>
-            <view class="kpi-icon-wrapper">
-              <van-icon name="passed" size="28rpx" color="#16A34A" custom-style="opacity:0.6" />
+            <view class="wo-stat" bindtap="onStatCardTap" data-status="completed">
+              <view class="wo-stat-icon wo-icon-green">
+                <van-icon name="passed" size="26px" color="#10B981" />
+              </view>
+              <text class="wo-stat-num">{{workOrderStats.completed}}</text>
+              <text class="wo-stat-label">已完成</text>
             </view>
           </view>
         </view>
 
-        <!-- 功能入口 -->
-        <view class="func-card">
-          <view class="func-row">
+        <!-- 常用功能 -->
+        <view class="wo-card">
+          <text class="wo-card-title">常用功能</text>
+          <view class="wo-func-row">
             <view
               wx:for="{{workOrderFunctions}}"
               wx:key="label"
-              class="func-item"
+              class="wo-func"
               data-module="workOrder"
               data-label="{{item.label}}"
               bindtap="onFunctionTap"
             >
-              <view class="func-icon">
-                <van-icon name="{{item.icon}}" size="22px" color="#4F6DF5" />
+              <view class="wo-func-icon wo-func-icon-{{index}}">
+                <van-icon name="{{item.icon}}" size="30px" color="{{index === 0 ? '#3B82F6' : index === 1 ? '#A855F7' : index === 2 ? '#3B82F6' : '#F59E0B'}}" />
               </view>
-              <text class="func-label">{{item.label}}</text>
+              <text class="wo-func-label">{{item.label}}</text>
             </view>
           </view>
         </view>
 
-        <!-- 快捷入口（维修员不显示） -->
-        <view class="quick-section" wx:if="{{!isMaintenanceWorker}}">
-          <text class="section-title">快捷入口</text>
-          <view class="quick-row">
-            <view class="quick-btn quick-btn-primary" data-action="新建工单" bindtap="onQuickAction">
-              <van-icon name="plus" size="16px" color="#fafafa" />
-              <text class="quick-btn-text-light">新建工单</text>
+        <!-- 快捷操作（维修员不显示） -->
+        <view wx:if="{{!isMaintenanceWorker}}" class="wo-quick">
+          <view class="wo-cta-row">
+            <view class="wo-cta wo-cta-blue" data-action="新建工单" bindtap="onQuickAction" hover-class="wo-cta-hover">
+              <image class="wo-cta-bg" src="/images/cta-new-workorder.png" mode="aspectFill" />
+              <view class="wo-cta-text">
+                <text class="wo-cta-title">新建工单</text>
+                <text class="wo-cta-sub">快速提交维修申请</text>
+              </view>
             </view>
-            <view class="quick-btn quick-btn-secondary" data-action="物料入库" bindtap="onQuickAction">
-              <van-icon name="plus" size="16px" color="#fafafa" />
-              <text class="quick-btn-text-dark">物料入库</text>
+            <view class="wo-cta wo-cta-green" data-action="物料入库" bindtap="onQuickAction" hover-class="wo-cta-hover">
+              <image class="wo-cta-bg" src="/images/cta-stockin.png" mode="aspectFill" />
+              <view class="wo-cta-text">
+                <text class="wo-cta-title">物料入库</text>
+                <text class="wo-cta-sub">物料入库登记</text>
+              </view>
             </view>
           </view>
         </view>
 
-        <!-- 最近记录 -->
+        <!-- 最近记录（保留原样式） -->
         <view class="recent-section">
           <view class="recent-header">
             <text class="section-title">最近记录</text>
@@ -145,21 +154,29 @@
       >
 
         <view class="ds-content">
-          <!-- 顶部数据模块：图片底图 + 绝对定位文字叠加 -->
+          <!-- 顶部 hero：文具图 + 库存总量 -->
           <view class="ds-banner">
-            <image src="/images/consumable-header.png" mode="widthFix" class="ds-banner-img"></image>
-
-            <view class="ds-banner-title">
-              <text class="ds-banner-kicker">库存总量</text>
-              <text class="ds-banner-num">{{consumableOverview.totalStock}}</text>
-              <text class="ds-banner-sub">统计周期 · {{consumableMonth}}</text>
-            </view>
-
-            <view class="ds-banner-stats">
-              <view class="ds-banner-stat" wx:for="{{consumableStatCards}}" wx:key="label">
-                <text class="ds-banner-stat-label">{{item.label}}</text>
-                <text class="ds-banner-stat-value">{{item.value}}<text class="ds-banner-stat-unit">{{item.unit}}</text></text>
+            <view class="ds-banner-hero">
+              <image src="/images/consumable-header.png" mode="widthFix" class="ds-banner-img"></image>
+              <view class="ds-banner-title">
+                <text class="ds-banner-kicker">库存总量</text>
+                <text class="ds-banner-num">{{consumableOverview.totalStock}}</text>
+                <text class="ds-banner-sub">统计周期 · {{consumableMonth}}</text>
               </view>
+            </view>
+          </view>
+
+          <!-- 4 张统计小卡（独立行，纯代码） -->
+          <view class="ds-stat-row">
+            <view class="ds-stat-card" wx:for="{{consumableStatCards}}" wx:key="label">
+              <view class="ds-stat-card-top">
+                <view class="ds-stat-icon ds-stat-icon-{{item.tone}} {{item.iconImg ? 'ds-stat-icon-img-wrap' : ''}}">
+                  <image wx:if="{{item.iconImg}}" src="{{item.iconImg}}" mode="aspectFit" class="ds-stat-icon-img" />
+                  <van-icon wx:else name="{{item.icon}}" size="18px" color="#fff" />
+                </view>
+              </view>
+              <text class="ds-stat-label">{{item.label}}</text>
+              <text class="ds-stat-value">{{item.value}}<text class="ds-stat-unit">{{item.unit}}</text></text>
             </view>
           </view>
 
@@ -193,18 +210,18 @@
           <!-- CTA 双按钮 -->
           <view class="ds-cta-grid">
             <view class="ds-cta ds-blue" data-action="发起申领" bindtap="onQuickAction" hover-class="ds-cta-hover">
+              <image class="ds-cta-bg" src="/images/cta-faqi.jpg" mode="scaleToFill" />
               <view class="ds-cta-text">
                 <text class="ds-cta-title">发起申领</text>
                 <text class="ds-cta-sub">快速发起领用申请</text>
               </view>
-              <view class="ds-doc-stack"></view>
             </view>
             <view class="ds-cta ds-green" data-action="快速入库" bindtap="onQuickAction" hover-class="ds-cta-hover">
+              <image class="ds-cta-bg" src="/images/cta-saomaruku.jpg" mode="scaleToFill" />
               <view class="ds-cta-text">
                 <text class="ds-cta-title">快速入库</text>
                 <text class="ds-cta-sub">扫码快速入库</text>
               </view>
-              <view class="ds-cube-stack"></view>
             </view>
           </view>
 
@@ -225,14 +242,11 @@
                 bindtap="onViewAll"
                 hover-class="ds-row-hover"
               >
-                <view class="ds-warn-icon">
-                  <van-icon name="warning-o" size="15px" color="#ff4f58" />
-                </view>
                 <view class="ds-row-text">
                   <text class="ds-row-title">{{item.name}}</text>
-                  <text class="ds-row-sub">{{item.detail}}</text>
+                  <text class="ds-row-sub">{{item.current}} · {{item.warning}}</text>
                 </view>
-                <van-icon name="arrow" size="13px" color="#ff4f58" custom-class="ds-row-arrow" />
+                <van-icon name="arrow" size="13px" color="#b0b8c4" custom-class="ds-row-arrow" />
               </view>
             </view>
 
@@ -271,16 +285,14 @@
             <view
               class="ds-activity-row"
               wx:for="{{consumableActivities}}"
+              wx:if="{{index < 4}}"
               wx:key="title"
               hover-class="ds-row-hover"
             >
-              <view class="ds-timeline-dot ds-{{item.tone}}">
-                <van-icon name="{{item.icon}}" size="10px" color="#fff" />
-              </view>
-              <text class="ds-activity-type">{{item.type}}</text>
+              <text class="ds-activity-tag ds-tag-{{item.tone}}">{{item.type}}</text>
               <text class="ds-activity-title">{{item.title}}</text>
               <text class="ds-activity-time">{{item.time}}</text>
-              <van-icon name="arrow" size="13px" color="#7b859f" custom-class="ds-row-arrow" />
+              <van-icon name="arrow" size="12px" color="#b0b8c4" custom-class="ds-row-arrow" />
             </view>
           </view>
         </view>

@@ -59,7 +59,8 @@ Page({
     workOrderFunctions: [
       { icon: 'orders-o', label: '工单列表', color: '#4F46E5', bg: '#EEF2FF' },
       { icon: 'chart-trending-o', label: '数据看板', color: '#D97706', bg: '#FEF3C7' },
-      { icon: 'gift-o', label: '物料管理', color: '#059669', bg: '#ECFDF5' }
+      { icon: 'gift-o', label: '物料管理', color: '#059669', bg: '#ECFDF5' },
+      { icon: 'gold-coin-o', label: '收费工单', color: '#EA580C', bg: '#FFF7ED' }
     ],
     // 工单维修 - 最近记录
     workOrderRecords: [],
@@ -93,15 +94,15 @@ Page({
     ],
     // 耗品管理 - 4 个统计小卡（用于 dashboard 库存大卡片底部）
     consumableStatCards: [
-      { icon: 'down', tone: 'blue', label: '本月已入库', value: '320', unit: '件', delta: '↑ 8.2%', trend: 'up' },
-      { icon: 'cart-o', tone: 'green', label: '本月已采购金额', value: '¥128,560', unit: '', delta: '↑ 10.3%', trend: 'up' },
-      { icon: 'upgrade', tone: 'orange', label: '本月已出库', value: '280', unit: '件', delta: '↓ 5.6%', trend: 'down' },
-      { icon: 'chart-trending-o', tone: 'purple', label: '本月已消耗金额', value: '¥96,430', unit: '', delta: '↑ 6.8%', trend: 'up' },
+      { icon: 'down', iconImg: '/images/stat-stockin.png', tone: 'blue', label: '本月已入库', value: '320', unit: '件', delta: '↑ 8.2%', trend: 'up' },
+      { icon: 'cart-o', iconImg: '/images/stat-purchase.png', tone: 'green', label: '本月已采购金额', value: '¥128,560', unit: '', delta: '↑ 10.3%', trend: 'up' },
+      { icon: 'upgrade', iconImg: '/images/stat-stockout.png', tone: 'orange', label: '本月已出库', value: '280', unit: '件', delta: '↓ 5.6%', trend: 'down' },
+      { icon: 'chart-trending-o', iconImg: '/images/stat-consume.png', tone: 'purple', label: '本月已消耗金额', value: '¥96,430', unit: '', delta: '↑ 6.8%', trend: 'up' },
     ],
     // 耗品管理 - 库存预警明细（dashboard 左下卡）
     consumableWarnings: [
-      { name: 'A4打印纸', detail: '库存 8 件 低于最小库存 20' },
-      { name: '签字笔（黑色）', detail: '库存 12 支 低于最小库存 30' },
+      { name: 'A4打印纸', current: '库存 8 件', warning: '低于预警值 10 件' },
+      { name: '签字笔（黑色）', current: '库存 12 支', warning: '低于预警值 30 支' },
     ],
     // 耗品管理 - 出库审核明细（dashboard 右下卡）
     consumableApprovals: [
@@ -110,11 +111,10 @@ Page({
     ],
     // 耗品管理 - 最近动态
     consumableActivities: [
-      { type: '入库', icon: 'plus', tone: 'green', title: 'A4打印纸（70g）等 5 件', time: '今天 09:30' },
+      { type: '入库', icon: 'add-o', tone: 'green', title: 'A4打印纸（70g）等 5 件', time: '今天 09:30' },
       { type: '出库', icon: 'upgrade', tone: 'orange', title: '办公用纸等 3 件', time: '今天 09:15' },
-      { type: '审批', icon: 'down', tone: 'blue', title: '李四的出库申请已通过', time: '今天 09:10' },
-      { type: '入库', icon: 'plus', tone: 'green', title: '签字笔（黑色）等 10 件', time: '昨天 16:45' },
-      { type: '出库', icon: 'upgrade', tone: 'orange', title: '笔记本等 2 件', time: '昨天 15:20' },
+      { type: '审批', icon: 'upgrade', tone: 'blue', title: '李四的出库申请已通过', time: '今天 09:10' },
+      { type: '入库', icon: 'add-o', tone: 'green', title: '签字笔（黑色）等 10 件', time: '昨天 16:45' },
     ],
 
     // 楼宇巡检 - 统计数据
@@ -270,7 +270,6 @@ Page({
   // 功能入口点击
   onFunctionTap(e) {
     const { module, label } = e.currentTarget.dataset
-    console.log('点击功能:', module, label)
 
     if (module === 'workOrder' && label === '工单列表') {
       wx.navigateTo({
@@ -365,7 +364,6 @@ Page({
   // 快捷操作点击
   onQuickAction(e) {
     const { action } = e.currentTarget.dataset
-    console.log('快捷操作:', action)
 
     if (action === '新建工单') {
       wx.navigateTo({ url: '/pages/property/submit/index' })
@@ -390,9 +388,7 @@ Page({
   },
 
   // 查看全部
-  onViewAll(e) {
-    const { module } = e.currentTarget.dataset
-    console.log('查看全部:', module)
+  onViewAll() {
     wx.showToast({ title: '查看全部', icon: 'none' })
   }
 })
