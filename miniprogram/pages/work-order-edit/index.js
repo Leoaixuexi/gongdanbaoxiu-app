@@ -266,6 +266,10 @@ Page({
     });
   },
 
+  onResponsiblePartySelect(e) {
+    this.setData({ 'formData.responsible': e.currentTarget.dataset.value });
+  },
+
   // 显示日期时间选择器
   showDateTimePicker() {
     // 解析当前报修时间

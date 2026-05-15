@@ -10,6 +10,21 @@ Component({
     showBack: {
       type: Boolean,
       value: true
+    },
+    // 背景色，留空使用默认绿色渐变
+    bgColor: {
+      type: String,
+      value: ''
+    },
+    // 文字/图标色，默认白色
+    textColor: {
+      type: String,
+      value: '#FFFFFF'
+    },
+    // 底部分隔线颜色，留空不显示
+    borderColor: {
+      type: String,
+      value: ''
     }
   },
 

@@ -1,16 +1,16 @@
 <!-- components/header/header.wxml -->
-<view class="header-container" style="padding-top: {{statusBarHeight}}px;">
+<view class="header-container" style="padding-top: {{statusBarHeight}}px; {{bgColor ? 'background: ' + bgColor + ';' : ''}} {{borderColor ? 'border-bottom: 1rpx solid ' + borderColor + ';' : ''}}">
   <view class="header-content">
     <!-- 左侧返回按钮 -->
     <view class="header-left">
-      <view wx:if="{{showBack}}" class="back-btn" bindtap="onBack">
-        <van-icon name="arrow-left" size="40rpx" color="#fff" />
+      <view wx:if="{{showBack}}" class="back-btn" hover-class="back-btn-pressed" hover-stay-time="120" bindtap="onBack">
+        <van-icon name="arrow-left" size="36rpx" color="{{textColor}}" />
       </view>
     </view>
 
     <!-- 中间标题 -->
     <view class="header-center">
-      <text class="header-title">{{title}}</text>
+      <text class="header-title" style="color: {{textColor}};">{{title}}</text>
     </view>
 
     <!-- 右侧占位 -->

@@ -160,6 +160,10 @@ Page({
     this.setData({ responsiblePartyIndex: parseInt(e.detail.value) });
   },
 
+  onResponsiblePartySelect: function (e) {
+    this.setData({ responsiblePartyIndex: Number(e.currentTarget.dataset.idx) });
+  },
+
   onOrderCategoryChange: function (e) {
     this.setData({ orderCategoryIndex: parseInt(e.detail.value) });
   },

@@ -1,311 +1,172 @@
-/* 编辑工单页面 - 复刻提交工单页面UI风格 */
+/* 编辑工单页面 - 与「提交工单」共用 UI 风格 */
 
-.submit-container {
-  min-height: 100vh;
-  background-color: #F5F5F5;
-  padding-bottom: 200rpx;
+page {
+  font-family: "PingFang SC", -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 28rpx;
+  color: #111827;
+  background-color: #F7F9FC;
 }
 
-/* 表单卡片容器 */
-.form-cards {
-  padding: 24rpx 32rpx;
+.page {
+  min-height: 100vh;
+  background-color: #F7F9FC;
+  padding-bottom: 240rpx;
+}
+
+.form {
+  padding: 0 48rpx;
   display: flex;
   flex-direction: column;
-  gap: 16rpx;
+  gap: 20rpx;
 }
 
-/* 单个卡片 */
-.card {
-  background: linear-gradient(165deg, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0.6) 100%);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-radius: 16rpx;
-  padding: 20rpx 28rpx;
-  box-shadow:
-    inset 0 2rpx 0 rgba(255,255,255,0.5),
-    0 2rpx 4rpx rgba(0,0,0,0.008),
-    0 6rpx 14rpx rgba(0,0,0,0.018),
-    0 12rpx 24rpx -6rpx rgba(0,0,0,0.02);
-  border-top: 1rpx solid rgba(255,255,255,0.95);
-  border-left: 1rpx solid rgba(255,255,255,0.6);
-  border-right: 1rpx solid rgba(255,255,255,0.6);
-  border-bottom: 1rpx solid rgba(0,0,0,0.03);
+/* 字段容器 */
+.field {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  min-height: 70rpx;
+  flex-direction: column;
+  gap: 12rpx;
+}
+
+.field-row {
+  display: flex;
+  gap: 24rpx;
+}
+
+.field-half {
+  flex: 1;
+  min-width: 0;
+}
+
+.field-floor {
+  flex: none;
+  width: 240rpx;
 }
 
 /* 标签 */
-.card-label {
-  font-size: 30rpx;
-  color: #333;
-  line-height: 30rpx;
-  height: 30rpx;
-}
-
-.card-label-wrapper {
+.field-label {
   display: flex;
   align-items: center;
-  gap: 8rpx;
-  flex-shrink: 0;
-  line-height: 30rpx;
-  height: 30rpx;
-  min-width: 128rpx;
-}
-
-.card-label-required {
-  display: flex;
-  align-items: center;
-  gap: 8rpx;
-  flex-shrink: 0;
-  min-width: 128rpx;
-  height: 40rpx;
-}
-
-.star {
-  color: #FF3B30;
-  font-size: 30rpx;
-  height: 40rpx;
-  line-height: 40rpx;
+  gap: 6rpx;
 }
 
 .label {
-  font-size: 30rpx;
-  color: #1F1F1F;
-  font-weight: 500;
-  height: 40rpx;
-  line-height: 40rpx;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", Helvetica, Arial, sans-serif;
-}
-
-/* 右侧内容区 */
-.card-right {
-  display: flex;
-  align-items: center;
-  gap: 16rpx;
-  flex: 1;
-  justify-content: flex-end;
-}
-
-/* 输入框 */
-.card-input {
-  flex: 1;
-  font-size: 30rpx;
-  color: #333;
-  text-align: right;
-  line-height: 1;
-  min-height: 30rpx;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", Helvetica, Arial, sans-serif;
-}
-
-.card-input::placeholder {
-  color: #CCCCCC !important;
-  font-size: 30rpx;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", Helvetica, Arial, sans-serif;
-}
-
-.card-input[disabled] {
-  background-color: transparent;
-  color: #CCCCCC;
-}
-
-.card-input[disabled]::placeholder {
-  color: #CCCCCC !important;
-  font-size: 30rpx;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", Helvetica, Arial, sans-serif;
-}
-
-/* 工单编号输入框 - 有值时 */
-.order-number-input.has-value {
-  color: #333 !important;
-  text-align: right;
-}
-
-/* 工单编号 placeholder 样式 */
-.order-number-placeholder {
-  color: #CCCCCC !important;
-}
-
-/* 通用 placeholder 样式 */
-.custom-placeholder {
-  color: #CCCCCC !important;
-}
-
-/* 扫一扫按钮 */
-.scan-button-inline {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 8rpx;
-  flex-shrink: 0;
-}
-
-/* 选择器 */
-picker {
-  flex: 1;
-}
-
-.card-picker {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  gap: 16rpx;
-  justify-content: flex-end;
-  height: 40rpx;
-}
-
-.picker-text {
-  font-size: 30rpx;
-  color: #333;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", Helvetica, Arial, sans-serif;
-}
-
-.picker-text.placeholder {
-  color: #CCCCCC;
-  font-size: 30rpx;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", Helvetica, Arial, sans-serif;
-}
-
-.arrow {
-  font-size: 36rpx;
-  color: #CCCCCC;
-  font-weight: 300;
-  line-height: 1;
-  transform: translateY(-12rpx);
-}
-
-/* 优先级按钮行 - 水平布局 */
-.priority-row {
-  display: flex;
-  gap: 24rpx;
-  justify-content: flex-end;
-}
-
-.priority-btn {
-  min-width: 90rpx;
-  height: 56rpx;
-  padding: 0 12rpx;
-  background-color: #F7F8FA;
-  border-radius: 28rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-  border: 1rpx solid transparent;
-}
-
-/* 选中态 - 绿色 (普通) */
-.priority-btn.active-green {
-  background: linear-gradient(135deg, #34C759 0%, #30B753 100%);
-  box-shadow: 0 4rpx 12rpx rgba(52, 199, 89, 0.3);
-}
-
-/* 选中态 - 黄色 */
-.priority-btn.active-yellow {
-  background: linear-gradient(135deg, #FFCC00 0%, #E6B800 100%);
-  box-shadow: 0 4rpx 12rpx rgba(255, 204, 0, 0.3);
-}
-
-/* 选中态 - 橙色 */
-.priority-btn.active-orange {
-  background: linear-gradient(135deg, #FF9500 0%, #E68600 100%);
-  box-shadow: 0 4rpx 12rpx rgba(255, 149, 0, 0.3);
-}
-
-/* 选中态 - 红色 (紧急) */
-.priority-btn.active-red {
-  background: linear-gradient(135deg, #FF3B30 0%, #E6352B 100%);
-  box-shadow: 0 4rpx 12rpx rgba(255, 59, 48, 0.3);
-}
-
-.priority-text {
   font-size: 28rpx;
-  color: #666;
+  color: #111827;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.star {
+  font-size: 28rpx;
+  color: #FF3B30;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.label-tip {
+  margin-left: auto;
+  font-size: 22rpx;
+  color: #8994A6;
   font-weight: 500;
 }
 
-.priority-btn.active-green .priority-text,
-.priority-btn.active-yellow .priority-text,
-.priority-btn.active-orange .priority-text,
-.priority-btn.active-red .priority-text {
-  color: white;
-  font-weight: 600;
-}
-
-/* 日期时间显示 */
-.datetime-display {
+/* 输入框容器 */
+.input-wrap {
+  height: 88rpx;
+  padding: 0 28rpx;
+  background-color: #FFFFFF;
+  border: 1rpx solid #E3E8F0;
+  border-radius: 20rpx;
+  box-shadow: 0 4rpx 16rpx rgba(154, 166, 187, 0.09);
   display: flex;
   align-items: center;
-  gap: 16rpx;
-}
-
-.datetime-text {
-  font-size: 30rpx;
-  color: #333;
-}
-
-.datetime-text:first-child {
-  margin-right: 8rpx;
-}
-
-/* 问题描述卡片 */
-.card-textarea {
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 24rpx;
-}
-
-.textarea-box {
-  width: 100%;
-  min-height: 140rpx;
-  font-size: 30rpx;
-  color: #333;
-  line-height: 1.6;
-  background-color: #FAFAFA;
-  border: 1rpx solid #F0E6D3;
-  border-radius: 8rpx;
-  padding: 24rpx;
   box-sizing: border-box;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
-.textarea-box::placeholder {
-  color: #CCCCCC;
-  font-size: 30rpx;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", Helvetica, Arial, sans-serif;
-}
-
-.textarea-box-remark {
-  min-height: 130rpx;
-  height: 130rpx;
-}
-
-/* 现场照片卡片 */
-.card-photos {
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 24rpx;
-}
-
-.photos-header {
-  width: 100%;
-  display: flex;
-  align-items: center;
+.input-with-arrow {
   justify-content: space-between;
 }
 
-.photos-tip {
-  font-size: 26rpx;
-  color: #999;
+.input {
+  flex: 1;
+  font-family: "PingFang SC", -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 28rpx;
+  color: #111827;
+  font-weight: 400;
+  line-height: 1.5;
+  min-height: 40rpx;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-.photos-row {
+.ph {
+  color: #9BA4B5;
+  font-weight: 400;
+  font-size: 28rpx;
+}
+
+.picker-text {
+  flex: 1;
+  font-family: "PingFang SC", -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 28rpx;
+  color: #111827;
+  font-weight: 400;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.picker-text.ph-text {
+  color: #9BA4B5;
+  font-weight: 400;
+}
+
+.arrow {
+  width: 14rpx;
+  height: 14rpx;
+  border-top: 3rpx solid #C0C7D4;
+  border-right: 3rpx solid #C0C7D4;
+  transform: rotate(45deg);
+  margin-left: 12rpx;
+  flex-shrink: 0;
+}
+
+/* 文本域 */
+.textarea-wrap {
+  background-color: #FFFFFF;
+  border: 1rpx solid #E3E8F0;
+  border-radius: 20rpx;
+  box-shadow: 0 4rpx 16rpx rgba(154, 166, 187, 0.09);
+  padding: 20rpx 28rpx;
+  box-sizing: border-box;
+}
+
+.textarea {
   width: 100%;
+  min-height: 120rpx;
+  font-family: "PingFang SC", -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 28rpx;
+  color: #111827;
+  line-height: 1.5;
+  font-weight: 400;
+  box-sizing: border-box;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.textarea-sm {
+  min-height: 120rpx;
+  height: 120rpx;
+}
+
+.textarea-wrap-sm {
+  padding: 14rpx 28rpx;
+}
+
+/* 现场照片 */
+.photos-row {
   display: flex;
   gap: 20rpx;
-  justify-content: center;
-  align-items: center;
 }
 
 .photo-box {
@@ -318,8 +179,9 @@ picker {
   width: 100%;
   height: 100%;
   position: relative;
-  border-radius: 8rpx;
+  border-radius: 20rpx;
   overflow: hidden;
+  box-shadow: 0 4rpx 16rpx rgba(154, 166, 187, 0.09);
 }
 
 .photo-img {
@@ -342,73 +204,168 @@ picker {
 
 .del-text {
   font-size: 28rpx;
-  color: white;
+  color: #FFFFFF;
   line-height: 1;
 }
 
 .photo-add {
   width: 100%;
   height: 100%;
-  background-color: #F5F5F5;
-  border: 2rpx dashed #DDDDDD;
-  border-radius: 8rpx;
+  background-color: #FBFCFF;
+  border: 2rpx dashed #CFD8E6;
+  border-radius: 20rpx;
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 4rpx 16rpx rgba(154, 166, 187, 0.09);
 }
 
 .add-plus {
   font-size: 56rpx;
-  color: #CCCCCC;
+  color: #9CA3AF;
   line-height: 1;
   font-weight: 300;
 }
 
+/* 分段控制器：优先级 + 责任方 */
+.priority-row,
+.party-row {
+  position: relative;
+  display: flex;
+  gap: 6rpx;
+  padding: 6rpx;
+  background-color: #EDEFF3;
+  border-radius: 22rpx;
+}
+
+.seg-thumb {
+  position: absolute;
+  top: 6rpx;
+  left: 6rpx;
+  height: 76rpx;
+  width: calc((100% - 12rpx - 6rpx * (var(--seg-count) - 1)) / var(--seg-count));
+  transform: translateX(calc((100% + 6rpx) * var(--seg-idx)));
+  background-color: #FFFFFF;
+  border-radius: 16rpx;
+  box-shadow: 0 2rpx 8rpx rgba(15, 23, 42, 0.08), 0 1rpx 2rpx rgba(15, 23, 42, 0.04);
+  transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1), width 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.priority-btn,
+.party-btn {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  min-width: 0;
+  height: 76rpx;
+  background-color: transparent;
+  border: none;
+  border-radius: 16rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.18s ease;
+  box-sizing: border-box;
+}
+
+.seg-pressed {
+  transform: scale(0.96);
+}
+
+.priority-text,
+.party-text {
+  font-family: "PingFang SC", -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 28rpx;
+  line-height: 1.4;
+  letter-spacing: 0;
+  color: #9CA3AF;
+  font-weight: 500;
+  transition: color 0.2s ease, font-weight 0.2s ease;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.priority-btn.active-green .priority-text {
+  background: linear-gradient(to right, #10b981, #14b8a6);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  font-weight: 700;
+}
+.priority-btn.active-yellow .priority-text { color: #B45309; font-weight: 700; }
+.priority-btn.active-orange .priority-text { color: #EA580C; font-weight: 700; }
+.priority-btn.active-red .priority-text { color: #DC2626; font-weight: 700; }
+
+.party-btn.active .party-text {
+  background: linear-gradient(to right, #10b981, #14b8a6);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  font-weight: 700;
+}
+
+/* 日期时间显示 */
+.datetime-text {
+  font-size: 28rpx;
+  color: #111827;
+  font-weight: 400;
+  line-height: 1.5;
+}
+
 /* 底部按钮 */
-.bottom-btns {
+.bottom-surface {
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
-  background-color: white;
-  padding: 24rpx 32rpx;
+  background-color: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 36rpx 36rpx 0 0;
+  box-shadow: 0 -8rpx 36rpx rgba(127, 138, 157, 0.12);
+  padding: 24rpx 48rpx;
   padding-bottom: calc(24rpx + env(safe-area-inset-bottom));
-  box-shadow: 0 -2rpx 16rpx rgba(0, 0, 0, 0.05);
+}
+
+.bottom-actions {
   display: flex;
   gap: 24rpx;
+  height: 96rpx;
+}
+
+.btn {
+  flex: 1;
+  height: 100%;
+  border-radius: 24rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
 }
 
 .btn-cancel {
-  flex: 1;
-  height: 88rpx;
-  background-color: white;
-  border: 1rpx solid #DDDDDD;
-  border-radius: 24rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  background-color: #F3F4F6;
+  border: none;
 }
 
 .btn-cancel-text {
-  font-size: 30rpx;
-  color: #666;
+  font-size: 28rpx;
+  color: #4B5563;
+  font-weight: 600;
 }
 
 .btn-submit {
-  flex: 1;
-  height: 88rpx;
   background: linear-gradient(to right, #10b981, #14b8a6);
-  border-radius: 24rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   box-shadow: 0 4rpx 12rpx rgba(12, 167, 125, 0.3);
 }
 
 .btn-submit-text {
-  font-size: 30rpx;
-  color: white;
-  font-weight: 500;
+  font-size: 28rpx;
+  color: #FFFFFF;
+  font-weight: 700;
 }
 
 /* 日期时间选择弹窗 */
@@ -427,19 +384,16 @@ picker {
 
 .modal-content {
   width: 100%;
-  background-color: white;
+  background-color: #FFFFFF;
   border-radius: 32rpx 32rpx 0 0;
   padding: 32rpx;
   animation: slide-up 0.3s ease-out;
+  box-sizing: border-box;
 }
 
 @keyframes slide-up {
-  from {
-    transform: translateY(100%);
-  }
-  to {
-    transform: translateY(0);
-  }
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
 }
 
 .modal-header {
@@ -450,13 +404,13 @@ picker {
 }
 
 .modal-title {
-  font-size: 36rpx;
-  font-weight: 500;
-  color: #333;
+  font-size: 34rpx;
+  font-weight: 700;
+  color: #111827;
 }
 
 .datetime-picker-content {
-  margin-bottom: 64rpx;
+  margin-bottom: 48rpx;
 }
 
 .picker-row {
@@ -464,7 +418,7 @@ picker {
   align-items: center;
   justify-content: space-between;
   padding: 24rpx 0;
-  border-bottom: 1rpx solid #f0f0f0;
+  border-bottom: 1rpx solid #F0F2F5;
 }
 
 .picker-row:last-child {
@@ -472,9 +426,9 @@ picker {
 }
 
 .picker-label {
-  font-size: 32rpx;
-  color: #333;
-  font-weight: 500;
+  font-size: 28rpx;
+  color: #111827;
+  font-weight: 600;
 }
 
 .datetime-picker-display {
@@ -482,65 +436,48 @@ picker {
   display: flex;
   justify-content: flex-end;
   padding: 16rpx 24rpx;
-  background-color: #f9fafb;
-  border-radius: 12rpx;
+  background-color: #F7F9FC;
+  border-radius: 14rpx;
   margin-left: 32rpx;
 }
 
 .datetime-picker-text {
-  font-size: 30rpx;
-  color: #333;
+  font-size: 28rpx;
+  color: #111827;
+  font-weight: 500;
 }
 
 .modal-actions {
   display: flex;
-  gap: 32rpx;
+  gap: 24rpx;
 }
 
 .modal-button {
   flex: 1;
-  height: 88rpx;
+  height: 96rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 16rpx;
+  border-radius: 24rpx;
+  box-sizing: border-box;
 }
 
 .modal-button-cancel {
-  background-color: white;
-  border: 1rpx solid #DDDDDD;
+  background-color: #F3F4F6;
+  border: none;
 }
 
 .modal-button-confirm {
   background: linear-gradient(to right, #10b981, #14b8a6);
+  box-shadow: 0 4rpx 12rpx rgba(12, 167, 125, 0.3);
 }
 
 .modal-button-text {
-  font-size: 32rpx;
-  font-weight: 500;
-  color: #666;
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #4B5563;
 }
 
 .modal-button-text-white {
-  color: white;
-}
-
-/* ==================== 编辑页面特有样式 ==================== */
-
-/* 只读显示文本 */
-.card-display-text {
-  font-size: 30rpx;
-  color: #333;
-  text-align: right;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", Helvetica, Arial, sans-serif;
-}
-
-/* 触发器箭头 - 使用纯 CSS 绘制 Chevron */
-.card-arrow {
-  width: 16rpx;
-  height: 16rpx;
-  border-top: 3rpx solid #CCCCCC;
-  border-right: 3rpx solid #CCCCCC;
-  transform: rotate(45deg);
-  margin-left: 8rpx;
+  color: #FFFFFF;
 }

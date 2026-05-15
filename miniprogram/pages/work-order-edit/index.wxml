@@ -1,87 +1,117 @@
-<!--修改工单页面 - 提交页面风格-->
-<view class="submit-container">
-  <!-- 自定义导航栏 -->
+<!--编辑工单页面-->
+<wxs module="seg">
+  module.exports = {
+    findIdx: function (arr, key) {
+      for (var i = 0; i < arr.length; i++) {
+        if (arr[i].key === key) return i;
+      }
+      return 0;
+    },
+    findStrIdx: function (arr, value) {
+      for (var i = 0; i < arr.length; i++) {
+        if (arr[i] === value) return i;
+      }
+      return -1;
+    }
+  };
+</wxs>
+<view class="page">
   <custom-header title="编辑工单" />
 
-  <!-- 表单卡片列表 -->
-  <view class="form-cards" style="padding-top: calc({{headerHeight}}px + 24rpx);">
-    <!-- 工单编号 -->
-    <view class="card">
-      <view class="card-label-required">
+  <view class="form" style="padding-top: calc({{headerHeight}}px + 16rpx);">
+
+    <!-- 工单编号（只读） -->
+    <view class="field">
+      <view class="field-label">
         <text class="star">*</text>
         <text class="label">工单编号</text>
       </view>
-      <view class="card-right">
+      <view class="input-wrap">
         <input
-          class="card-input order-number-input has-value"
+          class="input"
+          disabled
           value="{{formData.orderCode}}"
-          disabled="{{true}}"
         />
       </view>
     </view>
 
-    <!-- 楼层 -->
-    <view class="card" bindtap="openSelector" data-type="floor">
-      <view class="card-label-required">
-        <text class="star">*</text>
-        <text class="label">楼层</text>
+    <!-- 楼层 + 具体位置 -->
+    <view class="field-row">
+      <view class="field field-half field-floor">
+        <view class="field-label">
+          <text class="label">楼层</text>
+          <text class="star">*</text>
+        </view>
+        <view class="input-wrap input-with-arrow" bindtap="openSelector" data-type="floor">
+          <text class="picker-text {{formData.floor ? '' : 'ph-text'}}">{{formData.floor || '请选择'}}</text>
+          <view class="arrow"></view>
+        </view>
       </view>
-      <view class="card-right">
-        <text class="picker-text {{formData.floor ? '' : 'placeholder'}}">{{formData.floor || '请选择'}}</text>
-        <view class="card-arrow"></view>
+      <view class="field field-half">
+        <view class="field-label">
+          <text class="label">具体位置</text>
+          <text class="star">*</text>
+        </view>
+        <view class="input-wrap">
+          <input
+            class="input"
+            placeholder="请填写"
+            placeholder-class="ph"
+            value="{{formData.location}}"
+            bindinput="handleLocationChange"
+          />
+        </view>
       </view>
-    </view>
-
-    <!-- 具体位置 -->
-    <view class="card">
-      <view class="card-label-required">
-        <text class="star">*</text>
-        <text class="label">具体位置</text>
-      </view>
-      <input
-        class="card-input"
-        placeholder="请填写"
-        placeholder-class="custom-placeholder"
-        value="{{formData.location}}"
-        bindinput="handleLocationChange"
-      />
     </view>
 
     <!-- 工单类别 -->
-    <view class="card" bindtap="openSelector" data-type="category">
-      <view class="card-label-required">
-        <text class="star">*</text>
+    <view class="field">
+      <view class="field-label">
         <text class="label">工单类别</text>
+        <text class="star">*</text>
       </view>
-      <view class="card-right">
-        <text class="picker-text {{formData.category ? '' : 'placeholder'}}">{{formData.category || '请选择'}}</text>
-        <view class="card-arrow"></view>
+      <view class="input-wrap input-with-arrow" bindtap="openSelector" data-type="category">
+        <text class="picker-text {{formData.category ? '' : 'ph-text'}}">{{formData.category || '请选择'}}</text>
+        <view class="arrow"></view>
       </view>
     </view>
 
-    <!-- 责任方 -->
-    <view class="card" bindtap="openSelector" data-type="party">
-      <view class="card-label-required">
-        <text class="star">*</text>
+    <!-- 责任方（按钮组） -->
+    <view class="field">
+      <view class="field-label">
         <text class="label">责任方</text>
+        <text class="star">*</text>
       </view>
-      <view class="card-right">
-        <text class="picker-text {{formData.responsible ? '' : 'placeholder'}}">{{formData.responsible || '请选择'}}</text>
-        <view class="card-arrow"></view>
+      <view class="party-row" style="--seg-idx: {{seg.findStrIdx(responsibleOptions, formData.responsible)}}; --seg-count: {{responsibleOptions.length}};">
+        <view class="seg-thumb" wx:if="{{formData.responsible}}"></view>
+        <view
+          wx:for="{{responsibleOptions}}"
+          wx:key="*this"
+          class="party-btn {{formData.responsible === item ? 'active' : ''}}"
+          hover-class="seg-pressed"
+          hover-stay-time="120"
+          bindtap="onResponsiblePartySelect"
+          data-value="{{item}}"
+        >
+          <text class="party-text">{{item}}</text>
+        </view>
       </view>
     </view>
 
-    <!-- 优先级 -->
-    <view class="card">
-      <view class="card-label-required">
-        <text class="star">*</text>
+    <!-- 优先级（按钮组） -->
+    <view class="field">
+      <view class="field-label">
         <text class="label">优先级</text>
+        <text class="star">*</text>
       </view>
-      <view class="priority-row">
+      <view class="priority-row" style="--seg-idx: {{seg.findIdx(priorityOptions, selectedPriority)}}; --seg-count: {{priorityOptions.length}};">
+        <view class="seg-thumb" wx:if="{{selectedPriority}}"></view>
         <view
           wx:for="{{priorityOptions}}"
           wx:key="key"
           class="priority-btn {{selectedPriority === item.key ? 'active-' + item.color : ''}}"
+          hover-class="seg-pressed"
+          hover-stay-time="120"
           bindtap="onPrioritySelect"
           data-key="{{item.key}}"
         >
@@ -90,63 +120,53 @@
       </view>
     </view>
 
-    <!-- 日期时间 -->
-    <view class="card">
-      <view class="card-label-required">
-        <text class="star">*</text>
+    <!-- 报修时间 -->
+    <view class="field">
+      <view class="field-label">
         <text class="label">报修时间</text>
+        <text class="star">*</text>
       </view>
-      <view class="datetime-display" bindtap="showDateTimePicker">
+      <view class="input-wrap" bindtap="showDateTimePicker">
         <text class="datetime-text">{{formData.reportTime}}</text>
       </view>
     </view>
 
-    <!-- 工单状态 (只读显示) -->
-    <view class="card">
-      <view class="card-label-required">
-        <text class="star">*</text>
-        <text class="label">工单状态</text>
-      </view>
-      <view class="card-right">
-        <text class="card-display-text">{{formData.status}}</text>
-      </view>
-    </view>
-
-    <!-- 报修人 (只读显示) -->
-    <view class="card">
-      <view class="card-label-required">
-        <text class="star">*</text>
+    <!-- 报修人（只读） -->
+    <view class="field">
+      <view class="field-label">
         <text class="label">报修人</text>
+        <text class="star">*</text>
       </view>
-      <view class="card-right">
-        <text class="card-display-text">{{formData.reporter}}</text>
+      <view class="input-wrap">
+        <text class="picker-text">{{formData.reporter}}</text>
       </view>
     </view>
 
     <!-- 问题描述 -->
-    <view class="card card-textarea">
-      <view class="card-label-required">
-        <text class="star">*</text>
+    <view class="field">
+      <view class="field-label">
         <text class="label">问题描述</text>
+        <text class="star">*</text>
       </view>
-      <textarea
-        class="textarea-box"
-        placeholder="请详细描述遇到的问题..."
-        placeholder-class="custom-placeholder"
-        value="{{formData.description}}"
-        bindinput="handleDescriptionChange"
-        maxlength="35"
-      />
+      <view class="textarea-wrap textarea-wrap-sm">
+        <textarea
+          class="textarea textarea-sm"
+          placeholder="请详细描述遇到的问题..."
+          placeholder-class="ph"
+          placeholder-style="font-weight: 400; font-size: 28rpx;"
+          value="{{formData.description}}"
+          bindinput="handleDescriptionChange"
+          maxlength="30"
+        />
+      </view>
     </view>
 
     <!-- 现场照片 -->
-    <view class="card card-photos">
-      <view class="photos-header">
-        <view class="card-label-required">
-          <text class="star">*</text>
-          <text class="label">现场照片</text>
-        </view>
-        <text class="photos-tip">最多3张</text>
+    <view class="field">
+      <view class="field-label">
+        <text class="label">现场照片</text>
+        <text class="star">*</text>
+        <text class="label-tip">最多 3 张</text>
       </view>
       <view class="photos-row">
         <view wx:for="{{photoSlots}}" wx:key="index" class="photo-box">
@@ -164,28 +184,33 @@
     </view>
 
     <!-- 备注 -->
-    <view class="card card-textarea">
-      <view class="card-label-wrapper">
+    <view class="field">
+      <view class="field-label">
         <text class="label">备注</text>
       </view>
-      <textarea
-        class="textarea-box textarea-box-remark"
-        placeholder="请填写备注信息（非必填）"
-        placeholder-class="custom-placeholder"
-        value="{{formData.remarks}}"
-        bindinput="handleRemarksChange"
-        maxlength="30"
-      />
+      <view class="textarea-wrap textarea-wrap-sm">
+        <textarea
+          class="textarea textarea-sm"
+          placeholder="请填写备注信息（非必填）"
+          placeholder-class="ph"
+          placeholder-style="font-weight: 400; font-size: 28rpx;"
+          value="{{formData.remarks}}"
+          bindinput="handleRemarksChange"
+          maxlength="30"
+        />
+      </view>
     </view>
   </view>
 
   <!-- 底部按钮 -->
-  <view class="bottom-btns">
-    <view class="btn-cancel" bindtap="handleCancel">
-      <text class="btn-cancel-text">取消</text>
-    </view>
-    <view class="btn-submit" bindtap="handleSave">
-      <text class="btn-submit-text">保存修改</text>
+  <view class="bottom-surface">
+    <view class="bottom-actions">
+      <view class="btn btn-cancel" bindtap="handleCancel">
+        <text class="btn-cancel-text">取消</text>
+      </view>
+      <view class="btn btn-submit" bindtap="handleSave">
+        <text class="btn-submit-text">保存修改</text>
+      </view>
     </view>
   </view>
 
@@ -226,7 +251,7 @@
     </view>
   </view>
 
-  <!-- 通用底部选择器弹窗 - 使用可复用组件 -->
+  <!-- 通用底部选择器弹窗 -->
   <custom-picker
     show="{{ isSelectorOpen }}"
     columns="{{ selectorOptions }}"
