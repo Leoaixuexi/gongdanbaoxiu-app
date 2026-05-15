@@ -1,0 +1,166 @@
+<!-- 新增/编辑分类 — 独立页（参考图风格） -->
+<view class="cae-page">
+  <scroll-view scroll-y class="cae-scroll">
+    <view class="cae-card">
+      <!-- 分类名称 -->
+      <view class="cae-section">
+        <view class="cae-label">
+          <text class="cae-label-text">分类名称</text>
+          <text class="cae-required">*</text>
+        </view>
+        <view class="cae-input-wrap">
+          <input
+            class="cae-input"
+            value="{{name}}"
+            placeholder="请输入分类名称"
+            placeholder-class="cae-input-ph"
+            maxlength="20"
+            bindinput="onNameInput"
+            confirm-type="done"
+          />
+          <text class="cae-counter">{{nameLen}}/20</text>
+        </view>
+      </view>
+
+      <!-- 上级分类 -->
+      <view class="cae-section">
+        <view class="cae-label">
+          <text class="cae-label-text">上级分类</text>
+        </view>
+        <view class="cae-select" bindtap="onPickParent">
+          <text class="cae-select-text {{parentLabel ? '' : 'cae-select-ph'}}">
+            {{parentLabel || '选择上级分类（选填）'}}
+          </text>
+          <van-icon name="arrow" size="14px" color="#9CA3AF" />
+        </view>
+        <text class="cae-hint">不选择则创建为一级分类</text>
+      </view>
+
+      <!-- 分类图标 -->
+      <view class="cae-section" wx:if="{{!parentLabel}}">
+        <view class="cae-label">
+          <text class="cae-label-text">分类图标</text>
+          <text class="cae-required">*</text>
+          <text class="cae-label-sub">（仅一级分类需要设置）</text>
+        </view>
+        <view class="cae-icon-grid">
+          <view
+            wx:for="{{visibleIcons}}"
+            wx:key="key"
+            class="cae-icon-item"
+            data-key="{{item.key}}"
+            bindtap="onIconTap"
+          >
+            <view class="cae-icon-box cae-icon-bg-{{item.tone}}">
+              <van-icon name="{{item.name}}" size="22px" color="{{item.color}}" />
+            </view>
+            <view wx:if="{{item.key === selectedIcon}}" class="cae-icon-check">
+              <van-icon name="success" size="10px" color="#FFFFFF" />
+            </view>
+          </view>
+
+          <!-- 更多 -->
+          <view class="cae-icon-item cae-icon-more" bindtap="onShowMoreIcons">
+            <view class="cae-icon-box cae-icon-bg-gray">
+              <view class="cae-more-dots">
+                <view class="cae-more-dot"></view>
+                <view class="cae-more-dot"></view>
+                <view class="cae-more-dot"></view>
+              </view>
+            </view>
+            <text class="cae-icon-more-text">更多</text>
+          </view>
+        </view>
+
+        <!-- 提示条 -->
+        <view class="cae-tip">
+          <view class="cae-tip-bullet">
+            <van-icon name="info" size="14px" color="#FFFFFF" />
+          </view>
+          <text class="cae-tip-text">图标用于在分类列表中直观展示，帮助快速识别分类</text>
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+
+  <!-- 底部操作 -->
+  <view class="cae-footer">
+    <view class="cae-footer-inner">
+      <view class="cae-btn cae-btn-cancel" bindtap="onCancel">
+        <text class="cae-btn-cancel-text">取消</text>
+      </view>
+      <view class="cae-btn cae-btn-save" bindtap="onSave">
+        <text class="cae-btn-save-text">保存</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 上级分类选择弹层 -->
+  <van-popup
+    show="{{ parentPopupVisible }}"
+    position="bottom"
+    round
+    bind:close="onParentPopupClose"
+  >
+    <view class="cae-pop">
+      <view class="cae-pop-header">
+        <text class="cae-pop-cancel" bindtap="onParentPopupClose">取消</text>
+        <text class="cae-pop-title">选择上级分类</text>
+        <text class="cae-pop-clear" bindtap="onParentClear">清除</text>
+      </view>
+      <scroll-view scroll-y class="cae-pop-list">
+        <view wx:if="{{parentOptions.length === 0}}" class="cae-pop-empty">
+          <text>暂无可选的一级分类</text>
+        </view>
+        <view
+          wx:for="{{parentOptions}}"
+          wx:key="value"
+          class="cae-pop-item {{item.value === parentValue ? 'cae-pop-item-active' : ''}}"
+          data-value="{{item.value}}"
+          data-label="{{item.label}}"
+          bindtap="onParentPick"
+        >
+          <text class="cae-pop-item-text">{{item.label}}</text>
+          <van-icon
+            wx:if="{{item.value === parentValue}}"
+            name="success"
+            size="18px"
+            color="#2563EB"
+          />
+        </view>
+      </scroll-view>
+    </view>
+  </van-popup>
+
+  <!-- 更多图标弹层 -->
+  <van-popup
+    show="{{ moreIconsVisible }}"
+    position="bottom"
+    round
+    bind:close="onMoreIconsClose"
+  >
+    <view class="cae-pop">
+      <view class="cae-pop-header">
+        <text class="cae-pop-cancel" bindtap="onMoreIconsClose">取消</text>
+        <text class="cae-pop-title">选择图标</text>
+        <text class="cae-pop-clear cae-pop-confirm" bindtap="onMoreIconsClose">完成</text>
+      </view>
+      <scroll-view scroll-y class="cae-pop-icons">
+        <view
+          wx:for="{{allIcons}}"
+          wx:key="key"
+          class="cae-icon-item cae-icon-item-pop"
+          data-key="{{item.key}}"
+          bindtap="onIconTap"
+        >
+          <view class="cae-icon-box cae-icon-bg-{{item.tone}}">
+            <van-icon name="{{item.name}}" size="22px" color="{{item.color}}" />
+          </view>
+          <view wx:if="{{item.key === selectedIcon}}" class="cae-icon-check">
+            <van-icon name="success" size="10px" color="#FFFFFF" />
+          </view>
+        </view>
+      </scroll-view>
+    </view>
+  </van-popup>
+</view>

@@ -17,11 +17,6 @@ const DEFAULT_PRODUCT_CATEGORIES = [
   '食品饮料', '五金杂货', '通用',
 ];
 
-const DEFAULT_PRODUCT_LOCATIONS = [
-  '主仓库', '应急储备', '工程仓',
-  '办公耗材区', '外采暂存', '其它',
-];
-
 function formatDateTime(dateVal) {
   if (!dateVal) return '';
   const d = new Date(dateVal);
@@ -30,7 +25,12 @@ function formatDateTime(dateVal) {
   const day = String(d.getDate()).padStart(2, '0');
   const hh = String(d.getHours()).padStart(2, '0');
   const mm = String(d.getMinutes()).padStart(2, '0');
-  return `${y}/${m}/${day} ${hh}:${mm}`;
+  return `${y}-${m}-${day} ${hh}:${mm}`;
+}
+
+function formatRecordNumber(recordId) {
+  if (!recordId) return '-';
+  return `RK${String(recordId).padStart(8, '0')}`;
 }
 
 Page({
@@ -50,16 +50,6 @@ Page({
     categoriesLoading: false,
     categoryItems: [],
     categoriesLoaded: false,
-
-    // === Modal: 扫码后入库表单 ===
-    showStockInModal: false,
-    scannedProduct: null,    // { product_id, name, product_code, stock, unit, spec, images, usage_area }
-    modalQuantity: '',
-    modalLocation: '',
-    modalRemark: '',
-    modalSubmitting: false,
-    locationOptions: [],
-    locationIndex: 0,
   },
 
   onLoad() {
@@ -101,15 +91,22 @@ Page({
     }
   },
 
-  // ===== 直接扫码 =====
-  async directScan() {
-    let scanResult;
-    try {
-      scanResult = await wx.scanCode({ scanType: ['qrCode', 'barCode'] });
-    } catch (e) {
-      return;
-    }
-    const code = (scanResult.result || '').trim();
+  // ===== FAB：进入自定义扫码页 =====
+  directScan() {
+    const self = this;
+    wx.navigateTo({
+      url: '/pages/material/stock-in/scan/index',
+      events: {
+        onScanResult: (code) => {
+          self.handleCodeRecognized(code);
+        },
+      },
+    });
+  },
+
+  // ===== 从扫码页拿到 code 后处理：查询商品 + 跳转到新增入库页 =====
+  async handleCodeRecognized(rawCode) {
+    const code = (rawCode || '').trim();
     if (!code) {
       wx.showToast({ title: '扫码失败，请重试', icon: 'none' });
       return;
@@ -131,10 +128,11 @@ Page({
 
     if (!result.product) {
       wx.showModal({
-        title: '未识别',
-        content: `编号「${code}」未登记，是否去商品管理添加？`,
+        title: '未识别到该商品',
+        content: `条码「${code}」尚未在商品管理中登记，是否前往新增？`,
         cancelText: '取消',
-        confirmText: '立即添加',
+        confirmText: '去新增',
+        confirmColor: '#2563EB',
         success: (modalRes) => {
           if (modalRes.confirm) {
             wx.navigateTo({
@@ -146,151 +144,16 @@ Page({
       return;
     }
 
-    await this.openStockInModal(result.product);
-  },
-
-  async openStockInModal(product) {
-    await this.loadLocationOptions();
-
-    const usage = product.usage_area || '';
-    let idx = this.data.locationOptions.findIndex(o => o.value === usage);
-    if (idx < 0) idx = 0;
-    const initLocation = (this.data.locationOptions[idx] && this.data.locationOptions[idx].value) || '';
-
-    this.setData({
-      showStockInModal: true,
-      scannedProduct: product,
-      modalQuantity: '',
-      modalLocation: initLocation,
-      modalRemark: '',
-      modalSubmitting: false,
-      locationIndex: idx,
-    });
-  },
-
-  async loadLocationOptions() {
-    if (this._locationLoaded && this.data.locationOptions.length > 0) return;
-    try {
-      const result = await dictionaryAdmin.getDictionary('product_location');
-      if (result && result.success && result.data) {
-        const items = (result.data.items || [])
-          .filter(i => i.enabled !== false)
-          .sort((a, b) => (a.sort || 0) - (b.sort || 0))
-          .map(i => ({ value: i.value, label: i.label || i.value }));
-        this.setData({ locationOptions: items });
-        this._locationLoaded = true;
-        return;
-      }
-      if (result && !result.success && (result.error || '').includes('不存在')) {
-        await this._seedLocations();
-        return;
-      }
-      throw new Error('加载位置失败');
-    } catch (e) {
-      console.error('[StockIn] loadLocationOptions error:', e);
-      wx.showToast({ title: '位置数据加载失败', icon: 'none' });
-      throw e;
-    }
-  },
-
-  async _seedLocations() {
-    const items = DEFAULT_PRODUCT_LOCATIONS.map((label, idx) => ({
-      value: label,
-      label,
-      sort: idx,
-      enabled: true,
-    }));
-    const result = await dictionaryAdmin.createDictionary({
-      dict_key: 'product_location',
-      dict_name: '商品位置',
-      description: '入库时的位置选项',
-      items,
-    });
-    if (result && result.success) {
-      wx.showToast({ title: '已创建默认位置', icon: 'success' });
-      dictionary.refreshCache('product_location');
-      this.setData({
-        locationOptions: items.map(i => ({ value: i.value, label: i.label })),
-      });
-      this._locationLoaded = true;
-    } else {
-      wx.showToast({ title: (result && result.error) || '初始化位置失败', icon: 'none' });
-      throw new Error('seed locations failed');
-    }
-  },
-
-  closeStockInModal() {
-    this.setData({
-      showStockInModal: false,
-      scannedProduct: null,
-      modalQuantity: '',
-      modalLocation: '',
-      modalRemark: '',
-      modalSubmitting: false,
-    });
-  },
-
-  onModalQuantityInput(e) {
-    this.setData({ modalQuantity: e.detail.value });
-  },
-
-  onModalRemarkInput(e) {
-    this.setData({ modalRemark: e.detail.value });
-  },
-
-  onModalLocationChange(e) {
-    const idx = parseInt(e.detail.value, 10);
-    const opt = this.data.locationOptions[idx];
-    if (!opt) return;
-    this.setData({
-      locationIndex: idx,
-      modalLocation: opt.value,
-    });
-  },
-
-  async submitStockIn() {
-    const qty = parseInt(this.data.modalQuantity, 10);
-    if (!qty || qty <= 0) {
-      wx.showToast({ title: '请输入有效数量', icon: 'none' });
-      return;
-    }
-    if (qty > 999999) {
-      wx.showToast({ title: '数量不能超过 999999', icon: 'none' });
-      return;
-    }
-    if (!this.data.modalLocation) {
-      wx.showToast({ title: '请选择入库位置', icon: 'none' });
-      return;
-    }
-
-    this.setData({ modalSubmitting: true });
-    try {
-      const result = await productService.stockIn(
-        this.data.scannedProduct.product_id,
-        qty,
-        this.data.modalRemark || '',
-        this.data.modalLocation
-      );
-      if (result && result.success) {
-        wx.showToast({ title: '入库成功', icon: 'success' });
-        this.closeStockInModal();
-        this.loadRecords();
-      } else {
-        const err = (result && result.error) || '入库失败';
-        wx.showToast({ title: err, icon: 'none' });
-        this.setData({ modalSubmitting: false });
-        if (err.includes('商品不存在')) {
-          setTimeout(() => {
-            this.closeStockInModal();
-            this.loadRecords();
-          }, 1200);
+    // 跳转到新增入库全屏页，通过 EventChannel 传递 product
+    const product = result.product;
+    wx.navigateTo({
+      url: '/pages/material/stock-in/add/index',
+      success: (res) => {
+        if (res && res.eventChannel && typeof res.eventChannel.emit === 'function') {
+          res.eventChannel.emit('acceptProduct', product);
         }
-      }
-    } catch (e) {
-      console.error('[StockIn] submitStockIn error:', e);
-      wx.showToast({ title: '网络错误，请重试', icon: 'none' });
-      this.setData({ modalSubmitting: false });
-    }
+      },
+    });
   },
 
   // ===== 入库记录 =====
@@ -303,6 +166,7 @@ Page({
       const records = (result.records || []).map(r => ({
         ...r,
         timeText: formatDateTime(r.created_at),
+        recordNumber: formatRecordNumber(r.record_id),
       }));
       this.setData({
         inRecords: append ? [...this.data.inRecords, ...records] : records,
@@ -403,66 +267,36 @@ Page({
   },
 
   onAddCategoryTap() {
-    wx.showModal({
-      title: '新增分类',
-      editable: true,
-      placeholderText: '输入分类名称',
-      success: (res) => {
-        if (!res.confirm) return;
-        const label = (res.content || '').trim();
-        if (!label) {
-          wx.showToast({ title: '名称不能为空', icon: 'none' });
-          return;
-        }
-        const exists = this.data.categoryItems.some(
-          i => i.enabled !== false && i.label === label
-        );
-        if (exists) {
-          wx.showToast({ title: '该分类已存在', icon: 'none' });
-          return;
-        }
-        const next = [
-          ...this.data.categoryItems,
-          {
-            value: label,
-            label,
-            sort: this.data.categoryItems.length,
-            enabled: true,
-          },
-        ];
-        this._saveCategoryItems(next);
-      },
-    });
+    this._openCategoryEditor({ mode: 'create' });
   },
 
   onRenameCategoryTap(e) {
     const index = parseInt(e.currentTarget.dataset.index, 10);
     const item = this.data.categoryItems[index];
     if (!item) return;
-    wx.showModal({
-      title: '重命名分类',
-      editable: true,
-      content: item.label,
-      placeholderText: '输入新的分类名称',
+    this._openCategoryEditor({ mode: 'edit', value: item.value });
+  },
+
+  _openCategoryEditor({ mode, value }) {
+    const self = this;
+    const items = this.data.categoryItems;
+    const params = ['mode=' + mode];
+    if (value) params.push('value=' + encodeURIComponent(value));
+    wx.navigateTo({
+      url: '/pages/material/stock-in/category-edit/index?' + params.join('&'),
+      events: {
+        onSaved: ({ items: nextItems }) => {
+          if (Array.isArray(nextItems)) {
+            self.setData({ categoryItems: nextItems });
+          } else {
+            self.loadCategories();
+          }
+        },
+      },
       success: (res) => {
-        if (!res.confirm) return;
-        const label = (res.content || '').trim();
-        if (!label) {
-          wx.showToast({ title: '名称不能为空', icon: 'none' });
-          return;
+        if (res && res.eventChannel && typeof res.eventChannel.emit === 'function') {
+          res.eventChannel.emit('acceptItems', { items });
         }
-        if (label === item.label) return;
-        const dup = this.data.categoryItems.some(
-          (i, idx) => idx !== index && i.enabled !== false && i.label === label
-        );
-        if (dup) {
-          wx.showToast({ title: '该分类已存在', icon: 'none' });
-          return;
-        }
-        const next = this.data.categoryItems.map((i, idx) =>
-          idx === index ? { ...i, label, value: label } : i
-        );
-        this._saveCategoryItems(next);
       },
     });
   },

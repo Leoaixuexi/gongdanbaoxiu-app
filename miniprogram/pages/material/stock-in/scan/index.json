@@ -1,0 +1,7 @@
+{
+  "navigationStyle": "custom",
+  "disableScroll": true,
+  "usingComponents": {
+    "van-icon": "@vant/weapp/icon/index"
+  }
+}

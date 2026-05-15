@@ -1,70 +1,125 @@
-/* 记录详情页 - 按 Pencil 设计稿 */
+/* 出入库记录详情页样式 */
 
 page {
-  background: #F2F4F8;
+  background: #F5F7FA;
 }
 
 .rd-page {
-  padding: 32rpx;
+  padding: 24rpx 32rpx calc(220rpx + env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+  gap: 24rpx;
 }
 
-/* 出库单号头部 */
-.rd-header {
-  margin-bottom: 32rpx;
+/* === 商品卡 === */
+.rd-product-card {
+  display: flex;
+  gap: 24rpx;
+  padding: 28rpx;
+  background: #FFFFFF;
+  border-radius: 24rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
 }
 
-.rd-number {
-  display: block;
-  font-size: 38rpx;
-  font-weight: 700;
-  color: #1a1a1a;
-  margin-bottom: 8rpx;
+.rd-product-img {
+  width: 160rpx;
+  height: 160rpx;
+  border-radius: 16rpx;
+  background: #F3F4F6;
+  flex-shrink: 0;
 }
 
-.rd-date {
-  font-size: 24rpx;
-  color: #a3a3a3;
+.rd-product-img-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-/* 分组 */
-.rd-group {
-  margin-bottom: 32rpx;
+.rd-product-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+  min-width: 0;
 }
 
-.rd-group-title {
-  font-size: 24rpx;
-  font-weight: 500;
-  color: #a3a3a3;
-  display: block;
-  margin-bottom: 16rpx;
+.rd-product-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16rpx;
 }
 
-/* 卡片 */
-.rd-card {
-  background: linear-gradient(165deg, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0.6) 100%);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-radius: 20rpx;
-  border-top: 1rpx solid rgba(255,255,255,0.95);
-  border-left: 1rpx solid rgba(255,255,255,0.6);
-  border-right: 1rpx solid rgba(255,255,255,0.6);
-  border-bottom: 1rpx solid rgba(0,0,0,0.03);
-  box-shadow:
-    inset 0 2rpx 4rpx rgba(255,255,255,0.8),
-    inset 0 -1rpx 3rpx rgba(0,0,0,0.015),
-    0 2rpx 4rpx rgba(0,0,0,0.02),
-    0 8rpx 16rpx rgba(0,0,0,0.035),
-    0 16rpx 32rpx -8rpx rgba(0,0,0,0.04);
+.rd-product-name {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #1F2937;
+  flex: 1;
   overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-/* 行 */
+.rd-qty-badge {
+  flex-shrink: 0;
+  padding: 6rpx 16rpx;
+  border-radius: 999rpx;
+  font-size: 22rpx;
+  font-weight: 600;
+}
+
+.rd-qty-badge-in {
+  background: #DCFCE7;
+  color: #16A34A;
+}
+
+.rd-qty-badge-out {
+  background: #FEE2E2;
+  color: #DC2626;
+}
+
+.rd-product-sub {
+  font-size: 26rpx;
+  color: #6B7280;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* === 通用卡片 === */
+.rd-section-card {
+  background: #FFFFFF;
+  border-radius: 24rpx;
+  padding: 0 28rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
+}
+
+.rd-section-title {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  padding: 28rpx 0 16rpx;
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #1F2937;
+}
+
+.rd-title-bar {
+  width: 6rpx;
+  height: 28rpx;
+  background: #2563EB;
+  border-radius: 3rpx;
+}
+
+/* === 信息行 === */
 .rd-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 24rpx 28rpx;
-  border-bottom: 1rpx solid rgba(0, 0, 0, 0.04);
+  gap: 24rpx;
+  min-height: 88rpx;
+  padding: 20rpx 0;
+  border-bottom: 1rpx solid #F3F4F6;
 }
 
 .rd-row-last {
@@ -73,29 +128,152 @@ page {
 
 .rd-label {
   font-size: 26rpx;
-  color: #737373;
+  color: #6B7280;
+  flex-shrink: 0;
 }
 
 .rd-value {
-  font-size: 26rpx;
-  color: #1a1a1a;
+  font-size: 28rpx;
+  color: #1F2937;
+  font-weight: 500;
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rd-value-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8rpx;
+  flex: 1;
+  min-width: 0;
+}
+
+.rd-value-wrap .rd-value {
+  flex: 1;
+}
+
+.rd-copy-icon {
+  flex-shrink: 0;
+}
+
+.rd-value-mono {
+  font-family: SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  letter-spacing: 0.5rpx;
+}
+
+.rd-value-muted {
+  color: #9CA3AF;
+  font-weight: 400;
+}
+
+/* === 类型 tag === */
+.rd-type-tag {
+  padding: 6rpx 20rpx;
+  border-radius: 999rpx;
+  font-size: 24rpx;
   font-weight: 500;
 }
 
-.qty-in {
+.rd-type-tag-in {
+  background: #EFF6FF;
+  color: #2563EB;
+}
+
+.rd-type-tag-out {
+  background: #FFF7ED;
+  color: #EA580C;
+}
+
+/* === 数量信息 3 列 === */
+.rd-qty-grid {
+  display: flex;
+  align-items: stretch;
+  padding: 16rpx 0 32rpx;
+}
+
+.rd-qty-cell {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14rpx;
+}
+
+.rd-qty-cell-mid {
+  border-left: 1rpx solid #F3F4F6;
+  border-right: 1rpx solid #F3F4F6;
+}
+
+.rd-qty-cell-label {
+  font-size: 24rpx;
+  color: #6B7280;
+}
+
+.rd-qty-cell-value {
+  font-size: 36rpx;
+  font-weight: 700;
+  color: #1F2937;
+  letter-spacing: 0.5rpx;
+}
+
+.rd-qty-in {
   color: #16A34A;
-  font-weight: 600;
 }
 
-.qty-out {
+.rd-qty-out {
   color: #DC2626;
-  font-weight: 600;
 }
 
-/* 备注 */
-.rd-remark {
-  padding: 24rpx 28rpx;
-  font-size: 26rpx;
-  color: #525252;
-  line-height: 1.6;
+/* === 底部按钮栏 === */
+.rd-bottom-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  gap: 20rpx;
+  padding: 24rpx 32rpx calc(24rpx + env(safe-area-inset-bottom));
+  background: #FFFFFF;
+  box-shadow: 0 -2rpx 12rpx rgba(0, 0, 0, 0.04);
+}
+
+.rd-action-btn {
+  flex: 1;
+  height: 88rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8rpx;
+  border-radius: 16rpx;
+  font-size: 28rpx;
+  font-weight: 500;
+  padding: 0;
+  line-height: 88rpx;
+}
+
+.rd-action-btn::after {
+  border: none;
+}
+
+.rd-action-share,
+.rd-action-edit {
+  background: #F3F4F6;
+  color: #374151;
+}
+
+.rd-action-delete {
+  background: #DC2626;
+  color: #FFFFFF;
+}
+
+.rd-btn-hover {
+  background: #E5E7EB !important;
+}
+
+.rd-btn-hover-red {
+  background: #B91C1C !important;
 }

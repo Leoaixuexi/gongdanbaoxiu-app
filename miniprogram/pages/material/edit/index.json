@@ -1,6 +1,6 @@
 {
   "navigationBarTitleText": "修改配件",
-  "navigationBarBackgroundColor": "#DCE4FF",
+  "navigationBarBackgroundColor": "#FFFFFF",
   "navigationBarTextStyle": "black",
   "usingComponents": {
     "van-icon": "@vant/weapp/icon/index"

@@ -1,64 +1,116 @@
 <!-- 出入库记录详情页 -->
 <view class="rd-page">
-  <!-- 配件信息 -->
-  <view class="rd-group">
-    <text class="rd-group-title">配件信息</text>
-    <view class="rd-card">
-      <view class="rd-row">
-        <text class="rd-label">配件名</text>
-        <text class="rd-value">{{record.material_name}}</text>
+  <!-- 商品卡 -->
+  <view class="rd-product-card">
+    <image
+      wx:if="{{imageUrl}}"
+      class="rd-product-img"
+      src="{{imageUrl}}"
+      mode="aspectFill"
+      bindtap="onPreviewImage"
+    />
+    <view wx:else class="rd-product-img rd-product-img-empty">
+      <van-icon name="photo-o" size="32px" color="#9CA3AF" />
+    </view>
+
+    <view class="rd-product-main">
+      <view class="rd-product-line">
+        <text class="rd-product-name">{{record.material_name || record.product_name || '-'}}</text>
+        <view class="rd-qty-badge {{isIn ? 'rd-qty-badge-in' : 'rd-qty-badge-out'}}">
+          <text>{{quantityText}} {{isIn ? '入' : '出'}}</text>
+        </view>
       </view>
-      <view class="rd-row">
-        <text class="rd-label">配件编号</text>
-        <text class="rd-value">{{record.material_number || '-'}}</text>
-      </view>
-      <view class="rd-row">
-        <text class="rd-label">类别</text>
-        <text class="rd-value">{{record.category || '-'}}</text>
-      </view>
-      <view class="rd-row">
-        <text class="rd-label">规格</text>
-        <text class="rd-value">{{record.spec || '-'}}</text>
-      </view>
-      <view class="rd-row rd-row-last">
-        <text class="rd-label">型号</text>
-        <text class="rd-value">{{record.model || '-'}}</text>
-      </view>
+      <view class="rd-product-sub">编号：{{record.material_number || record.product_code || '-'}}</view>
+      <view wx:if="{{specSubtitle}}" class="rd-product-sub">{{specSubtitle}}</view>
     </view>
   </view>
 
   <!-- 入库/出库信息 -->
-  <view class="rd-group">
-    <text class="rd-group-title">{{record.type === 'in' ? '入库信息' : '出库信息'}}</text>
-    <view class="rd-card">
-      <view class="rd-row">
-        <text class="rd-label">{{record.type === 'in' ? '入库数量' : '出库数量'}}</text>
-        <text class="rd-value {{record.type === 'in' ? 'qty-in' : 'qty-out'}}">{{record.type === 'in' ? '+' : '-'}}{{record.quantity}} {{record.unit || '个'}}</text>
+  <view class="rd-section-card">
+    <view class="rd-section-title">
+      <view class="rd-title-bar"></view>
+      <text>{{isIn ? '入库信息' : '出库信息'}}</text>
+    </view>
+
+    <view class="rd-row">
+      <text class="rd-label">{{isIn ? '入库单号' : '出库单号'}}</text>
+      <view class="rd-value-wrap" bindtap="onCopyValue" data-value="{{recordNumber}}">
+        <text class="rd-value rd-value-mono">{{recordNumber}}</text>
+        <van-icon wx:if="{{recordNumber !== '-'}}" name="todo-list-o" size="14px" color="#9CA3AF" custom-class="rd-copy-icon" />
       </view>
-      <view class="rd-row">
-        <text class="rd-label">{{record.type === 'in' ? '配件来源' : '使用区域'}}</text>
-        <text class="rd-value">{{record.type === 'in' ? (record.source || '采购入库') : (record.usage_area || '-')}}</text>
+    </view>
+    <view class="rd-row">
+      <text class="rd-label">{{isIn ? '入库时间' : '出库时间'}}</text>
+      <text class="rd-value">{{record.fullTime || '-'}}</text>
+    </view>
+    <view class="rd-row">
+      <text class="rd-label">{{isIn ? '入库仓位' : '使用区域'}}</text>
+      <text class="rd-value">{{record.usage_area || '-'}}</text>
+    </view>
+    <view class="rd-row">
+      <text class="rd-label">{{isIn ? '接收人' : '领用人'}}</text>
+      <text class="rd-value">{{(record.operator && record.operator.name) || '-'}}</text>
+    </view>
+    <view class="rd-row">
+      <text class="rd-label">采购单号</text>
+      <view class="rd-value-wrap" bindtap="onCopyValue" data-value="{{purchaseNumber}}">
+        <text class="rd-value rd-value-mono">{{purchaseNumber}}</text>
+        <van-icon wx:if="{{purchaseNumber !== '-'}}" name="todo-list-o" size="14px" color="#9CA3AF" custom-class="rd-copy-icon" />
       </view>
-      <view wx:if="{{record.type === 'in'}}" class="rd-row">
-        <text class="rd-label">出库位置</text>
-        <text class="rd-value">{{record.usage_area || '-'}}</text>
+    </view>
+    <view class="rd-row">
+      <text class="rd-label">供应商</text>
+      <view class="rd-value-wrap" bindtap="onCopyValue" data-value="{{supplier}}">
+        <text class="rd-value">{{supplier}}</text>
+        <van-icon wx:if="{{supplier !== '-'}}" name="todo-list-o" size="14px" color="#9CA3AF" custom-class="rd-copy-icon" />
       </view>
-      <view class="rd-row">
-        <text class="rd-label">{{record.type === 'in' ? '入库时间' : '出库时间'}}</text>
-        <text class="rd-value">{{record.fullTime}}</text>
+    </view>
+    <view class="rd-row">
+      <text class="rd-label">{{isIn ? '入库类型' : '出库类型'}}</text>
+      <view class="rd-type-tag {{isIn ? 'rd-type-tag-in' : 'rd-type-tag-out'}}">{{typeLabel}}</view>
+    </view>
+    <view class="rd-row rd-row-last">
+      <text class="rd-label">备注</text>
+      <text class="rd-value {{record.remark ? '' : 'rd-value-muted'}}">{{record.remark || '暂无'}}</text>
+    </view>
+  </view>
+
+  <!-- 数量信息（三栏） -->
+  <view class="rd-section-card">
+    <view class="rd-section-title">
+      <view class="rd-title-bar"></view>
+      <text>数量信息</text>
+    </view>
+    <view class="rd-qty-grid">
+      <view class="rd-qty-cell">
+        <view class="rd-qty-cell-label">{{isIn ? '入库数量' : '出库数量'}}</view>
+        <view class="rd-qty-cell-value {{isIn ? 'rd-qty-in' : 'rd-qty-out'}}">{{quantityText}}</view>
       </view>
-      <view class="rd-row rd-row-last">
-        <text class="rd-label">{{record.type === 'in' ? '入库人' : '领用人'}}</text>
-        <text class="rd-value">{{record.operator.name}}</text>
+      <view class="rd-qty-cell rd-qty-cell-mid">
+        <view class="rd-qty-cell-label">单价</view>
+        <view class="rd-qty-cell-value">{{unitPriceText}}</view>
+      </view>
+      <view class="rd-qty-cell">
+        <view class="rd-qty-cell-label">总价</view>
+        <view class="rd-qty-cell-value">{{totalPriceText}}</view>
       </view>
     </view>
   </view>
 
-  <!-- 备注 -->
-  <view wx:if="{{record.remark}}" class="rd-group">
-    <text class="rd-group-title">备注</text>
-    <view class="rd-card">
-      <view class="rd-remark">{{record.remark}}</view>
-    </view>
+</view>
+
+<!-- 底部按钮栏 -->
+<view class="rd-bottom-bar">
+  <button class="rd-action-btn rd-action-share" open-type="share" hover-class="rd-btn-hover">
+    <van-icon name="share-o" size="16px" color="#374151" />
+    <text>分享</text>
+  </button>
+  <view class="rd-action-btn rd-action-edit" hover-class="rd-btn-hover" bindtap="onEditTap">
+    <van-icon name="edit" size="16px" color="#374151" />
+    <text>编辑</text>
+  </view>
+  <view class="rd-action-btn rd-action-delete" hover-class="rd-btn-hover-red" bindtap="onDeleteTap">
+    <van-icon name="delete-o" size="16px" color="#FFFFFF" />
+    <text>删除</text>
   </view>
 </view>

@@ -1,0 +1,161 @@
+<!-- 新增入库（Pencil Jw6K9 + 参考图二次优化） -->
+<view class="add-page">
+  <!-- 状态栏占位 -->
+  <view class="add-statusbar" style="height: {{statusBarHeight}}px;"></view>
+
+  <!-- 自定义 header -->
+  <view class="add-header">
+    <view class="add-header-btn" bindtap="onBack">
+      <van-icon name="arrow-left" size="22px" color="#1A1A1A" />
+    </view>
+    <text class="add-header-title">新增入库</text>
+    <view class="add-header-btn"></view>
+  </view>
+
+  <scroll-view scroll-y class="add-scroll">
+    <!-- 识别成功 banner -->
+    <view class="add-wrap">
+      <view class="add-banner">
+        <van-icon name="passed" size="22px" color="#22C55E" />
+        <text class="add-banner-text">识别成功</text>
+      </view>
+    </view>
+
+    <!-- 商品卡 -->
+    <view class="add-wrap">
+      <view class="add-card add-product-card">
+        <image
+          wx:if="{{product.images && product.images[0]}}"
+          src="{{product.images[0]}}"
+          class="add-product-img"
+          mode="aspectFill"
+        />
+        <view wx:else class="add-product-img add-product-img-empty"></view>
+        <view class="add-product-info">
+          <text class="add-product-name">{{product.name || '-'}}</text>
+          <view class="add-product-meta-row">
+            <text class="add-product-meta-label">条码：</text>
+            <text class="add-product-meta-value">{{product.product_code || '-'}}</text>
+          </view>
+          <view class="add-product-meta-row" wx:if="{{product.spec}}">
+            <text class="add-product-meta-label">规格：</text>
+            <text class="add-product-meta-value">{{product.spec}}</text>
+          </view>
+          <view class="add-product-meta-row">
+            <text class="add-product-meta-label">单价：</text>
+            <text class="add-product-price">¥{{product.purchase_price || 0}}/{{product.unit || ''}}</text>
+          </view>
+          <view class="add-product-cat-row" wx:if="{{product.category}}">
+            <text class="add-product-meta-label">分类标签：</text>
+            <view class="add-product-cat-tag">
+              <text class="add-product-cat-text">{{product.category}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 入库数量卡 -->
+    <view class="add-wrap">
+      <view class="add-card">
+        <view class="add-label-row">
+          <text class="add-label">入库数量</text>
+          <text class="add-required">*</text>
+        </view>
+        <view class="add-stepper">
+          <view class="add-stepper-btn add-stepper-minus" bindtap="onQtyMinus">
+            <van-icon name="minus" size="20px" color="#9CA3AF" />
+          </view>
+          <text class="add-stepper-value" bindtap="onQtyTapEdit">{{quantity}}</text>
+          <view class="add-stepper-btn add-stepper-plus" bindtap="onQtyPlus">
+            <van-icon name="plus" size="20px" color="#2563EB" />
+          </view>
+        </view>
+        <view class="add-stock-row">
+          <text class="add-stock-text">可用库存：{{product.stock || 0}} {{product.unit || ''}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 表单卡（位置 / 入库人 / 入库时间 / 备注） -->
+    <view class="add-wrap add-wrap-last">
+      <view class="add-card add-form-card">
+        <!-- 入库位置 -->
+        <picker
+          mode="selector"
+          range="{{locationOptions}}"
+          range-key="label"
+          value="{{locationIndex}}"
+          bindchange="onLocationChange"
+        >
+          <view class="add-form-row add-form-row-bordered">
+            <view class="add-label-row">
+              <text class="add-label">入库位置</text>
+              <text class="add-required">*</text>
+            </view>
+            <view class="add-form-value-row">
+              <text class="add-form-value {{locationLabel ? '' : 'add-form-placeholder'}}">{{locationLabel || '请选择入库位置'}}</text>
+              <van-icon name="arrow" size="14px" color="#BFBFBF" />
+            </view>
+          </view>
+        </picker>
+
+        <!-- 入库人 -->
+        <view class="add-form-row add-form-row-bordered">
+          <view class="add-label-row">
+            <text class="add-label">入库人</text>
+            <text class="add-required">*</text>
+          </view>
+          <view class="add-form-value-row">
+            <text class="add-form-value">{{operatorName || '-'}}</text>
+            <van-icon name="arrow" size="14px" color="#BFBFBF" />
+          </view>
+        </view>
+
+        <!-- 入库时间 -->
+        <view class="add-form-row add-form-row-bordered">
+          <view class="add-label-row">
+            <text class="add-label">入库时间</text>
+          </view>
+          <view class="add-form-value-row">
+            <text class="add-form-value">{{stockInTimeText}}</text>
+            <van-icon name="arrow" size="14px" color="#BFBFBF" />
+          </view>
+        </view>
+
+        <!-- 备注 -->
+        <view class="add-form-row">
+          <view class="add-label-row">
+            <text class="add-label">备注</text>
+          </view>
+          <view class="add-notes-row">
+            <textarea
+              class="add-notes-input"
+              placeholder="请输入备注（选填）"
+              placeholder-class="add-notes-placeholder"
+              maxlength="100"
+              value="{{remark}}"
+              bindinput="onRemarkInput"
+            />
+            <text class="add-notes-counter">{{remark.length}}/100</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+
+  <!-- 底部按钮栏 -->
+  <view class="add-bottom">
+    <view class="add-btn add-btn-secondary" bindtap="onRescan">
+      <van-icon name="description" size="18px" color="#2563EB" />
+      <text class="add-btn-secondary-text">重新扫描</text>
+    </view>
+    <view
+      class="add-btn add-btn-primary {{submitting ? 'add-btn-disabled' : ''}}"
+      bindtap="onSubmit"
+    >
+      <van-icon name="description" size="18px" color="#FFFFFF" />
+      <text class="add-btn-primary-text">{{submitting ? '提交中...' : '确认入库'}}</text>
+    </view>
+  </view>
+</view>

@@ -1,193 +1,207 @@
 <!-- 新增配件页面 -->
-<view class="submit-container">
+<view class="page">
   <custom-header title="新增配件" />
 
-  <view class="form-cards" style="padding-top: calc({{headerHeight}}px + 24rpx);">
-
-    <!-- 配件编号 -->
-    <view class="card">
-      <view class="card-label-wrapper">
-        <text class="label">配件编号</text>
-      </view>
-      <input
-        class="card-input"
-        placeholder="请填写，忽略将自动生成"
-        placeholder-class="custom-placeholder"
-        value="{{form.material_number}}"
-        data-field="material_number"
-        bindinput="onInput"
-      />
-    </view>
+  <view class="form" style="padding-top: calc({{headerHeight}}px + 16rpx);">
 
     <!-- 配件名称（必填） -->
-    <view class="card">
-      <view class="card-label-required">
-        <text class="star">*</text>
+    <view class="field">
+      <view class="field-label">
         <text class="label">配件名称</text>
+        <text class="star">*</text>
       </view>
-      <input
-        class="card-input"
-        placeholder="如：灯管、水龙头"
-        placeholder-class="custom-placeholder"
-        value="{{form.name}}"
-        data-field="name"
-        bindinput="onInput"
-      />
+      <view class="input-wrap">
+        <input
+          class="input"
+          placeholder="如：灯管、水龙头"
+          placeholder-class="ph"
+          value="{{form.name}}"
+          data-field="name"
+          bindinput="onInput"
+        />
+      </view>
     </view>
 
-    <!-- 类别（必填） -->
-    <view class="card">
-      <view class="card-label-required">
-        <text class="star">*</text>
-        <text class="label">类别</text>
+    <!-- 配件编号 -->
+    <view class="field">
+      <view class="field-label">
+        <text class="label">配件编号</text>
       </view>
-      <picker mode="selector" range="{{categories}}" bindchange="onCategoryChange">
-        <view class="card-right">
-          <text class="picker-text {{form.category ? '' : 'placeholder'}}">{{form.category || '请选择'}}</text>
-          <view class="card-arrow"></view>
-        </view>
-      </picker>
+      <view class="input-wrap">
+        <input
+          class="input"
+          placeholder="忽略将自动生成"
+          placeholder-class="ph"
+          value="{{form.material_number}}"
+          data-field="material_number"
+          bindinput="onInput"
+        />
+      </view>
     </view>
 
-    <!-- 单位（必填） -->
-    <view class="card">
-      <view class="card-label-required">
-        <text class="star">*</text>
-        <text class="label">单位</text>
-      </view>
-      <picker mode="selector" range="{{units}}" bindchange="onUnitChange">
-        <view class="card-right">
-          <text class="picker-text {{form.unit ? '' : 'placeholder'}}">{{form.unit || '请选择'}}</text>
-          <view class="card-arrow"></view>
+    <!-- 类别 + 单位（一行两列） -->
+    <view class="field-row">
+      <view class="field field-half">
+        <view class="field-label">
+          <text class="label">类别</text>
+          <text class="star">*</text>
         </view>
-      </picker>
+        <picker mode="selector" range="{{categories}}" bindchange="onCategoryChange">
+          <view class="input-wrap input-with-arrow">
+            <text class="picker-text {{form.category ? '' : 'ph-text'}}">{{form.category || '请选择'}}</text>
+            <view class="arrow"></view>
+          </view>
+        </picker>
+      </view>
+      <view class="field field-half">
+        <view class="field-label">
+          <text class="label">单位</text>
+          <text class="star">*</text>
+        </view>
+        <picker mode="selector" range="{{units}}" bindchange="onUnitChange">
+          <view class="input-wrap input-with-arrow">
+            <text class="picker-text {{form.unit ? '' : 'ph-text'}}">{{form.unit || '请选择'}}</text>
+            <view class="arrow"></view>
+          </view>
+        </picker>
+      </view>
     </view>
 
     <!-- 规格 -->
-    <view class="card">
-      <view class="card-label-wrapper">
+    <view class="field">
+      <view class="field-label">
         <text class="label">规格</text>
       </view>
-      <input
-        class="card-input"
-        placeholder="如：LED 18W / DN20"
-        placeholder-class="custom-placeholder"
-        value="{{form.spec}}"
-        data-field="spec"
-        bindinput="onInput"
-      />
+      <view class="input-wrap">
+        <input
+          class="input"
+          placeholder="如：LED 18W / DN20"
+          placeholder-class="ph"
+          value="{{form.spec}}"
+          data-field="spec"
+          bindinput="onInput"
+        />
+      </view>
     </view>
 
     <!-- 型号 -->
-    <view class="card">
-      <view class="card-label-wrapper">
+    <view class="field">
+      <view class="field-label">
         <text class="label">型号</text>
       </view>
-      <input
-        class="card-input"
-        placeholder="如：SKF-6205 / AF-2035"
-        placeholder-class="custom-placeholder"
-        value="{{form.model}}"
-        data-field="model"
-        bindinput="onInput"
-      />
+      <view class="input-wrap">
+        <input
+          class="input"
+          placeholder="如：SKF-6205 / AF-2035"
+          placeholder-class="ph"
+          value="{{form.model}}"
+          data-field="model"
+          bindinput="onInput"
+        />
+      </view>
     </view>
 
     <!-- 配件来源 -->
-    <view class="card">
-      <view class="card-label-wrapper">
+    <view class="field">
+      <view class="field-label">
         <text class="label">配件来源</text>
       </view>
-      <input
-        class="card-input"
-        placeholder="如：供应商名称"
-        placeholder-class="custom-placeholder"
-        value="{{form.source}}"
-        data-field="source"
-        bindinput="onInput"
-      />
+      <view class="input-wrap">
+        <input
+          class="input"
+          placeholder="如：供应商名称"
+          placeholder-class="ph"
+          value="{{form.source}}"
+          data-field="source"
+          bindinput="onInput"
+        />
+      </view>
     </view>
 
     <!-- 入库时间 -->
-    <view class="card">
-      <view class="card-label-wrapper">
+    <view class="field">
+      <view class="field-label">
         <text class="label">入库时间</text>
       </view>
       <picker mode="date" value="{{form.stock_in_time}}" bindchange="onDateChange">
-        <view class="card-right">
+        <view class="input-wrap input-with-arrow">
           <text class="picker-text">{{form.stock_in_time}}</text>
-          <view class="card-arrow"></view>
+          <view class="arrow"></view>
         </view>
       </picker>
     </view>
 
-    <!-- 数量 -->
-    <view class="card">
-      <view class="card-label-wrapper">
-        <text class="label">数量</text>
+    <!-- 数量 + 库存预警值（一行两列） -->
+    <view class="field-row">
+      <view class="field field-half">
+        <view class="field-label">
+          <text class="label">数量</text>
+        </view>
+        <view class="input-wrap">
+          <input
+            class="input"
+            type="number"
+            placeholder="初始入库数量"
+            placeholder-class="ph"
+            value="{{form.quantity}}"
+            data-field="quantity"
+            bindinput="onInput"
+          />
+        </view>
       </view>
-      <input
-        class="card-input"
-        type="number"
-        placeholder="初始入库数量"
-        placeholder-class="custom-placeholder"
-        value="{{form.quantity}}"
-        data-field="quantity"
-        bindinput="onInput"
-      />
+      <view class="field field-half">
+        <view class="field-label">
+          <text class="label">库存预警值</text>
+        </view>
+        <view class="input-wrap">
+          <input
+            class="input"
+            type="number"
+            placeholder="低于此值触发预警"
+            placeholder-class="ph"
+            value="{{form.min_stock}}"
+            data-field="min_stock"
+            bindinput="onInput"
+          />
+        </view>
+      </view>
     </view>
 
     <!-- 使用区域 -->
-    <view class="card">
-      <view class="card-label-wrapper">
+    <view class="field">
+      <view class="field-label">
         <text class="label">使用区域</text>
       </view>
-      <input
-        class="card-input"
-        placeholder="如：1-3楼公区"
-        placeholder-class="custom-placeholder"
-        value="{{form.usage_area}}"
-        data-field="usage_area"
-        bindinput="onInput"
-      />
+      <view class="input-wrap">
+        <input
+          class="input"
+          placeholder="如：1-3楼公区"
+          placeholder-class="ph"
+          value="{{form.usage_area}}"
+          data-field="usage_area"
+          bindinput="onInput"
+        />
+      </view>
     </view>
 
     <!-- 存放区域 -->
-    <view class="card">
-      <view class="card-label-wrapper">
+    <view class="field">
+      <view class="field-label">
         <text class="label">存放区域</text>
       </view>
       <picker mode="selector" range="{{storageAreas}}" bindchange="onStorageAreaChange">
-        <view class="card-right">
-          <text class="picker-text {{form.storage_area ? '' : 'placeholder'}}">{{form.storage_area || '请选择'}}</text>
-          <view class="card-arrow"></view>
+        <view class="input-wrap input-with-arrow">
+          <text class="picker-text {{form.storage_area ? '' : 'ph-text'}}">{{form.storage_area || '请选择'}}</text>
+          <view class="arrow"></view>
         </view>
       </picker>
     </view>
 
-    <!-- 库存预警值 -->
-    <view class="card">
-      <view class="card-label-wrapper">
-        <text class="label">库存预警值</text>
-      </view>
-      <input
-        class="card-input"
-        type="number"
-        placeholder="低于此值触发预警"
-        placeholder-class="custom-placeholder"
-        value="{{form.min_stock}}"
-        data-field="min_stock"
-        bindinput="onInput"
-      />
-    </view>
-
     <!-- 配件图片 -->
-    <view class="card card-photos">
-      <view class="photos-header">
-        <view class="card-label-wrapper">
-          <text class="label">配件图片</text>
-        </view>
-        <text class="photos-tip">最多3张</text>
+    <view class="field">
+      <view class="field-label">
+        <text class="label">配件图片</text>
+        <text class="label-tip">最多 3 张</text>
       </view>
       <view class="photos-row">
         <view wx:for="{{photos}}" wx:key="index" class="photo-box">
@@ -205,30 +219,36 @@
     </view>
 
     <!-- 备注 -->
-    <view class="card card-textarea">
-      <view class="card-label-wrapper">
+    <view class="field">
+      <view class="field-label">
         <text class="label">备注</text>
       </view>
-      <textarea
-        class="textarea-box textarea-box-remark"
-        placeholder="请填写备注信息（非必填）"
-        placeholder-class="custom-placeholder"
-        value="{{form.remark}}"
-        data-field="remark"
-        bindinput="onInput"
-        maxlength="200"
-      />
+      <view class="textarea-wrap">
+        <textarea
+          class="textarea textarea-sm"
+          placeholder="请输入备注（选填）"
+          placeholder-class="ph"
+          placeholder-style="font-weight: 400; font-size: 28rpx;"
+          value="{{form.remark}}"
+          data-field="remark"
+          bindinput="onInput"
+          maxlength="30"
+        />
+        <text class="textarea-count">{{form.remark.length || 0}}/30</text>
+      </view>
     </view>
 
   </view>
 
   <!-- 底部按钮 -->
-  <view class="bottom-btns">
-    <view class="btn-cancel" bindtap="goBack">
-      <text class="btn-cancel-text">取消</text>
-    </view>
-    <view class="btn-submit" bindtap="handleSubmit">
-      <text class="btn-submit-text">确认添加</text>
+  <view class="bottom-surface">
+    <view class="bottom-actions">
+      <view class="btn btn-cancel" bindtap="goBack">
+        <text class="btn-cancel-text">取消</text>
+      </view>
+      <view class="btn btn-submit" bindtap="handleSubmit">
+        <text class="btn-submit-text">确认添加</text>
+      </view>
     </view>
   </view>
 </view>

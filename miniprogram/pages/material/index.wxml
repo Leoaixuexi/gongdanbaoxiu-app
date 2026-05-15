@@ -28,7 +28,6 @@
         id="materialList"
         canManage="{{canManage}}"
         bind:itemtap="onMaterialTap"
-        bind:additem="onAddMaterialTap"
       />
     </swiper-item>
 

@@ -187,16 +187,12 @@
   display: flex;
   align-items: center;
   gap: 6rpx;
-  background: #1677FF;
-  border-radius: 20rpx;
-  padding: 0 22rpx;
-  height: 72rpx;
 }
 
-.ml-filter-btn:active { opacity: 0.85; }
+.ml-filter-btn:active { opacity: 0.6; }
 
 .ml-filter-btn-text {
-  color: #FFFFFF;
+  color: #525252;
   font-size: 26rpx;
   font-weight: 600;
 }
@@ -230,9 +226,9 @@
 }
 
 .ml-filter-active {
-  background: #1a1a1a;
+  background: linear-gradient(to right, #10b981, #14b8a6);
   color: #FFFFFF;
-  border-color: #1a1a1a;
+  border-color: transparent;
 }
 
 .ml-badge {
@@ -249,19 +245,8 @@
   color: white;
 }
 
-.ml-badge-warning { background: #F59E0B; }
+.ml-badge-warning { background: #EF4444; }
 .ml-badge-danger { background: #EF4444; }
-
-/* 卡片菜单按钮 */
-.m-card-menu {
-  position: absolute;
-  top: 8rpx;
-  right: 36rpx;
-  padding: 12rpx;
-}
-.m-card-menu:active {
-  opacity: 0.6;
-}
 
 /* ====== 筛选弹层 ====== */
 .filter-panel {

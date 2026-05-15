@@ -1,6 +1,5 @@
 {
-  "navigationBarTitleText": "记录详情",
-  "navigationBarBackgroundColor": "#FFFFFF",
+  "navigationStyle": "custom",
   "navigationBarTextStyle": "black",
   "usingComponents": {
     "van-icon": "@vant/weapp/icon/index"

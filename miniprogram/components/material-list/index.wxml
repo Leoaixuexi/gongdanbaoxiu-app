@@ -13,7 +13,7 @@
         />
       </view>
       <view class="ml-filter-btn" bindtap="onOpenFilter">
-        <van-icon name="filter-o" size="18px" color="#FFFFFF" />
+        <van-icon name="filter-o" size="18px" color="#525252" />
         <text class="ml-filter-btn-text">筛选</text>
         <view wx:if="{{hasActiveFilter}}" class="ml-filter-dot"></view>
       </view>
@@ -91,15 +91,6 @@
         </view>
         <view class="stock-tag {{item.stock === 0 ? 'stock-tag-danger' : (item.stock <= item.min_stock && item.min_stock > 0 ? 'stock-tag-warning' : 'stock-tag-ok')}}">
           {{item.stock === 0 ? '缺货' : (item.stock <= item.min_stock && item.min_stock > 0 ? '预警' : '正常')}}
-        </view>
-
-        <view
-          wx:if="{{canManage}}"
-          class="m-card-menu"
-          catchtap="onCardMenuTap"
-          data-material="{{item}}"
-        >
-          <van-icon name="ellipsis" size="20px" color="#9CA3AF" />
         </view>
       </view>
     </view>

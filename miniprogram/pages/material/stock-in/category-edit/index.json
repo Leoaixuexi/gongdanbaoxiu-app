@@ -1,10 +1,11 @@
 {
-  "navigationBarTitleText": "入库管理",
+  "navigationBarTitleText": "新增分类",
   "navigationBarBackgroundColor": "#FFFFFF",
   "navigationBarTextStyle": "black",
-  "enablePullDownRefresh": true,
+  "navigationStyle": "default",
+  "enablePullDownRefresh": false,
   "usingComponents": {
     "van-icon": "@vant/weapp/icon/index",
-    "van-button": "@vant/weapp/button/index"
+    "van-popup": "@vant/weapp/popup/index"
   }
 }

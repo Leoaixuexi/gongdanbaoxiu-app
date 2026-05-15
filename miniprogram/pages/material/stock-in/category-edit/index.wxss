@@ -1,0 +1,351 @@
+/* 新增/编辑分类 — 独立页 */
+
+page {
+  background: #F5F7FA;
+}
+
+.cae-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: calc(180rpx + env(safe-area-inset-bottom));
+  box-sizing: border-box;
+}
+
+.cae-scroll {
+  flex: 1;
+}
+
+/* ========== 主卡片 ========== */
+.cae-card {
+  margin: 24rpx;
+  padding: 12rpx 32rpx 32rpx;
+  background: #FFFFFF;
+  border-radius: 24rpx;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.04);
+}
+
+/* ========== 区块 ========== */
+.cae-section {
+  padding: 28rpx 0 8rpx;
+}
+
+.cae-label {
+  display: flex;
+  align-items: baseline;
+  gap: 6rpx;
+  margin-bottom: 20rpx;
+}
+
+.cae-label-text {
+  font-size: 30rpx;
+  font-weight: 700;
+  color: #1F2937;
+  line-height: 1;
+}
+
+.cae-required {
+  font-size: 28rpx;
+  color: #EF4444;
+  line-height: 1;
+}
+
+.cae-label-sub {
+  font-size: 24rpx;
+  color: #9CA3AF;
+  font-weight: 400;
+  margin-left: 4rpx;
+}
+
+/* ========== 名称输入 ========== */
+.cae-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  height: 96rpx;
+  padding: 0 28rpx;
+  background: #F1F3F5;
+  border-radius: 18rpx;
+}
+
+.cae-input {
+  flex: 1;
+  font-size: 28rpx;
+  color: #1F2937;
+  line-height: 96rpx;
+}
+
+.cae-input-ph {
+  color: #9CA3AF;
+  font-size: 28rpx;
+}
+
+.cae-counter {
+  font-size: 24rpx;
+  color: #9CA3AF;
+  flex-shrink: 0;
+}
+
+/* ========== 选择器 ========== */
+.cae-select {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 96rpx;
+  padding: 0 28rpx;
+  background: #F1F3F5;
+  border-radius: 18rpx;
+}
+
+.cae-select-text {
+  font-size: 28rpx;
+  color: #1F2937;
+}
+
+.cae-select-ph {
+  color: #9CA3AF;
+}
+
+.cae-hint {
+  display: block;
+  margin-top: 12rpx;
+  font-size: 24rpx;
+  color: #9CA3AF;
+}
+
+/* ========== 图标网格 ========== */
+.cae-icon-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 28rpx 32rpx;
+  padding: 8rpx 0 8rpx;
+}
+
+.cae-icon-item {
+  position: relative;
+  width: 96rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.cae-icon-box {
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: 22rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: transform 0.15s ease;
+}
+
+.cae-icon-item:active .cae-icon-box {
+  transform: scale(0.94);
+}
+
+.cae-icon-check {
+  position: absolute;
+  bottom: -10rpx;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 36rpx;
+  height: 36rpx;
+  background: #2563EB;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 4rpx solid #FFFFFF;
+  box-shadow: 0 2rpx 6rpx rgba(37, 99, 235, 0.35);
+}
+
+/* 图标背景配色 */
+.cae-icon-bg-blue   { background: #DBEAFE; }
+.cae-icon-bg-green  { background: #DCFCE7; }
+.cae-icon-bg-orange { background: #FFEDD5; }
+.cae-icon-bg-purple { background: #EDE9FE; }
+.cae-icon-bg-teal   { background: #CCFBF1; }
+.cae-icon-bg-pink   { background: #FCE7F3; }
+.cae-icon-bg-yellow { background: #FEF3C7; }
+.cae-icon-bg-red    { background: #FEE2E2; }
+.cae-icon-bg-indigo { background: #E0E7FF; }
+.cae-icon-bg-gray   { background: #F1F3F5; }
+
+/* 更多 */
+.cae-icon-more .cae-icon-more-text {
+  font-size: 22rpx;
+  color: #6B7280;
+  line-height: 1;
+}
+
+.cae-more-dots {
+  display: flex;
+  gap: 6rpx;
+}
+
+.cae-more-dot {
+  width: 8rpx;
+  height: 8rpx;
+  border-radius: 50%;
+  background: #9CA3AF;
+}
+
+/* ========== 提示条 ========== */
+.cae-tip {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  margin-top: 36rpx;
+  padding: 22rpx 24rpx;
+  background: #DBEAFE;
+  border-radius: 16rpx;
+}
+
+.cae-tip-bullet {
+  width: 32rpx;
+  height: 32rpx;
+  border-radius: 50%;
+  background: #2563EB;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.cae-tip-text {
+  flex: 1;
+  font-size: 24rpx;
+  color: #1D4ED8;
+  line-height: 1.5;
+}
+
+/* ========== 底部按钮 ========== */
+.cae-footer {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: #FFFFFF;
+  padding: 16rpx 32rpx calc(16rpx + env(safe-area-inset-bottom));
+  box-shadow: 0 -4rpx 16rpx rgba(0, 0, 0, 0.04);
+  z-index: 100;
+}
+
+.cae-footer-inner {
+  display: flex;
+  gap: 24rpx;
+}
+
+.cae-btn {
+  flex: 1;
+  height: 96rpx;
+  border-radius: 20rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.15s ease;
+}
+
+.cae-btn:active {
+  transform: scale(0.98);
+}
+
+.cae-btn-cancel {
+  background: #FFFFFF;
+  border: 2rpx solid #2563EB;
+}
+
+.cae-btn-cancel-text {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #2563EB;
+}
+
+.cae-btn-save {
+  background: #2563EB;
+  box-shadow: 0 6rpx 16rpx rgba(37, 99, 235, 0.28);
+}
+
+.cae-btn-save-text {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #FFFFFF;
+}
+
+/* ========== 弹层 ========== */
+.cae-pop {
+  background: #FFFFFF;
+  border-radius: 24rpx 24rpx 0 0;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.cae-pop-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 28rpx 32rpx;
+  border-bottom: 1rpx solid #F1F3F5;
+}
+
+.cae-pop-cancel,
+.cae-pop-clear {
+  font-size: 28rpx;
+  color: #6B7280;
+}
+
+.cae-pop-confirm {
+  color: #2563EB;
+  font-weight: 600;
+}
+
+.cae-pop-title {
+  font-size: 30rpx;
+  font-weight: 700;
+  color: #1F2937;
+}
+
+.cae-pop-list {
+  max-height: 60vh;
+}
+
+.cae-pop-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 32rpx;
+  border-bottom: 1rpx solid #F8F9FA;
+}
+
+.cae-pop-item-active .cae-pop-item-text {
+  color: #2563EB;
+  font-weight: 600;
+}
+
+.cae-pop-item-text {
+  font-size: 28rpx;
+  color: #1F2937;
+}
+
+.cae-pop-empty {
+  padding: 80rpx 32rpx;
+  text-align: center;
+  color: #9CA3AF;
+  font-size: 26rpx;
+}
+
+.cae-pop-icons {
+  max-height: 60vh;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 32rpx;
+  padding: 32rpx;
+  box-sizing: border-box;
+}
+
+.cae-icon-item-pop {
+  margin-bottom: 12rpx;
+}

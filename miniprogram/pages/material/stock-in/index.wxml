@@ -1,72 +1,93 @@
-<!-- 入库管理（独立页） -->
-<view class="stock-in-page">
-  <!-- Sub-Tabs -->
-  <view class="sub-tabs">
+<!-- 入库管理（独立页）— UI 重做 -->
+<view class="sin-page">
+  <!-- TabBar -->
+  <view class="sin-tabbar">
     <view
       wx:for="{{subTabs}}"
       wx:key="index"
-      class="sub-tab-item {{activeSubTab === index ? 'sub-tab-active' : ''}}"
+      class="sin-tab {{activeSubTab === index ? 'sin-tab-active' : ''}}"
       data-sub="{{index}}"
       bindtap="onSubTabChange"
     >
-      <text class="sub-tab-text">{{item}}</text>
+      <text class="sin-tab-text">{{item}}</text>
+      <view class="sin-tab-ind"></view>
     </view>
   </view>
+  <view class="sin-tab-divider"></view>
 
   <!-- 子页 0：入库记录 -->
   <scroll-view
     wx:if="{{activeSubTab === 0}}"
     scroll-y
-    class="sub-tab-content"
+    class="sin-scroll"
     bindscrolltolower="onLoadMoreRecords"
   >
-    <view wx:if="{{inLoading}}" class="loading-state">
+    <!-- 搜索 + 筛选 -->
+    <view class="sin-search-section">
+      <view class="sin-search-input">
+        <van-icon name="search" size="16px" color="#9CA3AF" />
+        <text class="sin-search-ph">搜索商品名称、入库人、入库位置</text>
+      </view>
+      <view class="sin-filter-btn">
+        <van-icon name="filter-o" size="16px" color="#2563EB" />
+        <text class="sin-filter-text">筛选</text>
+      </view>
+    </view>
+
+    <!-- 日期范围 -->
+    <view class="sin-date-section">
+      <view class="sin-date-card">
+        <van-icon name="calendar-o" size="18px" color="#2563EB" />
+        <text class="sin-date-text">选择日期范围</text>
+      </view>
+    </view>
+
+    <!-- 卡片列表 -->
+    <view wx:if="{{inLoading}}" class="sin-state">
       <text>加载中...</text>
     </view>
-    <view wx:elif="{{inRecords.length === 0}}" class="empty-state">
+    <view wx:elif="{{inRecords.length === 0}}" class="sin-state sin-empty">
       <van-icon name="orders-o" size="48px" color="#d4d4d4" />
-      <text class="empty-text">暂无入库记录</text>
+      <text class="sin-empty-text">暂无入库记录</text>
     </view>
-    <view wx:else class="card-list">
+    <view wx:else class="sin-rec-list">
       <view
         wx:for="{{inRecords}}"
         wx:key="record_id"
-        class="m-card"
+        class="sin-rec-card"
         bindtap="goToRecordDetail"
         data-record="{{item}}"
       >
         <image
-          class="m-card-img"
+          class="sin-rec-img"
           src="{{item.product_image || '/images/placeholder.png'}}"
           mode="aspectFill"
         />
-        <view class="m-card-body">
-          <view class="m-card-title">{{item.product_name}}</view>
-          <view class="m-card-meta">
-            <view class="meta-item">
-              <van-icon name="apps-o" size="11px" color="#a3a3a3" />
-              <text class="meta-text">{{item.category || '-'}}</text>
-            </view>
-            <view class="meta-item">
-              <van-icon name="location-o" size="11px" color="#a3a3a3" />
-              <text class="meta-text">{{item.usage_area || '-'}}</text>
-            </view>
+        <view class="sin-rec-body">
+          <view class="sin-rec-top">
+            <text class="sin-rec-name">{{item.product_name}}</text>
+            <view class="sin-rec-badge">+{{item.quantity}}</view>
           </view>
-          <view class="m-card-meta">
-            <view class="meta-item">
-              <van-icon name="clock-o" size="11px" color="#a3a3a3" />
-              <text class="meta-text">{{item.timeText}}</text>
-            </view>
-            <view class="meta-item">
-              <van-icon name="manager-o" size="11px" color="#a3a3a3" />
-              <text class="meta-text">{{item.operator.name}}</text>
-            </view>
+          <view class="sin-rec-info-row">
+            <text class="sin-rec-info-label">入库单号</text>
+            <text class="sin-rec-info-value sin-rec-info-mono">{{item.recordNumber}}</text>
+          </view>
+          <view class="sin-rec-info-row">
+            <text class="sin-rec-info-label">入库时间</text>
+            <text class="sin-rec-info-value">{{item.timeText}}</text>
+          </view>
+          <view class="sin-rec-info-row">
+            <text class="sin-rec-info-label">入库仓库</text>
+            <text class="sin-rec-info-value">{{item.usage_area || '-'}}</text>
+          </view>
+          <view class="sin-rec-info-row">
+            <text class="sin-rec-info-label">操作人</text>
+            <text class="sin-rec-info-value">{{(item.operator && item.operator.name) || '-'}}</text>
           </view>
         </view>
-        <view class="m-card-qty qty-in">+{{item.quantity}}</view>
       </view>
     </view>
-    <view wx:if="{{inLoadingMore}}" class="loading-more">
+    <view wx:if="{{inLoadingMore}}" class="sin-loading-more">
       <text>加载更多...</text>
     </view>
   </scroll-view>
@@ -75,125 +96,80 @@
   <scroll-view
     wx:if="{{activeSubTab === 1}}"
     scroll-y
-    class="sub-tab-content"
+    class="sin-scroll"
   >
-    <view class="cat-header" wx:if="{{canManage}}">
-      <view class="cat-add-btn" bindtap="onAddCategoryTap">
-        <van-icon name="plus" size="14px" color="#1677FF" />
-        <text class="cat-add-text">新增分类</text>
+    <!-- 搜索 + 新增分类 -->
+    <view class="sin-cat-search-wrap">
+      <view class="sin-search-input">
+        <van-icon name="search" size="16px" color="#9CA3AF" />
+        <text class="sin-search-ph">搜索分类名称</text>
+      </view>
+      <view
+        wx:if="{{canManage}}"
+        class="sin-cat-add-btn"
+        bindtap="onAddCategoryTap"
+      >
+        <van-icon name="plus" size="16px" color="#FFFFFF" />
+        <text class="sin-cat-add-text">新增分类</text>
       </view>
     </view>
 
-    <view wx:if="{{categoriesLoading}}" class="loading-state">
+    <!-- 统计 + 排序 -->
+    <view class="sin-cat-info">
+      <view class="sin-cat-info-left">
+        <text class="sin-cat-info-lbl">共</text>
+        <text class="sin-cat-info-cnt">{{categoryItems.length}}</text>
+        <text class="sin-cat-info-lbl">个分类</text>
+      </view>
+      <view class="sin-cat-sort">
+        <van-icon name="exchange" size="14px" color="#6B7280" />
+        <text class="sin-cat-sort-text">排序</text>
+      </view>
+    </view>
+
+    <view wx:if="{{categoriesLoading}}" class="sin-state">
       <text>加载中...</text>
     </view>
-    <view wx:elif="{{categoryItems.length === 0}}" class="empty-state">
+    <view wx:elif="{{categoryItems.length === 0}}" class="sin-state sin-empty">
       <van-icon name="apps-o" size="48px" color="#d4d4d4" />
-      <text class="empty-text">暂无分类</text>
+      <text class="sin-empty-text">暂无分类</text>
     </view>
-    <view wx:else class="cat-list">
+    <view wx:else class="sin-cat-list">
       <view
         wx:for="{{categoryItems}}"
         wx:key="value"
-        class="cat-item"
         wx:if="{{item.enabled !== false}}"
+        class="sin-cat-card"
       >
-        <text class="cat-name">{{item.label}}</text>
-        <view class="cat-actions" wx:if="{{canManage}}">
-          <view class="cat-btn" data-index="{{index}}" bindtap="onRenameCategoryTap">
+        <view class="sin-cat-thumb sin-cat-thumb-{{index % 6}}">
+          <text class="sin-cat-thumb-text">{{item.label}}</text>
+        </view>
+        <view class="sin-cat-info-block">
+          <text class="sin-cat-name">{{item.label}}</text>
+          <text class="sin-cat-sub">{{item.value}}</text>
+        </view>
+        <view class="sin-cat-actions" wx:if="{{canManage}}">
+          <view class="sin-cat-act" data-index="{{index}}" bindtap="onRenameCategoryTap">
             <van-icon name="edit" size="16px" color="#6B7280" />
           </view>
-          <view class="cat-btn cat-btn-danger" data-index="{{index}}" bindtap="onDeleteCategoryTap">
+          <view class="sin-cat-act sin-cat-act-danger" data-index="{{index}}" bindtap="onDeleteCategoryTap">
             <van-icon name="delete-o" size="16px" color="#DC2626" />
           </view>
+        </view>
+        <view class="sin-cat-chevron" wx:else>
+          <van-icon name="arrow" size="20px" color="#9CA3AF" />
         </view>
       </view>
     </view>
   </scroll-view>
 
-  <!-- FAB（仅入库记录子页 + 有管理权限时显示） -->
+  <!-- FAB -->
   <view
     wx:if="{{canManage && activeSubTab === 0}}"
-    class="fab-button"
+    class="sin-fab"
     bindtap="directScan"
   >
-    <van-icon name="plus" size="24px" color="#FFFFFF" />
+    <van-icon name="plus" size="26px" color="#FFFFFF" />
   </view>
 
-  <!-- 扫码入库 Modal -->
-  <view wx:if="{{showStockInModal}}" class="modal-mask" bindtap="closeStockInModal"></view>
-  <view wx:if="{{showStockInModal}}" class="modal-sheet" catchtap="">
-    <view class="modal-header">
-      <text class="modal-title">入库登记</text>
-      <view class="modal-close" bindtap="closeStockInModal">×</view>
-    </view>
-
-    <view class="modal-body">
-      <!-- 商品信息只读 -->
-      <view class="modal-info">
-        <image
-          wx:if="{{scannedProduct.images && scannedProduct.images[0]}}"
-          src="{{scannedProduct.images[0]}}"
-          class="modal-info-img"
-          mode="aspectFill"
-        />
-        <view wx:else class="modal-info-img modal-info-placeholder"></view>
-        <view class="modal-info-text">
-          <text class="modal-info-name">{{scannedProduct.name || ''}}</text>
-          <text class="modal-info-meta">编号：{{scannedProduct.product_code || '-'}}</text>
-          <text class="modal-info-meta" wx:if="{{scannedProduct.spec}}">规格：{{scannedProduct.spec}}</text>
-          <text class="modal-info-stock">当前库存：{{scannedProduct.stock || 0}} {{scannedProduct.unit || ''}}</text>
-        </view>
-      </view>
-
-      <view class="modal-form">
-        <view class="modal-field">
-          <text class="modal-label">入库数量 <text class="modal-required">*</text></text>
-          <input
-            class="modal-input"
-            type="number"
-            placeholder="请输入数量"
-            value="{{modalQuantity}}"
-            bindinput="onModalQuantityInput"
-          />
-          <text class="modal-unit">{{scannedProduct.unit || ''}}</text>
-        </view>
-
-        <view class="modal-field">
-          <text class="modal-label">入库位置 <text class="modal-required">*</text></text>
-          <picker
-            mode="selector"
-            range="{{locationOptions}}"
-            range-key="label"
-            value="{{locationIndex}}"
-            bindchange="onModalLocationChange"
-          >
-            <view class="modal-picker">
-              <text class="modal-picker-text">{{modalLocation || '请选择位置'}}</text>
-              <van-icon name="arrow-down" size="14px" color="#9CA3AF" />
-            </view>
-          </picker>
-        </view>
-
-        <view class="modal-field">
-          <text class="modal-label">备注</text>
-          <textarea
-            class="modal-textarea"
-            placeholder="选填，最多 100 字"
-            maxlength="100"
-            value="{{modalRemark}}"
-            bindinput="onModalRemarkInput"
-          />
-        </view>
-      </view>
-    </view>
-
-    <view class="modal-footer">
-      <view class="modal-btn modal-btn-cancel" bindtap="closeStockInModal">取消</view>
-      <view
-        class="modal-btn modal-btn-confirm {{(!modalQuantity || !modalLocation || modalSubmitting) ? 'modal-btn-disabled' : ''}}"
-        bindtap="submitStockIn"
-      >{{modalSubmitting ? '提交中...' : '确认入库'}}</view>
-    </view>
-  </view>
 </view>

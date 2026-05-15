@@ -1,172 +1,177 @@
-/* 新增配件页面 - 完全复刻新增工单样式 */
+/* 新增配件页面 - 与「新增商品」共用 UI 风格 */
 
 page {
-  font-family: "PingFang SC", -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", Helvetica, Arial, sans-serif;
-  font-size: 30rpx;
-  color: #333;
+  font-family: "PingFang SC", -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 28rpx;
+  color: #111827;
+  background-color: #F7F9FC;
 }
 
-.submit-container {
+.page {
   min-height: 100vh;
-  background: linear-gradient(180deg, #DCE4FF 0%, #DFF5F4 30%, #FAFAFA 55%);
-  padding-bottom: 200rpx;
+  background-color: #F7F9FC;
+  padding-bottom: 240rpx;
 }
 
-.form-cards {
-  padding: 24rpx 32rpx;
+.form {
+  padding: 0 48rpx;
   display: flex;
   flex-direction: column;
-  gap: 16rpx;
+  gap: 20rpx;
 }
 
-/* 卡片 */
-.card {
-  background-color: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(10px);
-  border-radius: 20rpx;
-  padding: 16rpx 28rpx;
-  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
-  border: 1rpx solid rgba(255, 255, 255, 0.6);
+/* 字段容器 */
+.field {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  min-height: 64rpx;
+  flex-direction: column;
+  gap: 12rpx;
+}
+
+.field-row {
+  display: flex;
+  gap: 24rpx;
+}
+
+.field-half {
+  flex: 1;
+  min-width: 0;
 }
 
 /* 标签 */
-.card-label-wrapper {
+.field-label {
   display: flex;
   align-items: center;
-  gap: 8rpx;
-  flex-shrink: 0;
-  line-height: 30rpx;
-  height: 30rpx;
-  min-width: 128rpx;
-}
-
-.card-label-required {
-  display: flex;
-  align-items: center;
-  gap: 8rpx;
-  flex-shrink: 0;
-  line-height: 30rpx;
-  height: 30rpx;
-  min-width: 128rpx;
-}
-
-.star {
-  color: #FF3B30;
-  font-size: 24rpx;
-  line-height: 30rpx;
+  gap: 6rpx;
 }
 
 .label {
-  font-size: 30rpx;
-  color: #1F1F1F;
-  line-height: 30rpx;
-  height: 30rpx;
+  font-size: 28rpx;
+  color: #111827;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.star {
+  font-size: 28rpx;
+  color: #FF3B30;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.label-tip {
+  margin-left: auto;
+  font-size: 22rpx;
+  color: #8994A6;
   font-weight: 500;
 }
 
-/* 右侧 */
-.card-right {
+/* 输入框容器 */
+.input-wrap {
+  height: 88rpx;
+  padding: 0 28rpx;
+  background-color: #FFFFFF;
+  border: 1rpx solid #E3E8F0;
+  border-radius: 20rpx;
+  box-shadow: 0 4rpx 16rpx rgba(154, 166, 187, 0.09);
   display: flex;
   align-items: center;
-  gap: 16rpx;
-  flex: 1;
-  justify-content: flex-end;
-}
-
-/* CSS 箭头 */
-.card-arrow {
-  width: 16rpx;
-  height: 16rpx;
-  border-top: 3rpx solid #CCCCCC;
-  border-right: 3rpx solid #CCCCCC;
-  transform: rotate(45deg);
-  margin-left: 8rpx;
-}
-
-/* 输入框 */
-.card-input {
-  flex: 1;
-  font-size: 30rpx;
-  color: #333;
-  text-align: right;
-  line-height: 30rpx;
-  min-height: 30rpx;
-}
-
-.custom-placeholder {
-  color: #CCCCCC !important;
-  font-weight: 400 !important;
-}
-
-/* 选择器文字 */
-.picker-text {
-  font-size: 30rpx;
-  color: #333;
-}
-
-.picker-text.placeholder {
-  color: #CCCCCC;
-  font-weight: 400 !important;
-}
-
-picker {
-  flex: 1;
-}
-
-/* 文本域卡片 */
-.card-textarea {
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 16rpx;
-}
-
-.textarea-box {
-  width: 100%;
-  min-height: 64rpx;
-  font-size: 30rpx;
-  color: #333;
-  line-height: 1.6;
-  background-color: #F9FAFB;
-  border: 1rpx solid #E5E7EB;
-  border-radius: 8rpx;
-  padding: 12rpx 20rpx;
   box-sizing: border-box;
 }
 
-.textarea-box-remark {
+.input-with-arrow {
+  justify-content: space-between;
+}
+
+.input {
+  flex: 1;
+  font-family: "PingFang SC", -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 28rpx;
+  color: #111827;
+  font-weight: 400;
+  line-height: 1.5;
+  min-height: 40rpx;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.ph {
+  color: #9BA4B5;
+  font-weight: 400;
+  font-size: 28rpx;
+}
+
+.picker-text {
+  flex: 1;
+  font-family: "PingFang SC", -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 28rpx;
+  color: #111827;
+  font-weight: 400;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.picker-text.ph-text {
+  color: #9BA4B5;
+  font-weight: 400;
+}
+
+picker {
+  width: 100%;
+}
+
+.arrow {
+  width: 14rpx;
+  height: 14rpx;
+  border-top: 3rpx solid #C0C7D4;
+  border-right: 3rpx solid #C0C7D4;
+  transform: rotate(45deg);
+  margin-left: 12rpx;
+  flex-shrink: 0;
+}
+
+/* 文本域 */
+.textarea-wrap {
+  position: relative;
+  background-color: #FFFFFF;
+  border: 1rpx solid #E3E8F0;
+  border-radius: 20rpx;
+  box-shadow: 0 4rpx 16rpx rgba(154, 166, 187, 0.09);
+  padding: 20rpx 28rpx 36rpx;
+  box-sizing: border-box;
+}
+
+.textarea {
+  width: 100%;
+  min-height: 120rpx;
+  font-family: "PingFang SC", -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 28rpx;
+  color: #111827;
+  line-height: 1.5;
+  font-weight: 400;
+  box-sizing: border-box;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.textarea-sm {
   min-height: 80rpx;
   height: 80rpx;
 }
 
-/* 图片卡片 */
-.card-photos {
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 24rpx;
+.textarea-count {
+  position: absolute;
+  right: 28rpx;
+  bottom: 16rpx;
+  font-size: 22rpx;
+  color: #8B94A5;
+  font-weight: 600;
 }
 
-.photos-header {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.photos-tip {
-  font-size: 26rpx;
-  color: #999;
-}
-
+/* 配件图片 */
 .photos-row {
-  width: 100%;
   display: flex;
   gap: 20rpx;
-  justify-content: center;
-  align-items: center;
 }
 
 .photo-box {
@@ -179,8 +184,9 @@ picker {
   width: 100%;
   height: 100%;
   position: relative;
-  border-radius: 12rpx;
+  border-radius: 20rpx;
   overflow: hidden;
+  box-shadow: 0 4rpx 16rpx rgba(154, 166, 187, 0.09);
 }
 
 .photo-img {
@@ -203,19 +209,20 @@ picker {
 
 .del-text {
   font-size: 28rpx;
-  color: white;
+  color: #FFFFFF;
   line-height: 1;
 }
 
 .photo-add {
   width: 100%;
   height: 100%;
-  background-color: #F3F4F6;
-  border: 2rpx dashed #D1D5DB;
-  border-radius: 12rpx;
+  background-color: #FBFCFF;
+  border: 2rpx dashed #CFD8E6;
+  border-radius: 20rpx;
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 4rpx 16rpx rgba(154, 166, 187, 0.09);
 }
 
 .add-plus {
@@ -226,47 +233,53 @@ picker {
 }
 
 /* 底部按钮 */
-.bottom-btns {
+.bottom-surface {
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
-  background-color: white;
-  padding: 24rpx 32rpx;
+  background-color: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 36rpx 36rpx 0 0;
+  box-shadow: 0 -8rpx 36rpx rgba(127, 138, 157, 0.12);
+  padding: 24rpx 48rpx;
   padding-bottom: calc(24rpx + env(safe-area-inset-bottom));
-  box-shadow: 0 -2rpx 16rpx rgba(0, 0, 0, 0.05);
+}
+
+.bottom-actions {
   display: flex;
   gap: 24rpx;
+  height: 96rpx;
+}
+
+.btn {
+  flex: 1;
+  height: 100%;
+  border-radius: 24rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
 }
 
 .btn-cancel {
-  flex: 1;
-  height: 88rpx;
   background-color: #F3F4F6;
-  border-radius: 24rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  border: none;
 }
 
 .btn-cancel-text {
-  font-size: 30rpx;
+  font-size: 28rpx;
   color: #4B5563;
+  font-weight: 600;
 }
 
 .btn-submit {
-  flex: 1;
-  height: 88rpx;
   background: linear-gradient(to right, #10b981, #14b8a6);
-  border-radius: 24rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   box-shadow: 0 4rpx 12rpx rgba(12, 167, 125, 0.3);
 }
 
 .btn-submit-text {
-  font-size: 30rpx;
-  color: white;
-  font-weight: 500;
+  font-size: 28rpx;
+  color: #FFFFFF;
+  font-weight: 700;
 }

@@ -1,5 +1,7 @@
 {
   "navigationBarTitleText": "出库申请",
+  "navigationBarBackgroundColor": "#FFFFFF",
+  "navigationBarTextStyle": "black",
   "usingComponents": {
     "van-icon": "@vant/weapp/icon/index"
   }

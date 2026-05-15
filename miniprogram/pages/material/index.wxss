@@ -1,7 +1,7 @@
 /* 物料管理页面样式 - 按 Pencil 设计稿复刻 */
 
 page {
-  background: linear-gradient(180deg, #EAF0FF 0%, #F2F4F8 40%, #F7F7F7 100%);
+  background: #F5F5F5;
 }
 
 .material-page {
