@@ -68,8 +68,8 @@ async function addProduct({ data, user }) {
 
   const {
     product_code, name, category, unit,
-    source = '', stock_in_time, quantity = 0,
-    usage_area = '', min_stock = 0, spec = '', model = '',
+    source = '', min_stock = 0, spec = '', model = '',
+    purchase_price = 0,
     images = [], remark = ''
   } = data;
 
@@ -94,9 +94,7 @@ async function addProduct({ data, user }) {
   }
 
   const productId = await getNextId('products');
-  const initQty = Number(quantity) || 0;
   const now = new Date();
-  const parsedStockInTime = stock_in_time ? new Date(stock_in_time) : now;
 
   await db.collection('products').add({
     data: {
@@ -106,35 +104,18 @@ async function addProduct({ data, user }) {
       category,
       unit,
       source,
-      stock_in_time: parsedStockInTime,
-      usage_area,
       spec,
       model,
       images: images.slice(0, 3),
-      stock: initQty,
-      min_stock: Number(min_stock) || 0,
+      stock: 0,
+      min_stock: Math.max(0, Number(min_stock) || 0),
+      purchase_price: Math.max(0, Number(purchase_price) || 0),
       remark,
       created_at: now,
       updated_at: now,
       created_by: { user_id: user.user_id, name: user.name },
     }
   });
-
-  if (initQty > 0) {
-    const recordId = await getNextId('product_records');
-    await db.collection('product_records').add({
-      data: {
-        record_id: recordId,
-        product_id: productId,
-        product_name: name,
-        type: 'in',
-        quantity: initQty,
-        operator: { user_id: user.user_id, name: user.name },
-        remark: '新增商品初始入库',
-        created_at: parsedStockInTime,
-      }
-    });
-  }
 
   return {
     success: true,
@@ -155,12 +136,15 @@ async function updateProduct({ data, user }) {
     return { success: false, error: '商品不存在' };
   }
   const updateData = { updated_at: new Date() };
-  const allowed = ['name', 'product_code', 'category', 'unit', 'spec', 'model', 'source', 'usage_area', 'min_stock', 'images'];
+  const allowed = ['name', 'product_code', 'category', 'unit', 'spec', 'model', 'source', 'usage_area', 'min_stock', 'purchase_price', 'images'];
   allowed.forEach(k => {
     if (fields[k] !== undefined) updateData[k] = fields[k];
   });
   if (updateData.min_stock !== undefined) {
-    updateData.min_stock = Number(updateData.min_stock) || 0;
+    updateData.min_stock = Math.max(0, Number(updateData.min_stock) || 0);
+  }
+  if (updateData.purchase_price !== undefined) {
+    updateData.purchase_price = Math.max(0, Number(updateData.purchase_price) || 0);
   }
   await db.collection('products').doc(list[0]._id).update({ data: updateData });
   return { success: true, message: '更新成功' };

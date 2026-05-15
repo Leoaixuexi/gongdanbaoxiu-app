@@ -1,6 +1,6 @@
 /**
  * 商品（耗品）修改页面
- * 可编辑字段：图片、商品名称、编号、类别、规格、型号、单位、商品来源、使用区域、预警值
+ * 可编辑字段：图片、商品名称、编号、类别、规格、型号、单位、采购渠道、采购单价、预警值
  */
 
 const productService = require('../../../services/productService');
@@ -23,7 +23,7 @@ Page({
       spec: '',
       model: '',
       source: '',
-      usage_area: '',
+      purchase_price: '',
       min_stock: '',
     },
 
@@ -75,7 +75,7 @@ Page({
           spec: product.spec || '',
           model: product.model || '',
           source: product.source || '',
-          usage_area: product.usage_area || '',
+          purchase_price: product.purchase_price != null ? String(product.purchase_price) : '',
           min_stock: product.min_stock != null ? String(product.min_stock) : '',
         },
         photos,
@@ -176,7 +176,7 @@ Page({
         spec: form.spec,
         model: form.model,
         source: form.source,
-        usage_area: form.usage_area,
+        purchase_price: Number(form.purchase_price) || 0,
         min_stock: Number(form.min_stock) || 0,
         images: imageUrls,
       });

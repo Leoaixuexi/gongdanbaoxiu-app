@@ -1,3 +1,11 @@
+<wxs module="fmt">
+  function price(v, unit) {
+    var n = parseFloat(v);
+    if (!(n > 0)) return '';
+    return '¥' + n.toFixed(2) + '/' + (unit || '元');
+  }
+  module.exports = { price: price };
+</wxs>
 <view class="product-list">
   <view class="pl-header">
     <view class="pl-search-row">
@@ -12,29 +20,12 @@
           bindconfirm="onSearchConfirm"
         />
       </view>
-      <view wx:if="{{canManage}}" class="pl-add-btn" bindtap="onAddTap">
-        <van-icon name="plus" size="18px" color="#FFFFFF" />
-        <text class="pl-add-text">新增</text>
+      <view class="pl-filter-btn {{hasActiveFilter ? 'pl-filter-btn-active' : ''}}" bindtap="onOpenFilter">
+        <van-icon name="filter-o" size="18px" color="{{hasActiveFilter ? '#10b981' : '#525252'}}" />
+        <text class="pl-filter-btn-text">筛选</text>
       </view>
     </view>
 
-    <view class="pl-filter">
-      <view
-        class="pl-filter-tag {{productFilter === '全部' ? 'pl-filter-active' : ''}}"
-        data-filter="全部"
-        bindtap="onFilterTap"
-      >全部</view>
-      <view
-        class="pl-filter-tag {{productFilter === '预警' ? 'pl-filter-active' : ''}}"
-        data-filter="预警"
-        bindtap="onFilterTap"
-      >预警<text wx:if="{{warningCount > 0}}" class="pl-badge pl-badge-warning">{{warningCount}}</text></view>
-      <view
-        class="pl-filter-tag {{productFilter === '缺货' ? 'pl-filter-active' : ''}}"
-        data-filter="缺货"
-        bindtap="onFilterTap"
-      >缺货<text wx:if="{{shortageCount > 0}}" class="pl-badge pl-badge-danger">{{shortageCount}}</text></view>
-    </view>
   </view>
 
   <scroll-view scroll-y class="list-scroll" bindscrolltolower="onLoadMore">
@@ -61,44 +52,27 @@
           mode="aspectFill"
         />
         <view class="m-card-body">
-          <view class="m-card-title">{{item.name}} {{item.product_code || ''}}</view>
-          <view class="m-card-fields">
-            <view class="m-card-field-col">
-              <view class="m-card-meta" wx:if="{{item.spec}}">
-                <van-icon name="description-o" size="11px" color="#a3a3a3" />
-                <text style="margin-left: 4rpx;">{{item.spec}}</text>
-              </view>
-              <view class="m-card-meta" wx:if="{{item.usage_area}}">
-                <van-icon name="location-o" size="11px" color="#a3a3a3" />
-                <text style="margin-left: 4rpx;">{{item.usage_area}}</text>
-              </view>
+          <view class="m-card-title-row">
+            <view class="m-card-title">{{item.name}}</view>
+            <view class="m-card-price" wx:if="{{item.purchase_price > 0}}">{{fmt.price(item.purchase_price, item.unit)}}</view>
+          </view>
+          <view class="m-card-row">
+            <text class="m-field-label">商品编码：</text><text>{{item.product_code || '-'}}</text>
+          </view>
+          <view class="m-card-row">
+            <text class="m-field-label">商品分类：</text><text>{{item.category || '-'}}</text>
+          </view>
+          <view class="m-card-row-split">
+            <view class="m-card-row">
+              <text class="m-field-label">规格：</text><text>{{item.spec || '-'}}</text>
             </view>
-            <view class="m-card-field-col">
-              <view class="m-card-meta" wx:if="{{item.category}}">
-                <van-icon name="apps-o" size="11px" color="#a3a3a3" />
-                <text style="margin-left: 4rpx;">{{item.category}}</text>
-              </view>
-              <view class="m-card-meta" wx:if="{{item.model}}">
-                <van-icon name="label-o" size="11px" color="#a3a3a3" />
-                <text style="margin-left: 4rpx;">{{item.model}}</text>
-              </view>
+            <view class="m-card-row">
+              <text class="m-field-label">单位：</text><text>{{item.unit || '-'}}</text>
+            </view>
+            <view class="m-card-row">
+              <text class="m-field-label">预警值：</text><text>{{item.min_stock || 0}}</text>
             </view>
           </view>
-        </view>
-        <view class="m-card-stock {{item.stock === 0 ? 'stock-danger' : (item.stock <= item.min_stock && item.min_stock > 0 ? 'stock-warning' : 'stock-ok')}}">
-          {{item.stock}}
-        </view>
-        <view class="stock-tag {{item.stock === 0 ? 'stock-tag-danger' : (item.stock <= item.min_stock && item.min_stock > 0 ? 'stock-tag-warning' : 'stock-tag-ok')}}">
-          {{item.stock === 0 ? '缺货' : (item.stock <= item.min_stock && item.min_stock > 0 ? '预警' : '正常')}}
-        </view>
-
-        <view
-          wx:if="{{canManage}}"
-          class="m-card-menu"
-          catchtap="onCardMenuTap"
-          data-product="{{item}}"
-        >
-          <van-icon name="ellipsis" size="20px" color="#9CA3AF" />
         </view>
       </view>
     </view>
@@ -107,4 +81,57 @@
       <text>加载更多...</text>
     </view>
   </scroll-view>
+
+  <!-- 筛选弹层 -->
+  <van-popup
+    show="{{ showFilter }}"
+    position="right"
+    custom-style="width: 80%; height: 100%;"
+    bind:close="onCloseFilter"
+  >
+    <view class="filter-panel">
+      <view class="filter-panel-header">
+        <view class="filter-panel-title-wrap">
+          <text class="filter-panel-title">筛选</text>
+          <text class="filter-panel-subtitle">可多选 · 已选 {{filterCategories.length + filterSources.length}} 项</text>
+        </view>
+        <view class="filter-panel-close" bindtap="onCloseFilter">
+          <van-icon name="cross" size="20px" color="#737373" />
+        </view>
+      </view>
+
+      <scroll-view scroll-y class="filter-panel-body">
+       <view class="filter-panel-inner">
+        <view
+          wx:for="{{filterSections}}"
+          wx:for-item="section"
+          wx:key="group"
+          class="filter-section"
+        >
+          <view class="filter-section-title-row">
+            <van-icon name="{{section.icon}}" size="14px" color="#737373" />
+            <text class="filter-section-title">{{section.title}}</text>
+          </view>
+          <view class="filter-chips">
+            <view
+              wx:for="{{section.options}}"
+              wx:for-item="opt"
+              wx:key="value"
+              class="filter-chip {{opt.active ? 'filter-chip-active' : ''}}"
+              data-group="{{section.group}}"
+              data-value="{{opt.value}}"
+              bindtap="onToggleFilterChip"
+            >{{opt.value}}</view>
+            <view wx:if="{{section.options.length === 0}}" class="filter-empty">暂无选项</view>
+          </view>
+        </view>
+       </view>
+      </scroll-view>
+
+      <view class="filter-panel-footer">
+        <view class="filter-btn filter-btn-reset" bindtap="onResetFilter">重置</view>
+        <view class="filter-btn filter-btn-confirm {{matchCount === 0 ? 'filter-btn-disabled' : ''}}" bindtap="onConfirmFilter">{{matchCount === 0 ? '无匹配' : '确定 · ' + matchCount + ' 件'}}</view>
+      </view>
+    </view>
+  </van-popup>
 </view>

@@ -22,9 +22,7 @@ Page({
       spec: '',
       model: '',
       source: '',
-      stock_in_time: '',
-      quantity: '',
-      usage_area: '',
+      purchase_price: '',
       min_stock: '',
       remark: ''
     },
@@ -45,7 +43,6 @@ Page({
     const { headerHeight } = getNavBarInfo();
     this.setData({
       headerHeight: Math.ceil(headerHeight),
-      'form.stock_in_time': new Date().toISOString().split('T')[0],
     });
 
     // 来自扫码失败引导 → prefill 编号
@@ -83,8 +80,19 @@ Page({
     this.setData({ 'form.unit': this.data.units[e.detail.value] });
   },
 
-  onDateChange(e) {
-    this.setData({ 'form.stock_in_time': e.detail.value });
+  async onScanProductCode() {
+    let scanResult;
+    try {
+      scanResult = await wx.scanCode({ scanType: ['qrCode', 'barCode'] });
+    } catch (e) {
+      return;
+    }
+    const code = (scanResult.result || '').trim();
+    if (!code) {
+      wx.showToast({ title: '扫码失败，请重试', icon: 'none' });
+      return;
+    }
+    this.setData({ 'form.product_code': code });
   },
 
   onChoosePhoto(e) {
@@ -120,10 +128,15 @@ Page({
   async handleSubmit() {
     if (this.data.submitting) return;
 
-    const { name, category, unit } = this.data.form;
+    const { name, product_code, category, unit, min_stock } = this.data.form;
+    const hasPhoto = this.data.photos.some(p => p);
 
     if (!name) {
       wx.showToast({ title: '请输入商品名称', icon: 'none' });
+      return;
+    }
+    if (!product_code) {
+      wx.showToast({ title: '请输入商品编号', icon: 'none' });
       return;
     }
     if (!category) {
@@ -132,6 +145,14 @@ Page({
     }
     if (!unit) {
       wx.showToast({ title: '请选择单位', icon: 'none' });
+      return;
+    }
+    if (min_stock === '' || min_stock == null) {
+      wx.showToast({ title: '请输入库存预警值', icon: 'none' });
+      return;
+    }
+    if (!hasPhoto) {
+      wx.showToast({ title: '请上传商品图片', icon: 'none' });
       return;
     }
 
@@ -156,9 +177,7 @@ Page({
         spec: form.spec,
         model: form.model,
         source: form.source,
-        stock_in_time: form.stock_in_time,
-        quantity: Number(form.quantity) || 0,
-        usage_area: form.usage_area,
+        purchase_price: Number(form.purchase_price) || 0,
         min_stock: Number(form.min_stock) || 0,
         images: imageUrls,
         remark: form.remark

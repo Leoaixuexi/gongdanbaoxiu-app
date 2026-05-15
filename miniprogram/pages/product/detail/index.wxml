@@ -21,11 +21,10 @@
     </view>
   </view>
 
-  <!-- 名称 + 编号 + 状态 -->
+  <!-- 名称 -->
   <view class="title-section">
     <view class="title-row">
       <text class="title-name">{{product.name}}</text>
-      <view class="status-tag status-{{stockStatus}}">{{stockStatusText}}</view>
     </view>
   </view>
 
@@ -54,60 +53,16 @@
         <text class="info-value">{{product.unit || '-'}}</text>
       </view>
       <view class="info-row">
-        <text class="info-label">商品来源</text>
+        <text class="info-label">采购渠道</text>
         <text class="info-value">{{product.source || '-'}}</text>
       </view>
       <view class="info-row">
-        <text class="info-label">使用区域</text>
-        <text class="info-value">{{product.usage_area || '-'}}</text>
+        <text class="info-label">采购单价</text>
+        <text class="info-value">{{product.priceText || '-'}}</text>
       </view>
       <view class="info-row info-row-last">
         <text class="info-label">预警值</text>
         <text class="info-value">{{product.min_stock || '-'}}</text>
-      </view>
-    </view>
-  </view>
-
-  <!-- 库存信息 -->
-  <view class="info-group">
-    <text class="group-title">库存信息</text>
-    <view class="stock-card">
-      <view class="stock-item">
-        <text class="stock-item-label">当前库存</text>
-        <text class="stock-item-value stock-value-green">{{product.stock}}</text>
-      </view>
-      <view class="stock-divider"></view>
-      <view class="stock-item">
-        <text class="stock-item-label">累计入库</text>
-        <text class="stock-item-value stock-value-blue">{{totalIn}}</text>
-      </view>
-      <view class="stock-divider"></view>
-      <view class="stock-item">
-        <text class="stock-item-label">累计出库</text>
-        <text class="stock-item-value stock-value-orange">{{totalOut}}</text>
-      </view>
-    </view>
-  </view>
-
-  <!-- 入库记录 -->
-  <view wx:if="{{inRecords.length > 0}}" class="info-group">
-    <text class="group-title">入库记录</text>
-    <view class="record-card">
-      <view
-        wx:for="{{inRecords}}"
-        wx:key="record_id"
-        class="record-item {{index < inRecords.length - 1 ? '' : 'record-item-last'}}"
-      >
-        <view class="record-dot record-dot-in"></view>
-        <view class="record-body">
-          <view class="record-line1">
-            <text class="record-qty record-qty-in">+{{item.quantity}}</text>
-            <text class="record-secondary">{{item.source || item.remark || ''}}</text>
-          </view>
-          <view class="record-line2">
-            <text class="record-meta">{{item.timeText}} · {{item.operator.name}}</text>
-          </view>
-        </view>
       </view>
     </view>
   </view>

@@ -8,7 +8,7 @@ page {
 
 .edit-container {
   min-height: 100vh;
-  background: linear-gradient(180deg, #DCE4FF 0%, #DFF5F4 30%, #FAFAFA 55%);
+  background: #FAFAFA;
   padding-bottom: 200rpx;
 }
 
@@ -32,6 +32,13 @@ page {
   font-weight: 500;
   color: #a3a3a3;
   padding-left: 4rpx;
+}
+
+.section-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-right: 4rpx;
 }
 
 /* 图片卡片 */

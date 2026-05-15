@@ -5,6 +5,18 @@
 
 const productService = require('../../services/productService');
 
+// 筛选维度声明：每个维度对应一组 options（可选值）和 selected（已选值）
+// 改维度时只动这里，wxml/逻辑会自动跟随
+const FILTER_GROUPS = [
+  { group: 'category', title: '商品类别', icon: 'apps-o', field: 'category', optionsKey: 'optCategories', selectedKey: 'filterCategories' },
+  { group: 'source', title: '采购渠道', icon: 'shop-o', field: 'source', optionsKey: 'optSources', selectedKey: 'filterSources' },
+];
+
+const SELECTED_KEY_BY_GROUP = FILTER_GROUPS.reduce((acc, g) => {
+  acc[g.group] = g.selectedKey;
+  return acc;
+}, {});
+
 Component({
   properties: {
     canManage: {
@@ -15,15 +27,22 @@ Component({
 
   data: {
     keyword: '',
-    productFilter: '全部',
     products: [],
     filteredProducts: [],
-    warningCount: 0,
-    shortageCount: 0,
     loading: true,
     loadingMore: false,
     productPage: 1,
     productTotal: 0,
+
+    // 筛选弹层
+    showFilter: false,
+    filterCategories: [],
+    filterSources: [],
+    optCategories: [],
+    optSources: [],
+    filterSections: [], // wxml 渲染用：FILTER_GROUPS + 当前 options/selected 的快照
+    hasActiveFilter: false,
+    matchCount: 0,
   },
 
   lifetimes: {
@@ -51,6 +70,7 @@ Component({
           loading: false,
           loadingMore: false,
         });
+        this._refreshFilterOptions();
         this._applyFilter();
       } catch (e) {
         console.error('[ProductList] Load error:', e);
@@ -58,19 +78,55 @@ Component({
       }
     },
 
+    _refreshFilterOptions() {
+      const update = {};
+      FILTER_GROUPS.forEach((g) => {
+        const set = new Set();
+        this.data.products.forEach((p) => { if (p[g.field]) set.add(p[g.field]); });
+        update[g.optionsKey] = [...set];
+      });
+      this.setData(update);
+      this._refreshFilterSections();
+    },
+
+    // 把 FILTER_GROUPS + 当前 options/selected 打平成 wxml 一次循环可渲染的数组
+    // options 预计算 active 字段，避免 wxml 表达式里调用 indexOf 导致 setData diff 失灵
+    _buildFilterSections(overrideSelectedKey, overrideSelectedValue) {
+      return FILTER_GROUPS.map((g) => {
+        const selected = g.selectedKey === overrideSelectedKey
+          ? overrideSelectedValue
+          : this.data[g.selectedKey];
+        return {
+          group: g.group,
+          title: g.title,
+          icon: g.icon,
+          options: this.data[g.optionsKey].map((opt) => ({
+            value: opt,
+            active: selected.indexOf(opt) >= 0,
+          })),
+        };
+      });
+    },
+
+    _refreshFilterSections() {
+      this.setData({ filterSections: this._buildFilterSections() });
+    },
+
+    _matchPredicate(p) {
+      return FILTER_GROUPS.every((g) => {
+        const sel = this.data[g.selectedKey];
+        return sel.length === 0 || sel.indexOf(p[g.field]) >= 0;
+      });
+    },
+
     _applyFilter() {
-      const { products, productFilter } = this.data;
-      const warningCount = products.filter(m => m.min_stock > 0 && m.stock > 0 && m.stock <= m.min_stock).length;
-      const shortageCount = products.filter(m => m.stock === 0).length;
-      let filtered;
-      if (productFilter === '缺货') {
-        filtered = products.filter(m => m.stock === 0);
-      } else if (productFilter === '预警') {
-        filtered = products.filter(m => m.min_stock > 0 && m.stock > 0 && m.stock <= m.min_stock);
-      } else {
-        filtered = products;
-      }
-      this.setData({ filteredProducts: filtered, warningCount, shortageCount });
+      const filtered = this.data.products.filter((p) => this._matchPredicate(p));
+      this.setData({ filteredProducts: filtered, matchCount: filtered.length });
+    },
+
+    _computeMatchCount() {
+      const count = this.data.products.filter((p) => this._matchPredicate(p)).length;
+      this.setData({ matchCount: count });
     },
 
     onLoadMore() {
@@ -88,56 +144,6 @@ Component({
       this.triggerEvent('itemtap', { product });
     },
 
-    onCardMenuTap(e) {
-      const product = e.currentTarget.dataset.product;
-      wx.showActionSheet({
-        itemList: ['编辑', '删除'],
-        success: (res) => {
-          if (res.tapIndex === 0) {
-            wx.navigateTo({ url: `/pages/product/edit/index?id=${product.product_id}` });
-          } else if (res.tapIndex === 1) {
-            this._confirmDelete(product);
-          }
-        },
-      });
-    },
-
-    _confirmDelete(product) {
-      wx.showModal({
-        title: '确认删除',
-        content: `删除「${product.name}」？此操作不可撤销。`,
-        success: (res) => {
-          if (res.confirm) this._optimisticDelete(product);
-        },
-      });
-    },
-
-    async _optimisticDelete(product) {
-      const prev = this.data.products;
-      const next = prev.filter(m => m.product_id !== product.product_id);
-      this.setData({ products: next });
-      this._applyFilter();
-      try {
-        const result = await productService.deleteProduct(product.product_id);
-        if (!result || !result.success) {
-          this.setData({ products: prev });
-          this._applyFilter();
-          wx.showToast({ title: (result && result.error) || '删除失败', icon: 'none' });
-        } else {
-          wx.showToast({ title: '已删除', icon: 'success' });
-        }
-      } catch (e) {
-        console.error('[ProductList] delete error:', e);
-        this.setData({ products: prev });
-        this._applyFilter();
-        wx.showToast({ title: '网络错误', icon: 'none' });
-      }
-    },
-
-    onAddTap() {
-      this.triggerEvent('additem', {});
-    },
-
     onSearchInput(e) {
       this.setData({ keyword: e.detail.value });
     },
@@ -146,10 +152,42 @@ Component({
       this.loadProducts();
     },
 
-    onFilterTap(e) {
-      const filter = e.currentTarget.dataset.filter;
-      if (filter === this.data.productFilter) return;
-      this.setData({ productFilter: filter });
+    // ========== 筛选弹层 ==========
+    onOpenFilter() {
+      this.setData({ showFilter: true });
+      this._computeMatchCount();
+    },
+
+    onCloseFilter() {
+      this.setData({ showFilter: false });
+    },
+
+    onToggleFilterChip(e) {
+      const { group, value } = e.currentTarget.dataset;
+      const key = SELECTED_KEY_BY_GROUP[group];
+      if (!key) return;
+      const current = this.data[key];
+      const next = current.indexOf(value) >= 0
+        ? current.filter((v) => v !== value)
+        : [...current, value];
+      // 合并到一次 setData，filterSections 用 next 直接构造，避免读 this.data 时序歧义
+      const filterSections = this._buildFilterSections(key, next);
+      this.setData({ [key]: next, filterSections });
+      this._computeMatchCount();
+    },
+
+    onResetFilter() {
+      const reset = {};
+      FILTER_GROUPS.forEach((g) => { reset[g.selectedKey] = []; });
+      this.setData({ ...reset, hasActiveFilter: false, showFilter: false });
+      this._refreshFilterSections();
+      this._applyFilter();
+    },
+
+    onConfirmFilter() {
+      if (this.data.matchCount === 0) return;
+      const hasActiveFilter = FILTER_GROUPS.some((g) => this.data[g.selectedKey].length > 0);
+      this.setData({ showFilter: false, hasActiveFilter });
       this._applyFilter();
     },
 

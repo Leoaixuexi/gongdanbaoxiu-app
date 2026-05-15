@@ -16,15 +16,16 @@ function formatTime(dateVal) {
   return `${d.getMonth() + 1}/${d.getDate()} ${hm}`;
 }
 
+function formatPrice(v) {
+  const n = Number(v);
+  if (!n) return '';
+  return `${n.toFixed(2)} 元`;
+}
+
 Page({
   data: {
     product: {},
     canManage: false,
-    stockStatus: 'ok',
-    stockStatusText: '正常',
-    totalIn: 0,
-    totalOut: 0,
-    inRecords: [],
     outRecords: [],
     showMoreActions: false,
   },
@@ -53,23 +54,8 @@ Page({
       const result = await productService.listProducts('', 1, 100);
       const product = (result.products || []).find(p => p.product_id === this._productId);
       if (product) {
-        let stockStatus = 'ok';
-        let stockStatusText = '正常';
-        if (product.min_stock > 0) {
-          if (product.stock === 0) {
-            stockStatus = 'danger';
-            stockStatusText = '缺货';
-          } else if (product.stock <= product.min_stock) {
-            stockStatus = 'warning';
-            stockStatusText = '预警';
-          }
-        }
-        this.setData({ product, stockStatus, stockStatusText });
-        productService.getProductStats(this._productId).then(res => {
-          if (res && res.success) {
-            this.setData({ totalIn: res.total_in, totalOut: res.total_out });
-          }
-        });
+        product.priceText = formatPrice(product.purchase_price);
+        this.setData({ product });
         productService.getProductRecords(this._productId).then(res => {
           if (res && res.success) {
             const records = (res.records || []).map(r => ({
@@ -77,7 +63,6 @@ Page({
               timeText: formatTime(r.created_at)
             }));
             this.setData({
-              inRecords: records.filter(r => r.type === 'in'),
               outRecords: records.filter(r => r.type === 'out'),
             });
           }

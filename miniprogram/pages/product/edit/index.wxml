@@ -23,7 +23,7 @@
         <view class="field-divider"></view>
         <view class="field-row field-row-last">
           <view class="field-label-wrap">
-            <text class="field-label">编号</text>
+            <text class="field-label">商品编号</text>
           </view>
           <input
             class="field-input"
@@ -44,7 +44,7 @@
         <view class="field-row">
           <view class="field-label-wrap">
             <text class="req-star">*</text>
-            <text class="field-label">类别</text>
+            <text class="field-label">商品类别</text>
           </view>
           <picker mode="selector" range="{{categories}}" value="{{categoryIndex}}" bindchange="onCategoryChange">
             <view class="field-picker">
@@ -99,7 +99,10 @@
 
     <!-- 商品图片 -->
     <view class="section-group">
-      <text class="section-title">商品图片</text>
+      <view class="section-title-row">
+        <text class="section-title">商品图片</text>
+        <text class="photos-tip">最多3张，点击可更换</text>
+      </view>
       <view class="photo-card">
         <view class="photos-row">
           <view wx:for="{{photos}}" wx:key="index" class="photo-slot">
@@ -115,7 +118,6 @@
             </view>
           </view>
         </view>
-        <text class="photos-tip">最多3张，点击可更换</text>
       </view>
     </view>
 
@@ -125,7 +127,7 @@
       <view class="field-card">
         <view class="field-row">
           <view class="field-label-wrap">
-            <text class="field-label">商品来源</text>
+            <text class="field-label">采购渠道</text>
           </view>
           <input
             class="field-input"
@@ -139,14 +141,15 @@
         <view class="field-divider"></view>
         <view class="field-row">
           <view class="field-label-wrap">
-            <text class="field-label">使用区域</text>
+            <text class="field-label">采购单价（元）</text>
           </view>
           <input
             class="field-input"
-            placeholder="如：行政办公室"
+            type="digit"
+            placeholder="如：12.50"
             placeholder-class="field-placeholder"
-            value="{{form.usage_area}}"
-            data-field="usage_area"
+            value="{{form.purchase_price}}"
+            data-field="purchase_price"
             bindinput="onInput"
           />
         </view>

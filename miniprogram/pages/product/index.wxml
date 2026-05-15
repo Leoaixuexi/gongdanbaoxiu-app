@@ -3,7 +3,6 @@
     id="productList"
     canManage="{{canManage}}"
     bind:itemtap="onProductTap"
-    bind:additem="onAddProductTap"
   />
 
   <view wx:if="{{canManage}}" class="fab-button" bindtap="onAddProductTap">
