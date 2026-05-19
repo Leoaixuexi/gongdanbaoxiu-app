@@ -3,6 +3,7 @@
  */
 const materialService = require('../../../services/materialService');
 const { ROLES, STORAGE_KEYS } = require('../../../utils/constants');
+const { getNavBarInfo } = require('../../../utils/navigation');
 
 function formatTime(dateVal) {
   if (!dateVal) return '';
@@ -18,6 +19,7 @@ function formatTime(dateVal) {
 
 Page({
   data: {
+    headerHeight: 0,
     material: {},
     canManage: false,
     stockStatus: 'ok',
@@ -37,8 +39,10 @@ Page({
   },
 
   onLoad(options) {
+    const { headerHeight } = getNavBarInfo();
     const userInfo = wx.getStorageSync(STORAGE_KEYS.USER_INFO);
     this.setData({
+      headerHeight: Math.ceil(headerHeight),
       canManage: userInfo && [ROLES.ADMIN, ROLES.PROPERTY_MANAGER, ROLES.PROPERTY_STAFF].includes(userInfo.role_id)
     });
 

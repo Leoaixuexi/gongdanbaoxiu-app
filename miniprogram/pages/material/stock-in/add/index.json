@@ -1,7 +1,7 @@
 {
   "navigationStyle": "custom",
-  "navigationBarTextStyle": "black",
   "usingComponents": {
+    "custom-header": "/components/header/header",
     "van-icon": "@vant/weapp/icon/index"
   }
 }

@@ -1,5 +1,6 @@
 <!-- 物料管理页面 -->
-<view class="material-page">
+<view class="material-page" style="padding-top: calc({{headerHeight}}px + 16rpx);">
+  <custom-header title="物料管理" />
   <!-- 顶部 Tab -->
   <view class="tab-header">
     <view class="tab-list">

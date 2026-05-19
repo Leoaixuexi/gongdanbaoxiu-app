@@ -8,7 +8,7 @@ page {
 
 .edit-container {
   min-height: 100vh;
-  background: linear-gradient(180deg, #DCE4FF 0%, #DFF5F4 30%, #FAFAFA 55%);
+  background: #F2F4F8;
   padding-bottom: 200rpx;
 }
 

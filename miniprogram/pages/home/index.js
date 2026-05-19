@@ -53,14 +53,15 @@ Page({
       pending: 0,
       inProgress: 0,
       review: 0,
-      completed: 0
+      completed: 0,
+      total: 0
     },
     // 工单维修 - 功能入口
     workOrderFunctions: [
-      { icon: 'orders-o', label: '工单列表', color: '#4F46E5', bg: '#EEF2FF' },
-      { icon: 'chart-trending-o', label: '数据看板', color: '#D97706', bg: '#FEF3C7' },
-      { icon: 'gift-o', label: '物料管理', color: '#059669', bg: '#ECFDF5' },
-      { icon: 'gold-coin-o', label: '收费工单', color: '#EA580C', bg: '#FFF7ED' }
+      { icon: 'orders-o', image: '/images/func-workorder.png', label: '工单列表', color: '#4F46E5', bg: '#EEF2FF' },
+      { icon: 'chart-trending-o', image: '/images/func-dashboard.png', label: '数据看板', color: '#D97706', bg: '#FEF3C7' },
+      { icon: 'gift-o', image: '/images/func-material.png', label: '物料管理', color: '#059669', bg: '#ECFDF5' },
+      { icon: 'gold-coin-o', image: '/images/func-fee.png', label: '收费工单', color: '#EA580C', bg: '#FFF7ED' }
     ],
     // 工单维修 - 最近记录
     workOrderRecords: [],
@@ -82,14 +83,14 @@ Page({
     // 耗品管理 - 功能宫格（tone/subtitle 用于 dashboard 视觉）
     consumableFuncRows: [
       [
-        { icon: 'gift-o', label: '商品管理', bg: '#7C3AED', tone: 'blue', subtitle: '管理商品信息' },
-        { icon: 'add-o', label: '入库管理', bg: '#1677FF', tone: 'green', subtitle: '采购入库登记' },
-        { icon: 'upgrade', label: '出库管理', bg: '#FF6A00', tone: 'orange', subtitle: '领用出库登记' },
+        { icon: 'gift-o', image: '/images/cf-product.png', label: '商品管理', bg: '#7C3AED', tone: 'blue', subtitle: '管理商品信息' },
+        { icon: 'add-o', image: '/images/cf-stockin.png', label: '入库管理', bg: '#1677FF', tone: 'green', subtitle: '采购入库登记' },
+        { icon: 'upgrade', image: '/images/cf-stockout.png', label: '出库管理', bg: '#FF6A00', tone: 'orange', subtitle: '领用出库登记' },
       ],
       [
-        { icon: 'search', label: '库存查询', bg: '#00B578', tone: 'purple', subtitle: '实时库存查询' },
-        { icon: 'logistics', label: '快递管理', bg: '#00B4D8', tone: 'blue', subtitle: '物流跟踪管理' },
-        { icon: 'chart-trending-o', label: '数据报表', bg: '#FFB100', tone: 'green', subtitle: '统计报表分析' },
+        { icon: 'search', image: '/images/cf-stock-query.png', label: '库存查询', bg: '#00B578', tone: 'purple', subtitle: '实时库存查询' },
+        { icon: 'logistics', image: '/images/cf-express.png', label: '快递管理', bg: '#00B4D8', tone: 'blue', subtitle: '物流跟踪管理' },
+        { icon: 'chart-trending-o', image: '/images/cf-report.png', label: '数据报表', bg: '#FFB100', tone: 'green', subtitle: '统计报表分析' },
       ],
     ],
     // 耗品管理 - 4 个统计小卡（用于 dashboard 库存大卡片底部）
@@ -174,7 +175,7 @@ Page({
       this.setData({
         workOrderFunctions: [
           ...baseFuncs,
-          { icon: 'gold-coin-o', label: '收费工单', color: '#B45309', bg: '#FFFBEB' }
+          { icon: 'gold-coin-o', image: '/images/func-fee.png', label: '收费工单', color: '#B45309', bg: '#FFFBEB' }
         ]
       })
     }
@@ -201,7 +202,7 @@ Page({
   // 加载最近工单记录
   async loadRecentWorkOrders() {
     try {
-      const { orders } = await listWorkOrders({ limit: 4, page: 1 })
+      const { orders } = await listWorkOrders({ limit: 5, page: 1 })
       const records = orders.map(o => ({
         orderId: o.order_id,
         info: [o.floor, o.location, o.description].filter(Boolean).join(' · '),
@@ -221,12 +222,17 @@ Page({
   async loadWorkOrderStats() {
     try {
       const { statistics } = await getOrderStatistics()
+      const pending = statistics['Pending Repair'] || 0
+      const inProgress = statistics['In Progress'] || 0
+      const review = statistics['Repaired'] || 0
+      const completed = statistics['Completed'] || 0
       this.setData({
         workOrderStats: {
-          pending: statistics['Pending Repair'] || 0,
-          inProgress: statistics['In Progress'] || 0,
-          review: statistics['Repaired'] || 0,
-          completed: statistics['Completed'] || 0
+          pending,
+          inProgress,
+          review,
+          completed,
+          total: pending + inProgress + review + completed
         }
       })
     } catch (e) {
@@ -388,7 +394,12 @@ Page({
   },
 
   // 查看全部
-  onViewAll() {
+  onViewAll(e) {
+    const module = e?.currentTarget?.dataset?.module
+    if (module === 'workOrder') {
+      wx.navigateTo({ url: '/pages/index/index' })
+      return
+    }
     wx.showToast({ title: '查看全部', icon: 'none' })
   }
 })

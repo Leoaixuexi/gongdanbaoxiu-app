@@ -6,6 +6,7 @@
 
 const materialService = require('../../services/materialService');
 const { ROLES, STORAGE_KEYS } = require('../../utils/constants');
+const { getNavBarInfo } = require('../../utils/navigation');
 
 function formatDateTime(dateVal) {
   if (!dateVal) return '';
@@ -20,6 +21,7 @@ function formatDateTime(dateVal) {
 
 Page({
   data: {
+    headerHeight: 0,
     activeTab: 0,
     tabs: ['配件列表', '入库记录', '出库记录'],
     canManage: false,
@@ -51,6 +53,8 @@ Page({
   },
 
   onLoad() {
+    const { headerHeight } = getNavBarInfo();
+    this.setData({ headerHeight: Math.ceil(headerHeight) });
     const userInfo = wx.getStorageSync(STORAGE_KEYS.USER_INFO);
     // 维修员（MAINTENANCE_STAFF=3）已被移除耗品访问权
     const canAccess = userInfo && [ROLES.ADMIN, ROLES.PROPERTY_MANAGER, ROLES.PROPERTY_STAFF].includes(userInfo.role_id);

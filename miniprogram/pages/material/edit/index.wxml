@@ -1,5 +1,6 @@
 <!-- 配件修改页面 -->
-<view class="edit-container">
+<view class="edit-container" style="padding-top: calc({{headerHeight}}px + 16rpx);">
+  <custom-header title="修改配件" />
   <view class="form-body">
 
     <!-- 基本信息 -->

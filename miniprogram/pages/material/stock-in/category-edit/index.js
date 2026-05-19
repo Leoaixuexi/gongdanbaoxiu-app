@@ -16,6 +16,7 @@
 
 const dictionaryAdmin = require('../../../../services/dictionaryAdmin');
 const dictionary = require('../../../../services/dictionary');
+const { getNavBarInfo } = require('../../../../utils/navigation');
 
 const ICON_OPTIONS = [
   { key: 'folder',  name: 'orders-o',  tone: 'blue',   color: '#2563EB' },
@@ -36,6 +37,8 @@ const DEFAULT_VISIBLE = 5;
 
 Page({
   data: {
+    headerHeight: 0,
+    pageTitle: '新增分类',
     mode: 'create',
     editingValue: '',          // 编辑模式下的目标分类 value
     name: '',
@@ -57,11 +60,17 @@ Page({
   },
 
   onLoad(query) {
+    const { headerHeight } = getNavBarInfo();
     const mode = query && query.mode === 'edit' ? 'edit' : 'create';
     const editingValue = query && query.value ? decodeURIComponent(query.value) : '';
-    wx.setNavigationBarTitle({ title: mode === 'edit' ? '编辑分类' : '新增分类' });
+    const pageTitle = mode === 'edit' ? '编辑分类' : '新增分类';
 
-    this.setData({ mode, editingValue });
+    this.setData({
+      headerHeight: Math.ceil(headerHeight),
+      pageTitle,
+      mode,
+      editingValue,
+    });
 
     // 通过 EventChannel 接收上游已加载的分类列表
     const eventChannel = this.getOpenerEventChannel && this.getOpenerEventChannel();

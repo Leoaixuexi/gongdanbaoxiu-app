@@ -3,9 +3,11 @@
  * 通过 URL 参数传入序列化的记录数据
  */
 const { formatDate } = require('../../../utils/formatter');
+const { getNavBarInfo } = require('../../../utils/navigation');
 
 Page({
   data: {
+    headerHeight: 0,
     record: {},
     isIn: true,
     imageUrl: '',
@@ -20,6 +22,8 @@ Page({
   },
 
   onLoad(options) {
+    const { headerHeight } = getNavBarInfo();
+    this.setData({ headerHeight: Math.ceil(headerHeight) });
     if (!options.data) return;
     try {
       const record = JSON.parse(decodeURIComponent(options.data));

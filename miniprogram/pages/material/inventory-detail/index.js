@@ -1,6 +1,7 @@
 import * as echarts from '../../../components/ec-canvas/echarts';
 const materialService = require('../../../services/materialService');
 const { STORAGE_KEYS, ROLES } = require('../../../utils/constants');
+const { getNavBarInfo } = require('../../../utils/navigation');
 
 function fmtDate(d) {
   if (!d) return '';
@@ -94,6 +95,7 @@ Page({
   _trendChart: null,
 
   data: {
+    headerHeight: 0,
     materialId: 0,
     detail: null,
     loading: true,
@@ -109,6 +111,7 @@ Page({
   },
 
   onLoad(options) {
+    const { headerHeight } = getNavBarInfo();
     const id = Number(options.id) || 0;
     if (!id) {
       wx.showToast({ title: '参数错误', icon: 'none' });
@@ -117,6 +120,7 @@ Page({
     }
     const userInfo = wx.getStorageSync(STORAGE_KEYS.USER_INFO);
     this.setData({
+      headerHeight: Math.ceil(headerHeight),
       materialId: id,
       canAdjust: canManage(userInfo),
     });

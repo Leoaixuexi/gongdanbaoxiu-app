@@ -1,5 +1,6 @@
 <!-- 新增/编辑分类 — 独立页（参考图风格） -->
-<view class="cae-page">
+<view class="cae-page" style="padding-top: calc({{headerHeight}}px + 16rpx);">
+  <custom-header title="{{pageTitle}}" />
   <scroll-view scroll-y class="cae-scroll">
     <view class="cae-card">
       <!-- 分类名称 -->

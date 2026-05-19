@@ -11,6 +11,7 @@ const productService = require('../../../services/productService');
 const dictionaryAdmin = require('../../../services/dictionaryAdmin');
 const dictionary = require('../../../services/dictionary');
 const { ROLES, STORAGE_KEYS } = require('../../../utils/constants');
+const { getNavBarInfo } = require('../../../utils/navigation');
 
 const DEFAULT_PRODUCT_CATEGORIES = [
   '办公耗品', '清洁用品', '日用百货',
@@ -35,6 +36,7 @@ function formatRecordNumber(recordId) {
 
 Page({
   data: {
+    headerHeight: 0,
     activeSubTab: 0,                       // 0 入库记录 / 1 分类管理
     subTabs: ['入库记录', '分类管理'],
     canManage: false,
@@ -53,6 +55,8 @@ Page({
   },
 
   onLoad() {
+    const { headerHeight } = getNavBarInfo();
+    this.setData({ headerHeight: Math.ceil(headerHeight) });
     const userInfo = wx.getStorageSync(STORAGE_KEYS.USER_INFO);
     const canAccess = userInfo && [ROLES.ADMIN, ROLES.PROPERTY_MANAGER, ROLES.PROPERTY_STAFF].includes(userInfo.role_id);
     if (!canAccess) {

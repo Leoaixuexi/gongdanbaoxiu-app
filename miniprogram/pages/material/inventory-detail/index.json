@@ -1,8 +1,7 @@
 {
-  "navigationBarTitleText": "库存详情",
-  "navigationBarBackgroundColor": "#FFFFFF",
-  "navigationBarTextStyle": "black",
+  "navigationStyle": "custom",
   "usingComponents": {
+    "custom-header": "/components/header/header",
     "van-icon": "@vant/weapp/icon/index",
     "van-popup": "@vant/weapp/popup/index",
     "van-stepper": "@vant/weapp/stepper/index",

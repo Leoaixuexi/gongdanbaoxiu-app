@@ -33,43 +33,32 @@
         refresher-triggered="{{refreshing}}"
         bindrefresherrefresh="onRefresh"
       >
-        <!-- 顶部 hero：纯装饰建筑头图 -->
-        <view class="wo-banner">
-          <image src="/images/workorder-header.png" mode="aspectFit" class="wo-banner-img"></image>
-        </view>
-
         <!-- 工单概况 -->
-        <view class="wo-card">
-          <view class="wo-card-head">
-            <text class="wo-card-title">工单概况</text>
-            <text class="wo-card-meta">实时同步</text>
+        <view class="wo-card wo-card-overview">
+          <!-- Hero 区：渐变背景 + 总工单数 + 右侧插画 -->
+          <view class="wo-hero">
+            <view class="wo-hero-title">
+              <text class="wo-hero-kicker">总工单数</text>
+              <text class="wo-hero-num">{{workOrderStats.total}}<text class="wo-hero-unit">单</text></text>
+            </view>
+            <image class="wo-hero-img" src="/images/workorder-hero.png" mode="widthFix" />
           </view>
+
+          <!-- 统计区：4 列纯数字 + 标签 -->
           <view class="wo-stat-row">
             <view class="wo-stat" bindtap="onStatCardTap" data-status="reported">
-              <view class="wo-stat-icon wo-icon-blue">
-                <van-icon name="orders-o" size="26px" color="#3B82F6" />
-              </view>
               <text class="wo-stat-num">{{workOrderStats.pending}}</text>
               <text class="wo-stat-label">已提报</text>
             </view>
             <view class="wo-stat" bindtap="onStatCardTap" data-status="maintenance">
-              <view class="wo-stat-icon wo-icon-orange">
-                <van-icon name="setting-o" size="26px" color="#F97316" />
-              </view>
               <text class="wo-stat-num">{{workOrderStats.inProgress}}</text>
               <text class="wo-stat-label">维修中</text>
             </view>
             <view class="wo-stat" bindtap="onStatCardTap" data-status="review">
-              <view class="wo-stat-icon wo-icon-purple">
-                <van-icon name="todo-list-o" size="26px" color="#A855F7" />
-              </view>
               <text class="wo-stat-num">{{workOrderStats.review}}</text>
               <text class="wo-stat-label">待复核</text>
             </view>
             <view class="wo-stat" bindtap="onStatCardTap" data-status="completed">
-              <view class="wo-stat-icon wo-icon-green">
-                <van-icon name="passed" size="26px" color="#10B981" />
-              </view>
               <text class="wo-stat-num">{{workOrderStats.completed}}</text>
               <text class="wo-stat-label">已完成</text>
             </view>
@@ -88,8 +77,9 @@
               data-label="{{item.label}}"
               bindtap="onFunctionTap"
             >
-              <view class="wo-func-icon wo-func-icon-{{index}}">
-                <van-icon name="{{item.icon}}" size="30px" color="{{index === 0 ? '#3B82F6' : index === 1 ? '#A855F7' : index === 2 ? '#3B82F6' : '#F59E0B'}}" />
+              <view class="wo-func-icon wo-func-icon-{{index}} {{item.image ? 'wo-func-icon-img' : ''}}">
+                <image wx:if="{{item.image}}" src="{{item.image}}" class="wo-func-img" mode="aspectFit" />
+                <van-icon wx:else name="{{item.icon}}" size="30px" color="{{index === 0 ? '#3B82F6' : index === 1 ? '#A855F7' : index === 2 ? '#3B82F6' : '#F59E0B'}}" />
               </view>
               <text class="wo-func-label">{{item.label}}</text>
             </view>
@@ -120,7 +110,7 @@
         <view class="recent-section">
           <view class="recent-header">
             <text class="section-title">最近记录</text>
-            <text class="view-all" data-module="workOrder" bindtap="onViewAll"></text>
+            <text class="view-all" data-module="workOrder" bindtap="onViewAll">查看全部 ›</text>
           </view>
           <view class="recent-list">
             <view
@@ -195,8 +185,9 @@
                   bindtap="onFunctionTap"
                   hover-class="ds-row-hover"
                 >
-                  <view class="ds-action-icon ds-{{func.tone}}">
-                    <van-icon name="{{func.icon}}" size="19px" />
+                  <view class="ds-action-icon ds-{{func.tone}} {{func.image ? 'ds-action-icon-img' : ''}}">
+                    <image wx:if="{{func.image}}" src="{{func.image}}" class="ds-action-img" mode="aspectFit" />
+                    <van-icon wx:else name="{{func.icon}}" size="19px" />
                   </view>
                   <view class="ds-action-text">
                     <text class="ds-action-title">{{func.label}}</text>

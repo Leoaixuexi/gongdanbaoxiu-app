@@ -1,5 +1,6 @@
 const materialService = require('../../../services/materialService');
 const { STORAGE_KEYS, ROLES } = require('../../../utils/constants');
+const { getNavBarInfo } = require('../../../utils/navigation');
 
 const STATUS_TEXT = { warning: '预警', empty: '缺货', normal: '正常' };
 
@@ -39,6 +40,7 @@ function decorate(materials) {
 
 Page({
   data: {
+    headerHeight: 0,
     activeStatus: 'all',
     keyword: '',
     statusCounts: { all: 0, warning: 0, empty: 0, normal: 0 },
@@ -51,6 +53,8 @@ Page({
   },
 
   onLoad() {
+    const { headerHeight } = getNavBarInfo();
+    this.setData({ headerHeight: Math.ceil(headerHeight) });
     const userInfo = wx.getStorageSync(STORAGE_KEYS.USER_INFO);
     const canAccess = userInfo && [ROLES.ADMIN, ROLES.PROPERTY_MANAGER, ROLES.PROPERTY_STAFF, ROLES.WAREHOUSE_KEEPER].includes(userInfo.role_id);
     if (!canAccess) {

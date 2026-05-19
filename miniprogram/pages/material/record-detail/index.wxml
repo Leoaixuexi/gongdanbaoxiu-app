@@ -1,5 +1,6 @@
 <!-- 出入库记录详情页 -->
-<view class="rd-page">
+<view class="rd-page" style="padding-top: calc({{headerHeight}}px + 16rpx);">
+  <custom-header title="记录详情" />
   <!-- 商品卡 -->
   <view class="rd-product-card">
     <image

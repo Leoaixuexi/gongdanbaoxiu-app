@@ -1,4 +1,5 @@
-<view class="page" wx:if="{{ detail }}">
+<custom-header title="库存详情" />
+<view class="page" wx:if="{{ detail }}" style="padding-top: calc({{headerHeight}}px + 16rpx);">
 
   <view class="content">
 

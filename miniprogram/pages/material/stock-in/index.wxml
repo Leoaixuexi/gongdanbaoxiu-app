@@ -1,5 +1,6 @@
 <!-- 入库管理（独立页）— UI 重做 -->
-<view class="sin-page">
+<view class="sin-page" style="padding-top: calc({{headerHeight}}px + 16rpx);">
+  <custom-header title="入库管理" />
   <!-- TabBar -->
   <view class="sin-tabbar">
     <view

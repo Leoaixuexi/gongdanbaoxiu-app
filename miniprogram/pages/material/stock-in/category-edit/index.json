@@ -1,10 +1,8 @@
 {
-  "navigationBarTitleText": "新增分类",
-  "navigationBarBackgroundColor": "#FFFFFF",
-  "navigationBarTextStyle": "black",
-  "navigationStyle": "default",
+  "navigationStyle": "custom",
   "enablePullDownRefresh": false,
   "usingComponents": {
+    "custom-header": "/components/header/header",
     "van-icon": "@vant/weapp/icon/index",
     "van-popup": "@vant/weapp/popup/index"
   }

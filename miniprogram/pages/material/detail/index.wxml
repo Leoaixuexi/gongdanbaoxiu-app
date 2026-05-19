@@ -1,5 +1,6 @@
 <!-- 配件详情页 -->
-<view class="detail-page">
+<view class="detail-page" style="padding-top: calc({{headerHeight}}px + 16rpx);">
+  <custom-header title="配件详情" />
   <!-- 图片区域 -->
   <view class="img-section">
     <swiper

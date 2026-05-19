@@ -5,6 +5,7 @@
 
 const materialService = require('../../../services/materialService');
 const { ROLES, STORAGE_KEYS } = require('../../../utils/constants');
+const { getNavBarInfo } = require('../../../utils/navigation');
 const { smartCompress, COMPRESS_PRESETS } = require('../../../utils/imageUtils');
 const { uploadFiles } = require('../../../services/cloudStorage');
 const dictionary = require('../../../services/dictionary');
@@ -14,6 +15,7 @@ const UNITS = ['个', '根', '箱', '套', '米', '卷'];
 
 Page({
   data: {
+    headerHeight: 0,
     submitting: false,
 
     form: {
@@ -38,6 +40,8 @@ Page({
   },
 
   onLoad(options) {
+    const { headerHeight } = getNavBarInfo();
+    this.setData({ headerHeight: Math.ceil(headerHeight) });
     const userInfo = wx.getStorageSync(STORAGE_KEYS.USER_INFO);
     if (!userInfo || ![ROLES.ADMIN, ROLES.PROPERTY_MANAGER, ROLES.PROPERTY_STAFF].includes(userInfo.role_id)) {
       wx.showToast({ title: '无权限', icon: 'none' });

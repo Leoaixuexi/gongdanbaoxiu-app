@@ -1,16 +1,6 @@
 <!-- 新增入库（Pencil Jw6K9 + 参考图二次优化） -->
-<view class="add-page">
-  <!-- 状态栏占位 -->
-  <view class="add-statusbar" style="height: {{statusBarHeight}}px;"></view>
-
-  <!-- 自定义 header -->
-  <view class="add-header">
-    <view class="add-header-btn" bindtap="onBack">
-      <van-icon name="arrow-left" size="22px" color="#1A1A1A" />
-    </view>
-    <text class="add-header-title">新增入库</text>
-    <view class="add-header-btn"></view>
-  </view>
+<view class="add-page" style="padding-top: calc({{headerHeight}}px + 16rpx);">
+  <custom-header title="新增入库" />
 
   <scroll-view scroll-y class="add-scroll">
     <!-- 识别成功 banner -->

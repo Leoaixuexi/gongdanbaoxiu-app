@@ -11,6 +11,7 @@ const productService = require('../../../../services/productService');
 const dictionaryAdmin = require('../../../../services/dictionaryAdmin');
 const dictionary = require('../../../../services/dictionary');
 const { STORAGE_KEYS } = require('../../../../utils/constants');
+const { getNavBarInfo } = require('../../../../utils/navigation');
 
 const DEFAULT_PRODUCT_LOCATIONS = [
   '主仓库', '应急储备', '工程仓',
@@ -28,7 +29,7 @@ function formatStockInTime(d) {
 
 Page({
   data: {
-    statusBarHeight: 20,
+    headerHeight: 0,
     product: {},
     quantity: 1,
     remark: '',
@@ -43,13 +44,9 @@ Page({
   },
 
   onLoad() {
-    try {
-      const sys = wx.getSystemInfoSync();
-      this.setData({ statusBarHeight: sys.statusBarHeight || 20 });
-    } catch (e) {
-      // 忽略，用默认值
-    }
+    const { headerHeight } = getNavBarInfo();
     this.setData({
+      headerHeight: Math.ceil(headerHeight),
       stockInTimeText: formatStockInTime(new Date()),
     });
     const userInfo = wx.getStorageSync(STORAGE_KEYS.USER_INFO) || {};
@@ -63,10 +60,6 @@ Page({
     }
 
     this._loadLocationOptions();
-  },
-
-  onBack() {
-    wx.navigateBack();
   },
 
   _applyProduct(product) {
